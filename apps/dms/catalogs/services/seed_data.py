@@ -1,6 +1,21 @@
 """Datos semilla para catálogos DMS (system_catalogs.md)."""
 
 
+def _get_model_or_none(apps, model_name):
+    """Modelo del estado histórico o None si aún no existe en esta migración.
+
+    Esta función se reutiliza desde la migración 0002; los catálogos
+    ValueGeneratorType / PermissionPackage / TransformOperation /
+    TransformPipelineTemplate se crean en migraciones posteriores y tienen
+    sus propias semillas (0009 / 0011 / 0013). En una BD nueva no existen al
+    correr 0002, por lo que se omiten aquí sin romper el deploy.
+    """
+    try:
+        return apps.get_model("dms", model_name)
+    except LookupError:
+        return None
+
+
 def seed_catalogs(apps, schema_editor):
     SourceFileType = apps.get_model("dms", "SourceFileType")
     TargetFileType = apps.get_model("dms", "TargetFileType")
@@ -11,10 +26,10 @@ def seed_catalogs(apps, schema_editor):
     TargetFieldDataType = apps.get_model("dms", "TargetFieldDataType")
     ExecutionErrorCode = apps.get_model("dms", "ExecutionErrorCode")
     FilenamePatternVariable = apps.get_model("dms", "FilenamePatternVariable")
-    ValueGeneratorType = apps.get_model("dms", "ValueGeneratorType")
-    PermissionPackage = apps.get_model("dms", "PermissionPackage")
-    TransformOperation = apps.get_model("dms", "TransformOperation")
-    TransformPipelineTemplate = apps.get_model("dms", "TransformPipelineTemplate")
+    ValueGeneratorType = _get_model_or_none(apps, "ValueGeneratorType")
+    PermissionPackage = _get_model_or_none(apps, "PermissionPackage")
+    TransformOperation = _get_model_or_none(apps, "TransformOperation")
+    TransformPipelineTemplate = _get_model_or_none(apps, "TransformPipelineTemplate")
 
     if SourceFileType.objects.exists():
         return
@@ -334,27 +349,31 @@ def seed_catalogs(apps, schema_editor):
             is_active=True,
         )
 
-    generators = [
-        ("sequence_numeric", "Secuencia numérica", "sequence_numeric", 10),
-        ("sequence_padded", "Secuencia con padding", "sequence_padded", 20),
-        ("sequence_alphanumeric", "Secuencia alfanumérica", "sequence_alphanumeric", 30),
-        ("sequence_template", "Plantilla con secuencia", "sequence_template", 40),
-        ("unique_uuid", "UUID por fila", "unique_uuid", 50),
-        ("unique_job_counter", "Correlativo por job", "unique_job_counter", 60),
-        ("job_timestamp", "Fecha/hora de ejecución", "job_timestamp", 70),
-        ("row_number", "Número de fila", "row_number", 80),
-    ]
-    for code, name, resolver, order in generators:
-        ValueGeneratorType.objects.create(
-            code=code,
-            name=name,
-            description="",
-            resolver_key=resolver,
-            param_schema=None,
-            phase="mvp",
-            sort_order=order,
-            is_active=True,
-        )
+    if ValueGeneratorType is not None and not ValueGeneratorType.objects.exists():
+        generators = [
+            ("sequence_numeric", "Secuencia numérica", "sequence_numeric", 10),
+            ("sequence_padded", "Secuencia con padding", "sequence_padded", 20),
+            ("sequence_alphanumeric", "Secuencia alfanumérica", "sequence_alphanumeric", 30),
+            ("sequence_template", "Plantilla con secuencia", "sequence_template", 40),
+            ("unique_uuid", "UUID por fila", "unique_uuid", 50),
+            ("unique_job_counter", "Correlativo por job", "unique_job_counter", 60),
+            ("job_timestamp", "Fecha/hora de ejecución", "job_timestamp", 70),
+            ("row_number", "Número de fila", "row_number", 80),
+        ]
+        for code, name, resolver, order in generators:
+            ValueGeneratorType.objects.create(
+                code=code,
+                name=name,
+                description="",
+                resolver_key=resolver,
+                param_schema=None,
+                phase="mvp",
+                sort_order=order,
+                is_active=True,
+            )
+
+    if PermissionPackage is None:
+        return
 
     packages = [
         ("admin", "Admin", "PA", ["view", "create", "update", "delete", "execute", "manage_members", "grant_admin"], 10),
@@ -471,4 +490,6 @@ def unseed_catalogs(apps, schema_editor):
         "TransformOperation",
         "TransformPipelineTemplate",
     ):
-        apps.get_model("dms", model_name).objects.all().delete()
+        model = _get_model_or_none(apps, model_name)
+        if model is not None:
+            model.objects.all().delete()
