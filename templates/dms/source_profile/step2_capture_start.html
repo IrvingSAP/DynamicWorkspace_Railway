@@ -1,0 +1,122 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 2 — Línea inicio — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:source_hub' project_slug=project.slug %}">Origen</a>
+    <span class="breadcrumb-sep">/</span><span>Paso 2</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/source_profile/_project_scope.html" %}
+{% include "dms/source_profile/_source_persistence.html" %}
+
+<div id="source-step-root"
+     data-step="2"
+     data-prev-url="{% url 'dms:source_step1' project_slug=project.slug %}"
+     data-next-url="{% url 'dms:source_step3' project_slug=project.slug %}"
+     data-can-edit="{% if can_edit_source %}1{% else %}0{% endif %}">
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Paso 2 de 6 · <span class="role-badge">capture_start</span></p>
+        <h2>Línea de inicio de captura</h2>
+        <p>Define desde qué línea comienza la lectura de datos útiles. Modos desde catálogo <code>CaptureBoundaryMode</code> (applies_to: start).</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:source_step2_help' project_slug=project.slug as source_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+        <a href="{% url 'dms:source_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
+    </div>
+</div>
+
+{% include "dms/source_profile/_wizard_stepper.html" %}
+
+<div class="panel">
+    <div class="panel-body" data-capture-params="capture_start_mode">
+        <p id="step-save-status" class="step-save-status" aria-live="polite"></p>
+        <h3 class="form-section-title">Modo de inicio</h3>
+        <div class="capture-mode-list" role="radiogroup" aria-label="Modo de inicio de captura">
+            {% for mode in capture_start_modes %}
+            <label class="capture-mode-option{% if mode.disabled %} capture-mode-option--phase2{% endif %}">
+                <input type="radio" name="capture_start_mode" value="{{ mode.code }}"
+                       {% if source.capture_start.mode|default:"line_number" == mode.code %}checked{% endif %}
+                       {% if mode.disabled or not can_edit_source %}disabled{% endif %}>
+                <div>
+                    <strong>{{ mode.name }}</strong>
+                    {% if mode.hint %}<span>{{ mode.hint }}</span>{% endif %}
+                </div>
+            </label>
+            {% endfor %}
+        </div>
+        <div class="capture-params" data-capture-panel="line_number">
+            <div class="field">
+                <label for="start_line">Número de línea <span class="req">*</span></label>
+                <input type="number" id="start_line" name="start_line" class="mono"
+                       value="{{ source.capture_start.line|default:1 }}" min="1"{% if not can_edit_source %} disabled{% endif %}>
+                <p class="hint">Caso SD-01: línea 10 para saltar encabezado corporativo.</p>
+            </div>
+        </div>
+        <div class="capture-params" data-capture-panel="after_header_block" hidden>
+            <div class="field">
+                <label for="skip_lines">Líneas a saltar</label>
+                <input type="number" id="skip_lines" name="skip_lines" class="mono"
+                       value="{{ source.capture_start.skip_lines|default:3 }}" min="0"{% if not can_edit_source %} disabled{% endif %}>
+            </div>
+        </div>
+        <div class="capture-params" data-capture-panel="marker_start" hidden>
+            <div class="field">
+                <label for="marker_start">Texto marcador</label>
+                <input type="text" id="marker_start" name="marker_start" class="mono"
+                       value="{{ source.capture_start.marker|default:'' }}"
+                       placeholder="=== DATOS ==="{% if not can_edit_source %} disabled{% endif %}>
+            </div>
+        </div>
+        <div class="capture-params" data-capture-panel="after_pattern" hidden>
+            <div class="field">
+                <label for="start_pattern">Patrón regex <span class="req">*</span></label>
+                <input type="text" id="start_pattern" name="start_pattern" class="mono"
+                       value="{{ source.capture_start.pattern|default:'' }}"
+                       placeholder="^REGISTRO\|"{% if not can_edit_source %} disabled{% endif %}>
+                <p class="hint">La captura inicia en la línea siguiente a la primera coincidencia.</p>
+            </div>
+        </div>
+        <div class="capture-params" data-capture-panel="after_blank_run" hidden>
+            <div class="field">
+                <label for="start_blank_count">Líneas en blanco consecutivas <span class="req">*</span></label>
+                <input type="number" id="start_blank_count" name="start_blank_count" class="mono"
+                       value="{{ source.capture_start.blank_count|default:1 }}" min="1"{% if not can_edit_source %} disabled{% endif %}>
+                <p class="hint">Vacío = línea sin texto (solo espacios). La captura inicia tras la N-ésima blanca.</p>
+            </div>
+        </div>
+        <div class="wizard-footer">
+            <span class="hint">JSON: <code class="mono">capture_start: { mode, line }</code></span>
+            <div class="wizard-footer-actions">
+                <a href="{% url 'dms:source_step1' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
+                {% if can_edit_source %}
+                <button type="button" id="btn-save-step" class="btn btn-ghost">Guardar borrador</button>
+                <button type="button" id="btn-step-next" class="btn btn-primary" data-next="{% url 'dms:source_step3' project_slug=project.slug %}">Siguiente →</button>
+                {% else %}
+                <a href="{% url 'dms:source_step3' project_slug=project.slug %}" class="btn btn-primary">Siguiente →</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/source_profile-wizard.js' %}"></script>
+<script src="{% static 'js/source_profile-steps.js' %}"></script>
+{% endblock %}

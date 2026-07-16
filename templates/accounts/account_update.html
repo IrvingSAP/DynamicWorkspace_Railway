@@ -1,0 +1,44 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Editar usuario — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include sidebar_template %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'accounts:list' %}">Usuarios</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'accounts:detail' pk=profile.pk %}">{{ profile.user.username }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Editar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Edición</p>
+        <h2><span class="mono">{{ profile.user.username }}</span>{% if profile.user.get_full_name %} · {{ profile.user.get_full_name }}{% endif %}</h2>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'accounts:detail' pk=profile.pk %}" class="btn btn-secondary">← Detalle</a>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    El <strong>tipo de usuario</strong> no es editable.{% if management_scope.show_company_picker %} La compañía solo la modifica UA en usuarios US.{% endif %}
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        {% include "accounts/_form.html" %}
+    </div>
+</div>
+{% endblock %}

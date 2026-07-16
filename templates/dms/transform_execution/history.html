@@ -1,0 +1,97 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Historial de ejecuciones — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/transform_execution.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:transform_execution_hub' project_slug=project.slug %}">Ejecutar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Historial</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Fase C · Historial</p>
+        <h2>Historial de ejecuciones</h2>
+        <p>Jobs completos. Descargas disponibles durante 7 días.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:transform_execution_history_help' project_slug=project.slug as transform_execution_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=transform_execution_help_url %}
+        <a href="{% url 'dms:transform_execution_hub' project_slug=project.slug %}" class="btn btn-secondary">← Ejecutar</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        {% if history_jobs %}
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Usuario</th>
+                        <th>Versión</th>
+                        <th>Entrada</th>
+                        <th>Salida</th>
+                        <th>Filas OK</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in history_jobs %}
+                    <tr>
+                        <td>{% if job.finished_at %}{{ job.finished_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
+                        <td>{{ job.executed_by }}</td>
+                        <td>v{{ job.version_number }}</td>
+                        <td>{{ job.input_filename }}</td>
+                        <td>{{ job.output_filename|default:"—" }}</td>
+                        <td>{{ job.rows_ok }}{% if job.rows_rejected %} / {{ job.rows_rejected }} rej.{% endif %}</td>
+                        <td><span class="flow-card-status flow-card-status--{% if job.status == 'completed' %}done{% elif job.status == 'partial' %}draft{% else %}empty{% endif %}">{{ job.status }}</span></td>
+                        <td>
+                            {% if job.expired %}
+                            <span class="hint">Archivo expirado</span>
+                            {% elif job.downloads %}
+                            <a class="btn btn-secondary btn-sm" href="{{ job.downloads.output }}">Salida</a>
+                            <a class="btn btn-secondary btn-sm" href="{{ job.downloads.report }}">Informe</a>
+                            <a class="btn btn-secondary btn-sm" href="{{ job.downloads.errors }}">Errores</a>
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>Sin ejecuciones</h3>
+            <p>Cuando ejecute una transformación aparecerán aquí.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

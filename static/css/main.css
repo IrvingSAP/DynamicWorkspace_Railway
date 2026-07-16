@@ -1,0 +1,25 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
+    color: #1a1a1a;
+    background: #f8f9fa;
+}
+
+header {
+    padding: 1rem 2rem;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+main {
+    padding: 2rem;
+    max-width: 960px;
+    margin: 0 auto;
+}

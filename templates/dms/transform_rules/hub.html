@@ -1,0 +1,106 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Reglas de transformación — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/transform_rules.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Reglas</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/transform_rules/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Módulo 3 · <span class="role-badge">TransformRules</span></p>
+        <h2>Reglas de transformación</h2>
+        <p>Pipeline post-mapeo por campo destino · borrador <strong>{{ hub.version_label }}</strong></p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:transform_rules_hub_help' project_slug=project.slug as transform_rules_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=transform_rules_help_url %}
+        <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        {% if rule_rows %}
+        <a href="{% url 'dms:transform_rules_editor' project_slug=project.slug %}" class="btn btn-primary">Abrir editor</a>
+        {% else %}
+        <a href="{% url 'dms:field_mapping_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a mapeo</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Estado de reglas">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Campos mapeados</p>
+        <p class="stat-value">{{ hub.mappings_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Con reglas</p>
+        <p class="stat-value">{{ hub.pipelines_with_steps }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Pasos totales</p>
+        <p class="stat-value">{{ hub.total_steps }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Estado</p>
+        <p class="stat-value" style="font-size:16px">{{ hub.status_label }}</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        {% if not rule_rows %}
+        <div class="empty-state">
+            <h3>Sin mapeos</h3>
+            <p>Cree al menos un mapeo origen → destino antes de definir reglas.</p>
+            <div class="page-actions" style="justify-content:center;margin-top:12px;">
+                <a href="{% url 'dms:field_mapping_editor' project_slug=project.slug %}" class="btn btn-primary">Abrir mapeo</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="step-summary-list">
+            <a href="{% url 'dms:transform_rules_editor' project_slug=project.slug %}" class="step-summary-card">
+                <div>
+                    <h4>Editor de pipelines</h4>
+                    <p>Añada, reordene y previsualice ops (trim, upper, date_format, pad, default).</p>
+                </div>
+                <span class="flow-card-status flow-card-status--{% if hub.is_complete %}done{% else %}draft{% endif %}">
+                    {% if hub.is_complete %}Listo{% else %}Editar{% endif %}
+                </span>
+            </a>
+            {% for row in rule_rows %}
+            <div class="step-summary-card" style="cursor:default;">
+                <div>
+                    <h4>{{ row.target_field }}</h4>
+                    <p>{{ row.mapping_kind }} · {{ row.source_summary }} · {{ row.ops_label }}</p>
+                </div>
+                <span class="flow-card-status flow-card-status--{% if row.transform_pipeline %}done{% else %}empty{% endif %}">
+                    {% if row.transform_pipeline %}{{ row.transform_pipeline|length }} paso{{ row.transform_pipeline|length|pluralize:"s" }}{% else %}Sin reglas{% endif %}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

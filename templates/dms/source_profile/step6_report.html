@@ -1,0 +1,129 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 6 — Informe — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:source_hub' project_slug=project.slug %}">Origen</a>
+    <span class="breadcrumb-sep">/</span><span>Paso 6</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/source_profile/_project_scope.html" %}
+{% include "dms/source_profile/_source_persistence.html" %}
+{% include "dms/source_profile/_source_publish.html" %}
+
+<div id="processing-report-root" data-project-slug="{{ project.slug }}">
+
+    <div class="page-header">
+        <div>
+            <p class="page-eyebrow">Paso 6 de 6 · <span class="role-badge">processing_report</span></p>
+            <h2>Configuración del informe de procesamiento</h2>
+            <p>Define qué debe reportar el sistema al procesar un archivo. La generación ocurre en ejecución (<code>transform_execution</code>).</p>
+        </div>
+        <div class="page-actions">
+            {% url 'dms:source_step6_help' project_slug=project.slug as source_help_url %}
+            {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+            <button type="button" id="btn-save-processing-report" class="btn btn-ghost btn-sm">Guardar borrador</button>
+        </div>
+    </div>
+
+    {% include "dms/source_profile/_wizard_stepper.html" %}
+
+    <div class="panel">
+        <div class="panel-body">
+            <p id="processing-report-status" class="content-rules-status" aria-live="polite"></p>
+
+            <form id="processing-report-form" novalidate>
+                <h3 class="form-section-title">Opciones del informe</h3>
+                <div class="form-grid">
+                    <div class="toggle-row">
+                        <input type="checkbox" id="report_enabled" name="report_enabled" checked>
+                        <label for="report_enabled">Informe habilitado (<code>report_enabled</code>)</label>
+                    </div>
+                    <div class="toggle-row">
+                        <input type="checkbox" id="include_summary" name="include_summary" checked>
+                        <label for="include_summary">Incluir resumen — filas leídas, OK y rechazadas (<code>include_summary</code>)</label>
+                    </div>
+                    <div class="toggle-row">
+                        <input type="checkbox" id="include_row_errors" name="include_row_errors" checked>
+                        <label for="include_row_errors">Detalle por fila — línea, campo y mensaje (<code>include_row_errors</code>)</label>
+                    </div>
+                    <div class="form-row two-cols">
+                        <div class="field">
+                            <label for="reject_alert_threshold">Umbral de alerta (<code>reject_alert_threshold</code>)</label>
+                            <input type="number" id="reject_alert_threshold" name="reject_alert_threshold" class="mono" value="10" min="0">
+                            <p class="hint">Avisar si los rechazos superan este valor.</p>
+                        </div>
+                        <div class="field">
+                            <label for="reject_alert_threshold_unit">Unidad del umbral</label>
+                            <select id="reject_alert_threshold_unit" name="reject_alert_threshold_unit">
+                                <option value="count" selected>Cantidad (N rechazos)</option>
+                                <option value="percent">Porcentaje (X %)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="report_format">Formato de salida (<code>report_format</code>)</label>
+                        <select id="report_format" name="report_format">
+                            <option value="json" selected>JSON</option>
+                            <option value="csv">CSV</option>
+                            <option value="html">HTML</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+
+            <div class="report-status-legend" style="margin-top:20px">
+                <h3 class="form-section-title">Valores de <code>status</code></h3>
+                <table class="mini-table">
+                    <thead>
+                        <tr><th>Valor</th><th>Condición</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="mono">ok</td><td>Todas las filas válidas</td></tr>
+                        <tr><td class="mono">partial</td><td>Al menos una fila rechazada, ejecución completada</td></tr>
+                        <tr><td class="mono">failed</td><td>Abortado por política o error fatal</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="report-preview" style="margin-top:20px">
+                <h3 class="form-section-title">Vista previa del contrato</h3>
+                <pre id="processing-report-preview" class="mono" aria-label="Vista previa processing_report"></pre>
+                <p class="hint">Códigos de error desde catálogo <code>ExecutionErrorCode</code>.</p>
+            </div>
+
+            <div class="wizard-footer">
+                <span class="hint">Borrador v{{ wizard.version_number }} · validación estricta al publicar</span>
+                <div class="wizard-footer-actions">
+                    <a href="{% url 'dms:source_step5' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
+                    {% if can_edit_source %}
+                    <button type="button" id="btn-save-source-profile" class="btn btn-ghost">Validar borrador</button>
+                    <button type="button"
+                            id="btn-publish-version"
+                            class="btn btn-primary"
+                            data-draft-label="borrador v{{ version_publish.draft_version_number }}"
+                            data-next="{% url 'dms:source_hub' project_slug=project.slug %}"
+                            data-status-target="processing-report-status">Publicar versión</button>
+                    {% endif %}
+                    <a href="{% url 'dms:source_hub' project_slug=project.slug %}" class="btn btn-secondary">Volver al hub</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/source_profile-report.js' %}"></script>
+{% endblock %}

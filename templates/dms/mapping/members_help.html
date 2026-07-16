@@ -1,0 +1,110 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Miembros {{ project.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:mapping_members' project_slug=project.slug %}">Miembros</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span> · <span class="perm-badge perm-badge--admin">PA</span></p>
+        <h2>Ayuda — Miembros y permisos</h2>
+        <p>Quién puede ver y trabajar en este proyecto FilePipe y qué hace cada rol.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:mapping_members' project_slug=project.slug %}" class="btn btn-secondary">← Volver a miembros</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Pantalla de <strong>Fase A — Paso 3</strong>. Solo el <strong>administrador (PA)</strong> puede gestionar miembros.
+            Se invitan usuarios UF de la compañía {{ company.name_short }}.
+        </p>
+
+        <h3 class="form-section-title">Agregar usuario</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Usuario UF</td>
+                    <td>Persona de tu compañía aún no miembro (o reinvitable según reglas).</td>
+                    <td>Lista de usuarios UF elegibles.</td>
+                </tr>
+                <tr>
+                    <td>Rol</td>
+                    <td>Nivel de permiso en este proyecto.</td>
+                    <td class="mono">PA · ED · CO · GE</td>
+                </tr>
+                <tr>
+                    <td>Autorizar miembro</td>
+                    <td>Guarda la membresía con el rol elegido.</td>
+                    <td>—</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Código</th><th>Nombre</th><th>Permisos principales</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">PA</td><td>Admin de proyecto</td><td>Definición, publicar, miembros, ejecución.</td></tr>
+                <tr><td class="mono">ED</td><td>Editor</td><td>Editar definición y ejecutar según políticas del módulo.</td></tr>
+                <tr><td class="mono">CO</td><td>Consulta</td><td>Lectura / consulta del proyecto.</td></tr>
+                <tr><td class="mono">GE</td><td>Generar</td><td>Ejecutar / generar salidas; alcance de lectura según política.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Tabla de miembros</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna / acción</th><th>Qué muestra o hace</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Usuario / Nombre</td><td>Cuenta y nombre completo.</td></tr>
+                <tr><td>Rol</td><td>Código de permiso actual.</td></tr>
+                <tr><td>Invitado por</td><td>Quién autorizó la membresía.</td></tr>
+                <tr><td>Estado</td><td>Activo o Inactivo (revocado).</td></tr>
+                <tr><td>Desde</td><td>Fecha de alta de la membresía.</td></tr>
+                <tr><td>Cambiar</td><td>Actualiza el rol del miembro activo (no propietario).</td></tr>
+                <tr><td>Revocar</td><td>Desactiva el acceso (pide confirmación).</td></tr>
+                <tr><td>Reactivar</td><td>Vuelve a activar un miembro inactivo.</td></tr>
+                <tr><td>Propietario</td><td>El dueño del proyecto no se revoca desde aquí.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Filtros</h3>
+        <p class="help-intro">
+            <strong>Filtrar por estado</strong> limita la tabla a <span class="mono">Todos</span>,
+            <span class="mono">Activo</span> o <span class="mono">Inactivo</span>.
+            La búsqueda de DataTables filtra por texto en columnas visibles.
+        </p>
+    </div>
+</div>
+{% endblock %}

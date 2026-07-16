@@ -1,0 +1,192 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Inicio — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_ua.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-intro">
+    <p class="page-eyebrow">Panel de control · <span class="role-badge">UA</span></p>
+    <h2>Bienvenido, {{ dashboard.display_name }}</h2>
+    <p>Resumen global de la plataforma: compañías, usuarios, proyectos y estado de licencias.</p>
+</div>
+
+<div class="kpi-strip" aria-label="Indicadores principales">
+    <div class="kpi-card kpi-card--accent">
+        <p class="kpi-label">Compañías</p>
+        <p class="kpi-value">{{ dashboard.kpi_companies_total }}</p>
+        <p class="kpi-meta">{{ dashboard.kpi_companies_active }} activas · {{ dashboard.kpi_companies_inactive }} inactivas</p>
+    </div>
+    <div class="kpi-card">
+        <p class="kpi-label">Usuarios</p>
+        <p class="kpi-value">{{ dashboard.kpi_users_total }}</p>
+        <p class="kpi-meta">{{ dashboard.kpi_users_active }} activos · {{ dashboard.kpi_users_inactive }} inactivos</p>
+    </div>
+    <div class="kpi-card">
+        <p class="kpi-label">Proyectos</p>
+        <p class="kpi-value">{{ dashboard.kpi_projects_total }}</p>
+        <p class="kpi-meta">{{ dashboard.kpi_projects_meta }}</p>
+    </div>
+    <div class="kpi-card">
+        <p class="kpi-label">Suscripciones activas</p>
+        <p class="kpi-value">{{ dashboard.kpi_subscriptions_active }}</p>
+        <p class="kpi-meta">{{ dashboard.kpi_subscriptions_meta }}</p>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <section class="widget-panel" aria-labelledby="widget-users">
+        <div class="widget-header">
+            <h3 id="widget-users">Usuarios por tipo</h3>
+            <a href="{% url 'dashboard:account' %}" class="btn btn-ghost btn-sm">Ver cuentas</a>
+        </div>
+        <div class="widget-body">
+            <div class="type-grid">
+                <div class="type-card">
+                    <span class="type-code">UA</span>
+                    <p class="type-count">{{ dashboard.users_by_type.UA|default:0 }}</p>
+                    <p class="type-label">User Admin</p>
+                </div>
+                <div class="type-card">
+                    <span class="type-code">US</span>
+                    <p class="type-count">{{ dashboard.users_by_type.US|default:0 }}</p>
+                    <p class="type-label">User System</p>
+                </div>
+                <div class="type-card">
+                    <span class="type-code">UF</span>
+                    <p class="type-count">{{ dashboard.users_by_type.UF|default:0 }}</p>
+                    <p class="type-label">User Final</p>
+                </div>
+            </div>
+            <div class="status-pills">
+                <span class="status-pill status-pill--pending"><strong>{{ dashboard.email_pending }}</strong> correo pendiente</span>
+                <span class="status-pill status-pill--pending"><strong>{{ dashboard.tfa_pending }}</strong> 2FA pendiente</span>
+                <span class="status-pill"><strong>{{ dashboard.blocked_users }}</strong> bloqueados</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="widget-panel" aria-labelledby="widget-billing">
+        <div class="widget-header">
+            <h3 id="widget-billing">Licencias y billing</h3>
+            {% if dashboard.billing_available %}
+            <a href="/app/admin/billing/suscripciones/" class="btn btn-ghost btn-sm">Ver billing</a>
+            {% endif %}
+        </div>
+        <div class="widget-body">
+            {% if dashboard.billing_available %}
+            <div class="billing-grid">
+                <div class="billing-item">
+                    <p class="dl">Plan más usado</p>
+                    <p class="dd">{{ dashboard.top_plan_name }} <span class="mono">({{ dashboard.top_plan_count }})</span></p>
+                </div>
+                <div class="billing-item">
+                    <p class="dl">Ingresos del mes</p>
+                    <p class="dd mono">{{ dashboard.monthly_revenue }}</p>
+                </div>
+                <div class="billing-item">
+                    <p class="dl">Próximo vencimiento</p>
+                    <p class="dd">{{ dashboard.next_expiry_label }}</p>
+                </div>
+                <div class="billing-item">
+                    <p class="dl">Último pago</p>
+                    <p class="dd mono">{{ dashboard.last_payment_label }}</p>
+                </div>
+            </div>
+            <div class="status-pills">
+                <span class="status-pill status-pill--active"><strong>{{ dashboard.subs_active }}</strong> activas</span>
+                <span class="status-pill status-pill--expired"><strong>{{ dashboard.subs_expired }}</strong> vencidas</span>
+                <span class="status-pill status-pill--pending"><strong>{{ dashboard.subs_pending }}</strong> pendientes</span>
+            </div>
+            {% else %}
+            <p class="kpi-meta">El módulo de billing se conectará cuando esté implementado. Los KPIs de licencia aparecerán aquí.</p>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<div class="dashboard-grid">
+    <section class="widget-panel" aria-labelledby="widget-expiring">
+        <div class="widget-header">
+            <h3 id="widget-expiring">Suscripciones por vencer (30 días)</h3>
+        </div>
+        <div class="widget-body">
+            <table class="mini-table">
+                <thead>
+                    <tr>
+                        <th>Compañía</th>
+                        <th>Plan</th>
+                        <th>Vence</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in dashboard.expiring_subscriptions %}
+                    <tr>
+                        <td><span class="cell-badge">{{ row.company_short }}</span></td>
+                        <td>{{ row.plan_name }}</td>
+                        <td class="mono">{{ row.end_date|date:"d/m/Y" }}</td>
+                        <td><span class="status {{ row.status_class }}"><span class="status-dot"></span>{{ row.status_label }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No hay suscripciones por vencer en los próximos 30 días.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="widget-panel" aria-labelledby="widget-activity">
+        <div class="widget-header">
+            <h3 id="widget-activity">Actividad reciente</h3>
+        </div>
+        <div class="widget-body">
+            <table class="mini-table">
+                <thead>
+                    <tr>
+                        <th>Evento</th>
+                        <th>Compañía</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in dashboard.activity %}
+                    <tr>
+                        <td>{{ row.event }}</td>
+                        <td><span class="cell-badge">{{ row.company_short|default:row.detail }}</span></td>
+                        <td class="mono">{{ row.date|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">Sin actividad registrada aún.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<section class="widget-panel" aria-labelledby="widget-quick">
+    <div class="widget-header">
+        <h3 id="widget-quick">Accesos rápidos</h3>
+    </div>
+    <div class="widget-body">
+        <div class="quick-links">
+            <a href="{% url 'company:list' %}" class="btn btn-secondary">Compañías</a>
+            <a href="{% url 'dashboard:account' %}" class="btn btn-secondary">Cuentas</a>
+            <a href="/app/admin/billing/planes/" class="btn btn-secondary">Planes y suscripciones</a>
+            <a href="/app/admin/billing/pagos/" class="btn btn-secondary">Pagos</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

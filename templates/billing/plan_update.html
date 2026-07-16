@@ -1,0 +1,41 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Editar plan — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/billing.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_ua.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'billing:plan_list' %}">Planes</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'billing:plan_detail' pk=plan.pk %}">{{ plan.code }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Editar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Edición</p>
+        <h2>Editar plan</h2>
+        <p><span class="cell-badge cell-badge--sm">{{ plan.code }}</span> {{ plan.name }}</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'billing:plan_detail' pk=plan.pk %}" class="btn btn-secondary">← Detalle</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        {% include "billing/_plan_form.html" %}
+    </div>
+</div>
+{% endblock %}

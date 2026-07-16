@@ -1,0 +1,299 @@
+{% extends "public/base.html" %}
+{% load static %}
+
+{% block title %}Guía de la plataforma — DynamicWorkspace{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'js/guide-spine.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+<section class="pub-page-hero">
+    <div class="pub-container pub-page-hero-grid">
+        <div>
+            <p class="pub-eyebrow">Guía de la plataforma</p>
+            <h1>Una compañía. Dos formas de trabajar con datos.</h1>
+            <p>
+                <strong>DynamicWorkspace</strong> es el espacio de trabajo de tu organización: usuarios, roles y proyectos aislados por compañía.
+                Dentro conviven dos capacidades: <strong>Worksheets</strong> (tablas configurables) y
+                <strong>FilePipe · Data Mapping</strong> (transformación de archivos sin código).
+                Esta guía es el mapa del producto — no un manual de cada pantalla.
+            </p>
+        </div>
+        <aside class="pub-quick-panel" aria-label="Resumen">
+            <h2>En resumen</h2>
+            <ol class="pub-quick-list">
+                <li>Tu compañía obtiene acceso; las cuentas las habilita la administración.</li>
+                <li><strong>Worksheets</strong> — tablas con campos, registros y permisos por proyecto.</li>
+                <li><strong>FilePipe</strong> — define origen → destino → mapeo → ejecuta y descarga.</li>
+            </ol>
+        </aside>
+    </div>
+</section>
+
+<section class="pub-section pub-section--alt pub-section-tight-top">
+    <div class="pub-container">
+        <div class="pub-section-header pub-section-header--compact">
+            <h2>¿Qué incluye la plataforma?</h2>
+            <p>Elige la capacidad según el problema. Ambas comparten compañía, seguridad y el mismo modelo de roles por proyecto.</p>
+        </div>
+
+        <div class="pub-pillars" aria-label="Productos de la plataforma">
+            <article class="pub-pillar pub-pillar--ws" id="worksheets">
+                <p class="pub-pillar-tag">Worksheets</p>
+                <h3>Tablas configurables para el equipo</h3>
+                <p>
+                    Sustituye hojas de cálculo dispersas por proyectos con esquema propio, membresías y una sola fuente de verdad.
+                    Ideal para inventarios, controles de actividad, listados operativos y seguimiento diario.
+                </p>
+                <ul class="pub-pillar-points">
+                    <li>Campos dinámicos (texto, número, fecha, listas…)</li>
+                    <li>Registros con búsqueda, filtros y auditoría</li>
+                    <li>Vista expandida y apariencia por proyecto</li>
+                </ul>
+                <a class="pub-pillar-jump" href="#flujo-ws">Ver flujo Worksheets ↓</a>
+            </article>
+
+            <article class="pub-pillar pub-pillar--fp" id="filepipe">
+                <p class="pub-pillar-tag">FilePipe · Data Mapping</p>
+                <h3>Transformación de archivos sin código</h3>
+                <p>
+                    Centraliza conversiones recurrentes (TXT posicional, CSV, Excel y similares) en proyectos reutilizables:
+                    perfilas origen y destino, mapeas campos, aplicas reglas, publicas una versión y ejecutas contra archivos reales.
+                </p>
+                <ul class="pub-pillar-points">
+                    <li>Menos scripts ad-hoc y menos dependencia técnica</li>
+                    <li>Definición versionada + historial de ejecuciones</li>
+                    <li>Preview y descarga de salida e informe</li>
+                </ul>
+                <a class="pub-pillar-jump" href="#flujo-fp">Ver flujo FilePipe ↓</a>
+            </article>
+        </div>
+
+        <div class="pub-role-strip" aria-label="Roles compartidos">
+            <span class="label">Roles por proyecto</span>
+            <span class="pub-role-item"><span class="role-tag role-tag--pa">PA</span><span>Admin</span></span>
+            <span class="pub-role-item"><span class="role-tag role-tag--ed">ED</span><span>Editor</span></span>
+            <span class="pub-role-item"><span class="role-tag role-tag--co">CO</span><span>Consulta</span></span>
+            <span class="pub-role-item"><span class="role-tag role-tag--ge">GE</span><span>Generar / ejecutar</span></span>
+            <span>· El mismo usuario puede tener roles distintos en cada proyecto (Worksheet o FilePipe).</span>
+        </div>
+
+        <div class="pub-guide-layout">
+            <nav class="pub-guide-nav" aria-label="Índice">
+                <h2>Mapa</h2>
+                <nav>
+                    <a href="#flujo-acceso">1. Acceso y compañía</a>
+                    <a href="#flujo-ws">2. Worksheets</a>
+                    <a href="#flujo-fp">3. FilePipe</a>
+                    <a href="#ejemplo-fp">4. Ejemplo mapping</a>
+                    <a href="#cuando-usar">5. Cuándo usar cada uno</a>
+                </nav>
+            </nav>
+
+            <div class="pub-flow-list">
+                <article class="pub-flow-card" id="flujo-acceso">
+                    <span class="pub-flow-card-num" aria-hidden="true">1</span>
+                    <header class="pub-flow-card-header">
+                        <h3>Acceso y organización</h3>
+                        <div class="pub-flow-roles">
+                            <span class="role-tag">Compañía</span>
+                        </div>
+                    </header>
+                    <p class="pub-flow-purpose">
+                        <strong>Base común:</strong> cada compañía opera aislada (usuarios, proyectos Worksheets y FilePipe, licencia).
+                        No hay registro público abierto: las cuentas las habilita la plataforma o tu administrador.
+                    </p>
+                    <div class="pub-flow-grid">
+                        <div class="pub-flow-block">
+                            <h4>Cómo suele empezar</h4>
+                            <ol>
+                                <li>Se configura la compañía y la licencia.</li>
+                                <li>Los usuarios completan correo y 2FA al primer acceso.</li>
+                                <li>El panel muestra Worksheets y FilePipe según membresías.</li>
+                            </ol>
+                        </div>
+                        <div class="pub-flow-block">
+                            <h4>Puntos clave</h4>
+                            <ul>
+                                <li>Los datos de una compañía no se mezclan con otras.</li>
+                                <li>La guía detallada de pantallas vive dentro del área privada (Ayuda).</li>
+                                <li>Worksheets y FilePipe son proyectos distintos, con el mismo lenguaje de roles.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="pub-flow-card" id="flujo-ws">
+                    <span class="pub-flow-card-num" aria-hidden="true">2</span>
+                    <header class="pub-flow-card-header">
+                        <h3>Worksheets — tablas de trabajo</h3>
+                        <div class="pub-flow-roles">
+                            <span class="role-tag role-tag--pa">PA</span>
+                            <span class="role-tag role-tag--ed">ED</span>
+                            <span class="role-tag role-tag--co">CO</span>
+                        </div>
+                    </header>
+                    <p class="pub-flow-purpose">
+                        <strong>Para qué sirve:</strong> convertir un proceso que hoy vive en Excel en un proyecto compartido,
+                        con columnas definidas, permisos explícitos y registros auditables.
+                    </p>
+                    <ol class="pub-cycle" aria-label="Ciclo Worksheets">
+                        <li><strong>Crear proyecto</strong> y obtener rol PA</li>
+                        <li><strong>Diseñar campos</strong> del esquema</li>
+                        <li><strong>Autorizar equipo</strong> (PA / ED / CO / GE)</li>
+                        <li><strong>Gestionar registros</strong> en tabla o vista expandida</li>
+                    </ol>
+                    <div class="pub-flow-grid">
+                        <div class="pub-flow-block">
+                            <h4>Qué aporta</h4>
+                            <ul>
+                                <li>Una sola fuente de verdad por proceso.</li>
+                                <li>Validación al guardar según el tipo de campo.</li>
+                                <li>Apariencia configurable en vista expandida, sin tocar los datos.</li>
+                            </ul>
+                        </div>
+                        <div class="pub-flow-block">
+                            <h4>No es para…</h4>
+                            <ul>
+                                <li>Convertir archivos de un sistema a otro de forma recurrente.</li>
+                                <li>Definir layouts posicionales TXT o pipelines de transformación.</li>
+                                <li>Eso corresponde a FilePipe · Data Mapping.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="pub-flow-card" id="flujo-fp">
+                    <span class="pub-flow-card-num" aria-hidden="true">3</span>
+                    <header class="pub-flow-card-header">
+                        <h3>FilePipe — Data Mapping</h3>
+                        <div class="pub-flow-roles">
+                            <span class="role-tag role-tag--pa">PA</span>
+                            <span class="role-tag role-tag--ed">ED</span>
+                            <span class="role-tag role-tag--ge">GE</span>
+                        </div>
+                    </header>
+                    <p class="pub-flow-purpose">
+                        <strong>Para qué sirve:</strong> definir una vez cómo se lee un archivo, cómo se escribe otro,
+                        mapear campos y reglas, y repetir la transformación con control de versiones e historial —
+                        sin scripts sueltos ni Power Query manual por cada lote.
+                    </p>
+                    <div class="pub-phase-stack" aria-label="Fases FilePipe">
+                        <div class="pub-phase">
+                            <p class="pub-phase-label">Fase A · Acceso</p>
+                            <p>Crear proyecto de mapping, visibilidad (privado / compañía) y miembros.</p>
+                        </div>
+                        <div class="pub-phase">
+                            <p class="pub-phase-label">Fase B · Definición</p>
+                            <p>Origen → Destino → Mapeo → Reglas → Publicar versión activa.</p>
+                        </div>
+                        <div class="pub-phase">
+                            <p class="pub-phase-label">Fase C · Ejecución</p>
+                            <p>Subir archivo, preview/ejecutar, descargar salida e informe, consultar historial.</p>
+                        </div>
+                    </div>
+                    <div class="pub-flow-grid">
+                        <div class="pub-flow-block">
+                            <h4>Motor en una frase</h4>
+                            <p style="margin:0;font-size:14px;color:var(--ink-secondary);line-height:1.5;">
+                                Leer / parsear → aplicar mapeo y reglas → serializar al formato destino.
+                            </p>
+                        </div>
+                        <div class="pub-flow-block">
+                            <h4>Puntos clave</h4>
+                            <ul>
+                                <li>Borrador vs versión publicada: se ejecuta lo publicado.</li>
+                                <li>Origen y destino usan asistentes (tipo de archivo, encoding, campos…).</li>
+                                <li>Los catálogos del sistema alimentan selectores reutilizables.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="pub-flow-card" id="ejemplo-fp">
+                    <span class="pub-flow-card-num" aria-hidden="true">4</span>
+                    <header class="pub-flow-card-header">
+                        <h3>Ejemplo — TXT posicional → CSV</h3>
+                    </header>
+                    <p class="pub-flow-purpose">
+                        Caso típico de integración legacy que motiva Data Mapping: leer posiciones fijas y emitir columnas.
+                    </p>
+                    <div class="pub-flow-grid">
+                        <div class="pub-flow-block">
+                            <h4>Origen</h4>
+                            <pre class="pub-code-sample">12345JUAN      2500001
+12346MARIA     1800002</pre>
+                            <ul>
+                                <li>documento · pos 1, lon 5</li>
+                                <li>nombre · pos 6, lon 10</li>
+                                <li>salario · pos 16, lon 6</li>
+                            </ul>
+                        </div>
+                        <div class="pub-flow-block">
+                            <h4>Destino</h4>
+                            <pre class="pub-code-sample">documento,nombre,salario
+12345,JUAN,250000
+12346,MARIA,180000</pre>
+                            <ul>
+                                <li>Mapear solo los campos necesarios</li>
+                                <li>Opcional: reglas (trim, mayúsculas…)</li>
+                                <li>Publicar → ejecutar → descargar</li>
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="pub-flow-card" id="cuando-usar">
+                    <span class="pub-flow-card-num" aria-hidden="true">5</span>
+                    <header class="pub-flow-card-header">
+                        <h3>¿Cuándo usar cada capacidad?</h3>
+                    </header>
+                    <div class="pub-compare" role="table" aria-label="Comparación rápida">
+                        <div class="pub-compare-head" role="row">
+                            <span role="columnheader">Situación</span>
+                            <span role="columnheader">Usar</span>
+                        </div>
+                        <div class="pub-compare-row" role="row">
+                            <span>El equipo edita y consulta filas día a día</span>
+                            <span class="pub-compare-badge pub-compare-badge--ws">Worksheets</span>
+                        </div>
+                        <div class="pub-compare-row" role="row">
+                            <span>Necesitas columnas dinámicas y permisos por persona</span>
+                            <span class="pub-compare-badge pub-compare-badge--ws">Worksheets</span>
+                        </div>
+                        <div class="pub-compare-row" role="row">
+                            <span>Hay que convertir archivos entre sistemas de forma repetible</span>
+                            <span class="pub-compare-badge pub-compare-badge--fp">FilePipe</span>
+                        </div>
+                        <div class="pub-compare-row" role="row">
+                            <span>TXT posicional, CSV o Excel de entrada → otro formato de salida</span>
+                            <span class="pub-compare-badge pub-compare-badge--fp">FilePipe</span>
+                        </div>
+                        <div class="pub-compare-row" role="row">
+                            <span>Quieres dejar de mantener scripts puntuales de conversión</span>
+                            <span class="pub-compare-badge pub-compare-badge--fp">FilePipe</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <p class="pub-guide-note">
+            <strong>¿Ya tienes cuenta?</strong> Dentro del sistema hay ayuda por producto:
+            menú <em>Worksheets → Ayuda</em> y <em>FilePipe → Ayuda</em>, más el botón de ayuda contextual en cada pantalla.
+            <strong>¿Aún no?</strong> <a href="{% url 'public:contact' %}">Contáctanos</a> y evaluamos el encaje con tu equipo.
+        </p>
+    </div>
+</section>
+
+<section class="pub-section">
+    <div class="pub-container">
+        <div class="pub-cta">
+            <h2>¿Quieres verlo con datos de tu compañía?</h2>
+            <p>Las cuentas se habilitan por administración. Cuéntanos si tu prioridad son tablas de equipo, transformación de archivos, o ambas.</p>
+            <a href="{% url 'public:contact' %}" class="btn btn-primary">Solicitar información</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

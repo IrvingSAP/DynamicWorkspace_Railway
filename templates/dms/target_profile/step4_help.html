@@ -1,0 +1,53 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Paso 4 destino{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:target_hub' project_slug=project.slug %}">Destino</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:target_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Paso 4 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Definición de campos destino</h2>
+        <p>La interfaz cambia según el tipo de salida (fijo, delimitado o Excel).</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:target_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <p class="help-intro">Cada campo destino es el que recibe el mapeo desde el origen. Debe guardarse al menos un campo para avanzar el flujo.</p>
+        <table class="help-table">
+            <thead><tr><th>Tipo</th><th>Qué defines</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">txt_fixed</td><td>Posiciones <code>start</code>/<code>end</code>, alineación y carácter de relleno.</td></tr>
+                <tr><td class="mono">csv / txt_delimited</td><td>Orden, nombre y tipo de dato de cada columna.</td></tr>
+                <tr><td class="mono">xlsx</td><td>Columna, tipo Excel y orden de escritura.</td></tr>
+            </tbody>
+        </table>
+        <ul class="help-list">
+            <li><strong>Cargar desde origen</strong> — copia los campos del perfil de origen (adaptados al tipo destino) y los deja editables.</li>
+            <li><strong>+ Agregar campo</strong> — nueva fila en la definición.</li>
+            <li><strong>Guardar</strong> — persiste los campos del borrador.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

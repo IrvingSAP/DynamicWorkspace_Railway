@@ -1,0 +1,7 @@
+SECURITY_PENDING_USER_KEY = "security_pending_user_id"
+EMAIL_CODE_EXPIRY_MINUTES = 5
+TOTP_ISSUER = "DynamicWorkspace"
+EMAIL_SUBJECT = "Código de verificación DynamicWorkspace"
+MAX_FAILED_ATTEMPTS = 5
+LOCK_DURATION_MINUTES = 15
+RESEND_COOLDOWN_SECONDS = 60

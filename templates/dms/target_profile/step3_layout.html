@@ -1,0 +1,235 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 3 — Layout — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:target_hub' project_slug=project.slug %}">Destino</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Paso 3</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/target_profile/_project_scope.html" %}
+{% include "dms/target_profile/_target_persistence.html" %}
+
+<div id="target-step-root"
+     data-step="3"
+     data-next-url="{% url 'dms:target_step4' project_slug=project.slug %}"
+     data-can-edit="{% if can_edit_target %}1{% else %}0{% endif %}"
+     data-layout-variant="{{ layout_variant }}">
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Paso 3 de 6 · <span class="role-badge">{{ file_type_code|default:"—" }}</span></p>
+        <h2>Layout de salida</h2>
+        <p>Parámetros de estructura según el tipo de archivo destino.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:target_step3_help' project_slug=project.slug as target_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=target_help_url %}
+        <a href="{% url 'dms:target_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
+    </div>
+</div>
+
+{% include "dms/target_profile/_wizard_stepper.html" %}
+
+<div class="panel">
+    <div class="panel-body">
+        <p id="step-save-status" class="step-save-status" aria-live="polite"></p>
+        <h3 class="form-section-title">Parámetros comunes</h3>
+        <div class="form-grid">
+            <div class="field">
+                <label for="output_filename_pattern">Patrón de nombre de archivo</label>
+                <input type="text" id="output_filename_pattern" name="output_filename_pattern" class="mono"
+                       value="{{ layout.output_filename_pattern|default:'' }}"
+                       placeholder="salida_{date:%Y%m%d}.csv"{% if not can_edit_target %} disabled{% endif %}>
+            </div>
+            {% if layout_variant != "xlsx" and layout_variant != "xml" %}
+            <div class="field field--checkbox">
+                <label for="include_bom">
+                    <input type="checkbox" id="include_bom" name="include_bom"
+                           {% if layout.include_bom %}checked{% endif %}
+                           {% if not can_edit_target %} disabled{% endif %}>
+                    Incluir BOM (UTF-8)
+                </label>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if layout_variant == "delimited" %}
+        <h3 class="form-section-title" style="margin-top:24px">Delimitado / CSV</h3>
+        <div class="form-grid" data-layout-panel="delimited">
+            <div class="field">
+                <label for="delimiter">Delimitador</label>
+                <select id="delimiter"{% if not can_edit_target %} disabled{% endif %}>
+                    <option value=";" {% if layout.delimiter == ";" %}selected{% endif %}>Punto y coma (;)</option>
+                    <option value="," {% if layout.delimiter == "," or not layout.delimiter %}selected{% endif %}>Coma (,)</option>
+                    <option value="tab" {% if layout.delimiter == "\t" %}selected{% endif %}>Tabulador (\t)</option>
+                    <option value="|" {% if layout.delimiter == "|" %}selected{% endif %}>Pipe (|)</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="quote_char">Carácter de comillas</label>
+                <input type="text" id="quote_char" class="mono" maxlength="1"
+                       value="{% if layout.quote_char %}{{ layout.quote_char }}{% else %}&quot;{% endif %}"{% if not can_edit_target %} disabled{% endif %}>
+            </div>
+            <div class="field">
+                <label for="escape_char">Carácter de escape</label>
+                <input type="text" id="escape_char" class="mono" maxlength="1"
+                       value="{% if layout.escape_char %}{{ layout.escape_char }}{% else %}&#92;{% endif %}"{% if not can_edit_target %} disabled{% endif %}>
+            </div>
+            <div class="field field--checkbox">
+                <label for="include_header">
+                    <input type="checkbox" id="include_header"
+                           {% if layout.include_header != False %}checked{% endif %}
+                           {% if not can_edit_target %} disabled{% endif %}>
+                    Incluir fila de encabezado
+                </label>
+            </div>
+        </div>
+        {% elif layout_variant == "fixed" %}
+        <h3 class="form-section-title" style="margin-top:24px">Ancho fijo</h3>
+        <div class="form-grid" data-layout-panel="fixed">
+            <div class="field">
+                <label for="record_length">Longitud de registro</label>
+                <input type="number" id="record_length" class="mono" min="1"
+                       value="{{ layout.record_length|default:'' }}"
+                       placeholder="Opcional"{% if not can_edit_target %} disabled{% endif %}>
+            </div>
+            <div class="field field--checkbox">
+                <label for="trailing_newline">
+                    <input type="checkbox" id="trailing_newline"
+                           {% if layout.trailing_newline != False %}checked{% endif %}
+                           {% if not can_edit_target %} disabled{% endif %}>
+                    Nueva línea al final de cada registro
+                </label>
+            </div>
+        </div>
+        {% elif layout_variant == "xlsx" %}
+        <h3 class="form-section-title" style="margin-top:24px">Excel</h3>
+        <div class="form-grid" data-layout-panel="xlsx">
+            <div class="field">
+                <label for="sheet_name">Nombre de hoja</label>
+                <input type="text" id="sheet_name" class="mono" maxlength="120"
+                       value="{{ layout.sheet_name|default:'Hoja1' }}"{% if not can_edit_target %} disabled{% endif %}>
+            </div>
+            <div class="field field--checkbox">
+                <label for="include_header">
+                    <input type="checkbox" id="include_header"
+                           {% if layout.include_header != False %}checked{% endif %}
+                           {% if not can_edit_target %} disabled{% endif %}>
+                    Incluir fila de encabezado
+                </label>
+            </div>
+            <div class="field field--checkbox">
+                <label for="freeze_header_row">
+                    <input type="checkbox" id="freeze_header_row"
+                           {% if layout.freeze_header_row != False %}checked{% endif %}
+                           {% if not can_edit_target %} disabled{% endif %}>
+                    Congelar fila de encabezado
+                </label>
+            </div>
+            <div class="field field--checkbox">
+                <label for="column_width_auto">
+                    <input type="checkbox" id="column_width_auto"
+                           {% if layout.column_width_auto != False %}checked{% endif %}
+                           {% if not can_edit_target %} disabled{% endif %}>
+                    Ajustar ancho de columnas automáticamente
+                </label>
+            </div>
+        </div>
+        {% elif layout_variant == "json" %}
+        <h3 class="form-section-title" style="margin-top:24px">JSON</h3>
+        <div class="form-grid" data-layout-panel="json">
+            <div class="field">
+                <label for="root_type">Tipo de raíz <span class="req">*</span></label>
+                <select id="root_type"{% if not can_edit_target %} disabled{% endif %}>
+                    <option value="array"{% if layout.root_type != "object" %} selected{% endif %}>array — lista de registros</option>
+                    <option value="object"{% if layout.root_type == "object" %} selected{% endif %}>object — un objeto</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="records_path">Ruta de registros</label>
+                <input type="text" id="records_path" class="mono" maxlength="200"
+                       value="{{ layout.records_path|default:'' }}"
+                       placeholder="(vacío = raíz)"{% if not can_edit_target %} disabled{% endif %}>
+                <p class="hint">Opcional. Ej: <code>data.items</code> cuando los registros no están la raíz.</p>
+            </div>
+            <div class="field field--checkbox">
+                <label for="pretty_print">
+                    <input type="checkbox" id="pretty_print"
+                           {% if layout.pretty_print != False %}checked{% endif %}
+                           {% if not can_edit_target %} disabled{% endif %}>
+                    Pretty print (indentación legible)
+                </label>
+            </div>
+            <div class="field">
+                <label for="indent">Indentación</label>
+                <input type="number" id="indent" class="mono" min="0" max="8"
+                       value="{{ layout.indent|default:2 }}"{% if not can_edit_target %} disabled{% endif %}>
+            </div>
+        </div>
+        {% elif layout_variant == "xml" %}
+        <h3 class="form-section-title" style="margin-top:24px">XML</h3>
+        <div class="form-grid" data-layout-panel="xml">
+            <div class="field">
+                <label for="root_element">Elemento raíz <span class="req">*</span></label>
+                <input type="text" id="root_element" class="mono" maxlength="120"
+                       value="{{ layout.root_element|default:'records' }}"{% if not can_edit_target %} disabled{% endif %}>
+            </div>
+            <div class="field">
+                <label for="record_element">Elemento por registro <span class="req">*</span></label>
+                <input type="text" id="record_element" class="mono" maxlength="120"
+                       value="{{ layout.record_element|default:'record' }}"{% if not can_edit_target %} disabled{% endif %}>
+            </div>
+            <div class="field">
+                <label for="namespace">Namespace</label>
+                <input type="text" id="namespace" class="mono" maxlength="200"
+                       value="{{ layout.namespace|default:'' }}"
+                       placeholder="Opcional"{% if not can_edit_target %} disabled{% endif %}>
+            </div>
+            <div class="field field--checkbox">
+                <label for="declaration">
+                    <input type="checkbox" id="declaration"
+                           {% if layout.declaration != False %}checked{% endif %}
+                           {% if not can_edit_target %} disabled{% endif %}>
+                    Incluir declaración XML
+                </label>
+            </div>
+        </div>
+        {% else %}
+        <p class="hint" style="margin-top:16px">Seleccione un tipo de archivo en el paso 1 para configurar el layout.</p>
+        {% endif %}
+
+        <div class="wizard-footer">
+            <span class="hint">Los cambios se guardan en el borrador del perfil de destino.</span>
+            <div class="wizard-footer-actions">
+                <a href="{% url 'dms:target_step2' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
+                {% if can_edit_target %}
+                <button type="button" id="btn-save-step" class="btn btn-ghost">Guardar borrador</button>
+                <button type="button" id="btn-step-next" class="btn btn-primary" data-next="{% url 'dms:target_step4' project_slug=project.slug %}">Siguiente →</button>
+                {% else %}
+                <a href="{% url 'dms:target_step4' project_slug=project.slug %}" class="btn btn-primary">Siguiente →</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/target_profile-steps.js' %}"></script>
+{% endblock %}

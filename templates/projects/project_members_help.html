@@ -1,0 +1,145 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Miembros de {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'projects:list' %}">Proyectos</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'projects:detail' slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'projects:members' slug=project.slug %}">Miembros</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-code role-code--pa">PA</span></p>
+        <h2>Ayuda — Miembros del proyecto</h2>
+        <p>Cómo invitar usuarios y qué significa cada columna en <span class="cell-badge cell-badge--sm">{{ project.slug }}</span>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'projects:members' slug=project.slug %}" class="btn btn-secondary">← Volver a miembros</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Quién puede usar esta pantalla</h3>
+        <ul class="help-list">
+            <li>Solo el rol <span class="role-code role-code--pa">PA</span> (administrador del proyecto) gestiona miembros.</li>
+            <li>Solo se pueden invitar usuarios <strong>UF</strong> de la <strong>misma compañía</strong> que el proyecto.</li>
+            <li>El creador del proyecto (propietario) no puede ser revocado; siempre conserva PA.</li>
+        </ul>
+
+        <h3 class="form-section-title">Formulario — Invitar miembro</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Obligatorio</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Usuario UF</td>
+                    <td>Sí</td>
+                    <td>Persona de tu compañía que aún no tiene membresía activa en este proyecto.</td>
+                    <td>Lista desplegable: <span class="mono">usuario</span> — Nombre completo. Solo perfiles UF activos de {{ company.name_short }}.</td>
+                </tr>
+                <tr>
+                    <td>Rol</td>
+                    <td>Sí</td>
+                    <td>Nivel de acceso que tendrá dentro del proyecto.</td>
+                    <td>
+                        <span class="mono">ED</span> — Editor: crea y edita registros.<br>
+                        <span class="mono">CO</span> — Consulta: solo lectura.<br>
+                        <span class="mono">GE</span> — Generar: exportar documentos.<br>
+                        <span class="mono">PA</span> — Admin: diseño, miembros y auditoría.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Filtro de la tabla</h3>
+        <table class="help-table help-table--compact">
+            <thead>
+                <tr><th>Opción</th><th>Efecto</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Todos</td><td>Muestra miembros activos e inactivos.</td></tr>
+                <tr><td>Activo</td><td>Solo membresías vigentes con acceso al proyecto.</td></tr>
+                <tr><td>Inactivo</td><td>Membresías revocadas que pueden reactivarse.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columnas de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Qué muestra</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Usuario</td>
+                    <td>Nombre de inicio de sesión.</td>
+                    <td class="mono">jperez.uf</td>
+                </tr>
+                <tr>
+                    <td>Nombre</td>
+                    <td>Nombre y apellido del perfil.</td>
+                    <td>Texto o «—» si no está definido.</td>
+                </tr>
+                <tr>
+                    <td>Rol</td>
+                    <td>Código de rol actual en el proyecto.</td>
+                    <td><span class="mono">PA</span> · <span class="mono">ED</span> · <span class="mono">CO</span> · <span class="mono">GE</span></td>
+                </tr>
+                <tr>
+                    <td>Invitado por</td>
+                    <td>Usuario PA que otorgó la membresía.</td>
+                    <td>Nombre de usuario (<span class="mono">jperez.uf</span>) o «—» para el propietario/creador.</td>
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    <td>Si la membresía está vigente.</td>
+                    <td><strong>Activo</strong> o <strong>Inactivo</strong> (revocado).</td>
+                </tr>
+                <tr>
+                    <td>Desde</td>
+                    <td>Fecha en que se creó o reactivó la membresía.</td>
+                    <td><span class="mono">dd/mm/aaaa</span></td>
+                </tr>
+                <tr>
+                    <td>Acciones</td>
+                    <td>Operaciones disponibles según el miembro.</td>
+                    <td>
+                        <strong>Propietario</strong> — creador del proyecto; sin acciones.<br>
+                        <strong>Cambiar</strong> — actualiza el rol (selector + botón).<br>
+                        <strong>Revocar</strong> — desactiva el acceso (pide confirmación).<br>
+                        <strong>Reactivar</strong> — restaura una membresía inactiva.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Reglas de negocio</h3>
+        <ul class="help-list">
+            <li>Debe existir al menos un <span class="mono">PA</span> activo; no puedes revocar al último administrador.</li>
+            <li>No puedes revocar al creador del proyecto (aparece como «Propietario»).</li>
+            <li>El creador no puede degradarse de PA a otro rol.</li>
+            <li>Un usuario revocado puede volver a invitarse o reactivarse desde la misma fila.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

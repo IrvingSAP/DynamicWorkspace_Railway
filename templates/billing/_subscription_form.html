@@ -1,0 +1,138 @@
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    <div class="form-section">
+        <h3 class="form-section-title">Compañía y plan</h3>
+        <div class="form-grid">
+            <div class="form-row two-cols">
+                {% if is_create %}
+                <div class="field{% if errors.company_id %} has-error{% endif %}">
+                    <label for="company_id">Compañía <span class="req">*</span></label>
+                    <select id="company_id" name="company_id" required>
+                        <option value="">Seleccionar…</option>
+                        {% for item in companies %}
+                        <option value="{{ item.pk }}"{% if posted.company_id == item.pk|stringformat:"s" %} selected{% endif %}>{{ item.name_short }} — {{ item.name_long }}</option>
+                        {% endfor %}
+                    </select>
+                    {% for msg in errors.company_id %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="field">
+                    <label for="company_display">Compañía</label>
+                    <input type="text" id="company_display" value="{{ company.name_short }} — {{ company.name_long }}" disabled>
+                    <p class="hint">No editable (OneToOne)</p>
+                </div>
+                {% endif %}
+                <div class="field{% if errors.plan_id %} has-error{% endif %}">
+                    <label for="plan_id">Plan <span class="req">*</span></label>
+                    <select id="plan_id" name="plan_id" required>
+                        <option value="">Seleccionar…</option>
+                        {% for plan in plans %}
+                        <option value="{{ plan.pk }}"{% if posted.plan_id == plan.pk|stringformat:"s" %} selected{% endif %}>{{ plan.code }} — {{ plan.name }}{% if plan.price is not None %} ($ {{ plan.price }}){% endif %}</option>
+                        {% endfor %}
+                    </select>
+                    {% for msg in errors.plan_id %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3 class="form-section-title">{% if is_create %}Vigencia{% else %}Vigencia y estado{% endif %}</h3>
+        <div class="form-grid">
+            <div class="form-row two-cols">
+                <div class="field{% if errors.start_date %} has-error{% endif %}">
+                    <label for="start_date">Fecha inicio <span class="req">*</span></label>
+                    <input type="date" id="start_date" name="start_date" value="{{ posted.start_date }}" required>
+                    {% for msg in errors.start_date %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+                <div class="field{% if errors.end_date %} has-error{% endif %}">
+                    <label for="end_date">Fecha fin <span class="req">*</span></label>
+                    <input type="date" id="end_date" name="end_date" value="{{ posted.end_date }}" required>
+                    {% for msg in errors.end_date %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="form-row two-cols">
+                <div class="field{% if errors.status %} has-error{% endif %}">
+                    <label for="status">Estado <span class="req">*</span></label>
+                    <select id="status" name="status" required>
+                        <option value="pending"{% if posted.status == 'pending' %} selected{% endif %}>Pendiente de pago</option>
+                        <option value="active"{% if posted.status == 'active' %} selected{% endif %}>Activa</option>
+                        <option value="expired"{% if posted.status == 'expired' %} selected{% endif %}>Vencida</option>
+                        <option value="canceled"{% if posted.status == 'canceled' %} selected{% endif %}>Cancelada</option>
+                    </select>
+                    {% for msg in errors.status %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+                <div class="field">
+                    <div class="toggle-row toggle-row--field">
+                        <input type="checkbox" id="auto_renew" name="auto_renew" value="1"{% if posted.auto_renew %} checked{% endif %}>
+                        <label for="auto_renew">Renovación automática</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if not is_create %}
+    <div class="form-section">
+        <h3 class="form-section-title">Contactos de soporte</h3>
+        <p class="hint stack-bottom">Máximo 3 contactos.</p>
+        {% for msg in errors.contacts %}
+        <p class="field-error">{{ msg }}</p>
+        {% endfor %}
+        <div class="form-grid">
+            <div class="form-row two-cols">
+                <div class="field{% if errors.contact_1_name %} has-error{% endif %}">
+                    <label for="contact_1_name">Contacto 1 — Nombre</label>
+                    <input type="text" id="contact_1_name" name="contact_1_name" maxlength="100" value="{{ posted.contact_1_name }}">
+                    {% for msg in errors.contact_1_name %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+                <div class="field{% if errors.contact_1_email %} has-error{% endif %}">
+                    <label for="contact_1_email">Correo</label>
+                    <input type="email" id="contact_1_email" name="contact_1_email" value="{{ posted.contact_1_email }}">
+                    {% for msg in errors.contact_1_email %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+            </div>
+            <div class="form-row two-cols">
+                <div class="field{% if errors.contact_2_name %} has-error{% endif %}">
+                    <label for="contact_2_name">Contacto 2 — Nombre</label>
+                    <input type="text" id="contact_2_name" name="contact_2_name" maxlength="100" value="{{ posted.contact_2_name }}">
+                    {% for msg in errors.contact_2_name %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+                <div class="field{% if errors.contact_2_email %} has-error{% endif %}">
+                    <label for="contact_2_email">Correo</label>
+                    <input type="email" id="contact_2_email" name="contact_2_email" value="{{ posted.contact_2_email }}">
+                    {% for msg in errors.contact_2_email %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+            </div>
+            <div class="form-row two-cols">
+                <div class="field{% if errors.contact_3_name %} has-error{% endif %}">
+                    <label for="contact_3_name">Contacto 3 — Nombre</label>
+                    <input type="text" id="contact_3_name" name="contact_3_name" maxlength="100" value="{{ posted.contact_3_name }}">
+                    {% for msg in errors.contact_3_name %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+                <div class="field{% if errors.contact_3_email %} has-error{% endif %}">
+                    <label for="contact_3_email">Correo</label>
+                    <input type="email" id="contact_3_email" name="contact_3_email" value="{{ posted.contact_3_email }}">
+                    {% for msg in errors.contact_3_email %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{% if is_create %}Crear suscripción{% else %}Guardar cambios{% endif %}</button>
+        <a href="{% if is_create %}{% url 'billing:subscription_list' %}{% else %}{% url 'billing:subscription_detail' company_pk=company.pk %}{% endif %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>

@@ -1,0 +1,126 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 4 — Campos JSON — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:source_hub' project_slug=project.slug %}">Origen</a>
+    <span class="breadcrumb-sep">/</span><span>Paso 4 — Campos JSON</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/source_profile/_project_scope.html" %}
+{% include "dms/source_profile/_source_persistence.html" %}
+
+<div id="source-fields-json-root"
+     data-project-slug="{{ project.slug }}"
+     data-can-edit="{% if can_edit_source %}1{% else %}0{% endif %}">
+    <script type="application/json" id="json-config-default">{{ config_json|safe }}</script>
+
+    <div class="page-header">
+        <div>
+            <p class="page-eyebrow">Paso 4 de 6 · <span class="role-badge">json</span></p>
+            <h2>Definición de campos (JSON)</h2>
+            <p>Indique la ruta al arreglo de registros y el <code>json_path</code> de cada campo (notación con puntos, ej. <code>empleados</code> o <code>data.items</code>).</p>
+        </div>
+        <div class="page-actions">
+            {% url 'dms:source_step4_help' project_slug=project.slug as source_help_url %}
+            {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+            {% if can_edit_source %}
+            <button type="button" id="btn-save-json-config" class="btn btn-ghost btn-sm">Guardar parámetros</button>
+            <button type="button" id="btn-add-field" class="btn btn-primary">+ Agregar campo</button>
+            {% endif %}
+        </div>
+    </div>
+
+    {% include "dms/source_profile/_wizard_stepper.html" %}
+    <p id="json-save-status" class="step-save-status" aria-live="polite"></p>
+
+    <div class="panel">
+        <div class="panel-body">
+            <h3 class="form-section-title">Parámetros JSON</h3>
+            <div class="field">
+                <label for="record_path">Ruta de registros (<code>record_path</code>) <span class="req">*</span></label>
+                <input type="text" id="record_path" class="mono" placeholder="empleados"{% if not can_edit_source %} disabled{% endif %}>
+                <p class="hint">Ruta al array u objeto repetido dentro del documento. Ej: <code>empleados</code>, <code>data.items</code>.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel--table" style="margin-top:16px">
+        <div class="table-dt-host">
+            <table id="source-fields-table" class="fields-table">
+                <thead>
+                    <tr>
+                        <th>Nombre interno</th>
+                        <th>json_path</th>
+                        <th>Tipo contenido</th>
+                        <th>Oblig.</th>
+                        <th class="col-actions">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="source-fields-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if can_edit_source %}
+    <div class="panel field-editor-panel" style="margin-top:16px">
+        <div class="panel-body">
+            <h3 id="field-editor-title" class="form-section-title">Agregar campo</h3>
+            <div id="field-editor-errors" class="alert alert-error" hidden role="alert"></div>
+            <form id="field-editor-form" class="form-grid" novalidate>
+                <div class="form-row two-cols">
+                    <div class="field">
+                        <label for="field-name">Nombre interno <span class="req">*</span></label>
+                        <input type="text" id="field-name" class="mono" maxlength="64" required>
+                    </div>
+                    <div class="field">
+                        <label for="field-json-path">json_path <span class="req">*</span></label>
+                        <input type="text" id="field-json-path" class="mono" maxlength="200" placeholder="documento" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="field-content-type">Tipo contenido <span class="req">*</span></label>
+                    <select id="field-content-type" required>
+                        {% for ct in content_types %}
+                        <option value="{{ ct.code }}">{{ ct.code }} — {{ ct.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field field--checkbox">
+                    <label for="field-required"><input type="checkbox" id="field-required" checked> Campo obligatorio</label>
+                </div>
+                <div class="form-actions form-actions--flush">
+                    <button type="submit" id="btn-save-field" class="btn btn-primary">Agregar campo</button>
+                    <button type="button" id="btn-cancel-field" class="btn btn-secondary">Cancelar</button>
+                    <button type="button" id="btn-delete-field" class="btn btn-ghost btn-ghost--danger" hidden>Eliminar campo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="wizard-footer">
+        <div class="wizard-footer-actions">
+            <a href="{% url 'dms:source_step3' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
+            <a href="{% url 'dms:source_step5' project_slug=project.slug %}" class="btn btn-primary">Siguiente →</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/source_profile-fields-json.js' %}"></script>
+{% endblock %}

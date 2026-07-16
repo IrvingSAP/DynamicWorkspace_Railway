@@ -1,0 +1,208 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Miembros — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Miembros</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Fase A — Paso 3 · <span class="perm-badge perm-badge--admin">Admin</span></p>
+        <h2>Miembros y permisos</h2>
+        <p>
+            <span class="cell-badge cell-badge--sm">{{ project.slug }}</span>
+            Proyecto <strong>{% if hub.visibility == 'company' %}público{% else %}privado{% endif %}</strong>.
+            Solo usuarios UF de {{ company.name_short }}.
+        </p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:mapping_members_help' project_slug=project.slug as mapping_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=mapping_help_url %}
+        <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+    </div>
+</div>
+
+<div class="lifecycle-stepper" aria-label="Progreso Fase A">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Fase A — Acceso</p>
+        <ol class="lifecycle-steps">
+            <li><span class="lifecycle-step is-done"><span class="lifecycle-step-num">✓</span> Datos básicos</span></li>
+            <li><span class="lifecycle-step is-done"><span class="lifecycle-step-num">✓</span> Visibilidad</span></li>
+            <li><span class="lifecycle-step is-active"><span class="lifecycle-step-num">3</span> Miembros</span></li>
+        </ol>
+    </div>
+</div>
+
+<div class="panel panel--gap">
+    <div class="panel-body">
+        <h3 class="form-section-title">Agregar usuario</h3>
+        <form action="{% url 'dms:mapping_members' project_slug=project.slug %}" method="post" class="form-grid">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="invite">
+            <div class="form-row two-cols">
+                <div class="field{% if invite_errors.user %} has-error{% endif %}">
+                    <label for="user">Usuario UF <span class="req">*</span></label>
+                    <select id="user" name="user" required>
+                        <option value="">Seleccionar…</option>
+                        {% for profile in invitable %}
+                        <option value="{{ profile.user_id }}"{% if invite_posted.user_id == profile.user_id|stringformat:"s" %} selected{% endif %}>{{ profile.user.username }} — {{ profile.user.get_full_name|default:"—" }}</option>
+                        {% endfor %}
+                    </select>
+                    {% for msg in invite_errors.user %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+                <div class="field{% if invite_errors.role %} has-error{% endif %}">
+                    <label for="role">Paquete / rol <span class="req">*</span></label>
+                    <select id="role" name="role" required>
+                        {% for item in role_choices %}
+                        <option value="{{ item.code }}"{% if invite_posted.role == item.code or invite_posted.role == item.maps_to_role %} selected{% endif %}>{{ item.label }}</option>
+                        {% endfor %}
+                    </select>
+                    {% for msg in invite_errors.role %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="form-actions form-actions--flush">
+                <button type="submit" class="btn btn-primary">Autorizar miembro</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="panel panel--table">
+    <div class="table-toolbar" aria-label="Controles de tabla">
+        <div class="table-toolbar-group">
+            <label for="filter-estado">
+                Filtrar por estado
+                <select id="filter-estado" name="filter-estado">
+                    <option value="">Todos</option>
+                    <option value="activo">Activo</option>
+                    <option value="inactivo">Inactivo</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="table-dt-host table-dt-host--projects">
+        <table id="members-table" class="dw-datatable" data-dt-custom="true">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Nombre</th>
+                    <th>Rol</th>
+                    <th>Invitado por</th>
+                    <th>Estado</th>
+                    <th>Desde</th>
+                    <th class="col-actions">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in members %}
+                <tr data-estado="{% if member.is_active %}activo{% else %}inactivo{% endif %}">
+                    <td class="mono">{{ member.user.username }}</td>
+                    <td class="td-name">{{ member.user.get_full_name|default:"—" }}</td>
+                    <td><span class="role-code{% if member.role == 'PA' %} role-code--pa{% endif %}">{{ member.role }}</span></td>
+                    <td class="mono">{% if member.invited_by %}{{ member.invited_by.username }}{% else %}—{% endif %}</td>
+                    <td>
+                        {% if member.is_active %}
+                        <span class="status status-active"><span class="status-dot"></span>Activo</span>
+                        {% else %}
+                        <span class="status status-inactive"><span class="status-dot"></span>Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td class="td-mono">{{ member.created_at|date:"d/m/Y" }}</td>
+                    <td class="col-actions">
+                        {% if member.user_id == project.owner_id %}
+                        <span class="hint">Propietario</span>
+                        {% elif member.is_active %}
+                        <div class="actions actions--table">
+                            <form method="post" class="members-role-form actions-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="change_role">
+                                <input type="hidden" name="membership_id" value="{{ member.pk }}">
+                                <select name="role" aria-label="Rol para {{ member.user.username }}">
+                                    {% for item in role_choices %}
+                                    <option value="{{ item.code }}"{% if member.role == item.maps_to_role or member.role == item.code %} selected{% endif %}>{{ item.label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-ghost btn-sm">Cambiar</button>
+                            </form>
+                            <form method="post" class="actions-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="revoke">
+                                <input type="hidden" name="membership_id" value="{{ member.pk }}">
+                                <button
+                                    type="button"
+                                    class="btn btn-ghost btn-sm btn-ghost--danger"
+                                    data-dw-delete
+                                    data-dw-delete-message="¿Revocar el acceso de «{{ member.user.username }}» a este proyecto?"
+                                >Revocar</button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <div class="actions actions--table">
+                            <form method="post" class="actions-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="reactivate">
+                                <input type="hidden" name="membership_id" value="{{ member.pk }}">
+                                <button type="submit" class="btn btn-ghost btn-sm">Reactivar</button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+<script src="{% static 'js/datatables-project-members.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-dw-delete]').forEach(function (trigger) {
+        trigger.addEventListener('click', function (e) {
+            e.preventDefault();
+            const form = trigger.closest('form');
+            const message = trigger.dataset.dwDeleteMessage
+                || '¿Confirma que desea continuar?';
+            window.dwConfirmWarning(message, function () {
+                if (form) {
+                    form.submit();
+                }
+            }, {
+                title: 'Confirmar revocación',
+                okLabel: 'Revocar',
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — {{ catalog.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dms.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:catalog_hub' %}">Catálogos</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:catalog_list' catalog_slug=catalog.slug %}">{{ catalog.title }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="mono">{{ catalog.entity }}</span></p>
+        <h2>Ayuda — {{ catalog.title }}</h2>
+        <p>{{ catalog.usage }}</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:catalog_list' catalog_slug=catalog.slug %}" class="btn btn-secondary">← Volver al listado</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué hace esta pantalla</h3>
+        <p class="help-intro">
+            Lista los registros del catálogo <strong>{{ catalog.title }}</strong>.
+            Puede filtrar y buscar con DataTables.
+        </p>
+
+        <h3 class="form-section-title">Acciones</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Quién</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>← Catálogos</td><td>Todos</td><td>Vuelve al hub de catálogos.</td></tr>
+                <tr><td>+ Nuevo registro</td><td>UA</td><td>Alta de un valor de referencia.</td></tr>
+                <tr><td>Editar</td><td>UA</td><td>Modifica un registro existente.</td></tr>
+                <tr><td>Desactivar</td><td>UA</td><td>Oculta el valor sin borrarlo (si aplica).</td></tr>
+            </tbody>
+        </table>
+
+        <p class="help-intro">Los códigos suelen ser estables: cámbielos solo si entiende el impacto en proyectos ya configurados.</p>
+    </div>
+</div>
+{% endblock %}

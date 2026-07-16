@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registros — {{ project.name }}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" href="{% static 'css/records.css' %}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+    <style>
+        .record-expand-sheet {
+            --dw-sheet-header-bg: {{ expand_display.css_vars.header_bg }};
+            --dw-sheet-header-color: {{ expand_display.css_vars.header_color }};
+            --dw-sheet-header-border: {{ expand_display.css_vars.header_border }};
+            --dw-sheet-cell-border: {{ expand_display.css_vars.cell_border }};
+            --dw-sheet-stripe-bg: {{ expand_display.css_vars.stripe_bg }};
+            --dw-sheet-hover-bg: {{ expand_display.css_vars.hover_bg }};
+        }
+    </style>
+</head>
+<body class="record-expand">
+    <header class="record-expand-header" aria-label="Cabecera de vista expandida">
+        <div class="record-expand-header-start">
+            <a href="{% url 'records:list' slug=project.slug %}" class="btn btn-secondary btn-sm">← Volver al listado</a>
+            <h1 class="record-expand-title">Registros — {{ project.name }}</h1>
+        </div>
+        {% if can_configure_display %}
+        <a href="{% url 'records:expand_display' slug=project.slug %}" class="btn btn-ghost btn-sm">Apariencia</a>
+        {% endif %}
+    </header>
+
+    <div class="record-expand-main">
+        <div class="record-expand-table-shell record-expand-sheet dw-sheet">
+            {% if filter_field %}
+            <div class="table-toolbar record-expand-toolbar" aria-label="Controles de tabla">
+                <div class="table-toolbar-group">
+                    <label for="filter-select">
+                        {{ filter_field.label }}
+                        <select id="filter-select" name="filter-select">
+                            <option value="">Todas</option>
+                            {% for choice in filter_choices %}
+                            <option value="{{ choice }}">{{ choice }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+            </div>
+            {% endif %}
+            <div class="table-dt-host table-dt-host--records record-expand-dt-host" aria-label="Tabla de registros a pantalla completa">
+                <table
+                    id="record-table"
+                    class="{{ expand_display.table_class_string }}"
+                    data-updated-col-index="{{ updated_col_index }}"
+                    data-page-length="{{ expand_display.page_length }}"
+                    data-expand-mode="true"
+                >
+                    <thead>
+                        <tr>
+                            {% for field in fields %}
+                            <th class="{% if field.field_type == 'integer' or field.field_type == 'decimal' %}dt-body-right{% elif field.field_type == 'date' or field.field_type == 'datetime' or field.field_type == 'boolean' %}dt-body-center{% endif %}">{{ field.label }}</th>
+                            {% endfor %}
+                            <th class="dt-body-center">Actualizado</th>
+                            {% if can_edit %}<th class="col-actions">Acciones</th>{% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                        <tr{% if filter_field %} data-filter-value="{{ row.filter_value }}"{% endif %}>
+                            {% for cell in row.cells %}
+                            <td class="{% if cell.field.field_type == 'text_long' or cell.field.field_type == 'text_short' %}td-text{% endif %}{% if cell.field.field_type == 'integer' or cell.field.field_type == 'decimal' %} td-mono dt-body-right{% elif cell.field.field_type == 'date' or cell.field.field_type == 'datetime' or cell.field.field_type == 'boolean' %} dt-body-center{% endif %}">
+                                {{ cell.display }}
+                            </td>
+                            {% endfor %}
+                            <td class="td-mono dt-body-center">{{ row.record.updated_at|date:"d/m/Y" }}</td>
+                            {% if can_edit %}
+                            <td class="col-actions">
+                                <div class="actions actions--table">
+                                    <a href="{% url 'records:detail' slug=project.slug pk=row.record.pk %}" class="btn btn-ghost btn-sm">Ver</a>
+                                    <a href="{% url 'records:update' slug=project.slug pk=row.record.pk %}" class="btn btn-ghost btn-sm">Editar</a>
+                                </div>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+    <script src="{% static 'js/datatables-init.js' %}"></script>
+    <script src="{% static 'js/datatables-record.js' %}"></script>
+</body>
+</html>

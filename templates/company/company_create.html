@@ -1,0 +1,34 @@
+{% extends "app_base.html" %}
+
+{% block title %}Nueva compañía — DynamicWorkspace{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'company:list' %}">Compañías</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Nueva</span>
+</nav>
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_ua.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Alta de tenant</p>
+        <h2>Nueva compañía</h2>
+        <p>Registrar una organización como raíz de usuarios, proyectos y suscripción.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'company:list' %}" class="btn btn-secondary">← Listado</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        {% include "company/_form.html" %}
+    </div>
+</div>
+{% endblock %}

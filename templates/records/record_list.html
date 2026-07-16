@@ -1,0 +1,150 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Registros — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/records.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'projects:list' %}">Proyectos</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'projects:detail' slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Registros</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Alcance del proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    <span class="hint">·</span>
+    <span class="cell-badge cell-badge--sm">{{ company.name_short }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Datos del proyecto · <span class="role-code{% if membership.role == 'ED' %} role-code--ed{% elif membership.role == 'CO' %} role-code--co{% elif membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span></p>
+        <h2>Registros</h2>
+        <p>Tabla dinámica según el esquema del proyecto. Columnas generadas desde campos activos.</p>
+    </div>
+    <div class="page-actions">
+        {% if can_edit %}
+        <a href="{% url 'records:create' slug=project.slug %}" class="btn btn-primary">+ Nuevo registro</a>
+        {% endif %}
+        <a href="{% url 'records:expand' slug=project.slug %}" class="btn btn-secondary" title="Tabla a pantalla completa">⛶ Expandir</a>
+        {% if can_configure_display %}
+        <a href="{% url 'records:expand_display' slug=project.slug %}" class="btn btn-ghost" title="Solo PA">Apariencia</a>
+        {% endif %}
+        <a href="{% url 'projects:detail' slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Total</p>
+        <p class="stat-value">{{ stats.total|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Activos</p>
+        <p class="stat-value">{{ stats.active|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Creados hoy</p>
+        <p class="stat-value">{{ stats.created_today|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Columnas visibles</p>
+        <p class="stat-value">{{ stats.column_count|default:0 }}</p>
+    </div>
+</div>
+
+<div class="panel panel--table">
+    {% if filter_field %}
+    <div class="table-toolbar" aria-label="Controles de tabla">
+        <div class="table-toolbar-group">
+            <label for="filter-select">
+                {{ filter_field.label }}
+                <select id="filter-select" name="filter-select">
+                    <option value="">Todas</option>
+                    {% for choice in filter_choices %}
+                    <option value="{{ choice }}">{{ choice }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+    </div>
+    {% endif %}
+    <div class="table-dt-host table-dt-host--records" aria-label="Tabla de registros con desplazamiento horizontal">
+        <table
+            id="record-table"
+            class="dw-datatable"
+            data-updated-col-index="{{ updated_col_index }}"
+            {% if filter_field %}data-filter-attr="data-filter-{{ filter_field.key }}"{% endif %}
+        >
+            <thead>
+                <tr>
+                    {% for field in fields %}
+                    <th>{{ field.label }}</th>
+                    {% endfor %}
+                    <th>Actualizado</th>
+                    <th class="col-actions">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr{% if filter_field %} data-filter-value="{{ row.filter_value }}"{% endif %}>
+                    {% for cell in row.cells %}
+                    <td class="{% if cell.field.field_type == 'text_long' or cell.field.field_type == 'text_short' %}td-text{% endif %}{% if cell.field.field_type == 'integer' or cell.field.field_type == 'decimal' %} td-mono{% endif %}">
+                        {% if cell.field.field_type == 'text_short' %}
+                        <span class="cell-badge cell-badge--sm mono">{{ cell.display }}</span>
+                        {% else %}
+                        {{ cell.display }}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    <td class="td-mono">{{ row.record.updated_at|date:"d/m/Y" }}</td>
+                    <td class="col-actions">
+                        <div class="actions actions--table">
+                            <a href="{% url 'records:detail' slug=project.slug pk=row.record.pk %}" class="btn btn-ghost btn-sm">Ver</a>
+                            {% if can_edit %}
+                            <a href="{% url 'records:update' slug=project.slug pk=row.record.pk %}" class="btn btn-ghost btn-sm">Editar</a>
+                            <form method="post" action="{% url 'records:list' slug=project.slug %}" class="actions-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="record_id" value="{{ row.record.pk }}">
+                                <button
+                                    type="button"
+                                    class="btn btn-ghost btn-sm btn-ghost--danger"
+                                    data-dw-delete
+                                    data-dw-delete-message="¿Eliminar este registro? Los datos se marcarán como eliminados."
+                                >Eliminar</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+<script src="{% static 'js/datatables-record.js' %}"></script>
+{% endblock %}

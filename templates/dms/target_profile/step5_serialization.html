@@ -1,0 +1,121 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 5 — Serialización — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:target_hub' project_slug=project.slug %}">Destino</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Paso 5</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/target_profile/_project_scope.html" %}
+{% include "dms/target_profile/_target_persistence.html" %}
+
+<div id="target-step-root"
+     data-step="5"
+     data-next-url="{% url 'dms:target_step6' project_slug=project.slug %}"
+     data-can-edit="{% if can_edit_target %}1{% else %}0{% endif %}">
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Paso 5 de 6 · <span class="role-badge">serialization</span></p>
+        <h2>Serialización global</h2>
+        <p>Reglas de formato aplicadas al escribir valores en el archivo destino.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:target_step5_help' project_slug=project.slug as target_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=target_help_url %}
+        <a href="{% url 'dms:target_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
+    </div>
+</div>
+
+{% include "dms/target_profile/_wizard_stepper.html" %}
+
+<div class="panel">
+    <div class="panel-body">
+        <p id="step-save-status" class="step-save-status" aria-live="polite"></p>
+        <h3 class="form-section-title">Formato al escribir</h3>
+        <div class="form-grid">
+            <div class="field field--checkbox">
+                <label for="trim_before_write">
+                    <input type="checkbox" id="trim_before_write"
+                           {% if serialization.trim_before_write != False %}checked{% endif %}
+                           {% if not can_edit_target %} disabled{% endif %}>
+                    Recortar espacios antes de escribir (<code>trim_before_write</code>)
+                </label>
+            </div>
+            <div class="field">
+                <label for="default_truncate">Truncado por defecto</label>
+                <select id="default_truncate"{% if not can_edit_target %} disabled{% endif %}>
+                    <option value="right"{% if serialization.default_truncate == "right" or not serialization.default_truncate %} selected{% endif %}>Derecha (right)</option>
+                    <option value="left"{% if serialization.default_truncate == "left" %} selected{% endif %}>Izquierda (left)</option>
+                    <option value="none"{% if serialization.default_truncate == "none" %} selected{% endif %}>Sin truncar (none)</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="date_format">Formato de fecha</label>
+                <input type="text" id="date_format" class="mono"
+                       value="{{ serialization.date_format|default:'YYYY-MM-DD' }}"
+                       placeholder="YYYY-MM-DD"{% if not can_edit_target %} disabled{% endif %}>
+            </div>
+            <div class="field">
+                <label for="boolean_format">Formato booleano</label>
+                <select id="boolean_format"{% if not can_edit_target %} disabled{% endif %}>
+                    <option value="1_0"{% if serialization.boolean_format == "1_0" or not serialization.boolean_format %} selected{% endif %}>1 / 0</option>
+                    <option value="true_false"{% if serialization.boolean_format == "true_false" %} selected{% endif %}>true / false</option>
+                    <option value="si_no"{% if serialization.boolean_format == "si_no" %} selected{% endif %}>si / no</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="null_representation">Representación de nulo</label>
+                <input type="text" id="null_representation" class="mono"
+                       value="{{ serialization.null_representation|default:'' }}"
+                       placeholder="(vacío)"{% if not can_edit_target %} disabled{% endif %}>
+            </div>
+            <div class="field">
+                <label for="decimal_places">Decimales</label>
+                <input type="number" id="decimal_places" class="mono" min="0" max="12"
+                       value="{{ serialization.decimal_places|default:2 }}"{% if not can_edit_target %} disabled{% endif %}>
+            </div>
+            <div class="field">
+                <label for="decimal_separator">Separador decimal</label>
+                <select id="decimal_separator"{% if not can_edit_target %} disabled{% endif %}>
+                    <option value="."{% if serialization.decimal_separator == "." or not serialization.decimal_separator %} selected{% endif %}>Punto (.)</option>
+                    <option value=","{% if serialization.decimal_separator == "," %} selected{% endif %}>Coma (,)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="wizard-footer">
+            <span class="hint">Los cambios se guardan en el borrador del perfil de destino.</span>
+            <div class="wizard-footer-actions">
+                <a href="{% url 'dms:target_step4' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
+                {% if can_edit_target %}
+                <button type="button" id="btn-save-step" class="btn btn-ghost">Guardar borrador</button>
+                <button type="button" id="btn-step-next" class="btn btn-primary" data-next="{% url 'dms:target_step6' project_slug=project.slug %}">Siguiente →</button>
+                {% else %}
+                <a href="{% url 'dms:target_step6' project_slug=project.slug %}" class="btn btn-primary">Siguiente →</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/target_profile-steps.js' %}"></script>
+{% endblock %}

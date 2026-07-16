@@ -1,0 +1,77 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Paso 4 origen{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:source_hub' project_slug=project.slug %}">Origen</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:source_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Paso 4 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Definición de campos</h2>
+        <p>La interfaz cambia según el tipo de archivo del paso 1 (fijo, delimitado o Excel).</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:source_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">Declara cada campo/columna del origen. Esos nombres alimentan el mapeo hacia el destino.</p>
+
+        <h3 class="form-section-title">Propiedades comunes</h3>
+        <table class="help-table">
+            <thead><tr><th>Propiedad</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr><td>Nombre</td><td>Identificador del campo (usado en mapeo).</td></tr>
+                <tr><td>Tipo de contenido</td><td>Desde catálogo <code>FieldContentType</code> (texto, número, fecha…).</td></tr>
+                <tr><td>Obligatorio</td><td>Si la celda/posición no puede quedar vacía.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Según tipo de archivo</h3>
+        <table class="help-table">
+            <thead><tr><th>Tipo</th><th>Qué defines</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td class="mono">txt_fixed</td>
+                    <td>Posiciones: <code>start</code>/<code>end</code>, <code>start</code>/<code>length</code> o marcador <code>char</code>. Vista previa con regla.</td>
+                </tr>
+                <tr>
+                    <td class="mono">csv / txt_delimited</td>
+                    <td>Columnas por índice/nombre, delimitador, comillas y si hay fila de encabezado.</td>
+                </tr>
+                <tr>
+                    <td class="mono">xlsx</td>
+                    <td>Hoja, fila de inicio y columnas (letra o índice) por campo.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones típicas</h3>
+        <ul class="help-list">
+            <li><strong>+ Agregar campo</strong> — inserta una fila en la definición.</li>
+            <li><strong>Guardar borrador</strong> — persiste campos sin salir del paso.</li>
+            <li><strong>Continuar</strong> — avanza al paso 5 (reglas globales).</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

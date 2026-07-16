@@ -1,0 +1,107 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ catalog.title }} — FilePipe{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dms.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:catalog_hub' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:catalog_hub' %}">Catálogos</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ catalog.title }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">{{ catalog.entity }} · <span class="role-badge">{% if is_ua %}UA{% else %}UF{% endif %}</span></p>
+        <h2>{{ catalog.title }}</h2>
+        <p>{{ catalog.usage }}</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:catalog_list_help' catalog_slug=catalog.slug as catalog_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=catalog_help_url %}
+        <a href="{% url 'dms:catalog_hub' %}" class="btn btn-secondary">← Catálogos</a>
+        {% if is_ua %}
+        <a href="{% url 'dms:catalog_create' catalog_slug=catalog.slug %}" class="btn btn-primary">+ Nuevo registro</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="panel panel--table">
+    <div class="table-dt-host">
+        <table id="catalog-items-table" class="dw-datatable">
+            <thead>
+                <tr>
+                    {% for col in catalog.columns %}
+                    <th>{{ col.label }}</th>
+                    {% endfor %}
+                    {% if is_ua %}<th aria-label="Acciones"></th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr data-estado="{% if row.item.is_active %}activo{% else %}inactivo{% endif %}">
+                    {% for cell in row.cells %}
+                    <td class="{% if cell.key == 'name' %}td-name{% elif cell.mono %}mono{% endif %}">{{ cell.value }}</td>
+                    {% endfor %}
+                    {% if is_ua %}
+                    <td class="td-actions">
+                        <a href="{% url 'dms:catalog_update' catalog_slug=catalog.slug pk=row.item.pk %}" class="btn btn-ghost btn-sm">Editar</a>
+                        {% if row.item.is_active %}
+                        <form method="post" action="{% url 'dms:catalog_deactivate' catalog_slug=catalog.slug pk=row.item.pk %}" class="inline-form" data-confirm="¿Desactivar este registro?">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-ghost btn-sm btn-danger-text">Desactivar</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if is_ua %}{{ catalog.columns|length|add:1 }}{% else %}{{ catalog.columns|length }}{% endif %}">Sin registros.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.jQuery && jQuery.fn.DataTable) {
+        jQuery("#catalog-items-table").DataTable({
+            pageLength: 25,
+            order: [[0, "asc"]],
+            language: { url: "https://cdn.datatables.net/plug-ins/2.2.2/i18n/es-ES.json" }
+        });
+    }
+    document.querySelectorAll("form[data-confirm]").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            if (typeof dwConfirmWarning === "function") {
+                e.preventDefault();
+                dwConfirmWarning(form.getAttribute("data-confirm"), function () { form.submit(); });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

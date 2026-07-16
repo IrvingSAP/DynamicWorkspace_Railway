@@ -1,0 +1,107 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ project.name }} — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'projects:list' %}">Proyectos</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ project.slug }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Workspace · <span class="role-badge">UF</span> · <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span></p>
+        <h2>{{ project.name }}</h2>
+        <p>{{ project.description|default:"Sin descripción." }}</p>
+    </div>
+    <div class="page-actions">
+        {% url 'projects:detail_help' slug=project.slug as projects_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=projects_help_url %}
+        <a href="{% url 'projects:list' %}" class="btn btn-secondary">← Proyectos</a>
+    </div>
+</div>
+
+<div class="hero-panel">
+    <div class="hero-meta hero-meta--grow">
+        <span class="cell-badge">{{ project.slug }}</span>
+        {% if project.is_archived %}
+        <span class="status status-archived status--offset"><span class="status-dot"></span>Archivado</span>
+        {% else %}
+        <span class="status status-active status--offset"><span class="status-dot"></span>Activo</span>
+        {% endif %}
+        <h3>{{ project.name }}</h3>
+        <p class="hint">Compañía <span class="cell-badge cell-badge--sm">{{ company.name_short }}</span> · Creado {{ project.created_at|date:"d/m/Y" }}</p>
+    </div>
+</div>
+
+<div class="metric-row" aria-label="Métricas del proyecto">
+    <div class="metric-card">
+        <p class="metric-label">Registros</p>
+        <p class="metric-value">{{ detail.record_count }}</p>
+        <p class="metric-sub">filas de datos</p>
+    </div>
+    <div class="metric-card">
+        <p class="metric-label">Campos</p>
+        <p class="metric-value">{{ detail.field_count }}</p>
+        <p class="metric-sub">definiciones activas</p>
+    </div>
+    <div class="metric-card">
+        <p class="metric-label">Miembros</p>
+        <p class="metric-value">{{ detail.member_count }}</p>
+        <p class="metric-sub">membresías activas</p>
+    </div>
+    <div class="metric-card">
+        <p class="metric-label">Tu rol</p>
+        <p class="metric-value metric-value--md"><span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span></p>
+        <p class="metric-sub">{% if membership.role == 'PA' %}Admin de proyecto{% elif membership.role == 'ED' %}Editor{% elif membership.role == 'CO' %}Consulta{% else %}Generar{% endif %}</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Áreas del proyecto</h3>
+        <p class="hint stack-bottom">Accesos según tu rol. Campos y miembros requieren PA.</p>
+        <div class="workspace-nav">
+            <a href="{% url 'records:list' slug=project.slug %}" class="workspace-card">
+                <h4>Registros</h4>
+                <p>Ver y editar filas de la tabla.</p>
+            </a>
+            {% if detail.is_pa %}
+            <a href="{% url 'fields:list' slug=project.slug %}" class="workspace-card">
+                <h4>Campos</h4>
+                <p>Diseñar estructura y validaciones.</p>
+                <span class="badge-req">PA</span>
+            </a>
+            <a href="{% url 'projects:members' slug=project.slug %}" class="workspace-card">
+                <h4>Miembros</h4>
+                <p>Autorizar usuarios de {{ company.name_short }}.</p>
+                <span class="badge-req">PA</span>
+            </a>
+            {% else %}
+            <div class="workspace-card workspace-card--muted" aria-disabled="true">
+                <h4>Campos</h4>
+                <p>Diseñar estructura y validaciones.</p>
+                <span class="badge-req">PA</span>
+            </div>
+            <div class="workspace-card workspace-card--muted" aria-disabled="true">
+                <h4>Miembros</h4>
+                <p>Autorizar usuarios de la compañía.</p>
+                <span class="badge-req">PA</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

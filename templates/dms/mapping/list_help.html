@@ -1,0 +1,176 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Data Mapping{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:mapping_list' %}">Data Mapping</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">UF</span></p>
+        <h2>Ayuda — Data Mapping</h2>
+        <p>Qué hace esta pantalla y qué significa cada elemento del listado de proyectos FilePipe.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:mapping_list' %}" class="btn btn-secondary">← Volver al listado</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Data Mapping es el listado de proyectos ETL (FilePipe) de tu compañía.
+            Desde aquí abres un proyecto para definir origen, destino, mapeo, reglas, archivo y ejecución.
+            Ves proyectos donde eres miembro y los marcados como públicos para la organización.
+        </p>
+
+        <h3 class="form-section-title">Alcance de compañía</h3>
+        <p class="help-intro">Franja superior que indica en qué organización estás trabajando.</p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Elemento</th><th>Qué es</th><th>Valores posibles</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Código (badge)</td>
+                    <td>Sigla corta de la compañía.</td>
+                    <td class="mono">Ej. ACME, CORPO</td>
+                </tr>
+                <tr>
+                    <td>Nombre largo</td>
+                    <td>Razón social o nombre completo de la organización.</td>
+                    <td>Texto libre definido por el administrador.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Resumen (tarjetas)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Indicador</th><th>Qué cuenta</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Total</td>
+                    <td>Proyectos FilePipe visibles para ti (miembro o públicos de compañía).</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+                <tr>
+                    <td>Activos</td>
+                    <td>Proyectos no archivados a los que tienes acceso.</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+                <tr>
+                    <td>Como admin (PA)</td>
+                    <td>Proyectos donde tu rol es administrador de proyecto.</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+                <tr>
+                    <td>Públicos compañía</td>
+                    <td>Proyectos con visibilidad «Público» en la organización.</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Filtros de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Filtro</th><th>Función</th><th>Opciones</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Visibilidad</td>
+                    <td>Limita filas según si el proyecto es público o privado.</td>
+                    <td><span class="mono">Todas</span> · <span class="mono">Público</span> · <span class="mono">Privado</span></td>
+                </tr>
+                <tr>
+                    <td>Búsqueda (DataTables)</td>
+                    <td>Campo global de la tabla; busca en las columnas visibles.</td>
+                    <td>Texto libre</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columnas de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Qué muestra</th><th>Valores / formato</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Código</td>
+                    <td>Identificador (slug) del proyecto. Enlace al hub FilePipe.</td>
+                    <td class="mono">Minúsculas, números y guiones. Ej. <span class="mono">proyecto-cm</span></td>
+                </tr>
+                <tr>
+                    <td>Nombre</td>
+                    <td>Nombre visible del proyecto.</td>
+                    <td>Texto libre definido al crear el proyecto.</td>
+                </tr>
+                <tr>
+                    <td>Visibilidad</td>
+                    <td>Quién puede ver el proyecto en el listado.</td>
+                    <td><strong>Público</strong> (compañía) · <strong>Privado</strong> (solo miembros)</td>
+                </tr>
+                <tr>
+                    <td>Mi permiso</td>
+                    <td>Tu rol de acceso en ese proyecto.</td>
+                    <td><span class="role-code">PA</span> Admin · otros roles de membresía</td>
+                </tr>
+                <tr>
+                    <td>Versión</td>
+                    <td>Versión de configuración (borrador o publicada).</td>
+                    <td class="mono">Ej. Borrador · v1 · v2</td>
+                </tr>
+                <tr>
+                    <td>Última ejecución</td>
+                    <td>Fecha/hora de la última transformación (si hay).</td>
+                    <td class="mono">Fecha/hora o vacío si aún no hay jobs</td>
+                </tr>
+                <tr>
+                    <td>Acciones</td>
+                    <td>Acceso rápido al hub del proyecto.</td>
+                    <td><strong>Abrir</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones de la pantalla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>+ Nuevo proyecto</td>
+                    <td>Crea un proyecto FilePipe (Data Mapping) en tu compañía.</td>
+                </tr>
+                <tr>
+                    <td>Abrir / Código</td>
+                    <td>Entra al hub del proyecto (origen, destino, mapeo, reglas, archivo, ejecutar).</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

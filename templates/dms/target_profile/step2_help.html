@@ -1,0 +1,47 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Paso 2 destino{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:target_hub' project_slug=project.slug %}">Destino</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:target_step2' project_slug=project.slug %}">Paso 2</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Paso 2 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Codificación y final de línea</h2>
+        <p>Parámetros de texto al escribir el archivo (sin detección automática).</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:target_step2' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 2</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <table class="help-table">
+            <thead><tr><th>Campo</th><th>Función</th></tr></thead>
+            <tbody>
+                <tr><td>Encoding</td><td>Codificación de salida (<span class="mono">utf-8</span>, <span class="mono">latin-1</span>…).</td></tr>
+                <tr><td>Fin de línea</td><td><span class="mono">LF</span>, <span class="mono">CRLF</span> u opción personalizada.</td></tr>
+                <tr><td>Guardar / Continuar</td><td>Persiste y avanza al layout (paso 3).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Paso 1 origen{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:source_hub' project_slug=project.slug %}">Origen</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:source_step1' project_slug=project.slug %}">Paso 1</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Paso 1 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Tipo de archivo</h2>
+        <p>Formato de lectura, codificación y final de línea del archivo de entrada.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:source_step1' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 1</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">Elige el tipo de archivo desde el catálogo <code>SourceFileType</code> y los parámetros de lectura de texto.</p>
+
+        <h3 class="form-section-title">Elementos</h3>
+        <table class="help-table">
+            <thead><tr><th>Elemento</th><th>Qué hace</th><th>Notas</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Tarjetas de tipo</td>
+                    <td>Selecciona el formato (<span class="mono">txt_fixed</span>, <span class="mono">csv</span>, <span class="mono">txt_delimited</span>, <span class="mono">xlsx</span>…).</td>
+                    <td>Algunos tipos pueden estar marcados como fase posterior (deshabilitados).</td>
+                </tr>
+                <tr>
+                    <td>Encoding</td>
+                    <td>Codificación del archivo (<span class="mono">utf-8</span>, <span class="mono">latin-1</span>, auto…).</td>
+                    <td>Catálogo <code>CharsetEncoding</code>.</td>
+                </tr>
+                <tr>
+                    <td>Fin de línea</td>
+                    <td>Cómo se detectan saltos de línea (<span class="mono">LF</span>, <span class="mono">CRLF</span>, auto…).</td>
+                    <td>Catálogo de finales de línea.</td>
+                </tr>
+                <tr>
+                    <td>Guardar / Continuar</td>
+                    <td>Persiste el borrador y avanza al paso 2.</td>
+                    <td>Requiere permiso de edición.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

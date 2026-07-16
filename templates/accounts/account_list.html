@@ -1,0 +1,161 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ management_scope.list_title }} — DynamicWorkspace{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include sidebar_template %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>Administración</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Usuarios</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% if management_scope.fixed_company %}
+<div class="company-scope-strip" aria-label="Alcance de compañía">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ management_scope.fixed_company.name_short }}</span>
+    <span>{{ management_scope.fixed_company.name_long }}</span>
+</div>
+{% endif %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">{{ management_scope.page_eyebrow }} · <span class="role-badge">{{ management_scope.actor_type }}</span></p>
+        <h2>{{ management_scope.list_title }}</h2>
+        <p>{{ management_scope.list_description }} <span class="user-type-badge {{ management_scope.target_badge_class }}">{{ management_scope.target_type }}</span>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'accounts:create' %}" class="btn btn-primary">+ {% if management_scope.target_type == 'US' %}Nuevo US{% else %}Nuevo UF{% endif %}</a>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen">
+    <div class="stat-card is-accent">
+        <p class="stat-label">{{ management_scope.stats_total_label }}</p>
+        <p class="stat-value">{{ stats.total|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Activos</p>
+        <p class="stat-value">{{ stats.active|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">{{ management_scope.stats_security_label }}</p>
+        <p class="stat-value">{{ stats.security_pending|default:0 }}</p>
+    </div>
+    {% if management_scope.show_companies_stat %}
+    <div class="stat-card">
+        <p class="stat-label">Compañías</p>
+        <p class="stat-value">{{ stats.companies|default:0 }}</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="panel panel--table">
+    <div class="table-toolbar" aria-label="Controles de tabla">
+        <div class="table-toolbar-group">
+            {% if management_scope.show_company_column %}
+            <label for="filter-company">
+                Compañía
+                <select id="filter-company" name="filter-company">
+                    <option value="">Todas</option>
+                    {% for company in companies %}
+                    <option value="{{ company.name_short }}">{{ company.name_short }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            {% endif %}
+            <label for="filter-estado">
+                Estado
+                <select id="filter-estado" name="filter-estado">
+                    <option value="">Todos</option>
+                    <option value="activo">Activo</option>
+                    <option value="inactivo">Inactivo</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="table-dt-host table-dt-host--accounts" aria-label="Tabla de usuarios con desplazamiento horizontal">
+        <table id="account-table" data-dt-order="[[0,&quot;asc&quot;]]">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    {% if management_scope.show_company_column %}
+                    <th>Compañía</th>
+                    {% endif %}
+                    <th>Tipo</th>
+                    <th>Seguridad</th>
+                    <th>Estado</th>
+                    <th>Actualizado</th>
+                    <th class="col-actions">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in users %}
+                <tr data-estado="{% if item.user.is_active and item.status == 'A' %}activo{% else %}inactivo{% endif %}"{% if management_scope.show_company_column %} data-company="{{ item.company.name_short }}"{% endif %}>
+                    <td><a href="{% url 'accounts:detail' pk=item.pk %}" class="mono">{{ item.user.username }}</a></td>
+                    <td class="td-name">{{ item.user.get_full_name|default:"—" }}</td>
+                    <td class="td-email">{{ item.user.email|default:"—" }}</td>
+                    {% if management_scope.show_company_column %}
+                    <td><a href="{% url 'company:detail' pk=item.company.pk %}" class="cell-badge">{{ item.company.name_short }}</a></td>
+                    {% endif %}
+                    <td><span class="user-type-badge {{ management_scope.target_badge_class }}">{{ item.user_type }}</span></td>
+                    <td>
+                        {% if item.is_security_complete %}
+                        <span class="status status-active"><span class="status-dot"></span>Completa</span>
+                        {% else %}
+                        <span class="status status-pending"><span class="status-dot"></span>Pendiente</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.user.is_active and item.status == 'A' %}
+                        <span class="status status-active"><span class="status-dot"></span>Activo</span>
+                        {% else %}
+                        <span class="status status-inactive"><span class="status-dot"></span>Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td class="td-mono">{{ item.updated_at|date:"d/m/Y" }}</td>
+                    <td class="col-actions">
+                        <div class="actions actions--table">
+                            <a href="{% url 'accounts:detail' pk=item.pk %}" class="btn btn-ghost btn-sm">Ver</a>
+                            <a href="{% url 'accounts:update' pk=item.pk %}" class="btn btn-ghost btn-sm">Editar</a>
+                            <a href="{% url 'accounts:password' pk=item.pk %}" class="btn btn-ghost btn-sm">Contraseña</a>
+                            <form method="post" action="{% url 'accounts:delete' pk=item.pk %}" class="actions-form">
+                                {% csrf_token %}
+                                <button
+                                    type="button"
+                                    class="btn btn-ghost btn-sm btn-ghost--danger"
+                                    data-dw-delete
+                                    data-dw-delete-message="¿Eliminar al usuario «{{ item.user.username }}»? Esta acción no se puede deshacer."
+                                >Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+<script src="{% static 'js/datatables-account.js' %}"></script>
+{% endblock %}

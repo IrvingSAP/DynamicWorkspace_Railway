@@ -1,0 +1,67 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Formulario {{ catalog.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dms.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:catalog_hub' %}">Catálogos</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:catalog_list' catalog_slug=catalog.slug %}">{{ catalog.title }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda formulario</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">UA</span></p>
+        <h2>Ayuda — Alta / edición de {{ catalog.title }}</h2>
+        <p>{{ catalog.usage }}</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:catalog_list' catalog_slug=catalog.slug %}" class="btn btn-secondary">← Volver al listado</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            Formulario para crear o editar un registro del catálogo
+            <strong>{{ catalog.title }}</strong> (<span class="mono">{{ catalog.entity }}</span>).
+            Solo usuarios <strong>UA</strong>.
+        </p>
+
+        <h3 class="form-section-title">Campos habituales</h3>
+        <table class="help-table">
+            <thead><tr><th>Campo</th><th>Notas</th></tr></thead>
+            <tbody>
+                <tr><td>Código</td><td>Identificador estable usado por la app; suele ser único.</td></tr>
+                <tr><td>Nombre / etiqueta</td><td>Texto visible en pantallas de configuración.</td></tr>
+                <tr><td>Orden / activo</td><td>Orden de presentación y si el valor está disponible.</td></tr>
+                <tr><td>Otros</td><td>Dependen del catálogo (extensiones, esquemas, aplica_a, etc.).</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>Guardar</td><td>Crea o actualiza el registro y vuelve al listado.</td></tr>
+                <tr><td>← Listado</td><td>Cancela y regresa sin guardar (si no envió el formulario).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

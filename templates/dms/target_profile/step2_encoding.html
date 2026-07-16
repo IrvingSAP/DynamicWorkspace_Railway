@@ -1,0 +1,96 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 2 — Encoding — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:target_hub' project_slug=project.slug %}">Destino</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Paso 2</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/target_profile/_project_scope.html" %}
+{% include "dms/target_profile/_target_persistence.html" %}
+
+<div id="target-step-root"
+     data-step="2"
+     data-next-url="{% url 'dms:target_step3' project_slug=project.slug %}"
+     data-can-edit="{% if can_edit_target %}1{% else %}0{% endif %}">
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Paso 2 de 6 · <span class="role-badge">TextWriteFormat</span></p>
+        <h2>Codificación y final de línea</h2>
+        <p>Parámetros de texto para la escritura (sin detección automática).</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:target_step2_help' project_slug=project.slug as target_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=target_help_url %}
+        <a href="{% url 'dms:target_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
+    </div>
+</div>
+
+{% include "dms/target_profile/_wizard_stepper.html" %}
+
+<div class="panel">
+    <div class="panel-body">
+        <p id="step-save-status" class="step-save-status" aria-live="polite"></p>
+        <h3 class="form-section-title">Parámetros de texto</h3>
+        <div class="form-grid">
+            <div class="field">
+                <label for="encoding_code">Codificación</label>
+                <select id="encoding_code" name="encoding_code"{% if not can_edit_target %} disabled{% endif %}>
+                    {% for enc in encodings %}
+                    <option value="{{ enc.code }}"{% if target.encoding_code == enc.code %} selected{% endif %}>{{ enc.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field" data-line-ending-custom>
+                <label for="line_ending_code">Final de línea</label>
+                <select id="line_ending_code" name="line_ending_code"{% if not can_edit_target %} disabled{% endif %}>
+                    {% for le in line_endings %}
+                    <option value="{{ le.code }}"{% if target.line_ending_code == le.code %} selected{% endif %}>{{ le.name }}</option>
+                    {% endfor %}
+                </select>
+                <div class="field" data-custom-field hidden style="margin-top:10px">
+                    <label for="line_ending_custom">Secuencia personalizada</label>
+                    <input type="text" id="line_ending_custom" name="line_ending_custom" class="mono"
+                           value="{{ target.line_ending_custom|default:'' }}"
+                           placeholder="\r\n"{% if not can_edit_target %} disabled{% endif %}>
+                </div>
+            </div>
+        </div>
+
+        <div class="wizard-footer">
+            <span class="hint">Los cambios se guardan en el borrador del perfil de destino.</span>
+            <div class="wizard-footer-actions">
+                <a href="{% url 'dms:target_step1' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
+                {% if can_edit_target %}
+                <button type="button" id="btn-save-step" class="btn btn-ghost">Guardar borrador</button>
+                <button type="button" id="btn-step-next" class="btn btn-primary" data-next="{% url 'dms:target_step3' project_slug=project.slug %}">Siguiente →</button>
+                {% else %}
+                <a href="{% url 'dms:target_step3' project_slug=project.slug %}" class="btn btn-primary">Siguiente →</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/source_profile-wizard.js' %}"></script>
+<script src="{% static 'js/target_profile-steps.js' %}"></script>
+{% endblock %}

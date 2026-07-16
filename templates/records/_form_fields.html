@@ -1,0 +1,88 @@
+{% for row in form_fields %}
+<div class="field{% if row.is_full %} is-full{% endif %}">
+    <label for="{{ row.input_name }}">
+        {{ row.field.label }}{% if row.field.required %} <span class="req">*</span>{% endif %}
+    </label>
+
+    {% if row.field.field_type == 'text_short' %}
+    <input
+        type="text"
+        id="{{ row.input_name }}"
+        name="{{ row.input_name }}"
+        class="mono"
+        maxlength="{{ row.field.max_length|default:255 }}"
+        value="{{ row.value }}"
+        {% if row.field.required %}required{% endif %}
+    >
+    {% elif row.field.field_type == 'text_long' %}
+    <textarea
+        id="{{ row.input_name }}"
+        name="{{ row.input_name }}"
+        rows="3"
+        maxlength="{{ row.field.max_length|default:2000 }}"
+        {% if row.field.required %}required{% endif %}
+    >{{ row.value }}</textarea>
+    {% elif row.field.field_type == 'integer' %}
+    <input
+        type="number"
+        id="{{ row.input_name }}"
+        name="{{ row.input_name }}"
+        class="mono"
+        step="1"
+        {% if row.field.options.min != None %}min="{{ row.field.options.min }}"{% endif %}
+        {% if row.field.options.max != None %}max="{{ row.field.options.max }}"{% endif %}
+        value="{{ row.value }}"
+        {% if row.field.required %}required{% endif %}
+    >
+    {% elif row.field.field_type == 'decimal' %}
+    <input
+        type="number"
+        id="{{ row.input_name }}"
+        name="{{ row.input_name }}"
+        class="mono"
+        step="0.01"
+        {% if row.field.options.min != None %}min="{{ row.field.options.min }}"{% endif %}
+        value="{{ row.value }}"
+        {% if row.field.required %}required{% endif %}
+    >
+    {% elif row.field.field_type == 'date' %}
+    <input
+        type="date"
+        id="{{ row.input_name }}"
+        name="{{ row.input_name }}"
+        value="{{ row.value }}"
+        {% if row.field.required %}required{% endif %}
+    >
+    {% elif row.field.field_type == 'datetime' %}
+    <input
+        type="datetime-local"
+        id="{{ row.input_name }}"
+        name="{{ row.input_name }}"
+        value="{{ row.value }}"
+        {% if row.field.required %}required{% endif %}
+    >
+    {% elif row.field.field_type == 'boolean' %}
+    <div class="toggle-row">
+        <input
+            type="checkbox"
+            id="{{ row.input_name }}"
+            name="{{ row.input_name }}"
+            value="1"
+            {% if row.checked %}checked{% endif %}
+        >
+        <label for="{{ row.input_name }}">Sí</label>
+    </div>
+    {% elif row.field.field_type == 'select' %}
+    <select id="{{ row.input_name }}" name="{{ row.input_name }}" {% if row.field.required %}required{% endif %}>
+        <option value="">Seleccionar…</option>
+        {% for choice in row.choices %}
+        <option value="{{ choice }}" {% if row.value == choice %}selected{% endif %}>{{ choice }}</option>
+        {% endfor %}
+    </select>
+    {% endif %}
+
+    {% for message in row.field_errors %}
+    <p class="field-error">{{ message }}</p>
+    {% endfor %}
+</div>
+{% endfor %}

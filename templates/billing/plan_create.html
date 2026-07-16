@@ -1,0 +1,39 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Nuevo plan — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/billing.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_ua.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'billing:plan_list' %}">Planes</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Nuevo</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Alta de catálogo</p>
+        <h2>Nuevo plan</h2>
+        <p>Definir un plan contratable para asignar a suscripciones de compañías.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'billing:plan_list' %}" class="btn btn-secondary">← Listado</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        {% include "billing/_plan_form.html" %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Suscripción {{ company.name_short }} — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/billing.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_ua.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'billing:subscription_list' %}">Suscripciones</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ company.name_short }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Licencia</p>
+        <h2>{{ company.name_long }}</h2>
+        <p>Suscripción, contactos de soporte e historial de pagos.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'billing:payment_create' %}?subscription={{ subscription.pk }}" class="btn btn-primary">+ Registrar pago</a>
+        <a href="{% url 'billing:subscription_update' company_pk=company.pk %}" class="btn btn-secondary">Editar</a>
+        <a href="{% url 'company:detail' pk=company.pk %}" class="btn btn-secondary">Ver compañía</a>
+    </div>
+</div>
+
+<div class="hero-panel">
+    <div class="hero-meta">
+        <a href="{% url 'company:detail' pk=company.pk %}" class="cell-badge">{{ company.name_short }}</a>
+        {% if subscription.status == 'active' %}
+        <span class="status status-active status--offset"><span class="status-dot"></span>{{ subscription.get_status_display }}</span>
+        {% elif subscription.status == 'pending' %}
+        <span class="status status-pending status--offset"><span class="status-dot"></span>{{ subscription.get_status_display }}</span>
+        {% elif subscription.status == 'expired' %}
+        <span class="status status-expired status--offset"><span class="status-dot"></span>{{ subscription.get_status_display }}</span>
+        {% else %}
+        <span class="status status-canceled status--offset"><span class="status-dot"></span>{{ subscription.get_status_display }}</span>
+        {% endif %}
+        <h3>{{ subscription.plan.name }}</h3>
+        <p class="hero-id mono">{{ subscription.pk }}</p>
+    </div>
+</div>
+
+<div class="metric-row" aria-label="Métricas de la suscripción">
+    <div class="metric-card">
+        <p class="metric-label">Vigencia</p>
+        <p class="metric-value metric-value--md">{{ subscription.start_date|date:"d/m/Y" }} — {{ subscription.end_date|date:"d/m/Y" }}</p>
+    </div>
+    <div class="metric-card">
+        <p class="metric-label">Auto-renovación</p>
+        <p class="metric-value metric-value--md">{% if subscription.auto_renew %}Sí{% else %}No{% endif %}</p>
+    </div>
+    <div class="metric-card">
+        <p class="metric-label">Pagos registrados</p>
+        <p class="metric-value">{{ detail.payments_count }}</p>
+    </div>
+    <div class="metric-card">
+        <p class="metric-label">Firma válida</p>
+        <p class="metric-value metric-value--md">{% if detail.license_info.signature_valid %}Sí{% else %}No{% endif %}</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Integridad de licencia</h3>
+        <p class="hint stack-bottom">HMAC-SHA256 sobre fechas ISO — no editar manualmente.</p>
+        <div class="signature-box">{{ subscription.integrity_signature }}</div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <div class="sub-table-title">
+            <h3>Contactos de soporte</h3>
+            <a href="{% url 'billing:subscription_update' company_pk=company.pk %}" class="btn btn-ghost btn-sm">Editar</a>
+        </div>
+        {% if detail.contacts %}
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Teléfono</th>
+                        <th>Rol</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contact in detail.contacts %}
+                    <tr>
+                        <td>{{ contact.name }}</td>
+                        <td>{{ contact.email }}</td>
+                        <td>{{ contact.phone|default:"—" }}</td>
+                        <td>{{ contact.role|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="hint">Sin contactos registrados.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <div class="sub-table-title">
+            <h3>Últimos pagos</h3>
+            <a href="{% url 'billing:payment_list' %}" class="btn btn-ghost btn-sm">Ver todos</a>
+        </div>
+        {% if detail.payments %}
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Monto</th>
+                        <th>Método</th>
+                        <th>Fecha</th>
+                        <th>Referencia</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in detail.payments %}
+                    <tr>
+                        <td class="td-mono">$ {{ payment.amount }}</td>
+                        <td>{{ payment.get_method_display }}</td>
+                        <td class="td-mono">{{ payment.paid_at|date:"d/m/Y H:i" }}</td>
+                        <td>{{ payment.reference|default:"—" }}</td>
+                        <td><a href="{% url 'billing:payment_detail' pk=payment.pk %}" class="btn btn-ghost btn-sm">Ver</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="hint">Sin pagos registrados.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

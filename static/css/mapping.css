@@ -1,0 +1,269 @@
+/* FilePipe — Data Mapping projects */
+
+@import url("dms.css");
+
+.lifecycle-stepper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.lifecycle-phase {
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-md);
+}
+
+.lifecycle-phase-label {
+    margin: 0 0 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--ink-muted);
+}
+
+.lifecycle-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.lifecycle-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    background: var(--canvas);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--ink-secondary);
+    cursor: pointer;
+    font-family: inherit;
+}
+
+button.lifecycle-step {
+    appearance: none;
+}
+
+button.flow-card:disabled,
+button.lifecycle-step:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.lifecycle-step:hover {
+    border-color: rgba(15, 92, 76, 0.35);
+}
+
+.lifecycle-step.is-done {
+    border-color: rgba(15, 92, 76, 0.45);
+    background: rgba(15, 92, 76, 0.06);
+}
+
+.lifecycle-step.is-active {
+    border-color: var(--accent);
+    background: rgba(15, 92, 76, 0.1);
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.lifecycle-step.is-pending {
+    opacity: 0.65;
+}
+
+.lifecycle-step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 50%;
+    background: var(--surface-inset);
+    color: var(--ink-tertiary);
+}
+
+.lifecycle-step.is-done .lifecycle-step-num,
+.lifecycle-step.is-active .lifecycle-step-num {
+    background: var(--accent);
+    color: #fff;
+}
+
+.visibility-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-radius: 4px;
+}
+
+.visibility-badge--public {
+    color: #1e4d6b;
+    background: rgba(30, 77, 107, 0.12);
+}
+
+.visibility-badge--private {
+    color: #6b4c1e;
+    background: rgba(107, 76, 30, 0.12);
+}
+
+.perm-badge {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--surface-inset);
+    color: var(--ink-tertiary);
+}
+
+.perm-badge--admin {
+    background: rgba(15, 92, 76, 0.15);
+    color: var(--accent);
+}
+
+.project-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 0;
+    padding: 0 4px 0 0;
+    border-bottom: 1px solid var(--rule);
+}
+
+.project-tab {
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-tertiary);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+}
+
+.project-tab:hover {
+    color: var(--ink-secondary);
+}
+
+.project-tab.is-active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+.project-tab-panel {
+    display: none;
+    padding-top: 20px;
+}
+
+.project-tab-panel.is-active {
+    display: block;
+}
+
+.flow-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.flow-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px;
+    background: var(--canvas);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: inherit;
+}
+
+.flow-card:hover {
+    border-color: rgba(15, 92, 76, 0.35);
+}
+
+.flow-card h4 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.flow-card p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--ink-tertiary);
+}
+
+.flow-card-status {
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.flow-card-status--done { color: var(--accent); }
+.flow-card-status--draft { color: #b45309; }
+.flow-card-status--empty { color: var(--ink-muted); }
+
+.radio-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.radio-card {
+    padding: 14px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+}
+
+.radio-card:has(input:checked) {
+    border-color: var(--accent);
+    background: rgba(15, 92, 76, 0.05);
+}
+
+.radio-card input {
+    margin-right: 8px;
+}
+
+.radio-card strong {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.radio-card span {
+    font-size: 12px;
+    color: var(--ink-tertiary);
+}
+
+.version-strip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    background: rgba(15, 92, 76, 0.06);
+    border: 1px solid rgba(15, 92, 76, 0.2);
+    border-radius: var(--radius-md);
+    font-size: 13px;
+}
+
+@media (max-width: 768px) {
+    .radio-cards {
+        grid-template-columns: 1fr;
+    }
+}

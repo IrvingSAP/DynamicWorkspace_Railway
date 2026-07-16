@@ -1,0 +1,129 @@
+{% extends "public/base.html" %}
+
+{% block title %}DynamicWorkspace — Tablas configurables para tu equipo{% endblock %}
+
+{% block content %}
+<section class="pub-hero">
+    <div class="pub-container pub-hero-grid">
+        <div>
+            <p class="pub-eyebrow">Adiós a las hojas de cálculo caóticas</p>
+            <h1>Tus hojas de cálculo, <span>convertidas en apps</span> de gestión</h1>
+            <p class="pub-lead">DynamicWorkspace sustituye hojas de cálculo dispersas por proyectos configurables: campos dinámicos, usuarios con roles, registros auditables y una sola fuente de verdad por equipo.</p>
+            <div class="pub-hero-actions">
+                <a href="{% url 'public:contact' %}" class="btn btn-primary">Solicitar acceso</a>
+                <a href="{% url 'public:help' %}" class="btn btn-secondary">Guía del sistema</a>
+            </div>
+        </div>
+        <div class="hero-stack" aria-hidden="true">
+            <div class="hero-card hero-card--back">
+                <div class="hero-card-header hero-card-header--violet">crm-clientes · ACME</div>
+                <div class="hero-card-row">
+                    <span class="cell-badge cell-badge--sky">CLI-09</span>
+                    <span>Distribuidora Norte</span>
+                </div>
+                <div class="hero-card-row">
+                    <span class="cell-badge cell-badge--sky">CLI-12</span>
+                    <span>Logística Sur</span>
+                </div>
+            </div>
+            <div class="hero-card hero-card--main">
+                <div class="hero-card-header hero-card-header--teal">inventario-2026 · ACME</div>
+                <div class="hero-card-row">
+                    <span class="cell-badge cell-badge--teal">A-014</span>
+                    <span>Tornillo M6</span>
+                    <span class="pill pill--ok">Activo</span>
+                </div>
+                <div class="hero-card-row">
+                    <span class="cell-badge cell-badge--coral">B-221</span>
+                    <span>Arandela 8mm</span>
+                    <span class="pill pill--ok">Activo</span>
+                </div>
+                <div class="hero-card-row">
+                    <span class="cell-badge cell-badge--teal">C-088</span>
+                    <span>Perfil aluminio</span>
+                    <span class="pill pill--warn">Revisión</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="pub-section">
+    <div class="pub-container">
+        <div class="pub-section-header">
+            <h2>¿Por qué nos eligen?</h2>
+            <p>Controles de actividades, gestiones ligeras y seguimiento ad hoc — sin perder la flexibilidad de una hoja, pero con permisos, historial y búsqueda centralizados.</p>
+        </div>
+        <div class="feature-grid">
+            <article class="feature-card feature-card--teal">
+                <div class="feature-card-icon">📋</div>
+                <h3>Proyectos configurables</h3>
+                <p>Cada proyecto es una tabla independiente. Define campos de texto, números, fechas y listas sin escribir código.</p>
+            </article>
+            <article class="feature-card feature-card--coral">
+                <div class="feature-card-icon">🔐</div>
+                <h3>Control por roles</h3>
+                <p>Usuarios autorizados por proyecto con roles PA, ED, CO y GE. Acceso granular a registros y exportaciones.</p>
+            </article>
+            <article class="feature-card feature-card--violet">
+                <div class="feature-card-icon">🔍</div>
+                <h3>Auditoría completa</h3>
+                <p>Sabe quién creó o modificó cada registro y cuándo. Historial por campo, no solo por fila.</p>
+            </article>
+            <article class="feature-card feature-card--sky">
+                <div class="feature-card-icon">🏢</div>
+                <h3>Multi-compañía</h3>
+                <p>Cada organización opera en su propio espacio con usuarios, proyectos y licencia independientes.</p>
+            </article>
+            <article class="feature-card feature-card--lime">
+                <div class="feature-card-icon">📊</div>
+                <h3>Importación desde hoja de cálculo</h3>
+                <p>Migra hojas existentes: análisis de columnas, creación automática de campos y carga de registros.</p>
+            </article>
+            <article class="feature-card feature-card--teal">
+                <div class="feature-card-icon">🛡️</div>
+                <h3>Seguridad empresarial</h3>
+                <p>Login con verificación por correo y autenticación de dos factores. Sin registro público abierto.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="pub-section pub-section--alt" id="como-funciona">
+    <div class="pub-container">
+        <div class="pub-section-header">
+            <h2>Así de simple funciona</h2>
+            <p>Tres pasos para pasar de archivos dispersos a una plataforma compartida y auditable.
+                <a href="{% url 'public:help' %}" class="pub-guide-inline-link">Ver guía completa →</a>
+            </p>
+        </div>
+        <div class="steps-row">
+            <article class="step-card">
+                <span class="step-card-num">1</span>
+                <h3>Crea tu proyecto</h3>
+                <p>Define nombre, descripción y estructura de campos. Cada proyecto puede tener un esquema distinto.</p>
+            </article>
+            <article class="step-card">
+                <span class="step-card-num">2</span>
+                <h3>Invita a tu equipo</h3>
+                <p>Autoriza usuarios de tu compañía con el rol adecuado: admin, editor, consulta o reportes.</p>
+            </article>
+            <article class="step-card">
+                <span class="step-card-num">3</span>
+                <h3>Gestiona registros</h3>
+                <p>Crea, filtra, busca y audita filas como en una hoja — con una fuente única de verdad.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="pub-section">
+    <div class="pub-container">
+        <div class="pub-cta">
+            <h2>¿Listo para dejar atrás las hojas de cálculo dispersas?</h2>
+            <p>Las cuentas se habilitan por administración. Escríbenos y te ayudamos a arrancar con tu compañía.</p>
+            <a href="{% url 'public:contact' %}" class="btn btn-primary">Contactar ahora</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

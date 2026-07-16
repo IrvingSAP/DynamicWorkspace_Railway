@@ -1,0 +1,107 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Definición origen — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Definición origen</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/source_profile/_project_scope.html" %}
+{% include "dms/source_profile/_source_persistence.html" %}
+{% include "dms/source_profile/_source_publish.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Módulo 1 · <span class="role-badge">SourceProfile</span></p>
+        <h2>Definición de origen</h2>
+        <p>Asistente de 6 pasos · borrador <strong>{{ wizard.version_label }}</strong>
+            {% if version_publish.has_published_version %}· activa <strong>{{ version_publish.published_version_label }}</strong>{% endif %}
+        </p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:source_hub_help' project_slug=project.slug as source_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+        <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        {% if can_edit_source %}
+        <button type="button"
+                class="btn btn-ghost"
+                data-action="publish-version"
+                data-draft-label="borrador v{{ version_publish.draft_version_number }}"
+                data-status-target="hub-publish-status">Publicar versión</button>
+        {% endif %}
+        <a href="{% url wizard.continue_step_url_name project_slug=project.slug %}" class="btn btn-primary">Continuar edición</a>
+    </div>
+</div>
+
+<p id="hub-publish-status" class="step-save-status" aria-live="polite"></p>
+
+<div class="stats-strip" aria-label="Progreso">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Pasos completos</p>
+        <p class="stat-value">{{ wizard.steps_complete }} / {{ wizard.steps_total }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Tipo archivo</p>
+        <p class="stat-value" style="font-size:16px">{{ wizard.file_type_label }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Campos definidos</p>
+        <p class="stat-value">{{ wizard.fields_count }}</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Publicación</h3>
+        <p class="hint">Publicar congela la definición de origen del borrador actual. Las ejecuciones usarán la versión publicada. Tras publicar se crea automáticamente un nuevo borrador para seguir editando.</p>
+        {% if can_edit_source %}
+        <button type="button"
+                class="btn btn-primary"
+                data-action="publish-version"
+                data-draft-label="borrador v{{ version_publish.draft_version_number }}"
+                data-status-target="hub-publish-status">Publicar borrador v{{ version_publish.draft_version_number }}</button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Pasos del asistente</h3>
+        <div class="step-summary-list">
+            {% for step in wizard.steps %}
+            <a href="{% url step.url_name project_slug=project.slug %}" class="step-summary-card">
+                <div>
+                    <h4>{{ step.title }}</h4>
+                    <p>{{ step.summary }}</p>
+                </div>
+                <span class="flow-card-status flow-card-status--{% if step.status == 'done' %}done{% elif step.status == 'draft' %}draft{% else %}empty{% endif %}">
+                    {% if step.status == 'done' %}Completo{% elif step.status == 'draft' %}En edición{% else %}Pendiente{% endif %}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

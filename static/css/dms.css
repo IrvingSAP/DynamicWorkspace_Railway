@@ -1,0 +1,40 @@
+/* FilePipe / DMS module */
+
+@import url("sidebar-uf.css");
+
+.dms-placeholder .panel-body {
+    padding: 24px;
+    font-size: 14px;
+    color: var(--ink-secondary);
+}
+
+.dms-placeholder a {
+    color: var(--accent);
+    font-weight: 500;
+}
+
+.form-readonly {
+    margin: 0;
+    padding: 10px 12px;
+    background: var(--canvas);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-md);
+    font-size: 13px;
+}
+
+.inline-form {
+    display: inline;
+}
+
+.btn-danger-text {
+    color: var(--danger);
+}
+
+.td-actions {
+    white-space: nowrap;
+}
+
+.td-actions form {
+    display: inline-block;
+    margin-left: 4px;
+}

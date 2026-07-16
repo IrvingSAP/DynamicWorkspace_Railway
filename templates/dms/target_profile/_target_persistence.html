@@ -1,0 +1,7 @@
+{% load static %}
+{{ target|json_script:"dms-target-profile-data" }}
+<div id="dms-target-save-config"
+     data-save-url="{{ target_save_url }}"
+     data-csrf-token="{{ csrf_token }}"
+     hidden></div>
+<script src="{% static 'js/target_profile-persistence.js' %}"></script>

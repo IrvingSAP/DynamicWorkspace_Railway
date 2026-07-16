@@ -1,0 +1,38 @@
+<footer class="pub-footer">
+    <div class="pub-container">
+        <div class="pub-footer-grid">
+            <div class="pub-footer-brand">
+                <a href="{% url 'public:home' %}" class="pub-brand">
+                    <span class="pub-brand-mark">DW</span>
+                    <span class="pub-brand-name">DynamicWorkspace</span>
+                </a>
+                <p>Plataforma configurable para equipos que gestionan datos operativos sin desarrollo a medida.</p>
+            </div>
+            <div class="pub-footer-col">
+                <h4>Producto</h4>
+                <ul>
+                    <li><a href="{% url 'public:home' %}">Inicio</a></li>
+                    <li><a href="{% url 'public:services' %}">Servicios</a></li>
+                    <li><a href="{% url 'public:help' %}">Guía del sistema</a></li>
+                </ul>
+            </div>
+            <div class="pub-footer-col">
+                <h4>Empresa</h4>
+                <ul>
+                    <li><a href="{% url 'public:contact' %}">Contacto</a></li>
+                    <li><a href="{{ login_url }}">Ingresar</a></li>
+                </ul>
+            </div>
+            <div class="pub-footer-col">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#">Privacidad</a></li>
+                    <li><a href="#">Términos</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="pub-footer-bottom">
+            <p>© {% now "Y" %} DynamicWorkspace. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</footer>

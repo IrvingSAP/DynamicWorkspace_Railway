@@ -1,0 +1,27 @@
+/* Transform execution UI */
+
+@import url("source_profile.css");
+
+.te-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.te-errors-pre {
+    margin: 0;
+    max-height: 240px;
+    overflow: auto;
+    padding: 10px 12px;
+    background: var(--canvas);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    white-space: pre-wrap;
+}
+
+.btn-sm {
+    padding: 4px 10px;
+    font-size: 12px;
+}

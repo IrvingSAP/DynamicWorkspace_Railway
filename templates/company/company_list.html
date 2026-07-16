@@ -1,0 +1,127 @@
+{% extends "app_base.html" %}
+{% load static %}
+{# Contexto esperado: companies, stats {total, active, inactive}, app_nav_active='company' #}
+
+{% block title %}Compañías — DynamicWorkspace{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_ua.html" %}
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>Administración</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Compañías</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Tenants del sistema · <span class="role-badge">UA</span></p>
+        <h2>Compañías</h2>
+        <p>Organizaciones registradas. Solo User Admin (UA) puede crear y administrar tenants.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'company:create' %}" class="btn btn-primary">+ Nueva compañía</a>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Total</p>
+        <p class="stat-value">{{ stats.total|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Activas</p>
+        <p class="stat-value">{{ stats.active|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Inactivas</p>
+        <p class="stat-value">{{ stats.inactive|default:0 }}</p>
+    </div>
+</div>
+
+<div class="panel panel--table">
+    <div class="table-toolbar" aria-label="Controles de tabla">
+        <div class="table-toolbar-group">
+            <label for="filter-estado">
+                Filtrar por estado
+                <select id="filter-estado" name="filter-estado">
+                    <option value="">Todos</option>
+                    <option value="activa">Activa</option>
+                    <option value="inactiva">Inactiva</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="table-dt-host">
+        <table id="company-table" class="dw-datatable">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Organización</th>
+                    <th>ID tributaria</th>
+                    <th>Contacto</th>
+                    <th>Estado</th>
+                    <th>Actualizado</th>
+                    <th aria-label="Acciones"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for company in companies %}
+                <tr data-estado="{% if company.is_active %}activa{% else %}inactiva{% endif %}">
+                    <td>
+                        <a href="{% url 'company:detail' pk=company.pk %}" class="cell-badge">{{ company.name_short }}</a>
+                    </td>
+                    <td class="td-name">{{ company.name_long }}</td>
+                    <td class="td-mono">{{ company.tax_id|default:"—" }}</td>
+                    <td>{{ company.email|default:"—" }}</td>
+                    <td>
+                        {% if company.is_active %}
+                        <span class="status status-active"><span class="status-dot"></span>Activa</span>
+                        {% else %}
+                        <span class="status status-inactive"><span class="status-dot"></span>Inactiva</span>
+                        {% endif %}
+                    </td>
+                    <td class="td-mono">{{ company.updated_at|date:"d/m/Y" }}</td>
+                    <td>
+                        <div class="actions">
+                            <a href="{% url 'company:detail' pk=company.pk %}" class="btn btn-ghost btn-sm">Ver</a>
+                            <a href="{% url 'company:update' pk=company.pk %}" class="btn btn-ghost btn-sm">Editar</a>
+                            <form method="post" action="{% url 'company:delete' pk=company.pk %}" class="actions-form">
+                                {% csrf_token %}
+                                <button
+                                    type="button"
+                                    class="btn btn-ghost btn-sm btn-ghost--danger"
+                                    data-dw-delete
+                                    data-dw-delete-message="¿Eliminar la compañía «{{ company.name_short }}»? Esta acción no se puede deshacer."
+                                >Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">No hay compañías registradas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+<script src="{% static 'js/datatables-company.js' %}"></script>
+{% endblock %}

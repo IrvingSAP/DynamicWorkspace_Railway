@@ -1,0 +1,165 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Campos — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/fields.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'projects:list' %}">Proyectos</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'projects:detail' slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Campos</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Alcance del proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    <span class="hint">·</span>
+    <span class="cell-badge cell-badge--sm">{{ company.name_short }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Diseñador de esquema · <span class="role-code role-code--pa">PA</span></p>
+        <h2>Campos del proyecto</h2>
+        <p>Define columnas, tipos y validaciones. Solo el administrador del proyecto (PA) puede modificar el esquema.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'fields:create' slug=project.slug %}" class="btn btn-primary">+ Nuevo campo</a>
+        <a href="{% url 'projects:detail' slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Total</p>
+        <p class="stat-value">{{ stats.total|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Activos</p>
+        <p class="stat-value">{{ stats.active|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Obligatorios</p>
+        <p class="stat-value">{{ stats.required|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Tipos distintos</p>
+        <p class="stat-value">{{ stats.type_count|default:0 }}</p>
+    </div>
+</div>
+
+<div class="panel panel--table">
+    <div class="table-toolbar" aria-label="Controles de tabla">
+        <div class="table-toolbar-group">
+            <label for="filter-tipo">
+                Tipo
+                <select id="filter-tipo" name="filter-tipo">
+                    <option value="">Todos</option>
+                    {% for code, label in field_type_choices %}
+                    <option value="{{ code }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label for="filter-estado">
+                Filtrar por estado
+                <select id="filter-estado" name="filter-estado">
+                    <option value="">Todos</option>
+                    <option value="activo">Activo</option>
+                    <option value="inactivo">Inactivo</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="table-dt-host table-dt-host--fields" aria-label="Tabla de campos con desplazamiento horizontal">
+        <table id="field-table" class="dw-datatable">
+            <thead>
+                <tr>
+                    <th class="col-order">#</th>
+                    <th>Clave</th>
+                    <th>Etiqueta</th>
+                    <th>Tipo</th>
+                    <th>Obligatorio</th>
+                    <th>Validación</th>
+                    <th>Estado</th>
+                    <th>Actualizado</th>
+                    <th class="col-actions">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr data-tipo="{{ row.field.field_type }}" data-estado="{% if row.field.is_active %}activo{% else %}inactivo{% endif %}">
+                    <td class="col-order td-mono">{{ row.field.sort_order }}</td>
+                    <td><span class="cell-badge cell-badge--sm mono">{{ row.field.key }}</span></td>
+                    <td class="td-name">{{ row.field.label }}</td>
+                    <td><span class="field-type {{ row.type_css_class }}">{{ row.field.field_type }}</span></td>
+                    <td>
+                        {% if row.field.required %}
+                        <span class="status status-active"><span class="status-dot"></span>Sí</span>
+                        {% else %}
+                        <span class="status status-inactive"><span class="status-dot"></span>No</span>
+                        {% endif %}
+                    </td>
+                    <td class="field-options-hint">{{ row.validation_hint }}</td>
+                    <td>
+                        {% if row.field.is_active %}
+                        <span class="status status-active"><span class="status-dot"></span>Activo</span>
+                        {% else %}
+                        <span class="status status-inactive"><span class="status-dot"></span>Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td class="td-mono">{{ row.field.updated_at|date:"d/m/Y" }}</td>
+                    <td class="col-actions">
+                        <div class="actions actions--table">
+                            <a href="{% url 'fields:update' slug=project.slug pk=row.field.pk %}" class="btn btn-ghost btn-sm">Editar</a>
+                            {% if row.field.is_active %}
+                            <form method="post" action="{% url 'fields:list' slug=project.slug %}" class="actions-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="deactivate">
+                                <input type="hidden" name="field_id" value="{{ row.field.pk }}">
+                                <button
+                                    type="button"
+                                    class="btn btn-ghost btn-sm btn-ghost--danger"
+                                    data-dw-delete
+                                    data-dw-delete-message="¿Desactivar el campo «{{ row.field.label }}»? Los datos existentes se conservan."
+                                >Desactivar</button>
+                            </form>
+                            {% else %}
+                            <form method="post" action="{% url 'fields:list' slug=project.slug %}" class="actions-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="reactivate">
+                                <input type="hidden" name="field_id" value="{{ row.field.pk }}">
+                                <button type="submit" class="btn btn-ghost btn-sm">Reactivar</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+<script src="{% static 'js/datatables-field.js' %}"></script>
+{% endblock %}

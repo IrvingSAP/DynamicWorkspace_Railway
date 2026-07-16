@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DynamicWorkspace{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar-uf.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <a href="/app/" class="topbar-brand" title="DynamicWorkspace">
+                <span class="brand-mark" aria-hidden="true">DW</span>
+                <h1>DynamicWorkspace</h1>
+            </a>
+            <div class="topbar-user">
+                {% if request.user.is_authenticated %}
+                <span class="user-avatar" aria-hidden="true">{{ request.user.first_name|default:request.user.username|slice:":1"|upper }}</span>
+                <span class="topbar-user-name">{{ request.user.first_name|default:request.user.username }}</span>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="app-body">
+            <aside class="sidebar-left" aria-label="Menú lateral">
+                <p class="sidebar-section-label">Navegación</p>
+                <nav class="sidebar-nav" aria-label="Menú principal">
+                    {% block sidebar_nav %}
+                    {% include "includes/sidebar_ua.html" %}
+                    {% endblock %}
+                </nav>
+                {% block sidebar_extra %}{% endblock %}
+                <div class="sidebar-footer">
+                    {% if request.user.is_authenticated %}
+                    <form method="post" action="{% url 'security:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="sidebar-link sidebar-link-logout">Cerrar sesión</button>
+                    </form>
+                    <span class="sidebar-username">{{ request.user.username }}</span>
+                    {% endif %}
+                </div>
+            </aside>
+
+            <main class="app-main {% block main_class %}{% endblock %}">
+                {% block breadcrumb %}{% endblock %}
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    {# Mensajes flash — cola procesada por dw-modals.js #}
+    {% if messages %}
+    <script id="dw-flash-messages" type="application/json">
+    [
+    {% for message in messages %}
+    {"level": "{{ message.tags|default:'info'|escapejs }}", "text": "{{ message|escapejs }}"}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+    ]
+    </script>
+    {% endif %}
+
+    {# Modal informativo (success / error / warning / info) #}
+    <div id="dw-msg-modal" class="dw-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="dw-msg-title" hidden>
+        <div class="dw-modal">
+            <div id="dw-msg-header" class="dw-modal-header">
+                <h2 id="dw-msg-title" class="dw-modal-title"></h2>
+                <button type="button" id="dw-msg-close" class="dw-modal-close" aria-label="Cerrar">×</button>
+            </div>
+            <div class="dw-modal-body">
+                <p id="dw-msg-body" class="dw-modal-text"></p>
+            </div>
+            <div class="dw-modal-footer">
+                <button type="button" id="dw-msg-btn" class="btn btn-primary"></button>
+            </div>
+        </div>
+    </div>
+
+    {# Modal de confirmación — API: dwConfirmWarning(msg, onConfirm, options) #}
+    <div id="dw-confirm-modal" class="dw-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="dw-confirm-title" hidden>
+        <div class="dw-modal dw-modal--confirm">
+            <div class="dw-modal-header dw-modal-header--warning">
+                <h2 id="dw-confirm-title" class="dw-modal-title">Advertencia</h2>
+                <button type="button" id="dw-confirm-close" class="dw-modal-close" aria-label="Cerrar">×</button>
+            </div>
+            <div class="dw-modal-body">
+                <p id="dw-confirm-body" class="dw-modal-text"></p>
+            </div>
+            <div class="dw-modal-footer dw-modal-footer--split">
+                <button type="button" id="dw-confirm-cancel" class="btn btn-secondary">Cancelar</button>
+                <button type="button" id="dw-confirm-ok" class="btn btn-danger">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/dw-modals.js' %}"></script>
+    <script src="{% static 'js/sidebar-uf.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

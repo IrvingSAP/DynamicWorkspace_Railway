@@ -1,0 +1,136 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Suscripciones — DynamicWorkspace{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/billing.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_ua.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>Administración</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Billing</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Suscripciones</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Licencias · <span class="role-badge">UA</span></p>
+        <h2>Suscripciones</h2>
+        <p>Una suscripción por compañía: vigencia, estado e integridad de licencia.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'billing:subscription_create' %}" class="btn btn-primary">+ Nueva suscripción</a>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen de suscripciones">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Total</p>
+        <p class="stat-value">{{ stats.total|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Activas</p>
+        <p class="stat-value">{{ stats.active|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Pendientes</p>
+        <p class="stat-value">{{ stats.pending|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Vencidas</p>
+        <p class="stat-value">{{ stats.expired|default:0 }}</p>
+    </div>
+</div>
+
+<div class="panel panel--table">
+    <div class="table-toolbar" aria-label="Controles de tabla">
+        <div class="table-toolbar-group">
+            <label for="filter-estado">
+                Estado
+                <select id="filter-estado" name="filter-estado">
+                    <option value="">Todos</option>
+                    <option value="active">Activa</option>
+                    <option value="pending">Pendiente</option>
+                    <option value="expired">Vencida</option>
+                    <option value="canceled">Cancelada</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="table-dt-host table-dt-host--billing">
+        <table id="subscription-table" class="dw-datatable">
+            <thead>
+                <tr>
+                    <th>Compañía</th>
+                    <th>Plan</th>
+                    <th>Estado</th>
+                    <th>Inicio</th>
+                    <th>Fin</th>
+                    <th>Auto-renovación</th>
+                    <th class="col-actions">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in subscriptions %}
+                <tr data-estado="{{ sub.status }}">
+                    <td>
+                        <a href="{% url 'billing:subscription_detail' company_pk=sub.company_id %}" class="cell-badge">{{ sub.company.name_short }}</a>
+                        <span class="td-name-inline">{{ sub.company.name_long }}</span>
+                    </td>
+                    <td><span class="cell-badge cell-badge--sm">{{ sub.plan.code }}</span></td>
+                    <td>
+                        {% if sub.status == 'active' %}
+                        <span class="status status-active"><span class="status-dot"></span>{{ sub.get_status_display }}</span>
+                        {% elif sub.status == 'pending' %}
+                        <span class="status status-pending"><span class="status-dot"></span>{{ sub.get_status_display }}</span>
+                        {% elif sub.status == 'expired' %}
+                        <span class="status status-expired"><span class="status-dot"></span>{{ sub.get_status_display }}</span>
+                        {% else %}
+                        <span class="status status-canceled"><span class="status-dot"></span>{{ sub.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="td-mono">{{ sub.start_date|date:"d/m/Y" }}</td>
+                    <td class="td-mono">{{ sub.end_date|date:"d/m/Y" }}</td>
+                    <td>{% if sub.auto_renew %}Sí{% else %}No{% endif %}</td>
+                    <td class="col-actions">
+                        <div class="actions actions--table">
+                            <a href="{% url 'billing:subscription_detail' company_pk=sub.company_id %}" class="btn btn-ghost btn-sm">Ver</a>
+                            <a href="{% url 'billing:subscription_update' company_pk=sub.company_id %}" class="btn btn-ghost btn-sm">Editar</a>
+                            <form method="post" action="{% url 'billing:subscription_delete' company_pk=sub.company_id %}" class="actions-form">
+                                {% csrf_token %}
+                                <button
+                                    type="button"
+                                    class="btn btn-ghost btn-sm btn-ghost--danger"
+                                    data-dw-delete
+                                    data-dw-delete-message="¿Eliminar la suscripción de «{{ sub.company.name_short }}»? Esta acción no se puede deshacer."
+                                >Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+<script src="{% static 'js/datatables-subscription.js' %}"></script>
+{% endblock %}

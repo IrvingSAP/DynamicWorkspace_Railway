@@ -1,0 +1,66 @@
+<form method="post" novalidate>
+    {% csrf_token %}
+    <div class="form-section">
+        <h3 class="form-section-title">Identidad</h3>
+        <div class="form-grid">
+            <div class="form-row two-cols">
+                <div class="field{% if errors.code %} has-error{% endif %}">
+                    <label for="code">Código <span class="req">*</span></label>
+                    <input type="text" id="code" name="code" class="mono" maxlength="50" placeholder="pro" value="{{ posted.code }}" required>
+                    <p class="hint">Slug único · ej. basic, pro, enterprise</p>
+                    {% for msg in errors.code %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+                <div class="field{% if errors.name %} has-error{% endif %}">
+                    <label for="name">Nombre visible <span class="req">*</span></label>
+                    <input type="text" id="name" name="name" maxlength="100" placeholder="Plan Pro" value="{{ posted.name }}" required>
+                    {% for msg in errors.name %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="field">
+                <label for="description">Descripción</label>
+                <textarea id="description" name="description" rows="3" placeholder="Incluye proyectos ilimitados y soporte prioritario…">{{ posted.description }}</textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3 class="form-section-title">Facturación</h3>
+        <div class="form-grid">
+            <div class="form-row two-cols">
+                <div class="field{% if errors.billing_period %} has-error{% endif %}">
+                    <label for="billing_period">Periodo <span class="req">*</span></label>
+                    <select id="billing_period" name="billing_period" required>
+                        <option value="">Seleccionar…</option>
+                        <option value="monthly"{% if posted.billing_period == 'monthly' %} selected{% endif %}>Mensual</option>
+                        <option value="annual"{% if posted.billing_period == 'annual' %} selected{% endif %}>Anual</option>
+                        <option value="enterprise"{% if posted.billing_period == 'enterprise' %} selected{% endif %}>Enterprise (personalizado)</option>
+                    </select>
+                    {% for msg in errors.billing_period %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+                <div class="field{% if errors.price %} has-error{% endif %}">
+                    <label for="price">Precio de referencia</label>
+                    <input type="number" id="price" name="price" class="mono" min="0" step="0.01" placeholder="79.00" value="{{ posted.price }}">
+                    <p class="hint">Opcional · solo referencia comercial</p>
+                    {% for msg in errors.price %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="toggle-row">
+                <input type="checkbox" id="is_active" name="is_active" value="1"{% if posted.is_active %} checked{% endif %}>
+                <label for="is_active">Plan activo (disponible para nuevas suscripciones)</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{% if is_edit %}Guardar cambios{% else %}Crear plan{% endif %}</button>
+        <a href="{% if is_edit %}{% url 'billing:plan_detail' pk=plan.pk %}{% else %}{% url 'billing:plan_list' %}{% endif %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>

@@ -1,0 +1,49 @@
+{% extends "security/base.html" %}
+
+{% block title %}Verificar correo — DynamicWorkspace{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <ol class="wizard-steps" aria-label="Progreso de seguridad">
+        <li class="wizard-step is-done">Credenciales</li>
+        <li class="wizard-step is-active">Correo</li>
+        <li class="wizard-step">2FA</li>
+    </ol>
+
+    <p class="auth-eyebrow">Paso 2 de 3</p>
+    <h1>Verifica tu correo</h1>
+    <p class="auth-lead">Enviamos un código de 6 dígitos a tu correo. El código <strong>vence en 5 minutos</strong>.</p>
+
+    <div class="auth-alert auth-alert--info" role="status">
+        Código enviado a <strong>{{ masked_email }}</strong>
+    </div>
+
+    <form action="{% url 'security:email_code' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="verify">
+        <div class="form-row{% if errors.email_code %} has-error{% endif %}">
+            <label for="email_code">Código de verificación</label>
+            <input type="text" id="email_code" name="email_code" class="code-input" value="{{ posted.email_code }}" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" autocomplete="one-time-code" required autofocus>
+            {% for msg in errors.email_code %}
+            <p class="field-error">{{ msg }}</p>
+            {% endfor %}
+        </div>
+        <div class="auth-actions">
+            <button type="submit" class="btn btn-primary">Verificar código</button>
+        </div>
+    </form>
+
+    <div class="auth-actions-row">
+        <form action="{% url 'security:email_code' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="resend">
+            <button type="submit" class="btn btn-secondary">Reenviar código</button>
+        </form>
+        <a href="{% url 'security:cancel' %}" class="btn btn-ghost">Cancelar</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<p><a href="{% url 'security:login' %}">Volver al ingreso</a></p>
+{% endblock %}

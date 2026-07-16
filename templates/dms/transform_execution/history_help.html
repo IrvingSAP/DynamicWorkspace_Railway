@@ -1,0 +1,57 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Historial de ejecuciones{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/transform_execution.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:transform_execution_hub' project_slug=project.slug %}">Ejecutar</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:transform_execution_history' project_slug=project.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Historial de ejecuciones</h2>
+        <p>Consulta jobs completados y descarga resultados mientras el enlace esté vigente.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:transform_execution_history' project_slug=project.slug %}" class="btn btn-secondary">← Volver al historial</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Columnas típicas</h3>
+        <table class="help-table">
+            <thead><tr><th>Columna</th><th>Qué muestra</th></tr></thead>
+            <tbody>
+                <tr><td>Fecha</td><td>Cuándo se ejecutó el job.</td></tr>
+                <tr><td>Usuario</td><td>Quién lanzó la transformación.</td></tr>
+                <tr><td>Versión</td><td>Versión publicada usada.</td></tr>
+                <tr><td>Entrada</td><td>Nombre del archivo de producción.</td></tr>
+                <tr><td>Salida / estado</td><td>Resultado y contadores (OK / errores).</td></tr>
+                <tr><td>Descargas</td><td>Output, informe y errores (si existen y no expiraron).</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Notas</h3>
+        <ul class="help-list">
+            <li>Las descargas firmadas suelen caducar a los <strong>7 días</strong>.</li>
+            <li>Desde aquí no se re-ejecuta el mismo job; para otra corrida suba archivo y ejecute de nuevo.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

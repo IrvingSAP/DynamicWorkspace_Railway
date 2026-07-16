@@ -1,0 +1,80 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Pago — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/billing.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_ua.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'billing:payment_list' %}">Pagos</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Detalle</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Auditoría · inmutable</p>
+        <h2>Pago registrado</h2>
+        <p>Detalle del cobro — no editable ni eliminable.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'billing:subscription_detail' company_pk=payment.subscription.company_id %}" class="btn btn-secondary">Ver suscripción</a>
+        <a href="{% url 'billing:payment_list' %}" class="btn btn-secondary">← Listado</a>
+    </div>
+</div>
+
+<div class="hero-panel">
+    <div class="hero-meta hero-meta--grow">
+        <span class="cell-badge">{{ payment.subscription.company.name_short }}</span>
+        <h3>$ {{ payment.amount }}</h3>
+        <p class="hero-id mono">{{ payment.pk }}</p>
+    </div>
+</div>
+
+<div class="metric-row" aria-label="Detalle del pago">
+    <div class="metric-card">
+        <p class="metric-label">Plan</p>
+        <p class="metric-value metric-value--md">{{ payment.subscription.plan.name }}</p>
+    </div>
+    <div class="metric-card">
+        <p class="metric-label">Método</p>
+        <p class="metric-value metric-value--md">{{ payment.get_method_display }}</p>
+    </div>
+    <div class="metric-card">
+        <p class="metric-label">Fecha del pago</p>
+        <p class="metric-value metric-value--md">{{ payment.paid_at|date:"d/m/Y H:i" }}</p>
+    </div>
+    <div class="metric-card">
+        <p class="metric-label">Registrado por</p>
+        <p class="metric-value metric-value--md">{{ payment.created_by.username|default:"—" }}</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <dl class="detail-list">
+            <div class="detail-row">
+                <dt>Referencia</dt>
+                <dd>{{ payment.reference|default:"—" }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Compañía</dt>
+                <dd><a href="{% url 'company:detail' pk=payment.subscription.company_id %}">{{ payment.subscription.company.name_long }}</a></dd>
+            </div>
+            <div class="detail-row">
+                <dt>Estado suscripción</dt>
+                <dd>{{ payment.subscription.get_status_display }}</dd>
+            </div>
+        </dl>
+    </div>
+</div>
+{% endblock %}

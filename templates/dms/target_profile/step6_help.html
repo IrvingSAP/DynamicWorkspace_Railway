@@ -1,0 +1,48 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Paso 6 destino{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:target_hub' project_slug=project.slug %}">Destino</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:target_step6' project_slug=project.slug %}">Paso 6</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Paso 6 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Validación al escribir</h2>
+        <p>Qué hacer cuando un valor no cumple el perfil destino en ejecución.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:target_step6' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 6</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <table class="help-table">
+            <thead><tr><th>Política típica</th><th>Comportamiento</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">reject_row</td><td>Descarta la fila y la reporta.</td></tr>
+                <tr><td class="mono">abort</td><td>Detiene el job ante el primer error.</td></tr>
+                <tr><td class="mono">truncate / use_default / write_empty</td><td>Intenta corregir o escribir un valor sustituido.</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Al completar este paso, el destino queda listo para mapeo, reglas y publicación en el hub del proyecto.</p>
+    </div>
+</div>
+{% endblock %}

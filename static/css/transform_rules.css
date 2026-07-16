@@ -1,0 +1,160 @@
+/* Transform Rules — templates/dms/transform_rules/ */
+
+@import url("source_profile.css");
+
+.tr-layout {
+    display: grid;
+    grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.tr-targets {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.tr-target-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-sm);
+    background: var(--canvas);
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+}
+
+.tr-target-item:hover {
+    border-color: rgba(15, 92, 76, 0.35);
+}
+
+.tr-target-item.is-active {
+    border-color: var(--accent);
+    background: rgba(15, 92, 76, 0.08);
+}
+
+.tr-target-name {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.tr-target-meta {
+    font-size: 11px;
+    color: var(--ink-muted);
+}
+
+.tr-editor-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.tr-editor-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.tr-editor-actions select {
+    min-width: 140px;
+    max-width: 200px;
+}
+
+.tr-steps {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tr-step {
+    display: grid;
+    grid-template-columns: 28px minmax(140px, 180px) 1fr auto;
+    gap: 8px;
+    align-items: start;
+    padding: 10px 12px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-sm);
+    background: var(--canvas);
+}
+
+.tr-step-num {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-muted);
+    padding-top: 8px;
+}
+
+.tr-step-params {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tr-step-params .field {
+    margin: 0;
+    min-width: 120px;
+    flex: 1;
+}
+
+.tr-step-params label {
+    font-size: 11px;
+}
+
+.tr-step-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tr-preview {
+    padding-top: 12px;
+    border-top: 1px solid var(--rule);
+}
+
+.tr-preview-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.tr-preview-row input {
+    flex: 1;
+}
+
+.tr-preview-result {
+    margin: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px;
+    color: var(--ink-secondary);
+    word-break: break-all;
+}
+
+.btn-sm {
+    padding: 4px 10px;
+    font-size: 12px;
+}
+
+@media (max-width: 900px) {
+    .tr-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .tr-step {
+        grid-template-columns: 1fr;
+    }
+}

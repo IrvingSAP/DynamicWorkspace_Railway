@@ -1,0 +1,56 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Catálogos FilePipe{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dms.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:catalog_hub' %}">Catálogos</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · FilePipe</p>
+        <h2>Ayuda — Catálogos del sistema</h2>
+        <p>Valores de referencia usados en Data Mapping (tipos de archivo, encoding, errores, etc.).</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:catalog_hub' %}" class="btn btn-secondary">← Volver a catálogos</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            Los catálogos alimentan desplegables y validaciones de origen, destino y ejecución.
+            UF/US suelen consultar; el mantenimiento (alta/edición) es de <strong>UA</strong>.
+        </p>
+
+        <h3 class="form-section-title">Columnas del listado</h3>
+        <table class="help-table">
+            <thead><tr><th>Columna</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr><td>Catálogo</td><td>Nombre visible del conjunto de valores.</td></tr>
+                <tr><td>Entidad</td><td>Modelo / código técnico asociado.</td></tr>
+                <tr><td>Uso</td><td>En qué pasos del flujo se consume.</td></tr>
+                <tr><td>Registros</td><td>Cantidad de ítems activos o totales listados.</td></tr>
+                <tr><td>Ver registros</td><td>Abre el detalle de ese catálogo.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

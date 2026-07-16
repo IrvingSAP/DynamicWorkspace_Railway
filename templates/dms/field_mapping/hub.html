@@ -1,0 +1,114 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Mapeo de campos — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/field_mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Mapeo</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/field_mapping/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Módulo 2 · <span class="role-badge">FieldMapping</span></p>
+        <h2>Mapeo de campos</h2>
+        <p>Enlace origen → destino · borrador <strong>{{ hub.version_label }}</strong>
+            {% if version_publish.has_published_version %}· activa <strong>{{ version_publish.published_version_label }}</strong>{% endif %}
+        </p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:field_mapping_hub_help' project_slug=project.slug as field_mapping_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=field_mapping_help_url %}
+        <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        {% if source_fields and target_fields %}
+        <a href="{% url 'dms:field_mapping_editor' project_slug=project.slug %}" class="btn btn-primary">Abrir editor</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Estado del mapeo">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Mapeos</p>
+        <p class="stat-value">{{ hub.mappings_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Origen → Destino</p>
+        <p class="stat-value" style="font-size:16px">{{ hub.source_fields_count }} → {{ hub.target_fields_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Obligatorios sin mapear</p>
+        <p class="stat-value">{{ hub.unmapped_required }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Estado</p>
+        <p class="stat-value" style="font-size:16px">{{ hub.status_label }}</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        {% if not source_fields or not target_fields %}
+        <div class="empty-state">
+            <h3>Faltan perfiles</h3>
+            <p>Complete origen y destino antes de crear mapeos.</p>
+            <div class="page-actions" style="justify-content:center; margin-top:12px;">
+                {% if not source_fields %}
+                <a href="{% url 'dms:source_hub' project_slug=project.slug %}" class="btn btn-primary">Definir origen</a>
+                {% endif %}
+                {% if not target_fields %}
+                <a href="{% url 'dms:target_hub' project_slug=project.slug %}" class="btn btn-primary">Definir destino</a>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="step-summary-list">
+            <a href="{% url 'dms:field_mapping_editor' project_slug=project.slug %}" class="step-summary-card">
+                <div>
+                    <h4>Editor de mapeo</h4>
+                    <p>Relacione campos origen con destino (directo, constante, concat, generado).</p>
+                </div>
+                <span class="flow-card-status flow-card-status--{% if hub.is_complete %}done{% elif hub.mappings_count %}draft{% else %}empty{% endif %}">
+                    {% if hub.is_complete %}Completo{% elif hub.mappings_count %}En edición{% else %}Pendiente{% endif %}
+                </span>
+            </a>
+            <a href="{% url 'dms:source_hub' project_slug=project.slug %}" class="step-summary-card">
+                <div>
+                    <h4>Origen · {{ source_file_type }}</h4>
+                    <p>{{ hub.source_fields_count }} campos disponibles para enlazar.</p>
+                </div>
+                <span class="flow-card-status flow-card-status--done">Listo</span>
+            </a>
+            <a href="{% url 'dms:target_hub' project_slug=project.slug %}" class="step-summary-card">
+                <div>
+                    <h4>Destino · {{ target_file_type }}</h4>
+                    <p>{{ hub.target_fields_count }} campos de salida.</p>
+                </div>
+                <span class="flow-card-status flow-card-status--done">Listo</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

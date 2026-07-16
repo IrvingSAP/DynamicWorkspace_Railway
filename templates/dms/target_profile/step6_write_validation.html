@@ -1,0 +1,104 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 6 — Validación escritura — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:target_hub' project_slug=project.slug %}">Destino</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Paso 6</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/target_profile/_project_scope.html" %}
+{% include "dms/target_profile/_target_persistence.html" %}
+
+<div id="target-step-root"
+     data-step="6"
+     data-can-edit="{% if can_edit_target %}1{% else %}0{% endif %}">
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Paso 6 de 6 · <span class="role-badge">write_validation</span></p>
+        <h2>Validación al escribir</h2>
+        <p>Políticas de manejo de errores cuando un valor no cumple el perfil destino.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:target_step6_help' project_slug=project.slug as target_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=target_help_url %}
+        <a href="{% url 'dms:target_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
+    </div>
+</div>
+
+{% include "dms/target_profile/_wizard_stepper.html" %}
+
+<div class="panel">
+    <div class="panel-body">
+        <p id="step-save-status" class="step-save-status" aria-live="polite"></p>
+        <h3 class="form-section-title">Políticas</h3>
+        <div class="form-grid">
+            <div class="field">
+                <label for="policy">Política general</label>
+                <select id="policy"{% if not can_edit_target %} disabled{% endif %}>
+                    {% for code, label in policies %}
+                    <option value="{{ code }}"{% if write_validation.policy == code %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label for="on_type_mismatch">Tipo incorrecto</label>
+                <select id="on_type_mismatch"{% if not can_edit_target %} disabled{% endif %}>
+                    {% for code, label in policies %}
+                    <option value="{{ code }}"{% if write_validation.on_type_mismatch == code %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label for="on_length_exceeded">Longitud excedida</label>
+                <select id="on_length_exceeded"{% if not can_edit_target %} disabled{% endif %}>
+                    {% for code, label in policies %}
+                    <option value="{{ code }}"{% if write_validation.on_length_exceeded == code %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label for="on_required_empty">Obligatorio vacío</label>
+                <select id="on_required_empty"{% if not can_edit_target %} disabled{% endif %}>
+                    {% for code, label in policies %}
+                    <option value="{{ code }}"{% if write_validation.on_required_empty == code %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="wizard-footer">
+            <span class="hint">Los cambios se guardan en el borrador del perfil de destino.</span>
+            <div class="wizard-footer-actions">
+                <a href="{% url 'dms:target_step5' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
+                {% if can_edit_target %}
+                <button type="button" id="btn-save-step" class="btn btn-ghost">Guardar borrador</button>
+                <button type="button" id="btn-step-next" class="btn btn-primary" data-next="{% url 'dms:target_hub' project_slug=project.slug %}">Finalizar →</button>
+                {% else %}
+                <a href="{% url 'dms:target_hub' project_slug=project.slug %}" class="btn btn-primary">Finalizar →</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/target_profile-steps.js' %}"></script>
+{% endblock %}

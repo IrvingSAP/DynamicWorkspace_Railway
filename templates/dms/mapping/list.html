@@ -1,0 +1,128 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Data Mapping — FilePipe{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>FilePipe</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Data Mapping</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip" aria-label="Alcance de compañía">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FilePipe · <span class="role-badge">UF</span></p>
+        <h2>Data Mapping</h2>
+        <p>Proyectos ETL de tu compañía. Ves los proyectos donde eres miembro y los públicos de la organización.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:mapping_list_help' as mapping_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=mapping_help_url %}
+        <a href="{% url 'dms:mapping_create' %}" class="btn btn-primary">+ Nuevo proyecto</a>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Total</p>
+        <p class="stat-value">{{ stats.total|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Activos</p>
+        <p class="stat-value">{{ stats.active|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Como admin (PA)</p>
+        <p class="stat-value">{{ stats.pa_count|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Públicos compañía</p>
+        <p class="stat-value">{{ stats.company_visible|default:0 }}</p>
+    </div>
+</div>
+
+<div class="panel panel--table">
+    <div class="table-toolbar" aria-label="Controles de tabla">
+        <div class="table-toolbar-group">
+            <label for="filter-visibilidad">
+                Visibilidad
+                <select id="filter-visibilidad" name="filter-visibilidad">
+                    <option value="">Todas</option>
+                    <option value="publico">Público</option>
+                    <option value="privado">Privado</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="table-dt-host">
+        <table id="dms-project-table" class="dw-datatable" data-dt-custom="true">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Visibilidad</th>
+                    <th>Mi permiso</th>
+                    <th>Versión</th>
+                    <th>Última ejecución</th>
+                    <th class="col-actions">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr data-visibilidad="{% if row.visibility == 'company' %}publico{% else %}privado{% endif %}">
+                    <td><a href="{% url 'dms:mapping_hub' project_slug=row.project.slug %}" class="cell-badge">{{ row.project.slug }}</a></td>
+                    <td class="td-name">{{ row.project.name }}</td>
+                    <td>
+                        {% if row.visibility == 'company' %}
+                        <span class="visibility-badge visibility-badge--public">{{ row.visibility_label }}</span>
+                        {% else %}
+                        <span class="visibility-badge visibility-badge--private">{{ row.visibility_label }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if row.is_pa %}
+                        <span class="perm-badge perm-badge--admin">{{ row.role_label }}</span>
+                        {% else %}
+                        <span class="perm-badge">{{ row.role_label }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="td-mono">{{ row.version_label }}</td>
+                    <td class="td-mono">{{ row.last_execution }}</td>
+                    <td class="col-actions">
+                        <a href="{% url 'dms:mapping_hub' project_slug=row.project.slug %}" class="btn btn-ghost btn-sm">Abrir</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+<script src="{% static 'js/datatables-mapping.js' %}"></script>
+{% endblock %}

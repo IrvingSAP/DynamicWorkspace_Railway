@@ -1,0 +1,39 @@
+{% extends "security/base.html" %}
+
+{% block title %}Configurar 2FA — DynamicWorkspace{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <ol class="wizard-steps" aria-label="Progreso de seguridad">
+        <li class="wizard-step is-done">Credenciales</li>
+        <li class="wizard-step is-done">Correo</li>
+        <li class="wizard-step is-active">2FA</li>
+    </ol>
+
+    <p class="auth-eyebrow">Primer ingreso</p>
+    <h1>Configura tu autenticador</h1>
+    <p class="auth-lead">Instala una app de autenticación (Google Authenticator, Microsoft Authenticator, Authy, etc.) y escanea el código QR.</p>
+
+    <ul class="setup-list">
+        <li>Abre tu app autenticadora</li>
+        <li>Escanea el código QR o ingresa la clave manualmente</li>
+        <li>Guarda el acceso — lo usarás en cada ingreso</li>
+    </ul>
+
+    <div class="qr-panel">
+        <img src="{{ qr_data_uri }}" alt="Código QR para autenticador" class="qr-image" width="180" height="180">
+        <p class="qr-issuer">Issuer: DynamicWorkspace</p>
+        <p class="qr-secret">Clave manual: {{ manual_secret }}</p>
+    </div>
+
+    <div class="auth-actions">
+        <a href="{% url 'security:totp' %}" class="btn btn-primary">Ya registré el código en mi app</a>
+    </div>
+
+    <a href="{% url 'security:cancel' %}" class="auth-link auth-link--block">Cancelar y volver al ingreso</a>
+</div>
+{% endblock %}
+
+{% block footer %}
+<p><a href="{% url 'security:email_code' %}">Paso anterior</a></p>
+{% endblock %}

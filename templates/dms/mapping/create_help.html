@@ -1,0 +1,101 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Nuevo proyecto Data Mapping{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:mapping_create' %}">Nuevo</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">UF</span></p>
+        <h2>Ayuda — Nuevo proyecto</h2>
+        <p>Qué significa cada campo del alta FilePipe (Data Mapping) y qué valores acepta el sistema.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:mapping_create' %}" class="btn btn-secondary">← Volver al formulario</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Crea un proyecto de transformación de archivos (ETL). Al guardar quedas como
+            <strong>administrador del proyecto (PA)</strong> y pasas al hub para definir origen, destino, mapeo y reglas.
+        </p>
+        <ul class="help-list">
+            <li>Solo usuarios <strong>UF</strong> pueden crear proyectos FilePipe.</li>
+            <li>El proyecto queda en tu compañía; no se comparten miembros entre organizaciones.</li>
+            <li>Este formulario cubre <strong>Fase A</strong>: datos básicos + visibilidad. Los miembros se gestionan después.</li>
+        </ul>
+
+        <h3 class="form-section-title">Campos del formulario</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Obligatorio</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Nombre corto (código)</td>
+                    <td>Sí</td>
+                    <td>Identificador en la URL (slug). Debe ser estable.</td>
+                    <td class="mono">Minúsculas, números y guiones. Único en la compañía. Ej. nomina-sap</td>
+                </tr>
+                <tr>
+                    <td>Nombre visible</td>
+                    <td>Sí</td>
+                    <td>Título que verán las personas en listados y hub.</td>
+                    <td>Texto hasta 200 caracteres. Ej. «Nómina SAP → CSV RRHH»</td>
+                </tr>
+                <tr>
+                    <td>Descripción</td>
+                    <td>No</td>
+                    <td>Propósito del proyecto; se muestra en el hub.</td>
+                    <td>Texto libre opcional.</td>
+                </tr>
+                <tr>
+                    <td>Visibilidad</td>
+                    <td>Sí</td>
+                    <td>Quién ve el proyecto en el listado FilePipe.</td>
+                    <td><strong>Privado</strong> (solo miembros) · <strong>Público</strong> (todos los UF de tu compañía)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Crear y continuar</td>
+                    <td>Guarda el proyecto y abre el hub FilePipe.</td>
+                </tr>
+                <tr>
+                    <td>Cancelar / ← Listado</td>
+                    <td>Vuelve al listado Data Mapping sin crear.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

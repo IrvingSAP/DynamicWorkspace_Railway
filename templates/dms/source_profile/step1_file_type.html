@@ -1,0 +1,110 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 1 — Tipo de archivo — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:source_hub' project_slug=project.slug %}">Origen</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Paso 1</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/source_profile/_project_scope.html" %}
+{% include "dms/source_profile/_source_persistence.html" %}
+
+<div id="source-step-root"
+     data-step="1"
+     data-next-url="{% url 'dms:source_step2' project_slug=project.slug %}"
+     data-can-edit="{% if can_edit_source %}1{% else %}0{% endif %}">
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Paso 1 de 6 · <span class="role-badge">SourceFileType</span></p>
+        <h2>Tipo de archivo a recibir</h2>
+        <p>Seleccione el formato de lectura desde el catálogo <code>SourceFileType</code>.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:source_step1_help' project_slug=project.slug as source_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+        <a href="{% url 'dms:source_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
+    </div>
+</div>
+
+{% include "dms/source_profile/_wizard_stepper.html" %}
+
+<div class="panel">
+    <div class="panel-body">
+        <p id="step-save-status" class="step-save-status" aria-live="polite"></p>
+        <h3 class="form-section-title">Formato de archivo</h3>
+        <div class="file-type-grid" role="radiogroup" aria-label="Tipo de archivo">
+            {% for ft in file_types %}
+            <label class="file-type-card{% if ft.disabled %} file-type-card--phase2{% endif %}">
+                <input type="radio" name="file_type" value="{{ ft.code }}"
+                       {% if source.file_type_code|default:"txt_fixed" == ft.code %}checked{% endif %}
+                       {% if ft.disabled or not can_edit_source %}disabled{% endif %}>
+                <strong>{{ ft.name }}</strong>
+                {% if ft.hint %}<span>{{ ft.hint }}</span>{% endif %}
+                {% if ft.badge %}<span class="file-type-badge">{{ ft.badge }}</span>{% endif %}
+            </label>
+            {% endfor %}
+        </div>
+
+        <h3 class="form-section-title" style="margin-top:24px">Parámetros de texto <span class="hint">(TextReadFormat)</span></h3>
+        <div class="form-grid">
+            <div class="field">
+                <label for="encoding_code">Codificación</label>
+                <select id="encoding_code" name="encoding_code"{% if not can_edit_source %} disabled{% endif %}>
+                    {% for enc in encodings %}
+                    <option value="{{ enc.code }}"{% if source.encoding_code == enc.code %} selected{% endif %}>{{ enc.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field" data-line-ending-custom>
+                <label for="line_ending_code">Final de línea</label>
+                <select id="line_ending_code" name="line_ending_code"{% if not can_edit_source %} disabled{% endif %}>
+                    {% for le in line_endings %}
+                    <option value="{{ le.code }}"{% if source.line_ending_code == le.code %} selected{% endif %}>{{ le.name }}</option>
+                    {% endfor %}
+                </select>
+                <div class="field" data-custom-field hidden style="margin-top:10px">
+                    <label for="line_ending_custom">Secuencia personalizada</label>
+                    <input type="text" id="line_ending_custom" name="line_ending_custom" class="mono"
+                           value="{{ source.line_ending_custom|default:'' }}"
+                           placeholder="\r\n"{% if not can_edit_source %} disabled{% endif %}>
+                </div>
+            </div>
+        </div>
+
+        <div class="wizard-footer">
+            <span class="hint">Los cambios se guardan en el borrador del perfil de origen.</span>
+            <div class="wizard-footer-actions">
+                <button type="button" class="btn btn-secondary" disabled>← Anterior</button>
+                {% if can_edit_source %}
+                <button type="button" id="btn-save-step" class="btn btn-ghost">Guardar borrador</button>
+                <button type="button" id="btn-step-next" class="btn btn-primary" data-next="{% url 'dms:source_step2' project_slug=project.slug %}">Siguiente →</button>
+                {% else %}
+                <a href="{% url 'dms:source_step2' project_slug=project.slug %}" class="btn btn-primary">Siguiente →</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/source_profile-wizard.js' %}"></script>
+<script src="{% static 'js/source_profile-steps.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Planes — DynamicWorkspace{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/billing.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_ua.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>Administración</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Billing</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Planes</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Catálogo · <span class="role-badge">UA</span></p>
+        <h2>Planes</h2>
+        <p>Planes contratables disponibles para asignar a compañías.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'billing:plan_create' %}" class="btn btn-primary">+ Nuevo plan</a>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen de planes">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Total</p>
+        <p class="stat-value">{{ stats.total|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Activos</p>
+        <p class="stat-value">{{ stats.active|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Inactivos</p>
+        <p class="stat-value">{{ stats.inactive|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Suscripciones</p>
+        <p class="stat-value">{{ stats.subscriptions_total|default:0 }}</p>
+    </div>
+</div>
+
+<div class="panel panel--table">
+    <div class="table-toolbar" aria-label="Controles de tabla">
+        <div class="table-toolbar-group">
+            <label for="filter-estado">
+                Estado
+                <select id="filter-estado" name="filter-estado">
+                    <option value="">Todos</option>
+                    <option value="activo">Activo</option>
+                    <option value="inactivo">Inactivo</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="table-dt-host table-dt-host--billing">
+        <table id="plan-table" class="dw-datatable">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Periodo</th>
+                    <th>Precio ref.</th>
+                    <th>Estado</th>
+                    <th>Suscripciones</th>
+                    <th class="col-actions">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for plan in plans %}
+                <tr data-estado="{% if plan.is_active %}activo{% else %}inactivo{% endif %}">
+                    <td><a href="{% url 'billing:plan_detail' pk=plan.pk %}" class="cell-badge">{{ plan.code }}</a></td>
+                    <td class="td-name">{{ plan.name }}</td>
+                    <td>{{ plan.get_billing_period_display }}</td>
+                    <td class="td-mono">{% if plan.price is not None %}$ {{ plan.price }}{% else %}—{% endif %}</td>
+                    <td>
+                        {% if plan.is_active %}
+                        <span class="status status-active"><span class="status-dot"></span>Activo</span>
+                        {% else %}
+                        <span class="status status-inactive"><span class="status-dot"></span>Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td class="td-mono">{{ plan.subscriptions_count }}</td>
+                    <td class="col-actions">
+                        <div class="actions actions--table">
+                            <a href="{% url 'billing:plan_detail' pk=plan.pk %}" class="btn btn-ghost btn-sm">Ver</a>
+                            <a href="{% url 'billing:plan_update' pk=plan.pk %}" class="btn btn-ghost btn-sm">Editar</a>
+                            <a href="{% url 'billing:plan_delete' pk=plan.pk %}" class="btn btn-ghost btn-sm btn-ghost--danger">Eliminar</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+<script src="{% static 'js/datatables-plan.js' %}"></script>
+{% endblock %}

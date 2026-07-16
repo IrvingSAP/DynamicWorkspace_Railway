@@ -1,0 +1,214 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Apariencia tabla — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/records.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'projects:list' %}">Proyectos</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'projects:detail' slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'records:list' slug=project.slug %}">Registros</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'records:expand' slug=project.slug %}">Expandir</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Apariencia</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Alcance del proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Tabla expandida · <span class="role-code role-code--pa">PA</span></p>
+        <h2>Apariencia de la tabla</h2>
+        <p>Configuración guardada por proyecto. Solo afecta la vista expandida de registros.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'records:expand' slug=project.slug %}" class="btn btn-secondary">← Vista expandida</a>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    Cada proyecto define sus propios colores y opciones de DataTables. No hay plantillas predefinidas.
+</div>
+
+<div class="expand-display-layout">
+    <div class="panel">
+        <div class="panel-body">
+            <form id="expand-theme-form" method="post" action="" novalidate>
+                {% csrf_token %}
+                <div class="form-section">
+                    <h3 class="form-section-title">Paginación</h3>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="page_length">Filas por página</label>
+                            <input type="number" id="page_length" name="page_length" class="mono" min="10" max="100" value="{{ posted.page_length }}" required>
+                            <p class="hint">Entre 10 y 100. Valor por defecto del modelo: 25.</p>
+                            {% for message in errors.page_length %}
+                            <p class="field-error">{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="form-section-title">Opciones de tabla (DataTables)</h3>
+                    <p class="form-section-hint">Clases CSS aplicadas al elemento <code>&lt;table&gt;</code> en la vista expandida.</p>
+                    <div class="form-grid expand-display-toggles">
+                        {% for item in boolean_fields %}
+                        <div class="toggle-row">
+                            <input
+                                type="checkbox"
+                                id="{{ item.name }}"
+                                name="{{ item.name }}"
+                                {% if item.checked %}checked{% endif %}
+                            >
+                            <label for="{{ item.name }}">{{ item.label }} (<code>{{ item.class_name }}</code>)</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="form-section-title">Colores</h3>
+                    <p class="form-section-hint">Formato hexadecimal <code>#RRGGBB</code>. Todos los campos son obligatorios al guardar.</p>
+                    <div class="color-field-grid">
+                        <div class="field color-field">
+                            <label for="header_bg">Fondo cabecera</label>
+                            <div class="color-input-row">
+                                <input type="color" id="header_bg_picker" value="{{ posted.header_bg }}" aria-label="Selector fondo cabecera">
+                                <input type="text" id="header_bg" name="header_bg" class="mono" value="{{ posted.header_bg }}" maxlength="7" required>
+                            </div>
+                            {% for message in errors.header_bg %}
+                            <p class="field-error">{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="field color-field">
+                            <label for="header_color">Texto cabecera</label>
+                            <div class="color-input-row">
+                                <input type="color" id="header_color_picker" value="{{ posted.header_color }}" aria-label="Selector texto cabecera">
+                                <input type="text" id="header_color" name="header_color" class="mono" value="{{ posted.header_color }}" maxlength="7" required>
+                            </div>
+                            {% for message in errors.header_color %}
+                            <p class="field-error">{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="field color-field">
+                            <label for="header_border">Borde cabecera</label>
+                            <div class="color-input-row">
+                                <input type="color" id="header_border_picker" value="{{ posted.header_border }}" aria-label="Selector borde cabecera">
+                                <input type="text" id="header_border" name="header_border" class="mono" value="{{ posted.header_border }}" maxlength="7" required>
+                            </div>
+                            {% for message in errors.header_border %}
+                            <p class="field-error">{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="field color-field">
+                            <label for="cell_border">Borde celdas</label>
+                            <div class="color-input-row">
+                                <input type="color" id="cell_border_picker" value="{{ posted.cell_border }}" aria-label="Selector borde celdas">
+                                <input type="text" id="cell_border" name="cell_border" class="mono" value="{{ posted.cell_border }}" maxlength="7" required>
+                            </div>
+                            {% for message in errors.cell_border %}
+                            <p class="field-error">{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="field color-field">
+                            <label for="stripe_bg">Fondo filas alternas</label>
+                            <div class="color-input-row">
+                                <input type="color" id="stripe_bg_picker" value="{{ posted.stripe_bg }}" aria-label="Selector filas alternas">
+                                <input type="text" id="stripe_bg" name="stripe_bg" class="mono" value="{{ posted.stripe_bg }}" maxlength="7" required>
+                            </div>
+                            {% for message in errors.stripe_bg %}
+                            <p class="field-error">{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="field color-field">
+                            <label for="hover_bg">Fondo fila al pasar mouse</label>
+                            <div class="color-input-row">
+                                <input type="color" id="hover_bg_picker" value="{{ posted.hover_bg }}" aria-label="Selector hover fila">
+                                <input type="text" id="hover_bg" name="hover_bg" class="mono" value="{{ posted.hover_bg }}" maxlength="7" required>
+                            </div>
+                            {% for message in errors.hover_bg %}
+                            <p class="field-error">{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Guardar apariencia</button>
+                    <button type="button" class="btn btn-secondary" id="btn-reset-defaults">Restaurar defaults técnicos</button>
+                    <a href="{% url 'records:expand' slug=project.slug %}" class="btn btn-ghost">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <aside class="panel expand-display-preview-panel" aria-label="Vista previa del tema">
+        <div class="panel-body">
+            <h3 class="form-section-title">Vista previa</h3>
+            <p class="form-section-hint">Miniatura de cómo se verá la cabecera y filas en la vista expandida.</p>
+            <div
+                id="theme-preview"
+                class="theme-preview"
+                style="--theme-header-bg:{{ resolved.header_bg }};--theme-header-color:{{ resolved.header_color }};--theme-header-border:{{ resolved.header_border }};--theme-cell-border:{{ resolved.cell_border }};--theme-stripe-bg:{{ resolved.stripe_bg }};--theme-hover-bg:{{ resolved.hover_bg }};"
+            >
+                <p class="theme-preview-meta mono" id="preview-class-string">{{ resolved.table_class_string }}</p>
+                <table class="theme-preview-table" id="preview-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descripción</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono">ART-001</td>
+                            <td>Tornillo hexagonal M8×40</td>
+                            <td class="mono">1 200</td>
+                        </tr>
+                        <tr class="is-stripe">
+                            <td class="mono">ART-002</td>
+                            <td>Rodamiento 6205-2RS</td>
+                            <td class="mono">48</td>
+                        </tr>
+                        <tr>
+                            <td class="mono">ART-003</td>
+                            <td>Aceite hidráulico ISO 46</td>
+                            <td class="mono">320</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <dl class="theme-preview-summary">
+                    <div><dt>Filas/página</dt><dd id="preview-page-length" class="mono">{{ resolved.page_length }}</dd></div>
+                    <div>
+                        <dt>Actualizado</dt>
+                        <dd class="mono">{% if resolved.updated_at %}{{ resolved.updated_at|date:"d/m/Y H:i" }}{% else %}Sin guardar{% endif %}</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </aside>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/record-expand-display.js' %}"></script>
+{% endblock %}

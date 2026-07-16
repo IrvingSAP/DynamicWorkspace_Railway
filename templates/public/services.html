@@ -1,0 +1,122 @@
+{% extends "public/base.html" %}
+
+{% block title %}Servicios — DynamicWorkspace{% endblock %}
+
+{% block content %}
+<section class="pub-page-hero">
+    <div class="pub-container">
+        <p class="pub-eyebrow">Servicios</p>
+        <h1>Todo lo que tu equipo necesita para gestionar datos operativos</h1>
+        <p>Desde la definición de campos hasta la auditoría de cada cambio. Una plataforma multiusuario pensada para reemplazar hojas de cálculo dispersas.</p>
+    </div>
+</section>
+
+<section class="pub-section">
+    <div class="pub-container">
+        <div class="service-grid">
+            <article class="service-card service-card--teal">
+                <span class="service-card-icon">📋</span>
+                <h3>Gestión de proyectos</h3>
+                <p>Cada proyecto es una tabla configurable dentro de tu compañía. Crea, archiva y organiza aplicaciones de gestión sin tocar código.</p>
+                <ul class="service-list">
+                    <li>Creación de proyectos con nombre, descripción y slug</li>
+                    <li>Campos dinámicos: texto, número, fecha, lista, booleano</li>
+                    <li>Archivado sin pérdida de datos</li>
+                    <li>Plantillas y duplicación de estructura (roadmap)</li>
+                </ul>
+            </article>
+            <article class="service-card service-card--coral">
+                <span class="service-card-icon">📑</span>
+                <h3>Registros y consultas</h3>
+                <p>Opera sobre tus datos como en una hoja de cálculo: listado paginado, filtros por campo, búsqueda y ordenamiento.</p>
+                <ul class="service-list">
+                    <li>CRUD completo con soft delete</li>
+                    <li>Tabla editable tipo hoja de cálculo en el navegador</li>
+                    <li>Filtros y búsqueda por tipo de campo</li>
+                    <li>Exportación a hoja de cálculo (roadmap)</li>
+                </ul>
+            </article>
+            <article class="service-card service-card--violet">
+                <span class="service-card-icon">🔐</span>
+                <h3>Usuarios y permisos</h3>
+                <p>Control de acceso en dos niveles: tipo de usuario global (UA, US, UF) y roles por proyecto (PA, ED, CO, GE).</p>
+                <ul class="service-list">
+                    <li>Autorización de miembros por proyecto</li>
+                    <li>Roles: admin, editor, consulta, generar</li>
+                    <li>Aislamiento por compañía (multi-tenant)</li>
+                    <li>Alta administrada — sin registro público</li>
+                </ul>
+            </article>
+            <article class="service-card service-card--sky">
+                <span class="service-card-icon">🔍</span>
+                <h3>Auditoría e historial</h3>
+                <p>Responde quién creó o modificó cada registro y qué valor cambió. Trazabilidad completa para equipos operativos.</p>
+                <ul class="service-list">
+                    <li>Historial por registro y por campo</li>
+                    <li>Metadatos: usuario, fecha, valor anterior</li>
+                    <li>Visible para administradores de proyecto</li>
+                    <li>Integridad referencial con UUID</li>
+                </ul>
+            </article>
+            <article class="service-card service-card--lime">
+                <span class="service-card-icon">📊</span>
+                <h3>Importación desde hoja de cálculo</h3>
+                <p>Acelera la adopción migrando hojas existentes. El sistema analiza columnas y propone la estructura de campos.</p>
+                <ul class="service-list">
+                    <li>Análisis automático de columnas</li>
+                    <li>Creación de campos sugeridos</li>
+                    <li>Carga masiva de registros</li>
+                    <li>Reporte de errores por fila</li>
+                </ul>
+            </article>
+            <article class="service-card service-card--teal">
+                <span class="service-card-icon">🛡️</span>
+                <h3>Seguridad y licencias</h3>
+                <p>Acceso protegido con correo verificado y 2FA. Cada compañía opera bajo su propia suscripción y plan.</p>
+                <ul class="service-list">
+                    <li>Verificación por correo en primer acceso</li>
+                    <li>Autenticación TOTP (autenticador)</li>
+                    <li>Planes Basic, Pro y Enterprise</li>
+                    <li>Suscripción vigente requerida para operar</li>
+                </ul>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="pub-section pub-section--alt">
+    <div class="pub-container">
+        <div class="pub-section-header">
+            <h2>Para quién es</h2>
+            <p>Equipos operativos que hoy dependen de hojas de cálculo para controles, seguimientos y gestiones con poca extensión de datos.</p>
+        </div>
+        <div class="audience-grid">
+            <article class="audience-card">
+                <div class="audience-card-icon">⚙️</div>
+                <h3>Operaciones</h3>
+                <p>Inventarios, controles de actividad, checklists y seguimiento de tareas con estructura propia.</p>
+            </article>
+            <article class="audience-card">
+                <div class="audience-card-icon">📁</div>
+                <h3>Administración</h3>
+                <p>Gestiones internas, registros de proveedores, vencimientos y tablas de referencia compartidas.</p>
+            </article>
+            <article class="audience-card">
+                <div class="audience-card-icon">👥</div>
+                <h3>Equipos pequeños</h3>
+                <p>Grupos que necesitan colaborar sin IT: definen su tabla, invitan colegas y auditan cambios.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="pub-section">
+    <div class="pub-container">
+        <div class="pub-cta">
+            <h2>Conoce el plan adecuado para tu compañía</h2>
+            <p>Los planes y suscripciones se gestionan por organización. Escríbenos para una demostración o solicitud de acceso.</p>
+            <a href="{% url 'public:contact' %}" class="btn btn-primary">Contactar</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

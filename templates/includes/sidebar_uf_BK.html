@@ -1,0 +1,24 @@
+{# Navegación lateral UF — Worksheets + FilePipe #}
+<a href="{% url 'dashboard:home' %}" class="sidebar-link{% if app_nav_active == 'home' %} is-active{% endif %}">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 6.5L8 2l6 4.5V13a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"/></svg>
+    Inicio
+</a>
+<a href="{% url 'projects:list' %}" class="sidebar-link{% if app_nav_active == 'worksheets' or app_nav_active == 'projects' %} is-active{% endif %}">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
+    Worksheets
+</a>
+<div class="sidebar-nav-group{% if filepipe_nav_open %} is-open{% endif %}{% if app_nav_active == 'filepipe_mapping' or app_nav_active == 'filepipe_catalogs' %} is-active{% endif %}" data-nav-group="filepipe">
+    <button type="button" class="sidebar-nav-group-toggle" aria-expanded="{% if filepipe_nav_open %}true{% else %}false{% endif %}" aria-controls="filepipe-submenu">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 8h3l2-4 2 8 2-4h3"/></svg>
+        FilePipe
+        <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="sidebar-nav-submenu" id="filepipe-submenu">
+        <a href="{% url 'dms:mapping_list' %}" class="sidebar-sublink{% if app_nav_active == 'filepipe_mapping' %} is-active{% endif %}">Data Mapping</a>
+        <a href="{% url 'dms:catalog_hub' %}" class="sidebar-sublink{% if app_nav_active == 'filepipe_catalogs' %} is-active{% endif %}">Catálogos</a>
+    </div>
+</div>
+<a href="{% url 'help:uf_guide' %}" class="sidebar-link sidebar-link--help{% if app_nav_active == 'help' %} is-active{% endif %}"{% if app_nav_active == 'help' %} aria-current="page"{% endif %}>
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg>
+    Ayuda
+</a>

@@ -1,0 +1,98 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ plan.name }} — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/billing.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_ua.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'billing:plan_list' %}">Planes</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ plan.code }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Catálogo</p>
+        <h2>{{ plan.name }}</h2>
+        <p>Detalle del plan y suscripciones asociadas.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'billing:plan_update' pk=plan.pk %}" class="btn btn-primary">Editar</a>
+        <a href="{% url 'billing:plan_list' %}" class="btn btn-secondary">← Listado</a>
+    </div>
+</div>
+
+<div class="hero-panel">
+    <div class="hero-meta hero-meta--grow">
+        <span class="cell-badge">{{ plan.code }}</span>
+        {% if plan.is_active %}
+        <span class="status status-active status--offset"><span class="status-dot"></span>Activo</span>
+        {% else %}
+        <span class="status status-inactive status--offset"><span class="status-dot"></span>Inactivo</span>
+        {% endif %}
+        <h3>{{ plan.name }}</h3>
+        {% if plan.description %}
+        <p>{{ plan.description }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="metric-row" aria-label="Métricas del plan">
+    <div class="metric-card">
+        <p class="metric-label">Periodo</p>
+        <p class="metric-value metric-value--md">{{ plan.get_billing_period_display }}</p>
+    </div>
+    <div class="metric-card">
+        <p class="metric-label">Precio ref.</p>
+        <p class="metric-value metric-value--md">{% if plan.price is not None %}$ {{ plan.price }}{% else %}—{% endif %}</p>
+    </div>
+    <div class="metric-card">
+        <p class="metric-label">Suscripciones</p>
+        <p class="metric-value">{{ plan.subscriptions_count }}</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <div class="sub-table-title">
+            <h3>Suscripciones con este plan</h3>
+        </div>
+        {% if subscriptions %}
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Compañía</th>
+                        <th>Estado</th>
+                        <th>Vigencia</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sub in subscriptions %}
+                    <tr>
+                        <td><span class="cell-badge">{{ sub.company.name_short }}</span> {{ sub.company.name_long }}</td>
+                        <td>{{ sub.get_status_display }}</td>
+                        <td class="td-mono">{{ sub.start_date|date:"d/m/Y" }} — {{ sub.end_date|date:"d/m/Y" }}</td>
+                        <td><a href="{% url 'billing:subscription_detail' company_pk=sub.company_id %}" class="btn btn-ghost btn-sm">Ver</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="hint">Ninguna suscripción usa este plan todavía.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

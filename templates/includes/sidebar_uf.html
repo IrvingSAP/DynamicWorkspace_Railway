@@ -1,0 +1,30 @@
+{# Navegación lateral UF — Worksheets + FilePipe #}
+<a href="{% url 'dashboard:home' %}" class="sidebar-link{% if app_nav_active == 'home' %} is-active{% endif %}">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 6.5L8 2l6 4.5V13a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"/></svg>
+    Inicio
+</a>
+
+<div class="sidebar-nav-group{% if app_nav_active == 'projects' or app_nav_active == 'help' %} is-open is-active{% endif %}" data-nav-group="worksheets">
+    <button type="button" class="sidebar-nav-group-toggle" aria-expanded="{% if app_nav_active == 'projects' or app_nav_active == 'help' %}true{% else %}false{% endif %}" aria-controls="worksheets-submenu">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 3h12M2 8h12M2 13h8"/></svg>
+        Worksheets
+        <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="sidebar-nav-submenu" id="worksheets-submenu">
+        <a href="{% url 'projects:list' %}" class="sidebar-sublink{% if app_nav_active == 'projects' %} is-active{% endif %}">Worksheets</a>
+        <a href="{% url 'help:uf_guide' %}" class="sidebar-sublink{% if app_nav_active == 'help' %} is-active{% endif %}">Ayuda</a>
+    </div>
+</div>
+
+<div class="sidebar-nav-group{% if filepipe_nav_open or app_nav_active == 'filepipe_mapping' or app_nav_active == 'filepipe_catalogs' or app_nav_active == 'filepipe_guide' %} is-open{% endif %}{% if app_nav_active == 'filepipe_mapping' or app_nav_active == 'filepipe_catalogs' or app_nav_active == 'filepipe_guide' %} is-active{% endif %}" data-nav-group="filepipe">
+    <button type="button" class="sidebar-nav-group-toggle" aria-expanded="{% if filepipe_nav_open or app_nav_active == 'filepipe_mapping' or app_nav_active == 'filepipe_catalogs' or app_nav_active == 'filepipe_guide' %}true{% else %}false{% endif %}" aria-controls="filepipe-submenu">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 8h3l2-4 2 8 2-4h3"/></svg>
+        FilePipe
+        <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="sidebar-nav-submenu" id="filepipe-submenu">
+        <a href="{% url 'dms:mapping_list' %}" class="sidebar-sublink{% if app_nav_active == 'filepipe_mapping' %} is-active{% endif %}">Data Mapping</a>
+        <a href="{% url 'dms:catalog_hub' %}" class="sidebar-sublink{% if app_nav_active == 'filepipe_catalogs' %} is-active{% endif %}">Catálogos</a>
+        <a href="{% url 'dms:datamapping_guide' %}" class="sidebar-sublink{% if app_nav_active == 'filepipe_guide' %} is-active{% endif %}">Ayuda</a>
+    </div>
+</div>

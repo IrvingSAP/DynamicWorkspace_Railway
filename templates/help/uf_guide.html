@@ -1,0 +1,380 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Guía de trabajo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+                    <span>Workspace</span>
+                    <span class="breadcrumb-sep">/</span>
+                    <span>Ayuda</span>
+                </nav>
+
+                <div class="guide-hero">
+                    <div class="guide-hero-main">
+                        <p class="page-eyebrow">Guía de trabajo · <span class="role-badge">UF</span> · <span class="cell-badge">{{ company.name_short }}</span></p>
+                        <h2>Cómo se trabaja en Workspace</h2>
+                        <p>
+                            Esta ayuda describe el <strong>flujo general</strong> de la plataforma: qué hace cada parte del recorrido,
+                            quién puede hacerlo y qué conviene tener en cuenta. No sustituye la ayuda contextual de cada pantalla
+                            (icono <span class="mono">?</span> junto a formularios y listados).
+                        </p>
+                    </div>
+                    <aside class="guide-hero-aside" aria-label="Ruta rápida">
+                        <h3>Ruta rápida</h3>
+                        <ol class="guide-quick-path">
+                            <li>Entra al panel y elige un proyecto de tu compañía.</li>
+                            <li>Si eres PA, define campos y autoriza al equipo.</li>
+                            <li>Trabaja registros en tabla o vista expandida según tu rol.</li>
+                        </ol>
+                    </aside>
+                </div>
+
+                <div class="guide-role-strip" aria-label="Roles en proyectos">
+                    <span class="label">Roles</span>
+                    <span class="guide-role-item"><span class="role-code role-code--pa">PA</span><span>Admin de proyecto</span></span>
+                    <span class="guide-role-item"><span class="role-code role-code--ed">ED</span><span>Editor</span></span>
+                    <span class="guide-role-item"><span class="role-code role-code--co">CO</span><span>Consulta</span></span>
+                    <span class="guide-role-item"><span class="role-code">GE</span><span>Generar / exportar</span></span>
+                    <span>· Tu rol puede variar en cada proyecto.</span>
+                </div>
+
+                <div class="guide-layout">
+                    <nav class="guide-spine" aria-label="Índice de flujos">
+                        <h3>Flujos</h3>
+                        <nav>
+                            <a href="#flujo-inicio">1. Inicio y panel</a>
+                            <a href="#flujo-proyecto">2. Crear proyecto</a>
+                            <a href="#flujo-campos">3. Diseñar campos</a>
+                            <a href="#flujo-miembros">4. Autorizar equipo</a>
+                            <a href="#flujo-registros">5. Gestionar registros</a>
+                            <a href="#flujo-expandir">6. Vista expandida</a>
+                            <a href="#flujo-consulta">7. Consulta y exportación</a>
+                        </nav>
+                    </nav>
+
+                    <div class="guide-flows">
+                        <article class="flow-card" id="flujo-inicio">
+                            <div class="flow-card-marker" aria-hidden="true">
+                                <span class="flow-card-step">1</span>
+                                <span class="flow-card-line"></span>
+                            </div>
+                            <div class="flow-card-body">
+                                <header class="flow-card-header">
+                                    <h3>Inicio y orientación</h3>
+                                    <div class="flow-card-roles">
+                                        <span class="role-code">UF</span>
+                                        <span class="role-code role-code--pa">PA</span>
+                                        <span class="role-code role-code--ed">ED</span>
+                                        <span class="role-code role-code--co">CO</span>
+                                    </div>
+                                </header>
+                                <p class="flow-card-purpose">
+                                    <strong>Para qué sirve:</strong> ver de un vistazo tus proyectos, roles y actividad reciente dentro de tu compañía.
+                                    Es el punto de partida diario antes de entrar a una tabla concreta.
+                                </p>
+                                <div class="flow-card-grid">
+                                    <div class="flow-card-block">
+                                        <h4>Pasos habituales</h4>
+                                        <ol>
+                                            <li>Inicia sesión y completa verificación de seguridad si aplica.</li>
+                                            <li>Revisa el panel: proyectos recientes, tu rol y registros totales.</li>
+                                            <li>Abre <strong>Proyectos</strong> o un acceso rápido al proyecto que vas a trabajar.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="flow-card-block">
+                                        <h4>Puntos relevantes</h4>
+                                        <ul>
+                                            <li>Solo ves proyectos de tu compañía () con membresía activa.</li>
+                                            <li>El badge de rol en cada fila indica qué puedes hacer en ese proyecto.</li>
+                                            <li>Un proyecto archivado suele quedar en solo lectura.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="flow-card-links">
+                                    <p class="hint">Prototipo de referencia</p>
+                                    <a href="{% url 'dashboard:home' %}" class="btn btn-ghost btn-sm">Panel de inicio</a>
+                                    <a href="{% url 'projects:list' %}" class="btn btn-ghost btn-sm">Listado de proyectos</a>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="flow-card" id="flujo-proyecto">
+                            <div class="flow-card-marker" aria-hidden="true">
+                                <span class="flow-card-step">2</span>
+                                <span class="flow-card-line"></span>
+                            </div>
+                            <div class="flow-card-body">
+                                <header class="flow-card-header">
+                                    <h3>Crear y configurar un proyecto</h3>
+                                    <div class="flow-card-roles">
+                                        <span class="role-code role-code--pa">PA</span>
+                                    </div>
+                                </header>
+                                <p class="flow-card-purpose">
+                                    <strong>Para qué sirve:</strong> abrir un nuevo «cuaderno de trabajo» digital — una tabla independiente con su propio
+                                    esquema, miembros y registros. Sustituye un archivo Excel dedicado a un proceso (inventario, CRM, control, etc.).
+                                </p>
+                                <div class="flow-card-grid">
+                                    <div class="flow-card-block">
+                                        <h4>Pasos habituales</h4>
+                                        <ol>
+                                            <li>Desde Proyectos, pulsa <strong>Crear proyecto</strong>.</li>
+                                            <li>Define nombre, slug y descripción; el sistema te asigna rol <span class="role-code role-code--pa">PA</span>.</li>
+                                            <li>Entra al detalle del proyecto para continuar con campos y miembros.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="flow-card-block">
+                                        <h4>Puntos relevantes</h4>
+                                        <ul>
+                                            <li>El <span class="mono">slug</span> identifica la URL del proyecto y no debe repetirse en la compañía.</li>
+                                            <li>Cada proyecto es aislado: campos y registros no se mezclan entre proyectos.</li>
+                                            <li>Puedes archivar sin borrar datos cuando el proceso termine.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="flow-card-links">
+                                    <p class="hint">Prototipo de referencia</p>
+                                    <a href="{% url 'projects:create' %}" class="btn btn-ghost btn-sm">Crear proyecto</a>
+                                    <a {% if example_project %}href="{% url 'projects:detail' slug=example_project.slug %}"{% else %}href="{% url 'projects:list' %}"{% endif %} class="btn btn-ghost btn-sm">Detalle de proyecto</a>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="flow-card" id="flujo-campos">
+                            <div class="flow-card-marker" aria-hidden="true">
+                                <span class="flow-card-step">3</span>
+                                <span class="flow-card-line"></span>
+                            </div>
+                            <div class="flow-card-body">
+                                <header class="flow-card-header">
+                                    <h3>Diseñar el esquema (campos)</h3>
+                                    <div class="flow-card-roles">
+                                        <span class="role-code role-code--pa">PA</span>
+                                    </div>
+                                </header>
+                                <p class="flow-card-purpose">
+                                    <strong>Para qué sirve:</strong> definir las columnas de la tabla — tipos, etiquetas, obligatoriedad y opciones.
+                                    Equivale a diseñar la primera fila de encabezados en Excel, pero con validación y tipos fuertes.
+                                </p>
+                                <div class="flow-card-grid">
+                                    <div class="flow-card-block">
+                                        <h4>Pasos habituales</h4>
+                                        <ol>
+                                            <li>En el proyecto, abre <strong>Campos</strong>.</li>
+                                            <li>Crea columnas según el proceso (texto, número, fecha, lista, etc.).</li>
+                                            <li>Ordena y activa solo las columnas que el equipo necesita ver.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="flow-card-block">
+                                        <h4>Puntos relevantes</h4>
+                                        <ul>
+                                            <li>La clave interna del campo es difícil de cambiar tras cargar datos.</li>
+                                            <li>Cambiar el tipo de un campo con registros puede requerir validación del sistema.</li>
+                                            <li>Las columnas visibles alimentan listados, filtros y la vista expandida.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="flow-card-links">
+                                    <p class="hint">Prototipo de referencia</p>
+                                    <a {% if example_project %}href="{% url 'fields:list' slug=example_project.slug %}"{% else %}href="{% url 'projects:list' %}"{% endif %} class="btn btn-ghost btn-sm">Listado de campos</a>
+                                    <a {% if example_project %}href="{% url 'fields:create' slug=example_project.slug %}"{% else %}href="{% url 'projects:list' %}"{% endif %} class="btn btn-ghost btn-sm">Nuevo campo</a>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="flow-card" id="flujo-miembros">
+                            <div class="flow-card-marker" aria-hidden="true">
+                                <span class="flow-card-step">4</span>
+                                <span class="flow-card-line"></span>
+                            </div>
+                            <div class="flow-card-body">
+                                <header class="flow-card-header">
+                                    <h3>Autorizar al equipo</h3>
+                                    <div class="flow-card-roles">
+                                        <span class="role-code role-code--pa">PA</span>
+                                    </div>
+                                </header>
+                                <p class="flow-card-purpose">
+                                    <strong>Para qué sirve:</strong> decidir quién de tu compañía accede al proyecto y con qué permisos.
+                                    Sustituye compartir un Excel por correo con control por rol.
+                                </p>
+                                <div class="flow-card-grid">
+                                    <div class="flow-card-block">
+                                        <h4>Pasos habituales</h4>
+                                        <ol>
+                                            <li>Abre <strong>Miembros</strong> desde el detalle del proyecto.</li>
+                                            <li>Invita usuarios UF de la misma compañía y asigna rol.</li>
+                                            <li>Revisa membresías activas y desactiva accesos que ya no correspondan.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="flow-card-block">
+                                        <h4>Puntos relevantes</h4>
+                                        <ul>
+                                            <li><span class="role-code role-code--ed">ED</span> edita registros; <span class="role-code role-code--co">CO</span> solo consulta.</li>
+                                            <li>Solo <span class="role-code role-code--pa">PA</span> diseña campos y gestiona miembros.</li>
+                                            <li>Un usuario puede tener roles distintos en proyectos diferentes.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="flow-card-links">
+                                    <p class="hint">Prototipo de referencia</p>
+                                    <a {% if example_project %}href="{% url 'projects:members' slug=example_project.slug %}"{% else %}href="{% url 'projects:list' %}"{% endif %} class="btn btn-ghost btn-sm">Gestión de miembros</a>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="flow-card" id="flujo-registros">
+                            <div class="flow-card-marker" aria-hidden="true">
+                                <span class="flow-card-step">5</span>
+                                <span class="flow-card-line"></span>
+                            </div>
+                            <div class="flow-card-body">
+                                <header class="flow-card-header">
+                                    <h3>Gestionar registros (datos)</h3>
+                                    <div class="flow-card-roles">
+                                        <span class="role-code role-code--pa">PA</span>
+                                        <span class="role-code role-code--ed">ED</span>
+                                        <span class="role-code role-code--co">CO</span>
+                                    </div>
+                                </header>
+                                <p class="flow-card-purpose">
+                                    <strong>Para qué sirve:</strong> operar el día a día sobre las filas de la tabla — crear, consultar, editar y eliminar
+                                    (baja lógica) según el esquema del proyecto. Es el equivalente a trabajar las filas de datos en Excel.
+                                </p>
+                                <div class="flow-card-grid">
+                                    <div class="flow-card-block">
+                                        <h4>Pasos habituales</h4>
+                                        <ol>
+                                            <li>Desde el proyecto, entra a <strong>Registros</strong>.</li>
+                                            <li>Usa búsqueda, orden y filtros por columnas tipadas.</li>
+                                            <li>Crea o edita filas; abre detalle para ver metadatos y valores completos.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="flow-card-block">
+                                        <h4>Puntos relevantes</h4>
+                                        <ul>
+                                            <li>La tabla se genera dinámicamente desde los campos activos.</li>
+                                            <li>Los valores se validan contra tipo y reglas del campo.</li>
+                                            <li>Registros eliminados pueden ocultarse del listado según filtro de estado.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="flow-card-links">
+                                    <p class="hint">Prototipo de referencia</p>
+                                    <a {% if example_project %}href="{% url 'records:list' slug=example_project.slug %}"{% else %}href="{% url 'projects:list' %}"{% endif %} class="btn btn-ghost btn-sm">Listado de registros</a>
+                                    <a {% if example_project %}href="{% url 'records:create' slug=example_project.slug %}"{% else %}href="{% url 'projects:list' %}"{% endif %} class="btn btn-ghost btn-sm">Nuevo registro</a>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="flow-card" id="flujo-expandir">
+                            <div class="flow-card-marker" aria-hidden="true">
+                                <span class="flow-card-step">6</span>
+                                <span class="flow-card-line"></span>
+                            </div>
+                            <div class="flow-card-body">
+                                <header class="flow-card-header">
+                                    <h3>Vista expandida y apariencia</h3>
+                                    <div class="flow-card-roles">
+                                        <span class="role-code role-code--pa">PA</span>
+                                        <span class="role-code role-code--ed">ED</span>
+                                        <span class="role-code role-code--co">CO</span>
+                                    </div>
+                                </header>
+                                <p class="flow-card-purpose">
+                                    <strong>Para qué sirve:</strong> trabajar la misma tabla a pantalla completa, con más filas visibles y controles de DataTables.
+                                    El PA puede personalizar colores y comportamiento visual <em>por proyecto</em> sin afectar a otros.
+                                </p>
+                                <div class="flow-card-grid">
+                                    <div class="flow-card-block">
+                                        <h4>Pasos habituales</h4>
+                                        <ol>
+                                            <li>En registros, pulsa <strong>Expandir</strong> para abrir la vista amplia.</li>
+                                            <li>Filtra y pagina como en el listado, con más espacio útil.</li>
+                                            <li>Si eres PA, configura <strong>Apariencia</strong> (colores, clases DT, filas por página).</li>
+                                        </ol>
+                                    </div>
+                                    <div class="flow-card-block">
+                                        <h4>Puntos relevantes</h4>
+                                        <ul>
+                                            <li>La apariencia es independiente por proyecto (p. ej. inventario vs. reglas técnicas).</li>
+                                            <li>No hay plantillas predefinidas: el PA define valores explícitos.</li>
+                                            <li>La vista expandida no cambia los datos, solo la presentación.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="flow-card-links">
+                                    <p class="hint">Prototipo de referencia</p>
+                                    <a {% if example_project %}href="{% url 'records:expand' slug=example_project.slug %}"{% else %}href="{% url 'projects:list' %}"{% endif %} class="btn btn-ghost btn-sm">Vista expandida</a>
+                                    <a {% if example_project %}href="{% url 'records:expand_display' slug=example_project.slug %}"{% else %}href="{% url 'projects:list' %}"{% endif %} class="btn btn-ghost btn-sm">Apariencia (PA)</a>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="flow-card" id="flujo-consulta">
+                            <div class="flow-card-marker" aria-hidden="true">
+                                <span class="flow-card-step">7</span>
+                                <span class="flow-card-line"></span>
+                            </div>
+                            <div class="flow-card-body">
+                                <header class="flow-card-header">
+                                    <h3>Consulta, generación y próximos pasos</h3>
+                                    <div class="flow-card-roles">
+                                        <span class="role-code role-code--co">CO</span>
+                                        <span class="role-code">GE</span>
+                                        <span class="role-code role-code--pa">PA</span>
+                                    </div>
+                                </header>
+                                <p class="flow-card-purpose">
+                                    <strong>Para qué sirve:</strong> revisar información sin modificarla, preparar salidas y entender qué capacidades
+                                    llegarán en fases siguientes (importación masiva, auditoría detallada, exportación avanzada).
+                                </p>
+                                <div class="flow-card-grid">
+                                    <div class="flow-card-block">
+                                        <h4>Pasos habituales</h4>
+                                        <ol>
+                                            <li><span class="role-code role-code--co">CO</span> navega listados y detalle en solo lectura.</li>
+                                            <li><span class="role-code">GE</span> usa exportación cuando esté disponible en el proyecto.</li>
+                                            <li><span class="role-code role-code--pa">PA</span> revisa auditoría y configuración cuando se habilite.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="flow-card-block">
+                                        <h4>Puntos relevantes</h4>
+                                        <ul>
+                                            <li>La ayuda contextual de cada pantalla detalla botones y columnas específicas.</li>
+                                            <li>Importar desde Excel y auditoría están planificados en el roadmap del producto.</li>
+                                            <li>Ante dudas de permisos, revisa tu rol en el listado de proyectos.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <p class="guide-footer-note">
+                    <strong>Ayuda contextual vs. esta guía:</strong> en formularios y listados encontrarás enlaces
+                    «Ayuda» que describen cada control de esa pantalla. Esta página explica el recorrido completo
+                    para usuarios UF dentro de su compañía.
+                </p>
+
+            </main>
+        </div>
+    </div>
+
+    {% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/guide-spine.js' %}" defer></script>
+{% endblock %}

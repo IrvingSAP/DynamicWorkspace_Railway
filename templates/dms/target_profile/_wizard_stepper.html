@@ -1,0 +1,9 @@
+{# Contexto: project, current_step (1-6) #}
+<nav class="wizard-stepper" aria-label="Pasos del asistente destino">
+    <a href="{% url 'dms:target_step1' project_slug=project.slug %}" class="wizard-step{% if current_step == 1 %} is-active{% elif current_step > 1 %} is-done{% endif %}"><span class="wizard-step-num">{% if current_step > 1 %}✓{% else %}1{% endif %}</span> Tipo</a>
+    <a href="{% url 'dms:target_step2' project_slug=project.slug %}" class="wizard-step{% if current_step == 2 %} is-active{% elif current_step > 2 %} is-done{% endif %}"><span class="wizard-step-num">{% if current_step > 2 %}✓{% else %}2{% endif %}</span> Encoding</a>
+    <a href="{% url 'dms:target_step3' project_slug=project.slug %}" class="wizard-step{% if current_step == 3 %} is-active{% elif current_step > 3 %} is-done{% endif %}"><span class="wizard-step-num">{% if current_step > 3 %}✓{% else %}3{% endif %}</span> Layout</a>
+    <a href="{% url 'dms:target_step4' project_slug=project.slug %}" class="wizard-step{% if current_step == 4 %} is-active{% elif current_step > 4 %} is-done{% endif %}"><span class="wizard-step-num">{% if current_step > 4 %}✓{% else %}4{% endif %}</span> Campos</a>
+    <a href="{% url 'dms:target_step5' project_slug=project.slug %}" class="wizard-step{% if current_step == 5 %} is-active{% elif current_step > 5 %} is-done{% endif %}"><span class="wizard-step-num">{% if current_step > 5 %}✓{% else %}5{% endif %}</span> Serialización</a>
+    <a href="{% url 'dms:target_step6' project_slug=project.slug %}" class="wizard-step{% if current_step == 6 %} is-active{% endif %}"><span class="wizard-step-num">6</span> Validación</a>
+</nav>

@@ -1,0 +1,53 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Paso 3 origen{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:source_hub' project_slug=project.slug %}">Origen</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:source_step3' project_slug=project.slug %}">Paso 3</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Paso 3 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Línea de fin de captura</h2>
+        <p>Define dónde deja de leer el parser dentro del archivo.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:source_step3' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 3</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            Configura <code>capture_end</code> con modos del catálogo <code>CaptureBoundaryMode</code> (aplica a <strong>end</strong>).
+            Debe ser posterior a <code>capture_start</code> (misma unidad: líneas).
+        </p>
+        <table class="help-table">
+            <thead><tr><th>Elemento</th><th>Qué hace</th></tr></thead>
+            <tbody>
+                <tr><td>Modo de fin</td><td>Ej. fin de archivo (EOF), número de línea, hasta patrón, etc.</td></tr>
+                <tr><td>Parámetros del modo</td><td>Valor asociado al modo elegido.</td></tr>
+                <tr><td>Guardar / Continuar</td><td>Guarda el borrador y pasa al paso 4 (campos).</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Si eliges EOF, se lee hasta el final del archivo tras el inicio definido.</p>
+    </div>
+</div>
+{% endblock %}

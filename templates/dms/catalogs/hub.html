@@ -1,0 +1,84 @@
+{% extends "app_base.html" %}
+{% load static %}
+{# Contexto: catalogs, stats, is_ua, app_nav_active #}
+
+{% block title %}Catálogos — FilePipe{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dms.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>FilePipe</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Catálogos</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Consulta de referencia · <span class="role-badge">{% if is_ua %}UA{% else %}UF{% endif %}</span></p>
+        <h2>Catálogos del sistema</h2>
+        <p>Valores de referencia usados en Data Mapping (tipos de archivo, encoding, errores).{% if not is_ua %} Mantenimiento: UA.{% endif %}</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:catalog_hub_help' as catalog_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=catalog_help_url %}
+    </div>
+</div>
+
+<div class="panel panel--table">
+    <div class="table-dt-host">
+        <table id="catalog-hub-table" class="dw-datatable">
+            <thead>
+                <tr>
+                    <th>Catálogo</th>
+                    <th>Entidad</th>
+                    <th>Uso</th>
+                    <th>Registros</th>
+                    <th aria-label="Acciones"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in catalogs %}
+                <tr>
+                    <td class="td-name">{{ row.title }}</td>
+                    <td class="mono">{{ row.entity }}</td>
+                    <td>{{ row.usage }}</td>
+                    <td class="mono">{{ row.count }}</td>
+                    <td class="td-actions">
+                        <a href="{% url 'dms:catalog_list' catalog_slug=row.slug %}" class="btn btn-ghost btn-sm">Ver registros</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.jQuery && jQuery.fn.DataTable) {
+        jQuery("#catalog-hub-table").DataTable({
+            pageLength: 25,
+            order: [[0, "asc"]],
+            language: { url: "https://cdn.datatables.net/plug-ins/2.2.2/i18n/es-ES.json" }
+        });
+    }
+});
+</script>
+{% endblock %}

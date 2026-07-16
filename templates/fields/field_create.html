@@ -1,0 +1,59 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Nuevo campo — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/fields.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'projects:list' %}">Proyectos</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'projects:detail' slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'fields:list' slug=project.slug %}">Campos</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Nuevo</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Alcance del proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    <span class="hint">·</span>
+    <span class="cell-badge cell-badge--sm">{{ company.name_short }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Diseñador de esquema · <span class="role-code role-code--pa">PA</span></p>
+        <h2>Nuevo campo</h2>
+        <p>Agregar una columna al esquema del proyecto. La clave es inmutable tras crear registros con datos.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'fields:list' slug=project.slug %}" class="btn btn-secondary">← Campos</a>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    El campo se creará en <strong>{{ project.name }}</strong>. Cambiar el tipo después de cargar datos puede requerir migración validada por el servicio.
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        {% include "fields/_form.html" %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/field-form.js' %}"></script>
+{% endblock %}

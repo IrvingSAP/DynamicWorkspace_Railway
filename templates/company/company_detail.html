@@ -1,0 +1,129 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ company.name_short }} — DynamicWorkspace{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    {% if can_manage %}
+    <a href="{% url 'company:list' %}">Compañías</a>
+    <span class="breadcrumb-sep">/</span>
+    {% else %}
+    <span>Compañía</span>
+    <span class="breadcrumb-sep">/</span>
+    {% endif %}
+    <span>{{ company.name_short }}</span>
+</nav>
+{% endblock %}
+
+{% block sidebar_nav %}
+{% if can_manage %}
+{% include "includes/sidebar_ua.html" %}
+{% else %}
+{% include "includes/sidebar_us.html" %}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Tenant</p>
+        <h2>{{ company.name_long }}</h2>
+        <p>Datos de la organización, relaciones y auditoría.</p>
+    </div>
+    <div class="page-actions">
+        {% if can_manage %}
+        <a href="{% url 'company:update' pk=company.pk %}" class="btn btn-primary">Editar</a>
+        <a href="{% url 'company:list' %}" class="btn btn-secondary">← Listado</a>
+        {% else %}
+        <a href="{% url 'dashboard:home' %}" class="btn btn-secondary">← Inicio</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="hero-panel">
+    {% if company.logo %}
+    <img src="{{ company.logo.url }}" alt="Logo {{ company.name_short }}" class="hero-logo hero-logo--img">
+    {% else %}
+    <div class="hero-logo">Logo</div>
+    {% endif %}
+    <div class="hero-meta">
+        <span class="cell-badge">{{ company.name_short }}</span>
+        {% if company.is_active %}
+        <span class="status status-active status--offset"><span class="status-dot"></span>Activa</span>
+        {% else %}
+        <span class="status status-inactive status--offset"><span class="status-dot"></span>Inactiva</span>
+        {% endif %}
+        <h3>{{ company.name_long }}</h3>
+        <p class="hero-id">{{ company.pk }}</p>
+    </div>
+</div>
+
+<div class="metric-row" aria-label="Relaciones del tenant">
+    <div class="metric-card">
+        <p class="metric-label">Usuarios</p>
+        <p class="metric-value">{{ detail.users_count }}</p>
+        <p class="metric-sub">perfiles asociados</p>
+    </div>
+    <div class="metric-card">
+        <p class="metric-label">Proyectos</p>
+        <p class="metric-value">{{ detail.projects_count }}</p>
+        <p class="metric-sub">activos en la compañía</p>
+    </div>
+    <div class="metric-card">
+        <p class="metric-label">Suscripción</p>
+        <p class="metric-value metric-value--md">{{ detail.subscription_summary }}</p>
+        <p class="metric-sub">vigente hasta {{ detail.subscription_until }}</p>
+    </div>
+</div>
+
+<div class="panel panel--gap">
+    <div class="panel-body">
+        <h3 class="form-section-title">Datos generales</h3>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <p class="dl">Código</p>
+                <p class="dd mono">{{ company.name_short }}</p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Identificación tributaria</p>
+                <p class="dd mono">{{ company.tax_id|default:"—" }}</p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Correo</p>
+                <p class="dd">{{ company.email|default:"—" }}</p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Teléfono</p>
+                <p class="dd">{{ company.phone|default:"—" }}</p>
+            </div>
+            <div class="detail-item detail-item--full">
+                <p class="dl">Dirección</p>
+                <p class="dd">{{ company.address|default:"—" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Auditoría</h3>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <p class="dl">Creado</p>
+                <p class="dd">{{ company.created_at|date:"d/m/Y" }}{% if company.created_by %} · <span class="mono">{{ company.created_by.username }}</span>{% endif %}</p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Última actualización</p>
+                <p class="dd">{{ company.updated_at|date:"d/m/Y" }}{% if company.updated_by %} · <span class="mono">{{ company.updated_by.username }}</span>{% endif %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if can_manage %}
+<div class="stack-top">
+    <a href="{% url 'company:delete' pk=company.pk %}" class="btn btn-danger">Eliminar compañía</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Definición origen{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:source_hub' project_slug=project.slug %}">Origen</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Definición de origen</h2>
+        <p>Resumen del asistente SourceProfile (6 pasos) y publicación del borrador.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:source_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al resumen</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            Define cómo se lee el archivo de entrada del proyecto <strong>{{ project.name }}</strong>.
+            Sin un origen válido no hay campos para mapeo ni transformación.
+        </p>
+
+        <h3 class="form-section-title">Indicadores</h3>
+        <table class="help-table">
+            <thead><tr><th>Indicador</th><th>Qué muestra</th></tr></thead>
+            <tbody>
+                <tr><td>Pasos completos</td><td>Cuántos de los 6 pasos del asistente están listos.</td></tr>
+                <tr><td>Tipo archivo</td><td>Formato elegido en el paso 1 (<span class="mono">txt_fixed</span>, <span class="mono">csv</span>, …).</td></tr>
+                <tr><td>Campos definidos</td><td>Cantidad de campos/columnas del paso 4.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Asistente (6 pasos)</h3>
+        <table class="help-table">
+            <thead><tr><th>Paso</th><th>Qué configura</th></tr></thead>
+            <tbody>
+                <tr><td>1 · Tipo</td><td>Formato, encoding y fin de línea.</td></tr>
+                <tr><td>2 · Inicio</td><td>Desde qué línea empieza a leer datos útiles.</td></tr>
+                <tr><td>3 · Fin</td><td>Dónde termina la captura (hasta EOF, línea, patrón…).</td></tr>
+                <tr><td>4 · Campos</td><td>Estructura de columnas / posiciones.</td></tr>
+                <tr><td>5 · Reglas</td><td>Normalización y exclusiones globales.</td></tr>
+                <tr><td>6 · Informe</td><td>Qué se reporta al procesar en ejecución.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>Continuar edición</td><td>Abre el siguiente paso incompleto (o el adecuado según progreso).</td></tr>
+                <tr><td>Publicar versión</td><td>Congela el borrador; las ejecuciones usan la versión publicada y se crea un nuevo borrador.</td></tr>
+                <tr><td>← Proyecto</td><td>Vuelve al hub FilePipe del proyecto.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

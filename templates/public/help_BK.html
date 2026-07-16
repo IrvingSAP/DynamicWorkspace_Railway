@@ -1,0 +1,315 @@
+{% extends "public/base.html" %}
+{% load static %}
+
+{% block title %}Guía del sistema — DynamicWorkspace{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'js/guide-spine.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+<section class="pub-page-hero">
+                <div class="pub-container pub-page-hero-grid">
+                    <div>
+                        <p class="pub-eyebrow">Guía del sistema</p>
+                        <h1>Así funciona DynamicWorkspace por dentro</h1>
+                        <p>
+                            Si aún no tienes cuenta, esta guía te explica el <strong>recorrido completo</strong> de la plataforma:
+                            qué hace cada parte, quién interviene y qué puedes esperar al trabajar con tu equipo.
+                            No es un manual de botones — es el mapa del producto.
+                        </p>
+                    </div>
+                    <aside class="pub-quick-panel" aria-label="Resumen en tres pasos">
+                        <h2>En resumen</h2>
+                        <ol class="pub-quick-list">
+                            <li>Tu compañía obtiene acceso y los usuarios ingresan con credenciales habilitadas.</li>
+                            <li>Se crean proyectos (tablas) con campos y roles para cada persona.</li>
+                            <li>El equipo gestiona registros con permisos, búsqueda y una sola fuente de verdad.</li>
+                        </ol>
+                    </aside>
+                </div>
+            </section>
+
+            <section class="pub-section pub-section--alt" class="pub-section-tight-top">
+                <div class="pub-container">
+                    <div class="pub-role-strip" aria-label="Roles en la plataforma">
+                        <span class="label">Roles por proyecto</span>
+                        <span class="pub-role-item"><span class="role-tag role-tag--pa">PA</span><span>Admin de proyecto</span></span>
+                        <span class="pub-role-item"><span class="role-tag role-tag--ed">ED</span><span>Editor</span></span>
+                        <span class="pub-role-item"><span class="role-tag role-tag--co">CO</span><span>Consulta</span></span>
+                        <span class="pub-role-item"><span class="role-tag role-tag--ge">GE</span><span>Generar / exportar</span></span>
+                        <span>· Una misma persona puede tener roles distintos en cada proyecto.</span>
+                    </div>
+
+                    <div class="pub-guide-layout">
+                        <nav class="pub-guide-nav" aria-label="Índice de flujos">
+                            <h2>Flujos</h2>
+                            <nav>
+                                <a href="#flujo-acceso">1. Acceso y organización</a>
+                                <a href="#flujo-proyecto">2. Crear un proyecto</a>
+                                <a href="#flujo-campos">3. Diseñar campos</a>
+                                <a href="#flujo-equipo">4. Equipo y permisos</a>
+                                <a href="#flujo-registros">5. Gestionar registros</a>
+                                <a href="#flujo-expandir">6. Vista expandida</a>
+                                <a href="#flujo-consulta">7. Consulta y evolución</a>
+                            </nav>
+                        </nav>
+
+                        <div class="pub-flow-list">
+                            <article class="pub-flow-card" id="flujo-acceso">
+                                <span class="pub-flow-card-num" aria-hidden="true">1</span>
+                                <header class="pub-flow-card-header">
+                                    <h3>Acceso y organización</h3>
+                                    <div class="pub-flow-roles">
+                                        <span class="role-tag">Compañía</span>
+                                        <span class="role-tag role-tag--pa">PA</span>
+                                        <span class="role-tag role-tag--ed">ED</span>
+                                    </div>
+                                </header>
+                                <p class="pub-flow-purpose">
+                                    <strong>Para qué sirve:</strong> delimitar el espacio de trabajo de tu organización. Cada compañía opera de forma
+                                    aislada con sus usuarios, proyectos y licencia. No hay registro público abierto: las cuentas las habilita
+                                    la administración de la plataforma o de tu empresa.
+                                </p>
+                                <div class="pub-flow-grid">
+                                    <div class="pub-flow-block">
+                                        <h4>Cómo suele empezar</h4>
+                                        <ol>
+                                            <li>Tu organización solicita acceso y se configura la compañía en el sistema.</li>
+                                            <li>Los usuarios reciben credenciales y completan verificación de correo y 2FA.</li>
+                                            <li>Al ingresar, cada persona ve solo los proyectos donde fue autorizada.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="pub-flow-block">
+                                        <h4>Puntos relevantes</h4>
+                                        <ul>
+                                            <li>Los datos de una compañía no se mezclan con otras organizaciones.</li>
+                                            <li>El panel de inicio resume proyectos recientes, roles y actividad propia.</li>
+                                            <li>La licencia vigente de la compañía condiciona el acceso al área privada.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="pub-flow-card" id="flujo-proyecto">
+                                <span class="pub-flow-card-num" aria-hidden="true">2</span>
+                                <header class="pub-flow-card-header">
+                                    <h3>Crear un proyecto</h3>
+                                    <div class="pub-flow-roles">
+                                        <span class="role-tag role-tag--pa">PA</span>
+                                    </div>
+                                </header>
+                                <p class="pub-flow-purpose">
+                                    <strong>Para qué sirve:</strong> abrir una tabla de trabajo independiente — el equivalente digital a un archivo
+                                    Excel dedicado a un proceso (inventario, clientes, control de actividades, reglas internas, etc.).
+                                    Cada proyecto tiene su propio esquema y sus propios datos.
+                                </p>
+                                <div class="pub-flow-grid">
+                                    <div class="pub-flow-block">
+                                        <h4>Qué ocurre en este flujo</h4>
+                                        <ol>
+                                            <li>Un usuario autorizado define nombre, descripción e identificador del proyecto.</li>
+                                            <li>Quien crea el proyecto recibe automáticamente el rol de administrador (<span class="role-tag role-tag--pa">PA</span>).</li>
+                                            <li>Desde el detalle del proyecto se continúa con campos, miembros y registros.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="pub-flow-block">
+                                        <h4>Puntos relevantes</h4>
+                                        <ul>
+                                            <li>Dos proyectos pueden tener estructuras completamente distintas.</li>
+                                            <li>Archivar un proyecto oculta el trabajo sin borrar el historial.</li>
+                                            <li>El identificador URL es único dentro de la compañía.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="pub-flow-card" id="flujo-campos">
+                                <span class="pub-flow-card-num" aria-hidden="true">3</span>
+                                <header class="pub-flow-card-header">
+                                    <h3>Diseñar campos (esquema)</h3>
+                                    <div class="pub-flow-roles">
+                                        <span class="role-tag role-tag--pa">PA</span>
+                                    </div>
+                                </header>
+                                <p class="pub-flow-purpose">
+                                    <strong>Para qué sirve:</strong> definir las columnas de la tabla — texto, números, fechas, listas desplegables
+                                    y más — con validación integrada. Es el diseño de la «primera fila de encabezados» de tu hoja,
+                                    pero con reglas que el sistema aplica al guardar.
+                                </p>
+                                <div class="pub-flow-grid">
+                                    <div class="pub-flow-block">
+                                        <h4>Qué ocurre en este flujo</h4>
+                                        <ol>
+                                            <li>El administrador del proyecto agrega y ordena columnas según el proceso.</li>
+                                            <li>Define tipo, etiqueta visible, obligatoriedad y opciones cuando aplica.</li>
+                                            <li>Solo las columnas activas aparecen en listados y formularios.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="pub-flow-block">
+                                        <h4>Puntos relevantes</h4>
+                                        <ul>
+                                            <li>La clave interna de un campo es estable una vez hay datos cargados.</li>
+                                            <li>Cambiar tipos con registros existentes puede requerir validación del sistema.</li>
+                                            <li>El esquema determina filtros, alineación y formato en las tablas.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="pub-flow-card" id="flujo-equipo">
+                                <span class="pub-flow-card-num" aria-hidden="true">4</span>
+                                <header class="pub-flow-card-header">
+                                    <h3>Equipo y permisos</h3>
+                                    <div class="pub-flow-roles">
+                                        <span class="role-tag role-tag--pa">PA</span>
+                                    </div>
+                                </header>
+                                <p class="pub-flow-purpose">
+                                    <strong>Para qué sirve:</strong> sustituir el «te mando el Excel por correo» por autorización explícita.
+                                    El administrador del proyecto decide quién de la compañía participa y con qué nivel de acceso.
+                                </p>
+                                <div class="pub-flow-grid">
+                                    <div class="pub-flow-block">
+                                        <h4>Qué ocurre en este flujo</h4>
+                                        <ol>
+                                            <li>El <span class="role-tag role-tag--pa">PA</span> invita usuarios de la misma compañía al proyecto.</li>
+                                            <li>Asigna rol: admin, editor, consulta o generación de reportes.</li>
+                                            <li>Puede activar o desactivar membresías cuando cambian las responsabilidades.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="pub-flow-block">
+                                        <h4>Puntos relevantes</h4>
+                                        <ul>
+                                            <li><span class="role-tag role-tag--ed">ED</span> crea y edita registros; <span class="role-tag role-tag--co">CO</span> solo consulta.</li>
+                                            <li>Solo <span class="role-tag role-tag--pa">PA</span> diseña campos y gestiona miembros.</li>
+                                            <li>Los permisos se evalúan proyecto por proyecto, no de forma global.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="pub-flow-card" id="flujo-registros">
+                                <span class="pub-flow-card-num" aria-hidden="true">5</span>
+                                <header class="pub-flow-card-header">
+                                    <h3>Gestionar registros</h3>
+                                    <div class="pub-flow-roles">
+                                        <span class="role-tag role-tag--pa">PA</span>
+                                        <span class="role-tag role-tag--ed">ED</span>
+                                        <span class="role-tag role-tag--co">CO</span>
+                                    </div>
+                                </header>
+                                <p class="pub-flow-purpose">
+                                    <strong>Para qué sirve:</strong> operar el día a día sobre las filas de datos — crear, buscar, filtrar, ordenar,
+                                    editar y dar de baja registros según el esquema del proyecto. Es el corazón operativo de la plataforma.
+                                </p>
+                                <div class="pub-flow-grid">
+                                    <div class="pub-flow-block">
+                                        <h4>Qué ocurre en este flujo</h4>
+                                        <ol>
+                                            <li>La tabla se genera automáticamente a partir de los campos activos.</li>
+                                            <li>Los editores cargan y actualizan filas; el sistema valida cada valor.</li>
+                                            <li>Consulta y detalle permiten revisar metadatos (quién creó, cuándo actualizó).</li>
+                                        </ol>
+                                    </div>
+                                    <div class="pub-flow-block">
+                                        <h4>Puntos relevantes</h4>
+                                        <ul>
+                                            <li>Búsqueda, paginación y filtros por columna en tablas tipo hoja de cálculo.</li>
+                                            <li>Eliminar un registro suele ser una baja lógica, no un borrado inmediato.</li>
+                                            <li>La auditoría registra cambios para trazabilidad del equipo.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="pub-flow-card" id="flujo-expandir">
+                                <span class="pub-flow-card-num" aria-hidden="true">6</span>
+                                <header class="pub-flow-card-header">
+                                    <h3>Vista expandida y apariencia</h3>
+                                    <div class="pub-flow-roles">
+                                        <span class="role-tag role-tag--pa">PA</span>
+                                        <span class="role-tag role-tag--ed">ED</span>
+                                        <span class="role-tag role-tag--co">CO</span>
+                                    </div>
+                                </header>
+                                <p class="pub-flow-purpose">
+                                    <strong>Para qué sirve:</strong> trabajar la misma tabla a pantalla completa cuando hay muchas columnas o filas.
+                                    El administrador del proyecto puede personalizar colores y comportamiento visual de esa vista
+                                    <em>sin afectar a otros proyectos</em>.
+                                </p>
+                                <div class="pub-flow-grid">
+                                    <div class="pub-flow-block">
+                                        <h4>Qué ocurre en este flujo</h4>
+                                        <ol>
+                                            <li>Desde registros se abre la vista expandida con más espacio útil.</li>
+                                            <li>Se mantienen búsqueda, orden y paginación avanzada.</li>
+                                            <li>El <span class="role-tag role-tag--pa">PA</span> ajusta apariencia: colores, filas por página y opciones de tabla.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="pub-flow-block">
+                                        <h4>Puntos relevantes</h4>
+                                        <ul>
+                                            <li>Cada proyecto puede verse distinto (p. ej. inventario vs. reglas técnicas).</li>
+                                            <li>La personalización es visual; no modifica los datos subyacentes.</li>
+                                            <li>Pensado para equipos que pasan horas en la misma tabla.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="pub-flow-card" id="flujo-consulta">
+                                <span class="pub-flow-card-num" aria-hidden="true">7</span>
+                                <header class="pub-flow-card-header">
+                                    <h3>Consulta, exportación y evolución</h3>
+                                    <div class="pub-flow-roles">
+                                        <span class="role-tag role-tag--co">CO</span>
+                                        <span class="role-tag role-tag--ge">GE</span>
+                                        <span class="role-tag role-tag--pa">PA</span>
+                                    </div>
+                                </header>
+                                <p class="pub-flow-purpose">
+                                    <strong>Para qué sirve:</strong> cerrar el ciclo con lectura para supervisión, salida de información y
+                                    capacidades que se irán habilitando — importación masiva desde Excel, exportación avanzada
+                                    y auditoría detallada por campo.
+                                </p>
+                                <div class="pub-flow-grid">
+                                    <div class="pub-flow-block">
+                                        <h4>Qué ocurre en este flujo</h4>
+                                        <ol>
+                                            <li>Perfiles de consulta revisan datos sin poder modificarlos.</li>
+                                            <li>Roles de generación preparan exportaciones cuando el módulo esté activo.</li>
+                                            <li>Administradores supervisan configuración e historial del proyecto.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="pub-flow-block">
+                                        <h4>Puntos relevantes</h4>
+                                        <ul>
+                                            <li>La migración desde hojas existentes es un caso de uso clave del producto.</li>
+                                            <li>Usuarios con cuenta ven además una guía interna en el área privada.</li>
+                                            <li>El roadmap prioriza importación, auditoría y simetría exportar ↔ importar.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+
+                    <p class="pub-guide-note">
+                        <strong>¿Ya tienes cuenta?</strong> Dentro del sistema encontrarás una guía de trabajo UF en el menú lateral
+                        con el mismo enfoque por flujos, orientada a tu compañía y proyectos activos.
+                        <strong>¿Aún no?</strong> <a href="{% url 'public:contact' %}">Contáctanos</a> y te ayudamos a evaluar si encaja con tu equipo.
+                    </p>
+                </div>
+            </section>
+
+            <section class="pub-section">
+                <div class="pub-container">
+                    <div class="pub-cta">
+                        <h2>¿Quieres verlo con datos de tu equipo?</h2>
+                        <p>Las cuentas se habilitan por administración. Cuéntanos tu caso y te mostramos cómo quedaría tu primer proyecto.</p>
+                        <a href="{% url 'public:contact' %}" class="btn btn-primary">Solicitar información</a>
+                    </div>
+                </div>
+            </section>
+{% endblock %}

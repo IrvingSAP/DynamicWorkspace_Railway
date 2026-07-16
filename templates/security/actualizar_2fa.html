@@ -1,0 +1,30 @@
+{% extends "security/base.html" %}
+
+{% block title %}Actualizar 2FA — DynamicWorkspace{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <p class="auth-eyebrow">Seguridad de la cuenta</p>
+    <h1>Actualizar autenticación 2FA</h1>
+    <p class="auth-lead">Si perdiste acceso a tu app autenticadora, puedes reiniciar el factor de dos pasos. Deberás verificar tu correo y configurar un nuevo código QR.</p>
+
+    <div class="warning-panel">
+        <strong>Esta acción reinicia tu 2FA</strong>
+        Se eliminará el secreto actual, se marcará el correo como pendiente de verificación y deberás completar de nuevo el flujo de correo + autenticador antes de acceder a la plataforma.
+    </div>
+
+    <form action="{% url 'security:actualizar_2fa' %}" method="post">
+        {% csrf_token %}
+        <div class="auth-actions">
+            <button type="submit" class="btn btn-primary">Confirmar actualización 2FA</button>
+            <a href="{% url 'security:totp' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+
+    <p class="auth-meta">Solo usuarios con contraseña válida pueden solicitar este cambio. El correo actúa como segundo factor al re-enrolar.</p>
+</div>
+{% endblock %}
+
+{% block footer %}
+<p><a href="{% url 'security:totp' %}">Volver al código 2FA</a></p>
+{% endblock %}

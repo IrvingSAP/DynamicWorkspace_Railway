@@ -1,0 +1,45 @@
+{% extends "security/base.html" %}
+
+{% block title %}Código 2FA — DynamicWorkspace{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <ol class="wizard-steps" aria-label="Progreso de seguridad">
+        <li class="wizard-step is-done">Credenciales</li>
+        <li class="wizard-step is-done">Correo</li>
+        <li class="wizard-step is-active">2FA</li>
+    </ol>
+
+    <p class="auth-eyebrow">Autenticación en dos pasos</p>
+    <h1>Ingresa tu código 2FA</h1>
+    <p class="auth-lead">Abre tu app autenticadora e ingresa el código de 6 dígitos para <strong>DynamicWorkspace</strong>.</p>
+
+    <form action="{% url 'security:totp' %}" method="post">
+        {% csrf_token %}
+        <div class="form-row{% if errors.totp_code %} has-error{% endif %}">
+            <label for="totp_code">Código del autenticador</label>
+            <input type="text" id="totp_code" name="totp_code" class="code-input" value="{{ posted.totp_code }}" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" autocomplete="one-time-code" required autofocus>
+            {% for msg in errors.totp_code %}
+            <p class="field-error">{{ msg }}</p>
+            {% endfor %}
+        </div>
+        <div class="auth-actions">
+            <button type="submit" class="btn btn-primary">Verificar y continuar</button>
+        </div>
+    </form>
+
+    <div class="auth-actions-row">
+        <a href="{% url 'security:totp' %}" class="btn btn-secondary">Reintentar</a>
+        <a href="{% url 'security:cancel' %}" class="btn btn-ghost">Cancelar</a>
+    </div>
+
+    <hr class="auth-divider">
+
+    <p class="auth-lead">¿Perdiste acceso a tu autenticador?</p>
+    <a href="{% url 'security:actualizar_2fa' %}" class="auth-link auth-link--block">Cambio / actualización 2FA</a>
+</div>
+{% endblock %}
+
+{% block footer %}
+<p>Tras validar → <a href="{% url 'dashboard:bienvenida' %}">/app/bienvenida/</a> o <a href="{% url 'dashboard:home' %}">/app/</a></p>
+{% endblock %}

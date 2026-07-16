@@ -1,0 +1,40 @@
+{% extends "app_base.html" %}
+
+{% block title %}Editar compañía — DynamicWorkspace{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'company:list' %}">Compañías</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'company:detail' pk=company.pk %}">{{ company.name_short }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Editar</span>
+</nav>
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_ua.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Edición</p>
+        <h2>Editar compañía</h2>
+        <p><span class="cell-badge cell-badge--sm">{{ company.name_short }}</span> {{ company.name_long }}</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'company:detail' pk=company.pk %}" class="btn btn-secondary">← Detalle</a>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    El código <strong>name_short</strong> no debería cambiarse si ya hay usuarios o proyectos vinculados.
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        {% include "company/_form.html" %}
+    </div>
+</div>
+{% endblock %}

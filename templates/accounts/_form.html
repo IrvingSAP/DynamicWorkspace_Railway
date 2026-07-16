@@ -1,0 +1,103 @@
+<form method="post" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="user_type" value="{{ management_scope.target_type }}">
+
+    <div class="form-section">
+        <h3 class="form-section-title">Cuenta</h3>
+        <div class="form-grid">
+            <div class="form-row two-cols">
+                <div class="field{% if errors.username %} has-error{% endif %}">
+                    <label for="username">Usuario{% if not is_edit %} <span class="req">*</span>{% endif %}</label>
+                    {% if is_edit %}
+                    <input type="text" id="username" name="username" class="mono" value="{{ posted.username }}" disabled>
+                    <p class="hint">No editable tras el alta</p>
+                    {% else %}
+                    <input type="text" id="username" name="username" class="mono" maxlength="150" value="{{ posted.username }}" autocomplete="username" required>
+                    {% endif %}
+                    {% for msg in errors.username %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+                <div class="field{% if errors.email %} has-error{% endif %}">
+                    <label for="email">Correo <span class="req">*</span></label>
+                    <input type="email" id="email" name="email" value="{{ posted.email }}" autocomplete="email" required>
+                    {% if not is_edit %}
+                    <p class="hint">Se enviará código de verificación en el primer acceso</p>
+                    {% endif %}
+                    {% for msg in errors.email %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="form-row two-cols">
+                <div class="field{% if errors.first_name %} has-error{% endif %}">
+                    <label for="first_name">Nombre</label>
+                    <input type="text" id="first_name" name="first_name" maxlength="150" value="{{ posted.first_name }}">
+                    {% for msg in errors.first_name %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+                <div class="field{% if errors.last_name %} has-error{% endif %}">
+                    <label for="last_name">Apellido</label>
+                    <input type="text" id="last_name" name="last_name" maxlength="150" value="{{ posted.last_name }}">
+                    {% for msg in errors.last_name %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            {% if not is_edit %}
+            <div class="field{% if errors.password %} has-error{% endif %}">
+                <label for="password">Contraseña inicial <span class="req">*</span></label>
+                <input type="password" id="password" name="password" autocomplete="new-password" required>
+                <p class="hint">Mínimo 8 caracteres</p>
+                {% for msg in errors.password %}
+                <p class="field-error">{{ msg }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3 class="form-section-title">Perfil</h3>
+        <div class="form-grid">
+            {% if management_scope.show_company_picker %}
+            <div class="field{% if errors.company %} has-error{% endif %}">
+                <label for="company">Compañía <span class="req">*</span></label>
+                <select id="company" name="company" required>
+                    <option value="">Seleccionar…</option>
+                    {% for company in companies %}
+                    <option value="{{ company.pk }}"{% if posted.company_id == company.pk|stringformat:"s" %} selected{% endif %}>{{ company.name_short }} — {{ company.name_long }}</option>
+                    {% endfor %}
+                </select>
+                {% for msg in errors.company %}
+                <p class="field-error">{{ msg }}</p>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="field">
+                <label for="company_fixed">Compañía</label>
+                <input type="text" id="company_fixed" value="{{ management_scope.fixed_company.name_short }} — {{ management_scope.fixed_company.name_long }}" disabled>
+                <input type="hidden" name="company" value="{{ management_scope.fixed_company.pk }}">
+                <p class="hint">Fijada por el perfil del usuario conectado (US)</p>
+            </div>
+            {% endif %}
+            <div class="field">
+                <label for="user_type_display">Tipo de usuario</label>
+                <input type="text" id="user_type_display" class="mono" value="{{ management_scope.target_type }}" disabled>
+                <p class="hint">No editable — lo define el actor (UA→US, US→UF)</p>
+            </div>
+            <div class="toggle-row">
+                <input type="checkbox" id="is_active" name="is_active" value="1"{% if posted.is_active %} checked{% endif %}>
+                <label for="is_active">Cuenta activa</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+            {% if is_edit %}Guardar cambios{% else %}{{ management_scope.create_button }}{% endif %}
+        </button>
+        <a href="{% if is_edit %}{% url 'accounts:detail' pk=profile.pk %}{% else %}{% url 'accounts:list' %}{% endif %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>

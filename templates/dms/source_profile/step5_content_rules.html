@@ -1,0 +1,104 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 5 — Reglas globales — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:source_hub' project_slug=project.slug %}">Origen</a>
+    <span class="breadcrumb-sep">/</span><span>Paso 5</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/source_profile/_project_scope.html" %}
+{% include "dms/source_profile/_source_persistence.html" %}
+
+<div id="content-rules-root" data-project-slug="{{ project.slug }}">
+    <script type="application/json" id="content-rules-default">{{ content_rules_json|safe }}</script>
+
+    <div class="page-header">
+        <div>
+            <p class="page-eyebrow">Paso 5 de 6 · <span class="role-badge">content_rules</span></p>
+            <h2>Reglas globales de contenido</h2>
+            <p>Configuración a nivel de archivo o línea, aplicada antes o durante el parseo.</p>
+        </div>
+        <div class="page-actions">
+            {% url 'dms:source_step5_help' project_slug=project.slug as source_help_url %}
+            {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+            <button type="button" id="btn-save-content-rules" class="btn btn-ghost btn-sm">Guardar borrador</button>
+        </div>
+    </div>
+
+    {% include "dms/source_profile/_wizard_stepper.html" %}
+
+    <div class="panel">
+        <div class="panel-body">
+            <p id="content-rules-status" class="content-rules-status" aria-live="polite"></p>
+            <form id="content-rules-form" novalidate>
+                <div class="rules-grid">
+                    <div>
+                        <h3 class="form-section-title">Normalización de líneas</h3>
+                        <div class="toggle-row">
+                            <input type="checkbox" id="trim_lines" name="trim_lines" checked>
+                            <label for="trim_lines">Quitar espacios al inicio/fin de cada línea (<code>trim_lines</code>)</label>
+                        </div>
+                        <div class="toggle-row">
+                            <input type="checkbox" id="skip_empty_lines" name="skip_empty_lines" checked>
+                            <label for="skip_empty_lines">Ignorar líneas en blanco (<code>skip_empty_lines</code>)</label>
+                        </div>
+                        <div class="field" style="margin-top:12px">
+                            <label for="comment_prefix">Prefijo de comentarios (<code>comment_prefix</code>)</label>
+                            <input type="text" id="comment_prefix" name="comment_prefix" class="mono" value="#" placeholder="#, //, …">
+                            <p class="hint">Ignorar líneas que empiezan con este prefijo.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="form-section-title">Caracteres y patrones</h3>
+                        <div class="field">
+                            <label for="allowed_chars">Caracteres permitidos (<code>allowed_chars</code>)</label>
+                            <input type="text" id="allowed_chars" name="allowed_chars" placeholder="Solo ASCII imprimible">
+                            <p class="hint">Whitelist global opcional. Deje vacío para no restringir por whitelist.</p>
+                        </div>
+                        <div class="field">
+                            <label for="excluded_chars">Caracteres excluidos (<code>excluded_chars</code>)</label>
+                            <textarea id="excluded_chars" name="excluded_chars" class="mono" rows="3">\x00
+\x1a</textarea>
+                            <p class="hint">Uno por línea. SD-04: rechazo con <code>FORBIDDEN_CHAR</code> en informe.</p>
+                        </div>
+                        <div class="field">
+                            <label for="forbidden_patterns">Patrones prohibidos (<code>forbidden_patterns</code>)</label>
+                            <textarea id="forbidden_patterns" name="forbidden_patterns" class="mono" rows="3">^ERROR</textarea>
+                            <p class="hint">Regex que invalidan una línea — uno por línea.</p>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="report-preview" style="margin-top:20px">
+                <h3 class="form-section-title">Vista previa JSON</h3>
+                <pre id="content-rules-preview" class="mono" aria-label="Vista previa content_rules"></pre>
+            </div>
+
+            <div class="wizard-footer">
+                <span class="hint">Política de error del proyecto: <code>skip_row</code> / <code>abort</code></span>
+                <div class="wizard-footer-actions">
+                    <a href="{% url 'dms:source_step4' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
+                    <a href="{% url 'dms:source_step6' project_slug=project.slug %}" class="btn btn-primary">Siguiente →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/source_profile-content-rules.js' %}"></script>
+{% endblock %}

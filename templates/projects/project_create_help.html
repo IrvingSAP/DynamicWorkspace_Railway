@@ -1,0 +1,101 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Nuevo proyecto{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'projects:list' %}">Proyectos</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'projects:create' %}">Nuevo</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">UF</span></p>
+        <h2>Ayuda — Nuevo proyecto</h2>
+        <p>Qué significa cada campo del formulario de alta y qué valores acepta el sistema.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'projects:create' %}" class="btn btn-secondary">← Volver al formulario</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Antes de crear</h3>
+        <ul class="help-list">
+            <li>Solo usuarios <strong>UF</strong> (usuario final) pueden crear proyectos.</li>
+            <li>El proyecto queda asociado a tu compañía; no podrás invitar usuarios de otras organizaciones.</li>
+            <li>Al guardar, quedas automáticamente como <span class="role-code role-code--pa">PA</span> (administrador del proyecto).</li>
+        </ul>
+
+        <h3 class="form-section-title">Campos del formulario</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Obligatorio</th><th>Función</th><th>Valores permitidos</th><th>Ejemplos</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Nombre visible</td>
+                    <td>Sí</td>
+                    <td>Título que verán los usuarios en listados, detalle y menús. No forma parte de la URL.</td>
+                    <td>Texto libre, máx. <strong>200</strong> caracteres. Letras, números, espacios y signos de puntuación habituales.</td>
+                    <td class="mono">Inventario 2026<br>CRM Clientes<br>Control de actividades</td>
+                </tr>
+                <tr>
+                    <td>Slug URL</td>
+                    <td>Sí</td>
+                    <td>Identificador técnico en la dirección web del proyecto. Debe ser estable: se usa en enlaces y marcadores.</td>
+                    <td>
+                        Solo <strong>minúsculas</strong>, <strong>números</strong> y <strong>guiones</strong> (<span class="mono">-</span>).<br>
+                        Máx. <strong>220</strong> caracteres.<br>
+                        Único dentro de tu compañía (otra compañía puede usar el mismo slug).<br>
+                        Sin espacios, guiones bajos, tildes ni caracteres especiales.<br>
+                        No puede empezar ni terminar en guion ni tener guiones seguidos.
+                    </td>
+                    <td class="mono">inventario-2026<br>crm-clientes<br>control-actividades</td>
+                </tr>
+                <tr>
+                    <td>Descripción</td>
+                    <td>No</td>
+                    <td>Texto explicativo del propósito del proyecto. Se muestra en el detalle.</td>
+                    <td>Texto libre, máx. aprox. <strong>5000</strong> caracteres. Puede dejarse vacío.</td>
+                    <td>Control de existencias y movimientos del almacén central.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Slug — reglas detalladas</h3>
+        <table class="help-table help-table--compact">
+            <thead>
+                <tr><th>Entrada</th><th>¿Válido?</th><th>Motivo</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">inventario-2026</td><td>Sí</td><td>Formato correcto.</td></tr>
+                <tr><td class="mono">proyecto1</td><td>Sí</td><td>Solo letras y números.</td></tr>
+                <tr><td class="mono">Inventario 2026</td><td>No</td><td>Mayúsculas y espacios no permitidos.</td></tr>
+                <tr><td class="mono">inventario_2026</td><td>No</td><td>El guion bajo no está permitido.</td></tr>
+                <tr><td class="mono">-inventario</td><td>No</td><td>No puede empezar con guion.</td></tr>
+                <tr><td class="mono">inventario--2026</td><td>No</td><td>Guiones consecutivos no permitidos.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Después de crear</h3>
+        <p class="help-intro">El sistema redirige al detalle del proyecto. Desde ahí podrás (cuando estén disponibles) definir <strong>campos</strong>, cargar <strong>registros</strong> e invitar <strong>miembros</strong> si eres PA.</p>
+        <p class="help-intro">La URL del proyecto será: <span class="mono">/app/proyectos/&lt;slug&gt;/</span> — por ejemplo <span class="mono">/app/proyectos/inventario-2026/</span>.</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,175 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Mi cuenta — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/billing.css' %}">
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>Cuenta</span>
+</nav>
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_us.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Cuenta de cliente · <span class="role-badge">US</span></p>
+        <h2>{{ company.name_long }}</h2>
+        <p>Datos de tu organización y licencia contratada. Solo lectura.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dashboard:home' %}" class="btn btn-secondary">← Inicio</a>
+    </div>
+</div>
+
+<div class="hero-panel">
+    {% if company.logo %}
+    <img src="{{ company.logo.url }}" alt="Logo {{ company.name_short }}" class="hero-logo hero-logo--img">
+    {% else %}
+    <div class="hero-logo">Logo</div>
+    {% endif %}
+    <div class="hero-meta">
+        <span class="cell-badge">{{ company.name_short }}</span>
+        {% if company.is_active %}
+        <span class="status status-active status--offset"><span class="status-dot"></span>Activa</span>
+        {% else %}
+        <span class="status status-inactive status--offset"><span class="status-dot"></span>Inactiva</span>
+        {% endif %}
+        <h3>{{ company.name_long }}</h3>
+    </div>
+</div>
+
+<div class="metric-row" aria-label="Resumen de la cuenta">
+    <div class="metric-card">
+        <p class="metric-label">Usuarios</p>
+        <p class="metric-value">{{ account.users_total }}</p>
+        <p class="metric-sub">{{ account.users_us }} US · {{ account.users_uf }} UF</p>
+    </div>
+    <div class="metric-card">
+        <p class="metric-label">Proyectos</p>
+        <p class="metric-value">{{ account.projects_count }}</p>
+        <p class="metric-sub">en tu compañía</p>
+    </div>
+    <div class="metric-card">
+        <p class="metric-label">Plan</p>
+        <p class="metric-value metric-value--md">{{ account.subscription.plan_name }}</p>
+        <p class="metric-sub"><span class="cell-badge cell-badge--sm">{{ account.subscription.plan_code }}</span></p>
+    </div>
+    <div class="metric-card">
+        <p class="metric-label">Licencia</p>
+        <p class="metric-value metric-value--md">{{ account.subscription.status_label }}</p>
+        <p class="metric-sub">
+            {% if account.subscription.end_date %}
+            vigente hasta {{ account.subscription.end_date|date:"d/m/Y" }}
+            {% else %}
+            sin fecha de vencimiento
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<div class="panel panel--gap">
+    <div class="panel-body">
+        <h3 class="form-section-title">Datos de la organización</h3>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <p class="dl">Código</p>
+                <p class="dd mono">{{ company.name_short }}</p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Identificación tributaria</p>
+                <p class="dd mono">{{ company.tax_id|default:"—" }}</p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Correo de contacto</p>
+                <p class="dd">{{ company.email|default:"—" }}</p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Teléfono</p>
+                <p class="dd">{{ company.phone|default:"—" }}</p>
+            </div>
+            <div class="detail-item detail-item--full">
+                <p class="dl">Dirección</p>
+                <p class="dd">{{ company.address|default:"—" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if account.subscription.has_subscription %}
+<div class="panel panel--gap">
+    <div class="panel-body">
+        <h3 class="form-section-title">Licencia y suscripción</h3>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <p class="dl">Plan contratado</p>
+                <p class="dd">{{ account.subscription.plan_name }} <span class="cell-badge cell-badge--sm">{{ account.subscription.plan_code }}</span></p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Estado</p>
+                <p class="dd">
+                    {% if account.subscription.status_code == 'active' %}
+                    <span class="status status-active"><span class="status-dot"></span>{{ account.subscription.status_label }}</span>
+                    {% elif account.subscription.status_code == 'pending' %}
+                    <span class="status status-pending"><span class="status-dot"></span>{{ account.subscription.status_label }}</span>
+                    {% elif account.subscription.status_code == 'expired' %}
+                    <span class="status status-expired"><span class="status-dot"></span>{{ account.subscription.status_label }}</span>
+                    {% else %}
+                    <span class="status status-canceled"><span class="status-dot"></span>{{ account.subscription.status_label }}</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Vigencia</p>
+                <p class="dd mono">{{ account.subscription.start_date|date:"d/m/Y" }} — {{ account.subscription.end_date|date:"d/m/Y" }}</p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Renovación automática</p>
+                <p class="dd">{% if account.subscription.auto_renew %}Sí{% else %}No{% endif %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if account.subscription.contacts %}
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Contactos de soporte</h3>
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Teléfono</th>
+                        <th>Rol</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contact in account.subscription.contacts %}
+                    <tr>
+                        <td>{{ contact.name }}</td>
+                        <td>{{ contact.email }}</td>
+                        <td>{{ contact.phone|default:"—" }}</td>
+                        <td>{{ contact.role|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% else %}
+<div class="alert alert-info">
+    Tu compañía aún no tiene una suscripción asignada. Contacta al administrador de la plataforma.
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Definición destino{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:target_hub' project_slug=project.slug %}">Destino</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Definición de destino</h2>
+        <p>Resumen del asistente TargetProfile (6 pasos) para el archivo de salida.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:target_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al resumen</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            Define cómo se escribe el archivo de salida del proyecto <strong>{{ project.name }}</strong>.
+            Sin destino válido no hay serialización ni descarga en ejecución.
+        </p>
+
+        <h3 class="form-section-title">Asistente (6 pasos)</h3>
+        <table class="help-table">
+            <thead><tr><th>Paso</th><th>Qué configura</th></tr></thead>
+            <tbody>
+                <tr><td>1 · Tipo</td><td>Formato de salida (<span class="mono">csv</span>, <span class="mono">txt_fixed</span>, …).</td></tr>
+                <tr><td>2 · Encoding</td><td>Codificación y final de línea al escribir.</td></tr>
+                <tr><td>3 · Layout</td><td>Estructura (delimitador, longitud, hoja, patrón de nombre…).</td></tr>
+                <tr><td>4 · Campos</td><td>Columnas / posiciones del archivo destino.</td></tr>
+                <tr><td>5 · Serialización</td><td>Formato de valores al escribir (fechas, decimales, nulos…).</td></tr>
+                <tr><td>6 · Validación</td><td>Política si un valor no cumple el perfil.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>Continuar edición</td><td>Abre el siguiente paso incompleto.</td></tr>
+                <tr><td>← Proyecto</td><td>Vuelve al hub FilePipe.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

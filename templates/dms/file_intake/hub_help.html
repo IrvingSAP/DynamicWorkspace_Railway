@@ -1,0 +1,77 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Carga de archivos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/file_intake.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:file_intake_hub' project_slug=project.slug %}">Archivo</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Carga de archivos</h2>
+        <p>Subida de muestras y archivos de producción para probar y ejecutar transformaciones.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:file_intake_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver a Archivo</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            Recibe archivos desde el equipo local, valida tipo/tamaño y los guarda internamente.
+            Las extensiones permitidas dependen del tipo de origen del proyecto
+            (<code>{{ accept_attr }}</code>).
+        </p>
+
+        <h3 class="form-section-title">Dos usos</h3>
+        <table class="help-table">
+            <thead><tr><th>Tipo</th><th>Para qué sirve</th><th>Notas</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Muestra</td>
+                    <td>Probar parseo / previsualizar sin job de producción.</td>
+                    <td>Límite de tamaño menor; se puede previsualizar y eliminar.</td>
+                </tr>
+                <tr>
+                    <td>Producción</td>
+                    <td>Crea un job listo para Ejecutar (transformación).</td>
+                    <td>Requiere <strong>versión publicada</strong>.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Indicadores</h3>
+        <table class="help-table">
+            <thead><tr><th>Indicador</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr><td>Muestras</td><td>Archivos de prueba guardados.</td></tr>
+                <tr><td>Jobs subidos</td><td>Archivos de producción pendientes/listos de ejecución.</td></tr>
+                <tr><td>Versión publicada</td><td>Si no hay, no se puede subir producción.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Flujo típico</h3>
+        <ol class="help-list">
+            <li>Subir una <strong>muestra</strong> para validar el perfil de origen.</li>
+            <li>Publicar la versión del proyecto.</li>
+            <li>Subir <strong>producción</strong> y continuar en <strong>Ejecutar</strong>.</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}

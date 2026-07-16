@@ -1,0 +1,45 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Editar suscripción — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/billing.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_ua.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'billing:subscription_list' %}">Suscripciones</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'billing:subscription_detail' company_pk=company.pk %}">{{ company.name_short }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Editar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Edición</p>
+        <h2>Editar suscripción</h2>
+        <p><span class="cell-badge cell-badge--sm">{{ company.name_short }}</span> {{ company.name_long }}</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'billing:subscription_detail' company_pk=company.pk %}" class="btn btn-secondary">← Detalle</a>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    Al cambiar fechas, el sistema recalcula <strong>integrity_signature</strong> automáticamente en <code>save()</code>.
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        {% include "billing/_subscription_form.html" with is_create=False %}
+    </div>
+</div>
+{% endblock %}

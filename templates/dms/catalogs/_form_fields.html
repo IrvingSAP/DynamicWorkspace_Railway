@@ -1,0 +1,221 @@
+<form method="post" novalidate>
+    {% csrf_token %}
+    <div class="form-section">
+        <h3 class="form-section-title">Datos del catálogo</h3>
+        <div class="form-grid">
+            {% if is_edit %}
+            <div class="field">
+                <label>Código</label>
+                <p class="form-readonly mono">{{ posted.code }}</p>
+            </div>
+            {% endif %}
+
+            <div class="field{% if errors.name %} has-error{% endif %}">
+                <label for="name">Nombre <span class="req">*</span></label>
+                <input type="text" id="name" name="name" value="{{ posted.name }}" required>
+                {% for msg in errors.name %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+
+            <div class="field{% if errors.description %} has-error{% endif %}">
+                <label for="description">Descripción</label>
+                <textarea id="description" name="description" rows="3">{{ posted.description }}</textarea>
+                {% for msg in errors.description %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+
+            {% if not is_edit %}
+            <div class="field{% if errors.code %} has-error{% endif %}">
+                <label for="code">Código <span class="req">*</span></label>
+                <input type="text" id="code" name="code" class="mono" value="{{ posted.code }}" required>
+                <p class="hint">Slug único; no editable tras crear.</p>
+                {% for msg in errors.code %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            {% endif %}
+
+            {% if catalog.slug == 'source-file-types' or catalog.slug == 'target-file-types' %}
+            <div class="field{% if errors.extensions %} has-error{% endif %}">
+                <label for="extensions">Extensiones (JSON) <span class="req">*</span></label>
+                <textarea id="extensions" name="extensions" rows="3" class="mono">{{ posted.extensions }}</textarea>
+                <p class="hint">Ej: [".txt", ".csv"]</p>
+                {% for msg in errors.extensions %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            {% if catalog.slug == 'source-file-types' %}
+            <div class="field{% if errors.parser_key %} has-error{% endif %}">
+                <label for="parser_key">Parser key <span class="req">*</span></label>
+                <input type="text" id="parser_key" name="parser_key" class="mono" value="{{ posted.parser_key }}">
+                {% for msg in errors.parser_key %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            {% else %}
+            <div class="field{% if errors.serializer_key %} has-error{% endif %}">
+                <label for="serializer_key">Serializer key <span class="req">*</span></label>
+                <input type="text" id="serializer_key" name="serializer_key" class="mono" value="{{ posted.serializer_key }}">
+                {% for msg in errors.serializer_key %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            {% endif %}
+            <div class="field{% if errors.phase %} has-error{% endif %}">
+                <label for="phase">Fase</label>
+                <select id="phase" name="phase">
+                    <option value="mvp"{% if posted.phase == 'mvp' %} selected{% endif %}>MVP</option>
+                    <option value="phase_2"{% if posted.phase == 'phase_2' %} selected{% endif %}>Fase 2</option>
+                    <option value="phase_3"{% if posted.phase == 'phase_3' %} selected{% endif %}>Fase 3</option>
+                </select>
+            </div>
+            <div class="field{% if errors.config_schema %} has-error{% endif %}">
+                <label for="config_schema">Config schema (JSON)</label>
+                <textarea id="config_schema" name="config_schema" rows="4" class="mono">{{ posted.config_schema }}</textarea>
+            </div>
+            {% endif %}
+
+            {% if catalog.slug == 'charset-encodings' %}
+            <div class="field{% if errors.charset_value %} has-error{% endif %}">
+                <label for="charset_value">Valor codec</label>
+                <input type="text" id="charset_value" name="charset_value" class="mono" value="{{ posted.charset_value }}">
+                {% for msg in errors.charset_value %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            <div class="toggle-row">
+                <input type="checkbox" id="is_auto_detect" name="is_auto_detect" value="1"{% if posted.is_auto_detect %} checked{% endif %}>
+                <label for="is_auto_detect">Detección automática</label>
+            </div>
+            {% endif %}
+
+            {% if catalog.slug == 'line-endings' %}
+            <div class="field{% if errors.sequence %} has-error{% endif %}">
+                <label for="sequence">Secuencia</label>
+                <input type="text" id="sequence" name="sequence" class="mono" value="{{ posted.sequence }}">
+                {% for msg in errors.sequence %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            <div class="toggle-row">
+                <input type="checkbox" id="is_auto_detect" name="is_auto_detect" value="1"{% if posted.is_auto_detect %} checked{% endif %}>
+                <label for="is_auto_detect">Detección automática</label>
+            </div>
+            <div class="toggle-row">
+                <input type="checkbox" id="allows_custom_value" name="allows_custom_value" value="1"{% if posted.allows_custom_value %} checked{% endif %}>
+                <label for="allows_custom_value">Permite valor personalizado</label>
+            </div>
+            {% endif %}
+
+            {% if catalog.slug == 'field-content-types' %}
+            <div class="field{% if errors.default_pattern %} has-error{% endif %}">
+                <label for="default_pattern">Patrón por defecto</label>
+                <input type="text" id="default_pattern" name="default_pattern" class="mono" value="{{ posted.default_pattern }}">
+            </div>
+            <div class="toggle-row">
+                <input type="checkbox" id="requires_date_format" name="requires_date_format" value="1"{% if posted.requires_date_format %} checked{% endif %}>
+                <label for="requires_date_format">Requiere formato de fecha</label>
+            </div>
+            <div class="toggle-row">
+                <input type="checkbox" id="allows_custom_pattern" name="allows_custom_pattern" value="1"{% if posted.allows_custom_pattern %} checked{% endif %}>
+                <label for="allows_custom_pattern">Permite patrón propio</label>
+            </div>
+            <div class="field">
+                <label for="phase">Fase</label>
+                <select id="phase" name="phase">
+                    <option value="mvp"{% if posted.phase == 'mvp' %} selected{% endif %}>MVP</option>
+                    <option value="phase_2"{% if posted.phase == 'phase_2' %} selected{% endif %}>Fase 2</option>
+                </select>
+            </div>
+            {% endif %}
+
+            {% if catalog.slug == 'capture-boundary-modes' %}
+            <div class="field">
+                <label for="applies_to">Aplica a</label>
+                <select id="applies_to" name="applies_to">
+                    <option value="start"{% if posted.applies_to == 'start' %} selected{% endif %}>Inicio</option>
+                    <option value="end"{% if posted.applies_to == 'end' %} selected{% endif %}>Fin</option>
+                    <option value="both"{% if posted.applies_to == 'both' %} selected{% endif %}>Ambos</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="param_schema">Param schema (JSON)</label>
+                <textarea id="param_schema" name="param_schema" rows="3" class="mono">{{ posted.param_schema }}</textarea>
+            </div>
+            <div class="field">
+                <label for="phase">Fase</label>
+                <select id="phase" name="phase">
+                    <option value="mvp"{% if posted.phase == 'mvp' %} selected{% endif %}>MVP</option>
+                    <option value="phase_2"{% if posted.phase == 'phase_2' %} selected{% endif %}>Fase 2</option>
+                </select>
+            </div>
+            {% endif %}
+
+            {% if catalog.slug == 'target-field-data-types' %}
+            <div class="field">
+                <label for="default_date_format">Formato fecha por defecto</label>
+                <input type="text" id="default_date_format" name="default_date_format" value="{{ posted.default_date_format }}">
+            </div>
+            <div class="toggle-row">
+                <input type="checkbox" id="requires_format" name="requires_format" value="1"{% if posted.requires_format %} checked{% endif %}>
+                <label for="requires_format">Requiere formato</label>
+            </div>
+            <div class="field">
+                <label for="excel_type">Tipo Excel</label>
+                <input type="text" id="excel_type" name="excel_type" value="{{ posted.excel_type }}">
+            </div>
+            <div class="field">
+                <label for="suggested_content_types">Content types sugeridos (JSON)</label>
+                <textarea id="suggested_content_types" name="suggested_content_types" rows="3" class="mono">{{ posted.suggested_content_types }}</textarea>
+            </div>
+            <div class="field">
+                <label for="phase">Fase</label>
+                <select id="phase" name="phase">
+                    <option value="mvp"{% if posted.phase == 'mvp' %} selected{% endif %}>MVP</option>
+                    <option value="phase_2"{% if posted.phase == 'phase_2' %} selected{% endif %}>Fase 2</option>
+                </select>
+            </div>
+            {% endif %}
+
+            {% if catalog.slug == 'execution-error-codes' %}
+            <div class="field">
+                <label for="phase">Etapa</label>
+                <select id="phase" name="phase">
+                    <option value="parse"{% if posted.phase == 'parse' %} selected{% endif %}>Parseo</option>
+                    <option value="map"{% if posted.phase == 'map' %} selected{% endif %}>Mapeo</option>
+                    <option value="transform"{% if posted.phase == 'transform' %} selected{% endif %}>Transformación</option>
+                    <option value="write"{% if posted.phase == 'write' %} selected{% endif %}>Escritura</option>
+                    <option value="job"{% if posted.phase == 'job' %} selected{% endif %}>Job</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="severity">Severidad</label>
+                <select id="severity" name="severity">
+                    <option value="error"{% if posted.severity == 'error' %} selected{% endif %}>Error</option>
+                    <option value="warning"{% if posted.severity == 'warning' %} selected{% endif %}>Advertencia</option>
+                </select>
+            </div>
+            {% endif %}
+
+            {% if catalog.slug == 'filename-pattern-variables' %}
+            <div class="field{% if errors.syntax %} has-error{% endif %}">
+                <label for="syntax">Sintaxis <span class="req">*</span></label>
+                <input type="text" id="syntax" name="syntax" class="mono" value="{{ posted.syntax }}">
+            </div>
+            <div class="toggle-row">
+                <input type="checkbox" id="supports_format" name="supports_format" value="1"{% if posted.supports_format %} checked{% endif %}>
+                <label for="supports_format">Soporta formato strftime</label>
+            </div>
+            <div class="field">
+                <label for="example_value">Valor ejemplo</label>
+                <input type="text" id="example_value" name="example_value" value="{{ posted.example_value }}">
+            </div>
+            <div class="field{% if errors.resolver_key %} has-error{% endif %}">
+                <label for="resolver_key">Resolver key <span class="req">*</span></label>
+                <input type="text" id="resolver_key" name="resolver_key" class="mono" value="{{ posted.resolver_key }}">
+            </div>
+            {% endif %}
+
+            <div class="field{% if errors.sort_order %} has-error{% endif %}">
+                <label for="sort_order">Orden</label>
+                <input type="number" id="sort_order" name="sort_order" class="mono" value="{{ posted.sort_order }}">
+            </div>
+
+            <div class="toggle-row">
+                <input type="checkbox" id="is_active" name="is_active" value="1"{% if posted.is_active %} checked{% endif %}>
+                <label for="is_active">Activo</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a href="{% url 'dms:catalog_list' catalog_slug=catalog.slug %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>

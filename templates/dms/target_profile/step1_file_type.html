@@ -1,0 +1,83 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 1 — Tipo de archivo — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:target_hub' project_slug=project.slug %}">Destino</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Paso 1</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/target_profile/_project_scope.html" %}
+{% include "dms/target_profile/_target_persistence.html" %}
+
+<div id="target-step-root"
+     data-step="1"
+     data-next-url="{% url 'dms:target_step2' project_slug=project.slug %}"
+     data-can-edit="{% if can_edit_target %}1{% else %}0{% endif %}">
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Paso 1 de 6 · <span class="role-badge">TargetFileType</span></p>
+        <h2>Tipo de archivo de salida</h2>
+        <p>Seleccione el formato de escritura desde el catálogo <code>TargetFileType</code>.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:target_step1_help' project_slug=project.slug as target_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=target_help_url %}
+        <a href="{% url 'dms:target_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
+    </div>
+</div>
+
+{% include "dms/target_profile/_wizard_stepper.html" %}
+
+<div class="panel">
+    <div class="panel-body">
+        <p id="step-save-status" class="step-save-status" aria-live="polite"></p>
+        <h3 class="form-section-title">Formato de archivo</h3>
+        <div class="file-type-grid" role="radiogroup" aria-label="Tipo de archivo">
+            {% for ft in file_types %}
+            <label class="file-type-card{% if ft.disabled %} file-type-card--phase2{% endif %}">
+                <input type="radio" name="file_type" value="{{ ft.code }}"
+                       {% if target.file_type_code|default:"csv" == ft.code %}checked{% endif %}
+                       {% if ft.disabled or not can_edit_target %}disabled{% endif %}>
+                <strong>{{ ft.name }}</strong>
+                {% if ft.hint %}<span>{{ ft.hint }}</span>{% endif %}
+                {% if ft.badge %}<span class="file-type-badge">{{ ft.badge }}</span>{% endif %}
+            </label>
+            {% endfor %}
+        </div>
+
+        <div class="wizard-footer">
+            <span class="hint">Los cambios se guardan en el borrador del perfil de destino.</span>
+            <div class="wizard-footer-actions">
+                <button type="button" class="btn btn-secondary" disabled>← Anterior</button>
+                {% if can_edit_target %}
+                <button type="button" id="btn-save-step" class="btn btn-ghost">Guardar borrador</button>
+                <button type="button" id="btn-step-next" class="btn btn-primary" data-next="{% url 'dms:target_step2' project_slug=project.slug %}">Siguiente →</button>
+                {% else %}
+                <a href="{% url 'dms:target_step2' project_slug=project.slug %}" class="btn btn-primary">Siguiente →</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/target_profile-steps.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Editor de mapeo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/field_mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:field_mapping_hub' project_slug=project.slug %}">Mapeo</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:field_mapping_editor' project_slug=project.slug %}">Editor</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Editor de mapeo</h2>
+        <p>Cómo relacionar campos origen → destino y qué hace cada tipo de mapeo.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:field_mapping_editor' project_slug=project.slug %}" class="btn btn-secondary">← Volver al editor</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            Pantalla de trabajo para crear, editar y guardar las relaciones del borrador.
+            Los paneles laterales listan campos origen y destino disponibles.
+        </p>
+
+        <h3 class="form-section-title">Tipos de mapeo</h3>
+        <table class="help-table">
+            <thead><tr><th>Tipo</th><th>Qué hace</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">direct</td><td>Copia un campo origen a un destino.</td></tr>
+                <tr><td class="mono">constant</td><td>Escribe un valor fijo en el destino.</td></tr>
+                <tr><td class="mono">concat</td><td>Une varios orígenes (o textos) en un destino.</td></tr>
+                <tr><td class="mono">generated</td><td>Valor generado por una regla/generador del sistema.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>Auto-sugerir por nombre</td><td>Propone mapeos directos cuando origen y destino coinciden por nombre.</td></tr>
+                <tr><td>Añadir mapeo</td><td>Abre el formulario / fila para una nueva relación.</td></tr>
+                <tr><td>Guardar</td><td>Persiste el conjunto de mapeos en el borrador.</td></tr>
+                <tr><td>← Hub mapeo</td><td>Vuelve al resumen del módulo.</td></tr>
+            </tbody>
+        </table>
+
+        <p class="help-intro">Tras completar el mapeo, puede continuar con <strong>Reglas</strong> (transformaciones post-mapeo) y luego publicar la versión.</p>
+    </div>
+</div>
+{% endblock %}

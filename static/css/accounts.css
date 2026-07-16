@@ -1,0 +1,124 @@
+.role-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-subtle);
+    border-radius: var(--radius-sm);
+}
+
+.user-type-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--ink-secondary);
+    background: var(--surface-inset);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-sm);
+}
+
+.user-type-badge--us {
+    color: var(--accent-hover);
+    border-color: rgba(15, 92, 76, 0.2);
+    background: var(--accent-subtle);
+}
+
+.user-type-badge--uf {
+    color: var(--ink-secondary);
+}
+
+.company-scope-strip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    background: var(--canvas);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-md);
+}
+
+.company-scope-strip .label {
+    color: var(--ink-muted);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.status-pending {
+    color: #b45309;
+}
+
+.status-pending .status-dot {
+    background: #b45309;
+}
+
+.hero-id {
+    margin: 4px 0 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+}
+
+.status--offset {
+    margin-left: 8px;
+}
+
+.hero-title--offset {
+    margin-top: 8px;
+}
+
+/* —— DataTable usuarios —— */
+#account-table {
+    width: 100%;
+    table-layout: auto;
+}
+
+#account-table .col-actions {
+    white-space: nowrap;
+    text-align: right;
+    width: 1%;
+}
+
+#account-table .col-actions .actions--table {
+    justify-content: flex-end;
+    gap: 2px;
+}
+
+#account-table .col-actions .btn-sm {
+    padding: 0 8px;
+}
+
+#account-table .td-email {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#account-table .td-name {
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.panel--table .table-dt-host--accounts {
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    border-top: 1px solid var(--rule);
+}
+
+/* Scroll forzado solo en viewports estrechos */
+@media (max-width: 1100px) {
+    #account-table {
+        min-width: 980px;
+    }
+}

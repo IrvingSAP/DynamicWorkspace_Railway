@@ -1,0 +1,332 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Data Mapping (FilePipe){% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Guía de trabajo · <span class="role-badge">UF</span> · <span class="cell-badge">{{ company.name_short }}</span></p>
+        <h2>Cómo funciona Data Mapping</h2>
+        <p>
+            <strong>FilePipe / Data Mapping</strong> convierte archivos de un formato a otro sin escribir código:
+            defines el archivo de origen, el de destino, el mapeo campo a campo y las reglas; luego subes un archivo,
+            ejecutas la transformación y descargas el resultado. Cada transformación vive en un <strong>proyecto</strong>
+            reutilizable de tu compañía.
+        </p>
+        <p>
+            Esta página describe el <strong>flujo completo</strong>. En cada pantalla del producto también hay ayuda contextual
+            (botón <span class="mono">?</span> / Ayuda) con el detalle de esa vista.
+        </p>
+    </div>
+    <aside class="guide-hero-aside" aria-label="Ruta rápida">
+        <h3>Ruta rápida</h3>
+        <ol class="guide-quick-path">
+            <li>Crea un proyecto en Data Mapping (visibilidad y miembros).</li>
+            <li>Completa Origen → Destino → Mapeo → Reglas y publica una versión.</li>
+            <li>Sube el archivo, ejecuta la transformación y revisa el historial.</li>
+        </ol>
+    </aside>
+</div>
+
+<div class="guide-role-strip" aria-label="Roles en proyectos FilePipe">
+    <span class="label">Roles</span>
+    <span class="guide-role-item"><span class="role-code role-code--pa">PA</span><span>Admin — define, publica y gestiona miembros</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--ed">ED</span><span>Editor — ajusta definición y ejecuta</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--co">CO</span><span>Consulta — revisa sin editar</span></span>
+    <span class="guide-role-item"><span class="role-code">GE</span><span>Generar — enfocado en ejecución / descarga</span></span>
+</div>
+
+<div class="guide-layout">
+    <nav class="guide-spine" aria-label="Índice de flujos">
+        <h3>Flujos</h3>
+        <nav>
+            <a href="#que-es">Qué resuelve</a>
+            <a href="#fase-a">Fase A — Acceso</a>
+            <a href="#fase-b">Fase B — Definición</a>
+            <a href="#fase-c">Fase C — Ejecución</a>
+            <a href="#catalogos">Catálogos</a>
+            <a href="#ejemplo">Ejemplo TXT → CSV</a>
+            <a href="#pantallas">Pantallas del producto</a>
+        </nav>
+    </nav>
+
+    <div class="guide-flows">
+        <article class="flow-card" id="que-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">·</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué problema resuelve</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>Para qué sirve:</strong> unificar conversiones recurrentes de archivos
+                    (TXT posicional, CSV, Excel y similares) en proyectos configurables, en lugar de scripts sueltos o trabajo manual en hojas de cálculo.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Motor en resumen</h4>
+                        <ol>
+                            <li>Leer y parsear el archivo de entrada según el perfil de origen.</li>
+                            <li>Aplicar mapeo de campos y reglas de transformación.</li>
+                            <li>Serializar la salida según el perfil de destino.</li>
+                        </ol>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Puntos relevantes</h4>
+                        <ul>
+                            <li>Todo ocurre dentro de tu compañía; solo ves proyectos donde eres miembro o los públicos de la organización.</li>
+                            <li>La definición se versiona: trabajas en un <strong>borrador</strong> y luego <strong>publicas</strong> una versión activa para ejecutar.</li>
+                            <li>Origen y destino usan asistentes de 6 pasos cada uno.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="flow-card-links">
+                    <a href="{% url 'dms:mapping_list' %}" class="btn btn-ghost btn-sm">Abrir Data Mapping</a>
+                    <a href="{% url 'dms:mapping_list_help' %}" class="btn btn-ghost btn-sm">Ayuda del listado</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="fase-a">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">A</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Fase A — Acceso al proyecto</h3>
+                    <div class="flow-card-roles">
+                        <span class="role-code role-code--pa">PA</span>
+                    </div>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>Para qué sirve:</strong> crear el contenedor del proceso, decidir quién lo ve y quién puede editarlo o ejecutarlo.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Pasos</h4>
+                        <ol>
+                            <li><strong>Crear proyecto</strong> — nombre, slug y descripción desde «Nuevo» en el listado.</li>
+                            <li><strong>Visibilidad</strong> — privado (solo miembros) o público de compañía (visible en la organización).</li>
+                            <li><strong>Miembros</strong> — asignar roles PA / ED / CO / GE desde el hub del proyecto.</li>
+                        </ol>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Puntos relevantes</h4>
+                        <ul>
+                            <li>El creador suele quedar como PA.</li>
+                            <li>Sin membresía adecuada no podrás editar origen/destino ni publicar.</li>
+                            <li>Desde el hub ves el stepper de fases A → B → C.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="flow-card-links">
+                    <a href="{% url 'dms:mapping_create' %}" class="btn btn-ghost btn-sm">Crear proyecto</a>
+                    <a href="{% url 'dms:mapping_create_help' %}" class="btn btn-ghost btn-sm">Ayuda al crear</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="fase-b">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">B</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Fase B — Definición técnica</h3>
+                    <div class="flow-card-roles">
+                        <span class="role-code role-code--pa">PA</span>
+                        <span class="role-code role-code--ed">ED</span>
+                    </div>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>Para qué sirve:</strong> describir cómo se lee el origen, cómo se escribe el destino, cómo se conectan los campos
+                    y qué transformaciones se aplican. El orden recomendado es el del hub.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Orden en el hub</h4>
+                        <ol>
+                            <li><strong>Origen</strong> — tipo de archivo, encoding, layout, campos (6 pasos) y publicar perfil.</li>
+                            <li><strong>Destino</strong> — mismo esquema de asistente para la salida (puedes cargar campos desde origen).</li>
+                            <li><strong>Mapeo</strong> — enlazar campos origen → destino; los obligatorios del destino deben quedar cubiertos.</li>
+                            <li><strong>Reglas</strong> — transformaciones declarativas sobre el pipeline (mayúsculas, recortes, valores fijos, etc.).</li>
+                            <li><strong>Publicar</strong> — congela el borrador en una versión activa usable en ejecución.</li>
+                        </ol>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Puntos relevantes</h4>
+                        <ul>
+                            <li>Hasta publicar, trabajas sobre un borrador (p. ej. «borrador vN»).</li>
+                            <li>No podrás publicar si faltan origen, destino, mapeo u reglas completos.</li>
+                            <li>Usa la ayuda «?» de cada paso del asistente para el detalle de campos y opciones.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="flow-card-links">
+                    <a href="{% url 'dms:mapping_list' %}" class="btn btn-ghost btn-sm">Ir a mis proyectos</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="fase-c">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">C</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Fase C — Ejecución</h3>
+                    <div class="flow-card-roles">
+                        <span class="role-code role-code--pa">PA</span>
+                        <span class="role-code role-code--ed">ED</span>
+                        <span class="role-code">GE</span>
+                    </div>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>Para qué sirve:</strong> aplicar la versión publicada a un archivo real, obtener la salida y auditar lo ocurrido.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Pasos</h4>
+                        <ol>
+                            <li><strong>Archivo</strong> — subir o seleccionar el fichero de entrada (intake).</li>
+                            <li><strong>Ejecutar</strong> — preview opcional y transformación completa.</li>
+                            <li><strong>Descarga</strong> — archivo de salida (y reporte si aplica).</li>
+                            <li><strong>Historial</strong> — trabajos previos del proyecto para reconsulta.</li>
+                        </ol>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Puntos relevantes</h4>
+                        <ul>
+                            <li>La ejecución usa la <strong>versión activa publicada</strong>, no el borrador en edición.</li>
+                            <li>Si cambias origen/destino/mapeo/reglas, vuelve a publicar antes de ejecutar en producción.</li>
+                            <li>El hub marca «Archivo + transformar» cuando el intake está listo.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="catalogos">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">+</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Catálogos del sistema</h3>
+                    <div class="flow-card-roles">
+                        <span class="role-code role-code--pa">PA</span>
+                    </div>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>Para qué sirve:</strong> mantener valores reutilizables (tipos de archivo, encodings, operadores de reglas, etc.)
+                    que alimentan los selectores de los asistentes, sin redeploy por cada variante.
+                </p>
+                <div class="flow-card-links">
+                    <a href="{% url 'dms:catalog_hub' %}" class="btn btn-ghost btn-sm">Abrir Catálogos</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="ejemplo">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">ex</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Ejemplo ilustrativo — TXT posicional → CSV</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    Caso típico de integración legacy: leer posiciones fijas y emitir columnas.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Origen (línea)</h4>
+                        <p class="mono" style="margin:0;font-size:13px;line-height:1.5;">12345JUAN      2500001</p>
+                        <ul>
+                            <li>documento · pos 1, long 5</li>
+                            <li>nombre · pos 6, long 10</li>
+                            <li>salario · pos 16, long 6</li>
+                            <li>estado · pos 22, long 1</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Destino (CSV)</h4>
+                        <p class="mono" style="margin:0;font-size:13px;line-height:1.5;">documento,nombre,salario<br>12345,JUAN,250000</p>
+                        <ul>
+                            <li>Mapear solo los tres campos deseados.</li>
+                            <li>Opcional: regla para recortar espacios en nombre.</li>
+                            <li>Publicar → subir TXT → ejecutar → descargar CSV.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="pantallas">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">UI</span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Pantallas del producto</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    Mapa rápido de lo que encontrarás bajo FilePipe en el menú lateral.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Data Mapping</h4>
+                        <ul>
+                            <li>Listado de proyectos</li>
+                            <li>Alta de proyecto</li>
+                            <li>Hub del proyecto (ciclo A/B/C)</li>
+                            <li>Miembros</li>
+                            <li>Origen / Destino (asistentes)</li>
+                            <li>Mapeo y Reglas</li>
+                            <li>Archivo, Ejecutar e Historial</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Catálogos</h4>
+                        <ul>
+                            <li>Hub de entidades de catálogo</li>
+                            <li>Listado y formulario de valores</li>
+                        </ul>
+                        <p class="hint" style="margin-top:12px;">
+                            En cada una de estas pantallas, el botón Ayuda explica campos, estados y acciones locales.
+                        </p>
+                    </div>
+                </div>
+                <div class="flow-card-links">
+                    <a href="{% url 'dms:mapping_list' %}" class="btn btn-primary btn-sm">Empezar en Data Mapping</a>
+                    <a href="{% url 'dms:catalog_hub' %}" class="btn btn-ghost btn-sm">Ver Catálogos</a>
+                </div>
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Eliminar suscripción — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/billing.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_ua.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'billing:subscription_list' %}">Suscripciones</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'billing:subscription_detail' company_pk=company.pk %}">{{ company.name_short }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Eliminar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow page-eyebrow--danger">Acción irreversible</p>
+        <h2>Eliminar suscripción</h2>
+        <p>Confirmar eliminación de la licencia de la compañía.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'billing:subscription_detail' company_pk=company.pk %}" class="btn btn-secondary">← Cancelar</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <p class="lead">¿Confirma que desea eliminar la suscripción de esta compañía?</p>
+
+        <div class="hero-panel hero-panel--compact">
+            <div class="hero-meta hero-meta--grow">
+                <span class="cell-badge">{{ company.name_short }}</span>
+                <h3 class="hero-title--offset">{{ company.name_long }}</h3>
+                <p class="hint">Plan: {{ subscription.plan.name }} · {{ subscription.get_status_display }}</p>
+            </div>
+        </div>
+
+        <form action="{% url 'billing:subscription_delete' company_pk=company.pk %}" method="post">
+            {% csrf_token %}
+            <div class="toggle-row stack-bottom">
+                <input type="checkbox" id="confirm" name="confirm" value="1" required>
+                <label for="confirm">Entiendo que esta acción no se puede deshacer</label>
+            </div>
+
+            <div class="form-actions form-actions--flush">
+                <button type="submit" class="btn btn-danger">Sí, eliminar suscripción</button>
+                <a href="{% url 'billing:subscription_detail' company_pk=company.pk %}" class="btn btn-secondary">No, volver</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

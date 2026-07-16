@@ -1,0 +1,315 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Editor de mapeo — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/field_mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:field_mapping_hub' project_slug=project.slug %}">Mapeo</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Editor</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/field_mapping/_project_scope.html" %}
+{% include "dms/field_mapping/_persistence.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Módulo 2 · FieldMapping</p>
+        <h2>Editor de mapeo</h2>
+        <p>Relacione cada campo destino con su fuente de valor.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:field_mapping_editor_help' project_slug=project.slug as field_mapping_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=field_mapping_help_url %}
+        <a href="{% url 'dms:field_mapping_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub mapeo</a>
+        {% if can_edit_mappings %}
+        <button type="button" class="btn btn-secondary" id="fm-suggest-btn">Auto-sugerir por nombre</button>
+        <button type="button" class="btn btn-secondary" id="fm-add-btn">Añadir mapeo</button>
+        <button type="button" class="btn btn-primary" id="fm-save-btn">Guardar</button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Mapeos activos</p>
+        <p class="stat-value" id="fm-stat-mappings">{{ hub.mappings_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Destino sin mapear</p>
+        <p class="stat-value" id="fm-stat-unmapped">—</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Origen no usado</p>
+        <p class="stat-value" id="fm-stat-unused">—</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Obligatorios pendientes</p>
+        <p class="stat-value" id="fm-stat-required">{{ hub.unmapped_required }}</p>
+    </div>
+</div>
+
+<div class="fm-layout">
+    <aside class="fm-panel" aria-label="Campos origen">
+        <div class="fm-panel-head">
+            <h3>Origen</h3>
+            <span class="hint">{{ source_file_type }}</span>
+        </div>
+        <ul class="fm-field-list" id="fm-source-list"></ul>
+    </aside>
+
+    <section class="fm-table-wrap panel" aria-label="Tabla de mapeos">
+        <div class="panel-body">
+            <div class="fm-table-toolbar">
+                <h3 class="form-section-title" style="margin:0">Relaciones</h3>
+                <p class="hint" id="fm-table-hint">Arrastre origen → destino para crear un enlace directo</p>
+            </div>
+            <div class="table-scroll">
+                <table class="data-table fm-table" id="fm-mappings-table">
+                    <thead>
+                        <tr>
+                            <th>Destino</th>
+                            <th>Tipo</th>
+                            <th>Fuente</th>
+                            <th>Reglas</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="fm-mappings-body"></tbody>
+                </table>
+            </div>
+            <div class="empty-state" id="fm-empty" hidden>
+                <h3>Sin mapeos aún</h3>
+                <p>Añada un mapeo, arrastre origen → destino, o use auto-sugerencia por nombres iguales.</p>
+            </div>
+            <div class="form-errors" id="fm-form-errors" hidden></div>
+
+            <div class="fm-preview" id="fm-preview" aria-label="Preview valor por fila">
+                <h3 class="form-section-title" style="margin:0 0 6px">Preview valor por fila</h3>
+                <p class="hint">Indique valores de una fila origen y pruebe el resultado tras mapeo + reglas.</p>
+                <div class="fm-preview-grid" id="fm-preview-inputs"></div>
+                <div class="fm-preview-actions">
+                    <button type="button" class="btn btn-secondary btn-sm" id="fm-preview-run">Probar</button>
+                    {% if sample_preview_row %}
+                    <button type="button" class="btn btn-secondary btn-sm" id="fm-preview-sample">Usar 1ª fila muestra</button>
+                    {% endif %}
+                </div>
+                <div class="form-errors" id="fm-preview-errors" hidden></div>
+                <div class="fm-preview-results table-scroll" id="fm-preview-results" hidden>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Campo destino</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fm-preview-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <aside class="fm-panel" aria-label="Campos destino">
+        <div class="fm-panel-head">
+            <h3>Destino</h3>
+            <span class="hint">{{ target_file_type }}</span>
+        </div>
+        <ul class="fm-field-list" id="fm-target-list"></ul>
+    </aside>
+</div>
+
+<dialog class="fm-dialog" id="fm-mapping-dialog" aria-labelledby="fm-dialog-title">
+    <form method="dialog" id="fm-mapping-form" class="fm-dialog-body">
+        <div class="fm-dialog-head">
+            <h3 id="fm-dialog-title">Mapeo</h3>
+            <button type="submit" value="cancel" class="btn btn-secondary btn-sm" formnovalidate>Cerrar</button>
+        </div>
+        <input type="hidden" id="fm-edit-index" value="-1">
+        <div class="form-grid">
+            <div class="field">
+                <label for="fm-target-field">Campo destino</label>
+                <select id="fm-target-field" required></select>
+            </div>
+            <div class="field">
+                <label for="fm-mapping-kind">Tipo de enlace</label>
+                <select id="fm-mapping-kind">
+                    {% for kind in mapping_kinds %}
+                    <option value="{{ kind.code }}" {% if kind.phase != 'mvp' %}disabled{% endif %}>
+                        {{ kind.name }}{% if kind.phase != 'mvp' %} (Fase 2){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="field fm-kind-panel" data-kind="direct">
+            <label for="fm-source-field">Campo origen</label>
+            <select id="fm-source-field"></select>
+        </div>
+
+        <div class="field fm-kind-panel" data-kind="constant" hidden>
+            <label for="fm-constant-value">Valor constante</label>
+            <input type="text" id="fm-constant-value" autocomplete="off">
+        </div>
+
+        <div class="fm-kind-panel" data-kind="concat" hidden>
+            <label>Partes (literal o campo)</label>
+            <div id="fm-concat-parts" class="fm-concat-parts"></div>
+            <button type="button" class="btn btn-secondary btn-sm" id="fm-concat-add-literal">+ Literal</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="fm-concat-add-field">+ Campo</button>
+        </div>
+
+        <div class="fm-kind-panel" data-kind="split" hidden>
+            <div class="field">
+                <label for="fm-split-source">Campo origen</label>
+                <select id="fm-split-source"></select>
+            </div>
+            <div class="field">
+                <label for="fm-split-part">Parte</label>
+                <select id="fm-split-part">
+                    <option value="first_word">Primera palabra</option>
+                    <option value="rest">Resto</option>
+                    <option value="delimiter">Por delimitador</option>
+                    <option value="substring">Substring</option>
+                    <option value="regex">Regex</option>
+                </select>
+            </div>
+            <div class="fm-split-params" id="fm-split-params-delimiter" hidden>
+                <div class="field">
+                    <label for="fm-split-delimiter">Delimitador</label>
+                    <input type="text" id="fm-split-delimiter" value=" " autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="fm-split-index">Índice</label>
+                    <input type="number" id="fm-split-index" value="0" min="0">
+                </div>
+            </div>
+            <div class="fm-split-params" id="fm-split-params-substring" hidden>
+                <div class="field">
+                    <label for="fm-split-start">Inicio</label>
+                    <input type="number" id="fm-split-start" value="0" min="0">
+                </div>
+                <div class="field">
+                    <label for="fm-split-length">Longitud</label>
+                    <input type="number" id="fm-split-length" value="1" min="1">
+                </div>
+            </div>
+            <div class="fm-split-params" id="fm-split-params-regex" hidden>
+                <div class="field">
+                    <label for="fm-split-pattern">Patrón</label>
+                    <input type="text" id="fm-split-pattern" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="fm-split-group">Grupo</label>
+                    <input type="number" id="fm-split-group" value="0" min="0">
+                </div>
+            </div>
+        </div>
+
+        <div class="fm-kind-panel" data-kind="expression" hidden>
+            <p class="hint">Árbol de expresión (máx. 5 niveles). Operandos: campo, literal o sub-expresión.</p>
+            <div id="fm-expr-tree" class="fm-expr-tree"></div>
+        </div>
+
+        <div class="fm-kind-panel" data-kind="generated" hidden>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="fm-generator-type">Generador</label>
+                    <select id="fm-generator-type">
+                        {% for gen in generator_types %}
+                        <option value="{{ gen.code }}">{{ gen.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="fm-gen-prefix">Prefijo</label>
+                    <input type="text" id="fm-gen-prefix" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="fm-gen-suffix">Sufijo</label>
+                    <input type="text" id="fm-gen-suffix" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="fm-gen-start">Inicio</label>
+                    <input type="number" id="fm-gen-start" value="1">
+                </div>
+                <div class="field">
+                    <label for="fm-gen-step">Paso</label>
+                    <input type="number" id="fm-gen-step" value="1">
+                </div>
+                <div class="field">
+                    <label for="fm-gen-pad">Padding</label>
+                    <input type="number" id="fm-gen-pad" min="0" value="0">
+                </div>
+                <div class="field">
+                    <label for="fm-gen-pad-char">Carácter pad</label>
+                    <input type="text" id="fm-gen-pad-char" maxlength="1" value="0" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="fm-gen-template">Plantilla</label>
+                    <input type="text" id="fm-gen-template" placeholder="FAC-{seq:5}" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="fm-gen-scope">Alcance</label>
+                    <select id="fm-gen-scope">
+                        <option value="job">Job</option>
+                        <option value="row">Fila</option>
+                        <option value="project">Proyecto</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="fm-check" for="fm-gen-reset">
+                        <input type="checkbox" id="fm-gen-reset" checked> Reiniciar por job
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="fm-transforms">Reglas</label>
+            <div class="fm-transform-checks" id="fm-transforms">
+                {% for op in transform_ops %}
+                <label class="fm-check">
+                    <input type="checkbox" value="{{ op.code }}"> {{ op.name }}
+                </label>
+                {% endfor %}
+            </div>
+            <div class="field" id="fm-date-format-wrap" hidden>
+                <label for="fm-date-format">Formato fecha</label>
+                <input type="text" id="fm-date-format" placeholder="%Y-%m-%d" autocomplete="off">
+            </div>
+        </div>
+
+        <div class="form-errors" id="fm-dialog-errors" hidden></div>
+
+        <div class="fm-dialog-actions">
+            <button type="submit" value="cancel" class="btn btn-secondary">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="fm-dialog-apply">Aplicar</button>
+        </div>
+    </form>
+</dialog>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/field_mapping-persistence.js' %}"></script>
+<script src="{% static 'js/field_mapping-editor.js' %}"></script>
+{% endblock %}

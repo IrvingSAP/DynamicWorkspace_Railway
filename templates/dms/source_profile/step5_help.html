@@ -1,0 +1,50 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Paso 5 origen{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:source_hub' project_slug=project.slug %}">Origen</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:source_step5' project_slug=project.slug %}">Paso 5</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Paso 5 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Reglas globales de contenido</h2>
+        <p>Normalización y filtros a nivel de archivo/línea, antes o durante el parseo.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:source_step5' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 5</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">Ajusta <code>content_rules</code>: cómo limpiar líneas y qué contenido rechazar. No sustituye las reglas de transformación del mapeo (post-mapeo).</p>
+        <table class="help-table">
+            <thead><tr><th>Bloque</th><th>Ejemplos de uso</th></tr></thead>
+            <tbody>
+                <tr><td>Normalización de líneas</td><td>Recortar espacios, unificar vacíos, etc.</td></tr>
+                <tr><td>Exclusiones / patrones</td><td>Caracteres prohibidos o patrones que marcan error en la línea.</td></tr>
+                <tr><td>Guardar borrador</td><td>Persiste sin dejar el paso.</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Las violaciones suelen registrarse en el informe (paso 6 / ejecución) según la política de errores del proyecto.</p>
+    </div>
+</div>
+{% endblock %}

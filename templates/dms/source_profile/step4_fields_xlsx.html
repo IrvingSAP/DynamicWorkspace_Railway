@@ -1,0 +1,143 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 4 — Campos Excel — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:source_hub' project_slug=project.slug %}">Origen</a>
+    <span class="breadcrumb-sep">/</span><span>Paso 4 — Campos</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/source_profile/_project_scope.html" %}
+{% include "dms/source_profile/_source_persistence.html" %}
+
+<div id="source-fields-xlsx-root"
+     data-project-slug="{{ project.slug }}"
+     data-can-edit="{% if can_edit_source %}1{% else %}0{% endif %}">
+    <script type="application/json" id="xlsx-config-default">{{ config_json|safe }}</script>
+
+    <div class="page-header">
+        <div>
+            <p class="page-eyebrow">Paso 4 de 6 · <span class="role-badge">xlsx</span></p>
+            <h2>Definición de campos (Excel)</h2>
+            <p>Mapeo de columnas de la hoja a nombres internos. Use letra de columna (<code>A</code>, <code>B</code>) o nombre de encabezado.</p>
+        </div>
+        <div class="page-actions">
+            {% url 'dms:source_step4_help' project_slug=project.slug as source_help_url %}
+            {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+            {% if can_edit_source %}
+            <button type="button" id="btn-save-xlsx-config" class="btn btn-ghost btn-sm">Guardar parámetros</button>
+            <button type="button" id="btn-add-field" class="btn btn-primary">+ Agregar campo</button>
+            {% endif %}
+        </div>
+    </div>
+
+    {% include "dms/source_profile/_wizard_stepper.html" %}
+
+    <p id="xlsx-save-status" class="step-save-status" aria-live="polite"></p>
+
+    <div class="panel">
+        <div class="panel-body">
+            <h3 class="form-section-title">Parámetros de hoja</h3>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="sheet_name">Nombre de hoja <span class="req">*</span></label>
+                    <input type="text" id="sheet_name" class="mono" value="Hoja1" maxlength="120"{% if not can_edit_source %} disabled{% endif %}>
+                </div>
+                <div class="field">
+                    <label for="header_row">Fila de encabezados</label>
+                    <input type="number" id="header_row" class="mono" value="1" min="1"{% if not can_edit_source %} disabled{% endif %}>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel--table" style="margin-top:16px">
+        <div class="table-dt-host">
+            <table id="source-fields-table" class="fields-table">
+                <thead>
+                    <tr>
+                        <th>Columna</th>
+                        <th>Nombre interno</th>
+                        <th>Tipo contenido</th>
+                        <th>Oblig.</th>
+                        <th class="col-actions">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="source-fields-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if can_edit_source %}
+    <div class="panel field-editor-panel" style="margin-top:16px">
+        <div class="panel-body">
+            <h3 id="field-editor-title" class="form-section-title">Agregar campo</h3>
+            <div id="field-editor-errors" class="alert alert-error" hidden role="alert"></div>
+            <form id="field-editor-form" class="form-grid" novalidate>
+                <div class="form-row two-cols">
+                    <div class="field">
+                        <label for="field-column">Columna <span class="req">*</span></label>
+                        <input type="text" id="field-column" class="mono" maxlength="32" placeholder="A" required>
+                        <p class="hint">Letra de columna o nombre de encabezado en la hoja</p>
+                    </div>
+                    <div class="field">
+                        <label for="field-name">Nombre interno <span class="req">*</span></label>
+                        <input type="text" id="field-name" class="mono" maxlength="64" placeholder="documento" required>
+                    </div>
+                </div>
+                <div class="form-row two-cols">
+                    <div class="field">
+                        <label for="field-content-type">Tipo contenido <span class="req">*</span></label>
+                        <select id="field-content-type" required>
+                            {% for ct in content_types %}
+                            <option value="{{ ct.code }}">{{ ct.code }} — {{ ct.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="field field--checkbox">
+                        <label for="field-required">
+                            <input type="checkbox" id="field-required" checked>
+                            Campo obligatorio
+                        </label>
+                    </div>
+                </div>
+                <div id="field-date-format-wrap" class="field" hidden>
+                    <label for="field-date-format">Formato fecha (<code>date_format</code>)</label>
+                    <input type="text" id="field-date-format" class="mono" placeholder="DD/MM/YYYY">
+                </div>
+                <div class="form-actions form-actions--flush">
+                    <button type="submit" id="btn-save-field" class="btn btn-primary">Agregar campo</button>
+                    <button type="button" id="btn-cancel-field" class="btn btn-secondary">Cancelar</button>
+                    <button type="button" id="btn-delete-field" class="btn btn-ghost btn-ghost--danger" hidden>Eliminar campo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="wizard-footer">
+        <span class="hint">Los campos se guardan en el borrador del servidor (v{{ wizard.version_number }})</span>
+        <div class="wizard-footer-actions">
+            <a href="{% url 'dms:source_step3' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
+            <a href="{% url 'dms:source_step5' project_slug=project.slug %}" class="btn btn-primary">Siguiente →</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/source_profile-fields-xlsx.js' %}"></script>
+{% endblock %}

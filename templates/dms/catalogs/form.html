@@ -1,0 +1,47 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Editar{% else %}Nuevo{% endif %} — {{ catalog.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dms.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:catalog_hub' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:catalog_list' catalog_slug=catalog.slug %}">{{ catalog.title }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{% if is_edit %}Editar{% else %}Nuevo{% endif %}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">{{ catalog.entity }} · <span class="role-badge">UA</span></p>
+        <h2>{% if is_edit %}Editar registro{% else %}Nuevo registro{% endif %}</h2>
+        <p>{{ catalog.usage }}</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:catalog_form_help' catalog_slug=catalog.slug as catalog_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=catalog_help_url %}
+        <a href="{% url 'dms:catalog_list' catalog_slug=catalog.slug %}" class="btn btn-secondary">← Listado</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        {% include "dms/catalogs/_form_fields.html" %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

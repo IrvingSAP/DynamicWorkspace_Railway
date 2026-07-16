@@ -1,0 +1,39 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ management_scope.create_title }} — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include sidebar_template %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'accounts:list' %}">Usuarios</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Nuevo</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Alta · <span class="role-badge">{{ management_scope.actor_type }}</span>{% if management_scope.fixed_company %} · <span class="cell-badge">{{ management_scope.fixed_company.name_short }}</span>{% endif %}</p>
+        <h2>{{ management_scope.create_title }}</h2>
+        <p>{{ management_scope.create_description }}</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'accounts:list' %}" class="btn btn-secondary">← Listado</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        {% include "accounts/_form.html" %}
+    </div>
+</div>
+{% endblock %}

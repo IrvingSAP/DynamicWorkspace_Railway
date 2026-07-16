@@ -1,0 +1,123 @@
+<form method="post" novalidate>
+    {% csrf_token %}
+    <div class="form-section">
+        <h3 class="form-section-title">Identidad</h3>
+        <div class="form-grid">
+            <div class="form-row two-cols">
+                <div class="field{% if errors.key %} has-error{% endif %}">
+                    <label for="key">Clave interna <span class="req">*</span></label>
+                    <input type="text" id="key" name="key" class="mono" maxlength="100" placeholder="codigo_articulo" value="{{ posted.key }}"{% if key_readonly %} readonly{% else %} required{% endif %}>
+                    <p class="hint">{% if key_readonly %}Inmutable: ya hay datos en registros{% else %}Slug único en el proyecto · letras, números, guiones{% endif %}</p>
+                    {% for msg in errors.key %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+                <div class="field{% if errors.label %} has-error{% endif %}">
+                    <label for="label">Etiqueta visible <span class="req">*</span></label>
+                    <input type="text" id="label" name="label" maxlength="200" placeholder="Código de artículo" value="{{ posted.label }}" required>
+                    {% for msg in errors.label %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="form-row two-cols">
+                <div class="field{% if errors.sort_order %} has-error{% endif %}">
+                    <label for="sort_order">Orden <span class="req">*</span></label>
+                    <input type="number" id="sort_order" name="sort_order" class="mono" min="0" value="{{ posted.sort_order }}" required>
+                    <p class="hint">Posición en listados y formularios de registros</p>
+                    {% for msg in errors.sort_order %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+                <div class="field">
+                    <label>Obligatoriedad</label>
+                    <div class="toggle-row">
+                        <input type="checkbox" id="required" name="required" value="1"{% if posted.required %} checked{% endif %}>
+                        <label for="required">Campo obligatorio al guardar registros</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3 class="form-section-title">Tipo de dato</h3>
+        <div class="form-grid">
+            <div class="field{% if errors.field_type %} has-error{% endif %}">
+                <label for="field_type">Tipo <span class="req">*</span></label>
+                <select id="field_type" name="field_type" required>
+                    <option value="">Seleccionar…</option>
+                    {% for code, label in field_type_choices %}
+                    <option value="{{ code }}"{% if posted.field_type == code %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                {% for msg in errors.field_type %}
+                <p class="field-error">{{ msg }}</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div id="panel-text" class="form-section field-panel--conditional">
+            <h3 class="form-section-title">Validación — texto</h3>
+            <div class="form-grid">
+                <div class="field{% if errors.max_length %} has-error{% endif %}">
+                    <label for="max_length">Longitud máxima</label>
+                    <input type="number" id="max_length" name="max_length" class="mono" min="1" max="10000" placeholder="255" value="{{ posted.max_length }}">
+                    <p class="hint">Opcional · por defecto: corto 255, largo 2000</p>
+                    {% for msg in errors.max_length %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div id="panel-number" class="form-section field-panel--conditional">
+            <h3 class="form-section-title">Validación — numérico</h3>
+            <div class="form-grid">
+                <div class="form-row two-cols">
+                    <div class="field{% if errors.min_value %} has-error{% endif %}">
+                        <label for="min_value">Mínimo</label>
+                        <input type="number" id="min_value" name="min_value" class="mono" step="any" placeholder="0" value="{{ posted.min_value }}">
+                        {% for msg in errors.min_value %}
+                        <p class="field-error">{{ msg }}</p>
+                        {% endfor %}
+                    </div>
+                    <div class="field{% if errors.max_value %} has-error{% endif %}">
+                        <label for="max_value">Máximo</label>
+                        <input type="number" id="max_value" name="max_value" class="mono" step="any" placeholder="999999" value="{{ posted.max_value }}">
+                        {% for msg in errors.max_value %}
+                        <p class="field-error">{{ msg }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="field{% if errors.decimal_places %} has-error{% endif %}">
+                    <label for="decimal_places">Decimales</label>
+                    <input type="number" id="decimal_places" name="decimal_places" class="mono" min="0" max="6" placeholder="2" value="{{ posted.decimal_places }}">
+                    <p class="hint">Solo aplica a tipo decimal</p>
+                    {% for msg in errors.decimal_places %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div id="panel-select" class="form-section field-panel--conditional">
+            <h3 class="form-section-title">Opciones de lista</h3>
+            <div class="form-grid">
+                <div class="field{% if errors.select_options %} has-error{% endif %}">
+                    <label for="select_options">Opciones <span class="req">*</span></label>
+                    <textarea id="select_options" name="select_options" rows="5" placeholder="Materia prima&#10;Producto terminado">{{ posted.select_options }}</textarea>
+                    <p class="hint">Una opción por línea</p>
+                    {% for msg in errors.select_options %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{% if is_edit %}Guardar cambios{% else %}Crear campo{% endif %}</button>
+        <a href="{% url 'fields:list' slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>

@@ -1,0 +1,137 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ejecutar transformación — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/transform_execution.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ejecutar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    <span class="hint">· {{ version_publish.published_version_label }}</span>
+</div>
+
+<div id="dms-transform-execution-config"
+     data-csrf-token="{{ csrf_token }}"
+     data-preview-template="{{ preview_url_template }}"
+     data-run-template="{{ run_url_template }}"
+     hidden></div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Fase C · <span class="role-badge">TransformExecution</span></p>
+        <h2>Ejecutar transformación</h2>
+        <p>Dry run y job completo sobre un archivo de producción ya subido.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:transform_execution_hub_help' project_slug=project.slug as transform_execution_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=transform_execution_help_url %}
+        <a href="{% url 'dms:file_intake_hub' project_slug=project.slug %}" class="btn btn-secondary">Subir archivo</a>
+        <a href="{% url 'dms:transform_execution_history' project_slug=project.slug %}" class="btn btn-secondary">Historial</a>
+        <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+    </div>
+</div>
+
+{% if not has_published_version %}
+<div class="panel">
+    <div class="panel-body empty-state">
+        <h3>Publique una versión</h3>
+        <p>Sin versión publicada no se puede ejecutar.</p>
+        <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a publicar</a>
+    </div>
+</div>
+{% else %}
+
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Jobs subidos (listos)</h3>
+        {% if uploaded_jobs %}
+        <div class="table-scroll">
+            <table class="data-table" id="te-jobs-table">
+                <thead>
+                    <tr>
+                        <th>Archivo</th>
+                        <th>Tamaño</th>
+                        <th>Versión</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in uploaded_jobs %}
+                    <tr data-job-id="{{ job.id }}">
+                        <td><strong>{{ job.original_filename }}</strong></td>
+                        <td>{{ job.size_label }}</td>
+                        <td>v{{ job.version_number }}</td>
+                        <td class="te-actions">
+                            {% if can_execute %}
+                            <button type="button" class="btn btn-secondary btn-sm" data-action="preview" data-job-id="{{ job.id }}">Solo preview</button>
+                            <button type="button" class="btn btn-primary btn-sm" data-action="run" data-job-id="{{ job.id }}">Ejecutar transformación</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>Sin archivos subidos</h3>
+            <p>Suba un archivo de producción en Archivo para ejecutar.</p>
+            <a href="{{ file_intake_url }}" class="btn btn-primary">Ir a carga de archivos</a>
+        </div>
+        {% endif %}
+        <div class="form-errors" id="te-errors" hidden></div>
+        <p class="step-save-status" id="te-status" aria-live="polite"></p>
+    </div>
+</div>
+
+<div class="panel" id="te-preview-panel" hidden>
+    <div class="panel-body">
+        <h3 class="form-section-title">Preview dry run</h3>
+        <p class="hint" id="te-preview-summary"></p>
+        <div class="table-scroll">
+            <table class="data-table" id="te-preview-table">
+                <thead id="te-preview-head"></thead>
+                <tbody id="te-preview-body"></tbody>
+            </table>
+        </div>
+        <h4 class="form-section-title" style="margin-top:16px">Errores</h4>
+        <pre class="te-errors-pre" id="te-preview-errors"></pre>
+    </div>
+</div>
+
+<div class="panel" id="te-result-panel" hidden>
+    <div class="panel-body">
+        <h3 class="form-section-title">Resultado</h3>
+        <p id="te-result-summary"></p>
+        <div class="page-actions" id="te-result-links"></div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/transform_execution.js' %}"></script>
+{% endblock %}

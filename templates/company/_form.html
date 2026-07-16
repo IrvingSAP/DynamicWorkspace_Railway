@@ -1,0 +1,87 @@
+<form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    <div class="form-section">
+        <h3 class="form-section-title">Identidad</h3>
+        <div class="form-grid">
+            <div class="form-row two-cols">
+                <div class="field{% if errors.name_short %} has-error{% endif %}">
+                    <label for="name_short">Código / sigla <span class="req">*</span></label>
+                    <input type="text" id="name_short" name="name_short" class="mono" maxlength="15" placeholder="ACME" value="{{ posted.name_short }}" required>
+                    <p class="hint">Único en todo el sistema · máx. 15 caracteres</p>
+                    {% for msg in errors.name_short %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+                <div class="field{% if errors.name_long %} has-error{% endif %}">
+                    <label for="name_long">Nombre completo <span class="req">*</span></label>
+                    <input type="text" id="name_long" name="name_long" maxlength="150" placeholder="Acme Operaciones S.A." value="{{ posted.name_long }}" required>
+                    {% for msg in errors.name_long %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="field{% if errors.logo %} has-error{% endif %}">
+                <label for="logo">Logo</label>
+                <input type="file" id="logo" name="logo" accept="image/*">
+                <p class="hint">
+                    {% if is_edit %}Dejar vacío para mantener el logo actual{% else %}Opcional · almacenado en company_logos/{% endif %}
+                    {% if posted.logo_filename %} · Debe volver a adjuntar: <strong>{{ posted.logo_filename }}</strong>{% endif %}
+                </p>
+                {% for msg in errors.logo %}
+                <p class="field-error">{{ msg }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3 class="form-section-title">Contacto y ubicación</h3>
+        <div class="form-grid">
+            <div class="form-row two-cols">
+                <div class="field{% if errors.tax_id %} has-error{% endif %}">
+                    <label for="tax_id">Identificación tributaria</label>
+                    <input type="text" id="tax_id" name="tax_id" class="mono" maxlength="50" placeholder="900123456-7" value="{{ posted.tax_id }}">
+                    {% for msg in errors.tax_id %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+                <div class="field{% if errors.email %} has-error{% endif %}">
+                    <label for="email">Correo de contacto</label>
+                    <input type="email" id="email" name="email" placeholder="contacto@empresa.com" value="{{ posted.email }}">
+                    {% for msg in errors.email %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="form-row two-cols">
+                <div class="field{% if errors.phone %} has-error{% endif %}">
+                    <label for="phone">Teléfono</label>
+                    <input type="tel" id="phone" name="phone" maxlength="50" placeholder="+57 300 000 0000" value="{{ posted.phone }}">
+                    {% for msg in errors.phone %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+                <div class="field{% if errors.address %} has-error{% endif %}">
+                    <label for="address">Dirección</label>
+                    <textarea id="address" name="address" maxlength="255" placeholder="Calle, ciudad, país">{{ posted.address }}</textarea>
+                    {% for msg in errors.address %}
+                    <p class="field-error">{{ msg }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3 class="form-section-title">Estado</h3>
+        <div class="toggle-row">
+            <input type="checkbox" id="is_active" name="is_active" value="1"{% if posted.is_active %} checked{% endif %}>
+            <label for="is_active">{% if is_edit %}Compañía activa{% else %}Compañía activa al crear{% endif %}</label>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{% if is_edit %}Guardar cambios{% else %}Crear compañía{% endif %}</button>
+        <a href="{% if is_edit %}{% url 'company:detail' pk=company.pk %}{% else %}{% url 'company:list' %}{% endif %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>

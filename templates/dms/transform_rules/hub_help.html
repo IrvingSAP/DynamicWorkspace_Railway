@@ -1,0 +1,62 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Reglas de transformación{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/transform_rules.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:transform_rules_hub' project_slug=project.slug %}">Reglas</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Hub de reglas</h2>
+        <p>Pipeline post-mapeo: transformaciones aplicadas a cada campo destino antes de escribir.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:transform_rules_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al hub</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            Tras el mapeo, puede aplicar operaciones por campo destino (trim, upper, fechas, pad, default…).
+            Requiere al menos un mapeo definido.
+        </p>
+
+        <h3 class="form-section-title">Indicadores</h3>
+        <table class="help-table">
+            <thead><tr><th>Indicador</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr><td>Campos mapeados</td><td>Destinos con mapeo (candidatos a reglas).</td></tr>
+                <tr><td>Con reglas / pasos</td><td>Cuántos pipelines tienen operaciones definidas.</td></tr>
+                <tr><td>Estado</td><td>Listo / en edición / pendiente de mapeo.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>Abrir editor</td><td>Configura el pipeline por campo destino.</td></tr>
+                <tr><td>Ir a mapeo</td><td>Si aún no hay mapeos, completa primero FieldMapping.</td></tr>
+                <tr><td>← Proyecto</td><td>Vuelve al hub FilePipe.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

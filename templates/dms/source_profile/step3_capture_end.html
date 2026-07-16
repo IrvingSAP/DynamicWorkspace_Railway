@@ -1,0 +1,143 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 3 — Línea fin — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:source_hub' project_slug=project.slug %}">Origen</a>
+    <span class="breadcrumb-sep">/</span><span>Paso 3</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/source_profile/_project_scope.html" %}
+{% include "dms/source_profile/_source_persistence.html" %}
+
+<div id="source-step-root"
+     data-step="3"
+     data-prev-url="{% url 'dms:source_step2' project_slug=project.slug %}"
+     data-next-url="{% url 'dms:source_step4' project_slug=project.slug %}"
+     data-can-edit="{% if can_edit_source %}1{% else %}0{% endif %}">
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Paso 3 de 6 · <span class="role-badge">capture_end</span></p>
+        <h2>Línea de fin de captura</h2>
+        <p>Define dónde termina la lectura. Debe ser posterior a <code>capture_start</code> (misma unidad: líneas). Modos desde catálogo <code>CaptureBoundaryMode</code> (applies_to: end).</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:source_step3_help' project_slug=project.slug as source_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+        <a href="{% url 'dms:source_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
+    </div>
+</div>
+
+{% include "dms/source_profile/_wizard_stepper.html" %}
+
+<div class="panel">
+    <div class="panel-body" data-capture-params="capture_end_mode">
+        <p id="step-save-status" class="step-save-status" aria-live="polite"></p>
+        <h3 class="form-section-title">Modo de fin</h3>
+        <div class="capture-mode-list" role="radiogroup" aria-label="Modo de fin de captura">
+            {% for mode in capture_end_modes %}
+            <label class="capture-mode-option{% if mode.disabled %} capture-mode-option--phase2{% endif %}">
+                <input type="radio" name="capture_end_mode" value="{{ mode.code }}"
+                       {% if source.capture_end.mode|default:"eof" == mode.code %}checked{% endif %}
+                       {% if mode.disabled or not can_edit_source %}disabled{% endif %}>
+                <div>
+                    <strong>{{ mode.name }}</strong>
+                    {% if mode.hint %}<span>{{ mode.hint }}</span>{% endif %}
+                </div>
+            </label>
+            {% endfor %}
+        </div>
+
+        <div class="capture-params" data-capture-panel="eof">
+            <p class="hint">No requiere parámetros adicionales.</p>
+        </div>
+        <div class="capture-params" data-capture-panel="line_number" hidden>
+            <div class="field">
+                <label for="end_line">Línea final <span class="req">*</span></label>
+                <input type="number" id="end_line" name="end_line" class="mono"
+                       value="{{ source.capture_end.line|default:500 }}" min="1"{% if not can_edit_source %} disabled{% endif %}>
+                <p class="hint">Caso SD-05: CSV con fin en línea 500.</p>
+            </div>
+        </div>
+        <div class="capture-params" data-capture-panel="percent" hidden>
+            <div class="field">
+                <label for="percent_value">Porcentaje (%) <span class="req">*</span></label>
+                <input type="number" id="percent_value" name="percent_value" class="mono"
+                       value="{{ source.capture_end.value|default:80 }}" min="1" max="100"{% if not can_edit_source %} disabled{% endif %}>
+                <p class="hint">Caso SD-02: procesar hasta el 80 % del archivo.</p>
+            </div>
+        </div>
+        <div class="capture-params" data-capture-panel="max_rows" hidden>
+            <div class="field">
+                <label for="max_rows">Máximo de filas <span class="req">*</span></label>
+                <input type="number" id="max_rows" name="max_rows" class="mono"
+                       value="{{ source.capture_end.max_rows|default:1000 }}" min="1"{% if not can_edit_source %} disabled{% endif %}>
+            </div>
+        </div>
+        <div class="capture-params" data-capture-panel="marker_end" hidden>
+            <div class="field">
+                <label for="marker_end">Texto marcador <span class="req">*</span></label>
+                <input type="text" id="marker_end" name="marker_end" class="mono"
+                       value="{{ source.capture_end.marker|default:'' }}"
+                       placeholder="=== FIN ==="{% if not can_edit_source %} disabled{% endif %}>
+            </div>
+        </div>
+        <div class="capture-params" data-capture-panel="line_or_eof" hidden>
+            <div class="field">
+                <label for="line_or_eof">Línea <span class="req">*</span></label>
+                <input type="number" id="line_or_eof" name="line_or_eof" class="mono"
+                       value="{{ source.capture_end.line|default:1000 }}" min="1"{% if not can_edit_source %} disabled{% endif %}>
+                <p class="hint">Se detiene en esta línea o al llegar al final del archivo, lo que ocurra primero.</p>
+            </div>
+        </div>
+        <div class="capture-params" data-capture-panel="before_pattern" hidden>
+            <div class="field">
+                <label for="end_pattern">Patrón regex <span class="req">*</span></label>
+                <input type="text" id="end_pattern" name="end_pattern" class="mono"
+                       value="{{ source.capture_end.pattern|default:'' }}"
+                       placeholder="^TOTAL"{% if not can_edit_source %} disabled{% endif %}>
+                <p class="hint">La captura termina antes de la primera línea que coincida.</p>
+            </div>
+        </div>
+        <div class="capture-params" data-capture-panel="blank_run" hidden>
+            <div class="field">
+                <label for="end_blank_count">Líneas en blanco consecutivas <span class="req">*</span></label>
+                <input type="number" id="end_blank_count" name="end_blank_count" class="mono"
+                       value="{{ source.capture_end.blank_count|default:1 }}" min="1"{% if not can_edit_source %} disabled{% endif %}>
+                <p class="hint">Vacío = línea sin texto (solo espacios). Fin exclusive en la primera blanca del bloque.</p>
+            </div>
+        </div>
+
+        <div class="wizard-footer">
+            <span class="hint">JSON: <code class="mono">capture_end: { mode, line }</code> · Validación: fin &gt; inicio</span>
+            <div class="wizard-footer-actions">
+                <a href="{% url 'dms:source_step2' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
+                {% if can_edit_source %}
+                <button type="button" id="btn-save-step" class="btn btn-ghost">Guardar borrador</button>
+                <button type="button" id="btn-step-next" class="btn btn-primary" data-next="{% url 'dms:source_step4' project_slug=project.slug %}">Siguiente →</button>
+                {% else %}
+                <a href="{% url 'dms:source_step4' project_slug=project.slug %}" class="btn btn-primary">Siguiente →</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/source_profile-wizard.js' %}"></script>
+<script src="{% static 'js/source_profile-steps.js' %}"></script>
+{% endblock %}

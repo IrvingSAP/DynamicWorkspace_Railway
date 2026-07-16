@@ -1,0 +1,47 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Paso 1 destino{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:target_hub' project_slug=project.slug %}">Destino</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:target_step1' project_slug=project.slug %}">Paso 1</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Paso 1 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Tipo de archivo de salida</h2>
+        <p>Formato de escritura desde el catálogo <code>TargetFileType</code>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:target_step1' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 1</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <p class="help-intro">Elige el tipo de archivo que generará la transformación. Condiciona layout, campos y serialización.</p>
+        <table class="help-table">
+            <thead><tr><th>Elemento</th><th>Qué hace</th></tr></thead>
+            <tbody>
+                <tr><td>Tarjetas de tipo</td><td>Selecciona <span class="mono">csv</span>, <span class="mono">txt_fixed</span>, <span class="mono">txt_delimited</span>, <span class="mono">xlsx</span>, etc.</td></tr>
+                <tr><td>Guardar / Continuar</td><td>Persiste el tipo y avanza al paso 2 (encoding).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

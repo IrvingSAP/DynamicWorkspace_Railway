@@ -1,0 +1,277 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ project.name }} — Data Mapping{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Data Mapping</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ project.slug }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">
+            <span class="cell-badge">{{ project.slug }}</span>
+            {% if hub.visibility == 'company' %}
+            <span class="visibility-badge visibility-badge--public">{{ hub.visibility_label }}</span>
+            {% else %}
+            <span class="visibility-badge visibility-badge--private">{{ hub.visibility_label }}</span>
+            {% endif %}
+            {% if hub.is_pa %}
+            <span class="perm-badge perm-badge--admin">{{ hub.role_label }}</span>
+            {% else %}
+            <span class="perm-badge">{{ hub.role_label }}</span>
+            {% endif %}
+        </p>
+        <h2>{{ project.name }}</h2>
+        {% if project.description %}
+        <p>{{ project.description }}</p>
+        {% else %}
+        <p>Proyecto de transformación de archivos (FilePipe).</p>
+        {% endif %}
+    </div>
+    <div class="page-actions">
+        {% url 'dms:mapping_hub_help' project_slug=project.slug as mapping_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=mapping_help_url %}
+        {% if hub.can_manage_members %}
+        <a href="{% url 'dms:mapping_members' project_slug=project.slug %}" class="btn btn-secondary">Miembros</a>
+        {% endif %}
+        {% if can_edit_definition %}
+        <button type="button"
+                class="btn btn-primary"
+                data-action="publish-version"
+                data-draft-label="borrador v{{ version_publish.draft_version_number }}"
+                data-next="{% url 'dms:mapping_hub' project_slug=project.slug %}"
+                data-status-target="hub-publish-status"
+                {% if not hub.rules_complete %}disabled title="Complete origen, destino, mapeo y reglas antes de publicar"{% endif %}>
+            Publicar v{{ version_publish.draft_version_number }}
+        </button>
+        {% endif %}
+        <a href="{% url 'dms:mapping_list' %}" class="btn btn-secondary">← Proyectos</a>
+    </div>
+</div>
+
+<p id="hub-publish-status" class="step-save-status" aria-live="polite"></p>
+
+<div id="dms-source-publish-config"
+     data-publish-url="{{ source_publish_url }}"
+     data-csrf-token="{{ csrf_token }}"
+     hidden></div>
+
+<div class="version-strip">
+    <strong>Borrador:</strong> v{{ version_publish.draft_version_number }}
+    ·
+    <strong>Versión activa:</strong> {{ version_publish.published_version_label }}
+</div>
+
+<div class="lifecycle-stepper" aria-label="Ciclo del proyecto">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Fase A — Acceso</p>
+        <ol class="lifecycle-steps">
+            <li><span class="lifecycle-step is-done"><span class="lifecycle-step-num">✓</span> Crear proyecto</span></li>
+            <li><span class="lifecycle-step is-done"><span class="lifecycle-step-num">✓</span> Visibilidad</span></li>
+            <li>
+                {% if hub.can_manage_members %}
+                <a href="{% url 'dms:mapping_members' project_slug=project.slug %}" class="lifecycle-step{% if hub.member_count > 1 %} is-done{% else %} is-pending{% endif %}">
+                    <span class="lifecycle-step-num">{% if hub.member_count > 1 %}✓{% else %}3{% endif %}</span> Miembros
+                </a>
+                {% else %}
+                <span class="lifecycle-step is-done"><span class="lifecycle-step-num">✓</span> Miembros</span>
+                {% endif %}
+            </li>
+        </ol>
+    </div>
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Fase B — Definición</p>
+        <ol class="lifecycle-steps">
+            <li>
+                <a href="{% url 'dms:source_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.source_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.source_complete %}✓{% else %}1{% endif %}</span> Origen
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'dms:target_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.target_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.target_complete %}✓{% else %}2{% endif %}</span> Destino
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'dms:field_mapping_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.mapping_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.mapping_complete %}✓{% else %}3{% endif %}</span> Mapeo
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'dms:transform_rules_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.rules_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.rules_complete %}✓{% else %}4{% endif %}</span> Reglas
+                </a>
+            </li>
+            <li>
+                {% if can_edit_definition and hub.rules_complete %}
+                <button type="button"
+                        class="lifecycle-step {{ hub.publish_step_class }}"
+                        data-action="publish-version"
+                        data-draft-label="borrador v{{ version_publish.draft_version_number }}"
+                        data-next="{% url 'dms:mapping_hub' project_slug=project.slug %}"
+                        data-status-target="hub-publish-status">
+                    <span class="lifecycle-step-num">5</span> Publicar
+                </button>
+                {% else %}
+                <span class="lifecycle-step {{ hub.publish_step_class }}"
+                      {% if not hub.rules_complete %}title="Complete origen, destino, mapeo y reglas antes de publicar"{% endif %}>
+                    <span class="lifecycle-step-num">5</span> Publicar
+                </span>
+                {% endif %}
+            </li>
+        </ol>
+    </div>
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Fase C — Ejecución</p>
+        <ol class="lifecycle-steps">
+            <li>
+                <a href="{% url 'dms:transform_execution_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.execute_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.intake_ready %}✓{% else %}6{% endif %}</span> Archivo + transformar
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'dms:transform_execution_history' project_slug=project.slug %}" class="lifecycle-step is-pending">
+                    <span class="lifecycle-step-num">7</span> Historial
+                </a>
+            </li>
+        </ol>
+    </div>
+</div>
+
+<nav class="project-tabs" aria-label="Secciones del proyecto">
+    <a href="#resumen" class="project-tab is-active" data-tab="resumen">Resumen</a>
+    <a href="{% url 'dms:source_hub' project_slug=project.slug %}" class="project-tab">Origen</a>
+    <a href="{% url 'dms:target_hub' project_slug=project.slug %}" class="project-tab">Destino</a>
+    <a href="{% url 'dms:field_mapping_hub' project_slug=project.slug %}" class="project-tab">Mapeo</a>
+    <a href="{% url 'dms:transform_rules_hub' project_slug=project.slug %}" class="project-tab">Reglas</a>
+    <a href="{% url 'dms:file_intake_hub' project_slug=project.slug %}" class="project-tab">Archivo</a>
+    <a href="{% url 'dms:transform_execution_hub' project_slug=project.slug %}" class="project-tab">Ejecutar</a>
+    {% if hub.can_manage_members %}
+    <a href="{% url 'dms:mapping_members' project_slug=project.slug %}" class="project-tab">Miembros</a>
+    {% endif %}
+</nav>
+
+<div class="project-tab-panel is-active" data-tab-panel="resumen">
+    <div class="metric-row">
+        <div class="metric-card">
+            <p class="metric-label">Origen</p>
+            <p class="metric-value metric-value--md">{{ hub.source_file_type_label }}</p>
+            {% if hub.source_complete %}
+            <p class="metric-sub flow-card-status--done">{{ hub.source_steps_complete }}/6 completo · {{ hub.source_fields_count }} campos</p>
+            {% else %}
+            <p class="metric-sub flow-card-status--empty">{{ hub.source_steps_complete }}/6 en progreso</p>
+            {% endif %}
+        </div>
+        <div class="metric-card">
+            <p class="metric-label">Destino</p>
+            <p class="metric-value metric-value--md">{{ hub.target_file_type_label }}</p>
+            {% if hub.target_complete %}
+            <p class="metric-sub flow-card-status--done">{{ hub.target_steps_complete }}/6 completo · {{ hub.target_fields_count }} campos</p>
+            {% else %}
+            <p class="metric-sub flow-card-status--empty">{{ hub.target_steps_complete }}/6 en progreso</p>
+            {% endif %}
+        </div>
+        <div class="metric-card">
+            <p class="metric-label">Mapeo</p>
+            <p class="metric-value">{{ hub.mapping_count }}</p>
+            {% if hub.mapping_complete %}
+            <p class="metric-sub flow-card-status--done">completo</p>
+            {% elif hub.unmapped_required %}
+            <p class="metric-sub flow-card-status--empty">{{ hub.unmapped_required }} oblig. sin mapear</p>
+            {% else %}
+            <p class="metric-sub flow-card-status--empty">en progreso</p>
+            {% endif %}
+        </div>
+        <div class="metric-card">
+            <p class="metric-label">Versión</p>
+            <p class="metric-value metric-value--md">{{ hub.version_label }}</p>
+        </div>
+    </div>
+
+    <div class="flow-cards" style="margin-top: 20px;">
+        <a href="{% url 'dms:source_hub' project_slug=project.slug %}" class="flow-card">
+            <h4>Definir origen</h4>
+            <p>Asistente de 6 pasos para perfilar el archivo de entrada.</p>
+            {% if hub.source_complete %}
+            <span class="flow-card-status flow-card-status--done">Completo</span>
+            {% else %}
+            <span class="flow-card-status flow-card-status--draft">Continuar</span>
+            {% endif %}
+        </a>
+        <a href="{% url 'dms:target_hub' project_slug=project.slug %}" class="flow-card">
+            <h4>Definir destino</h4>
+            <p>Asistente de 6 pasos para perfilar el archivo de salida.</p>
+            {% if hub.target_complete %}
+            <span class="flow-card-status flow-card-status--done">Completo</span>
+            {% else %}
+            <span class="flow-card-status flow-card-status--draft">Continuar</span>
+            {% endif %}
+        </a>
+        <a href="{% url 'dms:field_mapping_hub' project_slug=project.slug %}" class="flow-card">
+            <h4>Mapeo</h4>
+            <p>Correspondencia origen → destino (directo, constante, concat, generado).</p>
+            {% if hub.mapping_complete %}
+            <span class="flow-card-status flow-card-status--done">Completo</span>
+            {% elif hub.mapping_count %}
+            <span class="flow-card-status flow-card-status--draft">Continuar</span>
+            {% else %}
+            <span class="flow-card-status flow-card-status--empty">Pendiente</span>
+            {% endif %}
+        </a>
+        <a href="{% url 'dms:transform_rules_hub' project_slug=project.slug %}" class="flow-card">
+            <h4>Reglas</h4>
+            <p>Pipeline post-mapeo: trim, upper, date_format, pad, default.</p>
+            {% if hub.rules_complete %}
+            <span class="flow-card-status flow-card-status--done">Completo · {{ hub.rules_step_count }} pasos</span>
+            {% elif hub.mapping_complete %}
+            <span class="flow-card-status flow-card-status--draft">Continuar</span>
+            {% else %}
+            <span class="flow-card-status flow-card-status--empty">Pendiente</span>
+            {% endif %}
+        </a>
+        {% if can_edit_definition %}
+        <button type="button"
+                class="flow-card"
+                style="text-align:left; width:100%; cursor:pointer; font:inherit;"
+                data-action="publish-version"
+                data-draft-label="borrador v{{ version_publish.draft_version_number }}"
+                data-next="{% url 'dms:mapping_hub' project_slug=project.slug %}"
+                data-status-target="hub-publish-status"
+                {% if not hub.rules_complete %}disabled{% endif %}>
+            <h4>Publicar versión</h4>
+            <p>Congela el borrador v{{ version_publish.draft_version_number }} (origen, destino, mapeo y reglas) y crea un nuevo borrador.</p>
+            {% if version_publish.has_published_version %}
+            <span class="flow-card-status flow-card-status--done">Activa: {{ version_publish.published_version_label }}</span>
+            {% elif hub.rules_complete %}
+            <span class="flow-card-status flow-card-status--draft">Listo para publicar</span>
+            {% else %}
+            <span class="flow-card-status flow-card-status--empty">Pendiente</span>
+            {% endif %}
+        </button>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/source_profile-publish.js' %}"></script>
+{% endblock %}

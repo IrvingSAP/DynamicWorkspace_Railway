@@ -1,0 +1,220 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Inicio — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-intro">
+    <p class="page-eyebrow">Panel de control · <span class="role-badge">UF</span> · <span class="cell-badge">{{ dashboard.company_short }}</span></p>
+    <h2>Bienvenido, {{ dashboard.display_name }}</h2>
+    <p>Worksheets configurables, transformaciones <strong>FilePipe</strong> (Data Mapping) y membresías de tu compañía.</p>
+</div>
+
+<p class="dashboard-section-label">Worksheets</p>
+<div class="kpi-strip kpi-strip--3" aria-label="Indicadores worksheets">
+    <div class="kpi-card kpi-card--accent">
+        <p class="kpi-label">Mis worksheets</p>
+        <p class="kpi-value">{{ dashboard.kpi_projects_total }}</p>
+        <p class="kpi-meta">{{ dashboard.kpi_projects_active }} activos · {{ dashboard.kpi_projects_archived }} archivado{{ dashboard.kpi_projects_archived|pluralize:"s" }}</p>
+    </div>
+    <div class="kpi-card">
+        <p class="kpi-label">Registros</p>
+        <p class="kpi-value">{{ dashboard.kpi_records_total }}</p>
+        <p class="kpi-meta">{% if dashboard.projects_available %}En proyectos con acceso{% else %}Disponible con proyectos (Fase 1){% endif %}</p>
+    </div>
+    <div class="kpi-card">
+        <p class="kpi-label">Como admin (PA)</p>
+        <p class="kpi-value">{{ dashboard.kpi_pa_count }}</p>
+        <p class="kpi-meta">Puedes autorizar miembros</p>
+    </div>
+</div>
+
+<p class="dashboard-section-label">FilePipe · Data Mapping</p>
+<div class="kpi-strip kpi-strip--3" aria-label="Indicadores data mapping">
+    <div class="kpi-card kpi-card--dms">
+        <p class="kpi-label">Proyectos mapping</p>
+        <p class="kpi-value">{{ dashboard.kpi_dms_projects_total }}</p>
+        <p class="kpi-meta">{{ dashboard.kpi_dms_ready_count }} listos para ejecutar</p>
+    </div>
+    <div class="kpi-card kpi-card--dms">
+        <p class="kpi-label">Ejecuciones (mes)</p>
+        <p class="kpi-value">{{ dashboard.kpi_dms_executions_month }}</p>
+        <p class="kpi-meta">Última: {{ dashboard.kpi_dms_last_execution }}</p>
+    </div>
+    <div class="kpi-card kpi-card--dms">
+        <p class="kpi-label">Catálogos activos</p>
+        <p class="kpi-value">{{ dashboard.catalog_count }}</p>
+        <p class="kpi-meta"><a href="{% url 'dms:catalog_hub' %}" class="project-link">Ver catálogos</a></p>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <section class="widget-panel" aria-labelledby="widget-worksheets">
+        <div class="widget-header">
+            <h3 id="widget-worksheets">Worksheets recientes</h3>
+            <a href="{% url 'projects:create' %}" class="btn btn-ghost btn-sm">Crear worksheet</a>
+        </div>
+        <div class="widget-body">
+            <table class="mini-table">
+                <thead>
+                    <tr>
+                        <th>Proyecto</th>
+                        <th>Mi rol</th>
+                        <th>Registros</th>
+                        <th>Actualizado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in dashboard.recent_projects %}
+                    <tr>
+                        <td><span class="kind-badge kind-badge--ws">WS</span><a href="{% url 'projects:detail' slug=project.slug %}" class="project-link">{{ project.name }}</a></td>
+                        <td><span class="role-code{% if project.role == 'PA' %} role-code--pa{% endif %}">{{ project.role }}</span></td>
+                        <td class="mono">{{ project.record_count }}</td>
+                        <td class="mono">{{ project.updated_at|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">{% if dashboard.projects_available %}No tienes worksheets con membresía activa.{% else %}Los worksheets estarán disponibles en la Fase 1.{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="widget-panel widget-panel--dms" aria-labelledby="widget-dms">
+        <div class="widget-header">
+            <h3 id="widget-dms">FilePipe recientes</h3>
+            <a href="{% url 'dms:mapping_create' %}" class="btn btn-ghost btn-sm">Nuevo proyecto</a>
+        </div>
+        <div class="widget-body">
+            <table class="mini-table">
+                <thead>
+                    <tr>
+                        <th>Proyecto</th>
+                        <th>Mi rol</th>
+                        <th>Versión</th>
+                        <th>Actualizado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in dashboard.recent_dms_projects %}
+                    <tr>
+                        <td><span class="kind-badge kind-badge--dms">DM</span><a href="{% url 'dms:mapping_hub' project_slug=project.slug %}" class="project-link">{{ project.name }}</a></td>
+                        <td><span class="role-code{% if project.role == 'PA' %} role-code--pa{% endif %}">{{ project.role }}</span></td>
+                        <td class="mono">{{ project.version_label }}</td>
+                        <td class="mono">{{ project.updated_at|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No tienes proyectos Data Mapping visibles. <a href="{% url 'dms:mapping_create' %}" class="project-link">Crear uno</a> o revisa los <a href="{% url 'dms:catalog_hub' %}" class="project-link">catálogos</a> ({% if dashboard.catalog_count %}{{ dashboard.catalog_count }} valores{% else %}sin datos aún{% endif %}).</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<div class="dashboard-grid">
+    <section class="widget-panel" aria-labelledby="widget-roles">
+        <div class="widget-header">
+            <h3 id="widget-roles">Mis roles por proyecto</h3>
+        </div>
+        <div class="widget-body">
+            <div class="type-grid type-grid--4">
+                <div class="type-card">
+                    <span class="type-code">PA</span>
+                    <p class="type-count">{{ dashboard.roles_by_type.PA|default:0 }}</p>
+                    <p class="type-label">Admin proyecto</p>
+                </div>
+                <div class="type-card">
+                    <span class="type-code">ED</span>
+                    <p class="type-count">{{ dashboard.roles_by_type.ED|default:0 }}</p>
+                    <p class="type-label">Editor</p>
+                </div>
+                <div class="type-card">
+                    <span class="type-code">CO</span>
+                    <p class="type-count">{{ dashboard.roles_by_type.CO|default:0 }}</p>
+                    <p class="type-label">Consulta</p>
+                </div>
+                <div class="type-card">
+                    <span class="type-code">GE</span>
+                    <p class="type-count">{{ dashboard.roles_by_type.GE|default:0 }}</p>
+                    <p class="type-label">Generar</p>
+                </div>
+            </div>
+            {% if dashboard.kpi_pa_count %}
+            <div class="status-pills">
+                <span class="status-pill"><strong>{{ dashboard.pa_members_count }}</strong> miembros en tus proyectos PA</span>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="widget-panel" aria-labelledby="widget-members">
+        <div class="widget-header">
+            <h3 id="widget-members">Autorizaciones recientes</h3>
+            <a href="{% url 'projects:list' %}" class="btn btn-ghost btn-sm">Gestionar miembros</a>
+        </div>
+        <div class="widget-body">
+            <table class="mini-table">
+                <thead>
+                    <tr>
+                        <th>Proyecto</th>
+                        <th>Usuario</th>
+                        <th>Rol</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in dashboard.recent_authorizations %}
+                    <tr>
+                        <td><span class="cell-badge">{{ row.project_name }}</span></td>
+                        <td class="mono">{{ row.username }}</td>
+                        <td><span class="role-code">{{ row.role }}</span></td>
+                        <td class="mono">{{ row.date|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">Sin autorizaciones recientes.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<section class="widget-panel" aria-labelledby="widget-quick">
+    <div class="widget-header">
+        <h3 id="widget-quick">Accesos rápidos</h3>
+    </div>
+    <div class="widget-body">
+        <div class="quick-links quick-links--split">
+            <div class="quick-links-group">
+                <h4>Worksheets</h4>
+                <div class="quick-links">
+                    <a href="{% url 'projects:create' %}" class="btn btn-secondary">Crear worksheet</a>
+                    <a href="{% url 'projects:list' %}" class="btn btn-secondary">Ver todos</a>
+                </div>
+            </div>
+            <div class="quick-links-group">
+                <h4>FilePipe</h4>
+                <div class="quick-links">
+                    <a href="{% url 'dms:mapping_list' %}" class="btn btn-secondary">Data Mapping</a>
+                    <a href="{% url 'dms:catalog_hub' %}" class="btn btn-secondary">Catálogos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

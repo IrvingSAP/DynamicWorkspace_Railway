@@ -1,0 +1,97 @@
+{% extends "public/base.html" %}
+
+{% block title %}Contacto — DynamicWorkspace{% endblock %}
+
+{% block content %}
+<section class="pub-page-hero">
+    <div class="pub-container">
+        <p class="pub-eyebrow">Contacto</p>
+        <h1>Hablemos sobre tu equipo y tus procesos</h1>
+        <p>Cuéntanos qué gestionas hoy en hojas de cálculo y te ayudamos a evaluar cómo DynamicWorkspace puede centralizarlo. Las cuentas se habilitan por administración.</p>
+    </div>
+</section>
+
+<section class="pub-section">
+    <div class="pub-container contact-grid">
+        <div class="contact-info">
+            <h2>Información de contacto</h2>
+            <p>Respondemos solicitudes de demostración, planes y habilitación de compañías en horario laboral.</p>
+
+            <div class="contact-detail">
+                <p class="dl">Correo</p>
+                <p class="dd mono">{{ contact_email }}</p>
+            </div>
+            <div class="contact-detail">
+                <p class="dl">Soporte comercial</p>
+                <p class="dd">Lunes a viernes · 9:00 – 18:00</p>
+            </div>
+            <div class="contact-detail">
+                <p class="dl">Acceso existente</p>
+                <p class="dd">Si ya tienes cuenta, <a href="{{ login_url }}">ingresa aquí</a>.</p>
+            </div>
+
+            <div class="contact-note">
+                <strong>Sin registro público.</strong> DynamicWorkspace no ofrece alta abierta: un administrador UA o US crea las cuentas de tu compañía tras validar la suscripción.
+            </div>
+        </div>
+
+        <form class="pub-form" action="{% url 'public:contact' %}" method="post" novalidate>
+            {% csrf_token %}
+            <h2>Enviar mensaje</h2>
+            <div class="form-row{% if errors.full_name %} has-error{% endif %}">
+                <label for="full_name">Nombre completo</label>
+                <input type="text" id="full_name" name="full_name" value="{{ posted.full_name }}" autocomplete="name" required>
+                {% if errors.full_name %}
+                {% for msg in errors.full_name %}
+                <p class="field-error">{{ msg }}</p>
+                {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-row{% if errors.email %} has-error{% endif %}">
+                <label for="email">Correo electrónico</label>
+                <input type="email" id="email" name="email" value="{{ posted.email }}" autocomplete="email" required>
+                {% if errors.email %}
+                {% for msg in errors.email %}
+                <p class="field-error">{{ msg }}</p>
+                {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-row{% if errors.company_name %} has-error{% endif %}">
+                <label for="company_name">Compañía / organización</label>
+                <input type="text" id="company_name" name="company_name" value="{{ posted.company_name }}" autocomplete="organization">
+                {% if errors.company_name %}
+                {% for msg in errors.company_name %}
+                <p class="field-error">{{ msg }}</p>
+                {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-row{% if errors.subject %} has-error{% endif %}">
+                <label for="subject">Asunto</label>
+                <select id="subject" name="subject" required>
+                    <option value="">Seleccionar…</option>
+                    {% for value, label in subject_choices.items %}
+                    <option value="{{ value }}"{% if posted.subject == value %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                {% if errors.subject %}
+                {% for msg in errors.subject %}
+                <p class="field-error">{{ msg }}</p>
+                {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-row{% if errors.message %} has-error{% endif %}">
+                <label for="message">Mensaje</label>
+                <textarea id="message" name="message" placeholder="Describe brevemente qué procesos gestionas hoy y cuántas personas participarían." required>{{ posted.message }}</textarea>
+                {% if errors.message %}
+                {% for msg in errors.message %}
+                <p class="field-error">{{ msg }}</p>
+                {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Enviar mensaje</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

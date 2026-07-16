@@ -1,0 +1,30 @@
+{% extends "security/base.html" %}
+
+{% block title %}Bienvenida — DynamicWorkspace{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <div class="auth-alert auth-alert--success" role="status">
+        ¡Cuenta verificada! Tu correo y autenticación en dos pasos están activos.
+    </div>
+
+    <p class="auth-eyebrow">Primer acceso</p>
+    <h1>¡Bienvenido, {{ display_name }}!</h1>
+    <p class="auth-lead">Tu cuenta en <strong>{{ company.name_short }}</strong> está lista. Desde el panel podrás acceder a tus proyectos y gestionar registros según tu rol.</p>
+
+    <ul class="setup-list">
+        <li>Explora el panel de control</li>
+        <li>Revisa los proyectos a los que tienes acceso</li>
+        <li>Contacta a tu administrador si necesitas permisos adicionales</li>
+    </ul>
+
+    <form action="{% url 'dashboard:bienvenida' %}" method="post">
+        {% csrf_token %}
+        <div class="auth-actions">
+            <button type="submit" class="btn btn-primary">Ir al panel</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}

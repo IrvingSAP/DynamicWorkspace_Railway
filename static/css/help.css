@@ -1,0 +1,408 @@
+
+/* —— Hero: focal = mapa de trabajo —— */
+.guide-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.85fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.guide-hero-main {
+    padding: 20px 22px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+}
+
+.guide-hero-main h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+}
+
+.guide-hero-main > p {
+    margin: 8px 0 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-tertiary);
+    max-width: 58ch;
+}
+
+.guide-hero-aside {
+    padding: 16px 18px;
+    background: linear-gradient(180deg, var(--surface) 0%, rgba(15, 92, 76, 0.05) 100%);
+    border: 1px solid rgba(15, 92, 76, 0.16);
+    border-radius: var(--radius-lg);
+}
+
+.guide-hero-aside h3 {
+    margin: 0 0 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+}
+
+.guide-quick-path {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: quick-step;
+}
+
+.guide-quick-path li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 13px;
+    color: var(--ink);
+    border-top: 1px solid var(--rule);
+}
+
+.guide-quick-path li:first-child {
+    border-top: none;
+    padding-top: 0;
+}
+
+.guide-quick-path li::before {
+    counter-increment: quick-step;
+    content: counter(quick-step);
+    flex: 0 0 22px;
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-subtle);
+    border: 1px solid rgba(15, 92, 76, 0.18);
+    border-radius: 4px;
+}
+
+/* —— Leyenda de roles —— */
+.guide-role-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: var(--canvas);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    color: var(--ink-tertiary);
+}
+
+.guide-role-strip .label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-muted);
+}
+
+.guide-role-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.guide-role-item span:last-child {
+    color: var(--ink);
+}
+
+/* —— Layout: spine + flujos —— */
+.guide-layout {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+}
+
+.guide-spine {
+    position: sticky;
+    top: 16px;
+    padding: 14px 12px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+}
+
+.guide-spine h3 {
+    margin: 0 0 10px;
+    padding: 0 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+}
+
+.guide-spine nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.guide-spine a {
+    display: block;
+    padding: 7px 8px;
+    font-size: 12px;
+    color: var(--ink-tertiary);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    border-left: 2px solid transparent;
+    transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.guide-spine a:hover {
+    color: var(--ink);
+    background: var(--canvas);
+}
+
+.guide-spine a.is-active,
+.guide-spine a:focus-visible {
+    color: var(--accent);
+    background: var(--accent-subtle);
+    border-left-color: var(--accent);
+    outline: none;
+}
+
+.guide-flows {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* —— Tarjeta de flujo (signature) —— */
+.flow-card {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 0 14px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    scroll-margin-top: 16px;
+}
+
+.flow-card-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 0;
+    background: var(--canvas);
+    border-right: 1px solid var(--rule);
+}
+
+.flow-card-step {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--surface);
+    border: 1px solid rgba(15, 92, 76, 0.2);
+    border-radius: 6px;
+}
+
+.flow-card-line {
+    flex: 1 1 auto;
+    width: 1px;
+    min-height: 12px;
+    margin-top: 8px;
+    background: var(--rule);
+}
+
+.flow-card:last-child .flow-card-line {
+    display: none;
+}
+
+.flow-card-body {
+    padding: 16px 18px 18px 0;
+}
+
+.flow-card-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px 12px;
+    margin-bottom: 10px;
+}
+
+.flow-card-header h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+}
+
+.flow-card-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.flow-card-purpose {
+    margin: 0 0 14px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-tertiary);
+    max-width: 72ch;
+}
+
+.flow-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 20px;
+}
+
+.flow-card-block h4 {
+    margin: 0 0 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-muted);
+}
+
+.flow-card-block ol,
+.flow-card-block ul {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink);
+}
+
+.flow-card-block li + li {
+    margin-top: 4px;
+}
+
+.flow-card-block ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.flow-card-block ul li {
+    position: relative;
+    padding-left: 14px;
+}
+
+.flow-card-block ul li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 5px;
+    height: 5px;
+    border-radius: 1px;
+    background: var(--accent);
+    opacity: 0.55;
+}
+
+.flow-card-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+}
+
+.flow-card-links .hint {
+    width: 100%;
+    margin: 0 0 2px;
+    font-size: 11px;
+    color: var(--ink-muted);
+}
+
+.guide-footer-note {
+    margin-top: 20px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink-tertiary);
+    background: var(--canvas);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-md);
+}
+
+.guide-footer-note strong {
+    color: var(--ink);
+    font-weight: 500;
+}
+
+.sidebar-link--help.is-active {
+    color: var(--accent);
+    background: var(--accent-subtle);
+    font-weight: 500;
+}
+
+@media (max-width: 960px) {
+    .guide-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .guide-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .guide-spine {
+        position: static;
+    }
+
+    .guide-spine nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .guide-spine a {
+        border-left: none;
+        border-bottom: 2px solid transparent;
+    }
+
+    .guide-spine a.is-active {
+        border-bottom-color: var(--accent);
+    }
+
+    .flow-card-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .flow-card {
+        grid-template-columns: 1fr;
+    }
+
+    .flow-card-marker {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 10px;
+        padding: 12px 16px;
+        border-right: none;
+        border-bottom: 1px solid var(--rule);
+    }
+
+    .flow-card-line {
+        display: none;
+    }
+
+    .flow-card-body {
+        padding: 14px 16px 16px;
+    }
+}

@@ -1,0 +1,136 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'projects:list' %}">Proyectos</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'projects:detail' slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">UF</span></p>
+        <h2>Ayuda — Detalle del proyecto</h2>
+        <p>Explicación de la pantalla hub del workspace <span class="cell-badge cell-badge--sm">{{ project.slug }}</span>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'projects:detail' slug=project.slug %}" class="btn btn-secondary">← Volver al proyecto</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Cabecera y estado</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Elemento</th><th>Qué es</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Nombre del proyecto</td>
+                    <td>Título legible definido al crear el proyecto.</td>
+                    <td>Texto hasta 200 caracteres.</td>
+                </tr>
+                <tr>
+                    <td>Descripción</td>
+                    <td>Resumen opcional del propósito del proyecto.</td>
+                    <td>Texto libre o «Sin descripción» si está vacío.</td>
+                </tr>
+                <tr>
+                    <td>Tu rol (badge)</td>
+                    <td>Rol con el que accedes a este proyecto.</td>
+                    <td><span class="mono">PA</span> · <span class="mono">ED</span> · <span class="mono">CO</span> · <span class="mono">GE</span></td>
+                </tr>
+                <tr>
+                    <td>Slug (badge)</td>
+                    <td>Identificador en la URL; no cambia al editar el nombre.</td>
+                    <td class="mono">inventario-2026</td>
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    <td>Si el proyecto está operativo o archivado.</td>
+                    <td><strong>Activo</strong> — uso normal. <strong>Archivado</strong> — histórico, sin edición habitual.</td>
+                </tr>
+                <tr>
+                    <td>Compañía</td>
+                    <td>Organización dueña del proyecto.</td>
+                    <td>Código corto (badge) de la compañía.</td>
+                </tr>
+                <tr>
+                    <td>Creado</td>
+                    <td>Fecha de alta del proyecto.</td>
+                    <td><span class="mono">dd/mm/aaaa</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Métricas</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Métrica</th><th>Significado</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Registros</td>
+                    <td>Filas de datos cargadas en la tabla del proyecto.</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+                <tr>
+                    <td>Campos</td>
+                    <td>Columnas definidas en el diseñador de esquema.</td>
+                    <td>Entero ≥ 0 (módulo campos en desarrollo)</td>
+                </tr>
+                <tr>
+                    <td>Miembros</td>
+                    <td>Usuarios con membresía activa en el proyecto.</td>
+                    <td>Entero ≥ 1</td>
+                </tr>
+                <tr>
+                    <td>Tu rol</td>
+                    <td>Resumen del código de rol y su etiqueta.</td>
+                    <td>PA = Admin · ED = Editor · CO = Consulta · GE = Generar</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Áreas del proyecto</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Área</th><th>Función</th><th>Quién puede entrar</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Registros</td>
+                    <td>Ver y editar filas de datos según el esquema de campos.</td>
+                    <td>PA, ED (editar); CO, GE (consulta según permisos). <em>Próximamente.</em></td>
+                </tr>
+                <tr>
+                    <td>Campos</td>
+                    <td>Definir columnas, tipos y validaciones del proyecto.</td>
+                    <td>Solo <span class="role-code role-code--pa">PA</span>. <em>Próximamente.</em></td>
+                </tr>
+                <tr>
+                    <td>Miembros</td>
+                    <td>Invitar usuarios UF de la misma compañía y asignar roles.</td>
+                    <td>Solo <span class="role-code role-code--pa">PA</span>. Si no eres PA, la tarjeta aparece deshabilitada.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

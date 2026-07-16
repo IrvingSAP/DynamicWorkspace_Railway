@@ -1,0 +1,138 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Proyectos — DynamicWorkspace{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>Workspace</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Proyectos</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip" aria-label="Alcance de compañía">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Mis tablas · <span class="role-badge">UF</span></p>
+        <h2>Proyectos</h2>
+        <p>Proyectos donde tienes membresía activa en tu compañía. Solo UF puede crear nuevos proyectos.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'projects:list_help' as projects_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=projects_help_url %}
+        <a href="{% url 'projects:create' %}" class="btn btn-primary">+ Nuevo proyecto</a>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Total</p>
+        <p class="stat-value">{{ stats.total|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Activos</p>
+        <p class="stat-value">{{ stats.active|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Archivados</p>
+        <p class="stat-value">{{ stats.archived|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Como admin (PA)</p>
+        <p class="stat-value">{{ stats.pa_count|default:0 }}</p>
+    </div>
+</div>
+
+<div class="panel panel--table">
+    <div class="table-toolbar" aria-label="Controles de tabla">
+        <div class="table-toolbar-group">
+            <label for="filter-estado">
+                Filtrar por estado
+                <select id="filter-estado" name="filter-estado">
+                    <option value="">Todos</option>
+                    <option value="activo">Activo</option>
+                    <option value="archivado">Archivado</option>
+                </select>
+            </label>
+            <label for="filter-rol">
+                Mi rol
+                <select id="filter-rol" name="filter-rol">
+                    <option value="">Todos</option>
+                    <option value="PA">PA — Admin</option>
+                    <option value="ED">ED — Editor</option>
+                    <option value="CO">CO — Consulta</option>
+                    <option value="GE">GE — Generar</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="table-dt-host table-dt-host--projects" aria-label="Tabla de proyectos con desplazamiento horizontal">
+        <table id="project-table" class="dw-datatable" data-dt-custom="true">
+            <thead>
+                <tr>
+                    <th>Slug</th>
+                    <th>Nombre</th>
+                    <th>Mi rol</th>
+                    <th>Registros</th>
+                    <th>Miembros</th>
+                    <th>Estado</th>
+                    <th>Actualizado</th>
+                    <th class="col-actions">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr data-estado="{% if row.project.is_archived %}archivado{% else %}activo{% endif %}" data-rol="{{ row.role }}">
+                    <td><a href="{% url 'projects:detail' slug=row.project.slug %}" class="cell-badge">{{ row.project.slug }}</a></td>
+                    <td class="td-name">{{ row.project.name }}</td>
+                    <td><span class="role-code{% if row.role == 'PA' %} role-code--pa{% endif %}">{{ row.role }}</span></td>
+                    <td class="td-mono">{{ row.record_count }}</td>
+                    <td class="td-mono">{{ row.member_count }}</td>
+                    <td>
+                        {% if row.project.is_archived %}
+                        <span class="status status-archived"><span class="status-dot"></span>Archivado</span>
+                        {% else %}
+                        <span class="status status-active"><span class="status-dot"></span>Activo</span>
+                        {% endif %}
+                    </td>
+                    <td class="td-mono">{{ row.project.updated_at|date:"d/m/Y" }}</td>
+                    <td class="col-actions">
+                        <div class="actions actions--table">
+                            <a href="{% url 'projects:detail' slug=row.project.slug %}" class="btn btn-ghost btn-sm">Abrir</a>
+                            {% if row.role == 'PA' %}
+                            <a href="{% url 'projects:members' slug=row.project.slug %}" class="btn btn-ghost btn-sm">Miembros</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+<script src="{% static 'js/datatables-project.js' %}"></script>
+{% endblock %}

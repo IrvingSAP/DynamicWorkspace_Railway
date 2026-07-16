@@ -1,0 +1,108 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Pagos — DynamicWorkspace{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/billing.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_ua.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>Administración</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Billing</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Pagos</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Auditoría · <span class="role-badge">UA</span></p>
+        <h2>Pagos</h2>
+        <p>Registro de cobros asociados a suscripciones (solo lectura histórica; sin eliminación).</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'billing:payment_create' %}" class="btn btn-primary">+ Registrar pago</a>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen de pagos">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Total registros</p>
+        <p class="stat-value">{{ stats.total|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Monto acumulado</p>
+        <p class="stat-value">$ {{ stats.amount_total|default:0 }}</p>
+    </div>
+</div>
+
+<div class="panel panel--table">
+    <div class="table-toolbar" aria-label="Controles de tabla">
+        <div class="table-toolbar-group">
+            <label for="filter-metodo">
+                Método
+                <select id="filter-metodo" name="filter-metodo">
+                    <option value="">Todos</option>
+                    <option value="manual">Manual</option>
+                    <option value="transfer">Transferencia</option>
+                    <option value="card">Tarjeta</option>
+                    <option value="stripe">Stripe</option>
+                    <option value="paypal">PayPal</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="table-dt-host table-dt-host--billing">
+        <table id="payment-table" class="dw-datatable">
+            <thead>
+                <tr>
+                    <th>Compañía</th>
+                    <th>Plan</th>
+                    <th>Monto</th>
+                    <th>Método</th>
+                    <th>Fecha pago</th>
+                    <th>Referencia</th>
+                    <th class="col-actions">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr data-metodo="{{ payment.method }}">
+                    <td>
+                        <a href="{% url 'billing:subscription_detail' company_pk=payment.subscription.company_id %}" class="cell-badge">{{ payment.subscription.company.name_short }}</a>
+                    </td>
+                    <td><span class="cell-badge cell-badge--sm">{{ payment.subscription.plan.code }}</span></td>
+                    <td class="td-mono">$ {{ payment.amount }}</td>
+                    <td>{{ payment.get_method_display }}</td>
+                    <td class="td-mono">{{ payment.paid_at|date:"d/m/Y H:i" }}</td>
+                    <td>{{ payment.reference|default:"—" }}</td>
+                    <td class="col-actions">
+                        <div class="actions actions--table">
+                            <a href="{% url 'billing:payment_detail' pk=payment.pk %}" class="btn btn-ghost btn-sm">Ver</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+<script src="{% static 'js/datatables-payment.js' %}"></script>
+{% endblock %}

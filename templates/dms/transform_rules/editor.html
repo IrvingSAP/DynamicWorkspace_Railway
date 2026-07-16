@@ -1,0 +1,120 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Editor de reglas — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/transform_rules.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:transform_rules_hub' project_slug=project.slug %}">Reglas</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Editor</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/transform_rules/_project_scope.html" %}
+{% include "dms/transform_rules/_persistence.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Módulo 3 · TransformRules</p>
+        <h2>Editor de reglas</h2>
+        <p>Pipeline ordenado por campo destino. Vacío = valor del mapeo sin transformar.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:transform_rules_editor_help' project_slug=project.slug as transform_rules_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=transform_rules_help_url %}
+        <a href="{% url 'dms:transform_rules_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub reglas</a>
+        {% if can_edit_rules %}
+        <button type="button" class="btn btn-primary" id="tr-save-btn">Guardar</button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Campos</p>
+        <p class="stat-value" id="tr-stat-fields">{{ hub.mappings_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Con reglas</p>
+        <p class="stat-value" id="tr-stat-with">{{ hub.pipelines_with_steps }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Pasos</p>
+        <p class="stat-value" id="tr-stat-steps">{{ hub.total_steps }}</p>
+    </div>
+</div>
+
+<div class="form-errors" id="tr-form-errors" hidden></div>
+
+<div class="tr-layout">
+    <aside class="tr-field-list panel" aria-label="Campos mapeados">
+        <div class="panel-body">
+            <h3 class="form-section-title">Campos destino</h3>
+            <ul class="tr-targets" id="tr-targets"></ul>
+        </div>
+    </aside>
+
+    <section class="tr-editor panel" aria-label="Pipeline">
+        <div class="panel-body">
+            <div class="tr-editor-head">
+                <div>
+                    <h3 class="form-section-title" style="margin:0" id="tr-active-title">Seleccione un campo</h3>
+                    <p class="hint" id="tr-active-meta"></p>
+                </div>
+                {% if can_edit_rules %}
+                <div class="tr-editor-actions">
+                    <select id="tr-template-select" aria-label="Plantilla de pipeline">
+                        <option value="">Plantilla…</option>
+                        {% for tpl in pipeline_templates %}
+                        <option value="{{ tpl.code }}">{{ tpl.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" class="btn btn-secondary btn-sm" id="tr-apply-template" disabled>Aplicar plantilla</button>
+                    <button type="button" class="btn btn-secondary btn-sm" id="tr-add-step" disabled>+ Paso</button>
+                </div>
+                {% endif %}
+            </div>
+            <ol class="tr-steps" id="tr-steps"></ol>
+            <div class="empty-state" id="tr-empty-steps" hidden>
+                <h3>Sin reglas</h3>
+                <p>El valor del mapeo pasará sin transformar. Puede añadir pasos o aplicar una plantilla.</p>
+            </div>
+
+            <div class="tr-preview">
+                <h4 class="form-section-title">Preview</h4>
+                <p class="hint">Prueba el pipeline con un literal o con el valor post-mapeo de la 1ª fila muestra.</p>
+                <div class="tr-preview-row">
+                    <input type="text" id="tr-preview-sample" placeholder="Valor de prueba" autocomplete="off">
+                    <button type="button" class="btn btn-secondary" id="tr-preview-btn">Probar</button>
+                    {% if has_sample_preview %}
+                    <button type="button" class="btn btn-secondary" id="tr-preview-sample-btn">Usar 1ª fila muestra</button>
+                    {% endif %}
+                </div>
+                <p class="tr-preview-result" id="tr-preview-result">—</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/transform_rules-persistence.js' %}"></script>
+<script src="{% static 'js/transform_rules-editor.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Listado de proyectos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'projects:list' %}">Proyectos</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">UF</span></p>
+        <h2>Ayuda — Listado de proyectos</h2>
+        <p>Descripción de cada elemento visible en la pantalla de proyectos y valores esperados.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'projects:list' %}" class="btn btn-secondary">← Volver al listado</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Alcance de compañía</h3>
+        <p class="help-intro">Franja superior que indica en qué organización estás trabajando. Todos los proyectos listados pertenecen a esta compañía.</p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Elemento</th><th>Qué es</th><th>Valores posibles</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Código (badge)</td>
+                    <td>Sigla corta de la compañía.</td>
+                    <td class="mono">Ej. ACME, CORPO</td>
+                </tr>
+                <tr>
+                    <td>Nombre largo</td>
+                    <td>Razón social o nombre completo de la organización.</td>
+                    <td>Texto libre definido por el administrador.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Resumen (tarjetas)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Indicador</th><th>Qué cuenta</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Total</td>
+                    <td>Proyectos donde tienes membresía activa.</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+                <tr>
+                    <td>Activos</td>
+                    <td>Proyectos no archivados a los que tienes acceso.</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+                <tr>
+                    <td>Archivados</td>
+                    <td>Proyectos marcados como archivados (solo lectura según política).</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+                <tr>
+                    <td>Como admin (PA)</td>
+                    <td>Proyectos en los que tu rol es administrador de proyecto.</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Filtros de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Filtro</th><th>Función</th><th>Opciones</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Filtrar por estado</td>
+                    <td>Limita filas según si el proyecto está activo o archivado.</td>
+                    <td><span class="mono">Todos</span> · <span class="mono">Activo</span> · <span class="mono">Archivado</span></td>
+                </tr>
+                <tr>
+                    <td>Mi rol</td>
+                    <td>Muestra solo proyectos donde tienes el rol seleccionado.</td>
+                    <td><span class="mono">PA</span> Admin · <span class="mono">ED</span> Editor · <span class="mono">CO</span> Consulta · <span class="mono">GE</span> Generar</td>
+                </tr>
+                <tr>
+                    <td>Búsqueda (DataTables)</td>
+                    <td>Campo global de la tabla; busca en todas las columnas visibles.</td>
+                    <td>Texto libre</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columnas de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Qué muestra</th><th>Valores / formato</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Slug</td>
+                    <td>Identificador en la URL del proyecto. Enlace al detalle.</td>
+                    <td class="mono">Letras minúsculas, números y guiones. Único por compañía. Ej. <span class="mono">inventario-2026</span></td>
+                </tr>
+                <tr>
+                    <td>Nombre</td>
+                    <td>Nombre visible del proyecto para las personas.</td>
+                    <td>Texto hasta 200 caracteres. Ej. «Inventario 2026»</td>
+                </tr>
+                <tr>
+                    <td>Mi rol</td>
+                    <td>Tu rol de acceso en ese proyecto.</td>
+                    <td><span class="role-code">PA</span> <span class="role-code">ED</span> <span class="role-code">CO</span> <span class="role-code">GE</span></td>
+                </tr>
+                <tr>
+                    <td>Registros</td>
+                    <td>Cantidad de filas de datos en el proyecto.</td>
+                    <td>Entero ≥ 0 (0 si aún no hay módulo de registros)</td>
+                </tr>
+                <tr>
+                    <td>Miembros</td>
+                    <td>Usuarios con membresía activa en el proyecto.</td>
+                    <td>Entero ≥ 1 (incluye al creador)</td>
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    <td>Si el proyecto está en uso normal o archivado.</td>
+                    <td><span class="status status-active"><span class="status-dot"></span>Activo</span> o <span class="status status-archived"><span class="status-dot"></span>Archivado</span></td>
+                </tr>
+                <tr>
+                    <td>Actualizado</td>
+                    <td>Última modificación del proyecto.</td>
+                    <td>Fecha <span class="mono">dd/mm/aaaa</span></td>
+                </tr>
+                <tr>
+                    <td>Acciones</td>
+                    <td>Enlaces rápidos según permisos.</td>
+                    <td><strong>Abrir</strong> (todos) · <strong>Miembros</strong> (solo si eres PA)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles de proyecto</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Código</th><th>Nombre</th><th>Permisos principales</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">PA</td><td>Admin de proyecto</td><td>Diseñar campos, gestionar miembros, auditoría, registros.</td></tr>
+                <tr><td class="mono">ED</td><td>Editor</td><td>Crear y editar registros; importar Excel.</td></tr>
+                <tr><td class="mono">CO</td><td>Consulta</td><td>Solo lectura de registros; exportar.</td></tr>
+                <tr><td class="mono">GE</td><td>Generar</td><td>Exportar documentos; ver registros.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

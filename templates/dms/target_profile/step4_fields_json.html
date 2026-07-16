@@ -1,0 +1,141 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 4 — Campos JSON — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:target_hub' project_slug=project.slug %}">Destino</a>
+    <span class="breadcrumb-sep">/</span><span>Paso 4 — Campos JSON</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "dms/target_profile/_project_scope.html" %}
+{% include "dms/target_profile/_target_persistence.html" %}
+
+<div id="target-fields-root"
+     data-variant="json"
+     data-project-slug="{{ project.slug }}"
+     data-can-edit="{% if can_edit_target %}1{% else %}0{% endif %}">
+
+    <div class="page-header">
+        <div>
+            <p class="page-eyebrow">Paso 4 de 6 · <span class="role-badge">json</span></p>
+            <h2>Definición de campos (JSON)</h2>
+            <p>Defina cada campo de salida con su <code>path</code> relativo al registro (notación con puntos).</p>
+        </div>
+        <div class="page-actions">
+            {% url 'dms:target_step4_help' project_slug=project.slug as target_help_url %}
+            {% include "projects/includes/project_help_link.html" with help_url=target_help_url %}
+            {% if can_edit_target %}
+            <button type="button"
+                    id="btn-import-from-source"
+                    class="btn btn-secondary"
+                    data-import-url="{% url 'dms:target_step4_import_source' project_slug=project.slug %}">
+                Cargar desde origen
+            </button>
+            <button type="button" id="btn-add-field" class="btn btn-primary">+ Agregar campo</button>
+            {% endif %}
+        </div>
+    </div>
+
+    {% include "dms/target_profile/_wizard_stepper.html" %}
+
+    <p id="fields-save-status" class="step-save-status" aria-live="polite"></p>
+
+    <div class="panel panel--table" style="margin-top:16px">
+        <div class="table-dt-host">
+            <table id="target-fields-table" class="fields-table">
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Nombre</th>
+                        <th>path</th>
+                        <th>Tipo</th>
+                        <th>Oblig.</th>
+                        <th class="col-actions">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="target-fields-tbody">
+                    <tr class="fields-empty-row"><td colspan="6">No hay campos definidos. Use «Cargar desde origen» o «+ Agregar campo».</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if can_edit_target %}
+    <div class="panel field-editor-panel" style="margin-top:16px">
+        <div class="panel-body">
+            <h3 id="field-editor-title" class="form-section-title">Agregar campo</h3>
+            <div id="field-editor-errors" class="alert alert-error" hidden role="alert"></div>
+            <form id="field-editor-form" class="form-grid" novalidate>
+                <div class="form-row two-cols">
+                    <div class="field">
+                        <label for="field-name">Nombre <span class="req">*</span></label>
+                        <input type="text" id="field-name" class="mono" maxlength="64" placeholder="documento" required>
+                    </div>
+                    <div class="field">
+                        <label for="field-path">path <span class="req">*</span></label>
+                        <input type="text" id="field-path" class="mono" maxlength="200" placeholder="documento" required>
+                    </div>
+                </div>
+                <div class="form-row two-cols">
+                    <div class="field">
+                        <label for="field-label">Etiqueta</label>
+                        <input type="text" id="field-label" maxlength="120" placeholder="Documento">
+                    </div>
+                    <div class="field">
+                        <label for="field-order">Order <span class="req">*</span></label>
+                        <input type="number" id="field-order" class="mono" value="1" min="1" required>
+                    </div>
+                </div>
+                <div class="form-row two-cols">
+                    <div class="field">
+                        <label for="field-data-type">Tipo <span class="req">*</span></label>
+                        <select id="field-data-type" required>
+                            {% for dt in data_types %}
+                            <option value="{{ dt.code }}">{{ dt.code }} — {{ dt.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="field field--checkbox">
+                        <label for="field-required">
+                            <input type="checkbox" id="field-required" checked>
+                            Campo obligatorio
+                        </label>
+                    </div>
+                </div>
+                <div class="form-actions form-actions--flush">
+                    <button type="submit" id="btn-save-field" class="btn btn-primary">Agregar campo</button>
+                    <button type="button" id="btn-cancel-field" class="btn btn-secondary">Cancelar</button>
+                    <button type="button" id="btn-delete-field" class="btn btn-ghost btn-ghost--danger" hidden>Eliminar campo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="wizard-footer">
+        <span class="hint">Layout JSON se configura en el paso 3. Los campos se guardan en el borrador (v{{ wizard.version_number }}).</span>
+        <div class="wizard-footer-actions">
+            <a href="{% url 'dms:target_step3' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
+            <a href="{% url 'dms:target_step5' project_slug=project.slug %}" class="btn btn-primary">Siguiente →</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/target_profile-fields-path.js' %}"></script>
+<script src="{% static 'js/target_profile-import-source-fields.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,395 @@
+/* DynamicWorkspace — apps.records (UF) */
+
+.project-scope-strip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    font-size: 13px;
+    background: var(--canvas);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-md);
+}
+
+.project-scope-strip .label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+}
+
+.record-id-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.02em;
+}
+
+.record-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px 24px;
+    margin-top: 8px;
+}
+
+.record-meta-item .label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-muted);
+    margin-bottom: 4px;
+}
+
+.record-meta-item .value {
+    font-size: 14px;
+    color: var(--ink);
+}
+
+.record-values-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 24px;
+}
+
+.record-values-grid .field-readonly {
+    margin: 0;
+}
+
+.record-values-grid .field-readonly .label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-muted);
+    margin-bottom: 4px;
+}
+
+.record-values-grid .field-readonly .value {
+    font-size: 14px;
+    color: var(--ink);
+    word-break: break-word;
+}
+
+.record-values-grid .field-readonly.is-full {
+    grid-column: 1 / -1;
+}
+
+.form-section-hint {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: var(--ink-tertiary);
+}
+
+#record-table {
+    width: 100%;
+    table-layout: auto;
+}
+
+#record-table .col-actions {
+    white-space: nowrap;
+    text-align: right;
+    width: 1%;
+}
+
+#record-table .col-actions .actions--table {
+    justify-content: flex-end;
+    gap: 2px;
+}
+
+#record-table .col-actions .btn-sm {
+    padding: 0 8px;
+}
+
+#record-table .td-text {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.panel--table .table-dt-host--records {
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    border-top: 1px solid var(--rule);
+}
+
+.role-code--ed {
+    color: #1a5f8a;
+    background: rgba(26, 95, 138, 0.08);
+    border-color: rgba(26, 95, 138, 0.18);
+}
+
+.role-code--co {
+    color: #6b5a1a;
+    background: rgba(107, 90, 26, 0.08);
+    border-color: rgba(107, 90, 26, 0.18);
+}
+
+body.record-expand {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    background: var(--bg);
+}
+
+.record-expand-header {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--rule);
+}
+
+.record-expand-header-start {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+}
+
+.record-expand-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.record-expand-main {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.record-expand-table-shell {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: var(--surface);
+}
+
+.record-expand-toolbar {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--canvas);
+}
+
+.record-expand-dt-host {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding: 0 16px 16px;
+    border-radius: 0;
+    border-top: none;
+}
+
+body.record-expand #record-table .td-text {
+    max-width: none;
+}
+
+/* —— Tema dinámico por proyecto (record_expand) —— */
+.dw-sheet {
+    --dw-sheet-header-bg: #e8eef4;
+    --dw-sheet-header-color: #1a1d21;
+    --dw-sheet-header-border: #c5cdd8;
+    --dw-sheet-cell-border: #d4d9e0;
+    --dw-sheet-stripe-bg: #f7f9fb;
+    --dw-sheet-hover-bg: #e8eef4;
+}
+
+.dw-sheet table.dataTable thead th,
+.dw-sheet table.dataTable thead td {
+    background: var(--dw-sheet-header-bg) !important;
+    color: var(--dw-sheet-header-color) !important;
+    border-color: var(--dw-sheet-header-border) !important;
+    font-weight: 600;
+    font-size: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.dw-sheet table.dataTable tbody td {
+    border-color: var(--dw-sheet-cell-border) !important;
+    font-size: 13px;
+}
+
+.dw-sheet table.dataTable.stripe tbody tr:nth-child(even) > * {
+    box-shadow: inset 0 0 0 9999px var(--dw-sheet-stripe-bg);
+}
+
+.dw-sheet table.dataTable.hover tbody tr:hover > * {
+    box-shadow: inset 0 0 0 9999px var(--dw-sheet-hover-bg);
+}
+
+body.record-expand .record-expand-dt-host {
+    padding: 0;
+}
+
+body.record-expand .dt-container .dt-scroll-body {
+    border-bottom: 1px solid var(--dw-sheet-cell-border);
+}
+
+@media (max-width: 1100px) {
+    #record-table {
+        min-width: 1100px;
+    }
+}
+
+@media (max-width: 900px) {
+    .record-meta-grid,
+    .record-values-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .record-expand-header-start {
+        flex-wrap: wrap;
+    }
+
+    .record-expand-title {
+        width: 100%;
+        font-size: 16px;
+    }
+}
+
+/* —— Mantenimiento apariencia (record_expand_display.html) —— */
+.expand-display-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.9fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.expand-display-toggles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.color-field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 16px;
+}
+
+.color-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.color-input-row input[type="color"] {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 36px;
+    padding: 2px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    cursor: pointer;
+}
+
+.color-input-row input.mono {
+    flex: 1 1 auto;
+}
+
+.expand-display-preview-panel {
+    position: sticky;
+    top: 16px;
+}
+
+.theme-preview {
+    margin-top: 8px;
+    padding: 12px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-md);
+    background: var(--canvas);
+}
+
+.theme-preview-meta {
+    margin: 0 0 10px;
+    font-size: 11px;
+    color: var(--ink-muted);
+    word-break: break-all;
+}
+
+.theme-preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    background: var(--surface);
+}
+
+.theme-preview-table th,
+.theme-preview-table td {
+    padding: 6px 8px;
+    text-align: left;
+    border: 1px solid var(--theme-cell-border, #d4d9e0);
+}
+
+.theme-preview-table th {
+    background: var(--theme-header-bg, #e8eef4);
+    color: var(--theme-header-color, #1a1d21);
+    border-color: var(--theme-header-border, #c5cdd8);
+    font-weight: 600;
+}
+
+.theme-preview-table tbody tr.is-stripe {
+    background: var(--theme-stripe-bg, #f7f9fb);
+}
+
+.theme-preview-table tbody tr:hover {
+    background: var(--theme-hover-bg, #e8eef4);
+}
+
+.theme-preview-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+    margin: 12px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--rule);
+    font-size: 12px;
+}
+
+.theme-preview-summary dt {
+    margin: 0;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-muted);
+}
+
+.theme-preview-summary dd {
+    margin: 2px 0 0;
+}
+
+@media (max-width: 960px) {
+    .expand-display-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .expand-display-preview-panel {
+        position: static;
+    }
+
+    .expand-display-toggles,
+    .color-field-grid {
+        grid-template-columns: 1fr;
+    }
+}

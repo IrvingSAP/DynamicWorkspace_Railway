@@ -1,0 +1,64 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Ejecutar transformación{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/transform_execution.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:transform_execution_hub' project_slug=project.slug %}">Ejecutar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Ejecutar transformación</h2>
+        <p>Dry run (preview) y ejecución completa sobre un archivo de producción.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:transform_execution_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver a ejecutar</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            Aplica el pipeline publicado (origen → mapeo → reglas → destino) al archivo subido.
+            Requiere <strong>versión publicada</strong> y un job en estado cargado (producción).
+        </p>
+
+        <h3 class="form-section-title">Prerrequisitos</h3>
+        <table class="help-table">
+            <thead><tr><th>Requisito</th><th>Dónde se resuelve</th></tr></thead>
+            <tbody>
+                <tr><td>Versión publicada</td><td>Hub del proyecto → Publicar.</td></tr>
+                <tr><td>Archivo de producción</td><td>Módulo Archivo (file intake).</td></tr>
+                <tr><td>Permiso de ejecución</td><td>Membresía del proyecto (PA / roles habilitados).</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones principales</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>Solo preview / Dry run</td><td>Transforma un número limitado de filas para validar sin cerrar el job completo.</td></tr>
+                <tr><td>Ejecutar transformación</td><td>Job completo: genera archivo salida, informe y (si aplica) errores.</td></tr>
+                <tr><td>Descargas</td><td>Enlaces al output / report / errors (TTL típico 7 días).</td></tr>
+                <tr><td>Subir archivo</td><td>Va a File Intake para cargar producción.</td></tr>
+                <tr><td>Historial</td><td>Lista jobs anteriores y descargas vigentes.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

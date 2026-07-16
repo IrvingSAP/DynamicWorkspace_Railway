@@ -1,0 +1,48 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Paso 3 destino{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:target_hub' project_slug=project.slug %}">Destino</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:target_step3' project_slug=project.slug %}">Paso 3</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Paso 3 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Layout de salida</h2>
+        <p>Estructura del archivo según el tipo elegido en el paso 1.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:target_step3' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 3</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <table class="help-table">
+            <thead><tr><th>Tipo</th><th>Qué suele configurarse</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">csv / txt_delimited</td><td>Delimitador, comillas, encabezado, patrón de nombre de archivo.</td></tr>
+                <tr><td class="mono">txt_fixed</td><td>Longitud de registro, relleno, patrón de nombre.</td></tr>
+                <tr><td class="mono">xlsx</td><td>Nombre de hoja, fila de inicio, patrón de nombre.</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">El <strong>patrón de nombre</strong> (<code>output_filename_pattern</code>) define cómo se llama el archivo al descargar tras ejecutar.</p>
+    </div>
+</div>
+{% endblock %}

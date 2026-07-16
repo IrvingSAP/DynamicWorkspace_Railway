@@ -1,0 +1,213 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Carga de archivos — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/file_intake.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Archivo</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    {% if membership %}
+    <span class="hint">·</span>
+    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    {% endif %}
+    <span class="hint">· {{ hub.draft_version_label }}</span>
+    <span class="hint">· {{ hub.published_version_label }}</span>
+</div>
+
+<div id="dms-file-intake-config"
+     data-sample-upload-url="{{ sample_upload_url }}"
+     data-production-upload-url="{{ production_upload_url }}"
+     data-csrf-token="{{ csrf_token }}"
+     data-accept="{{ accept_attr }}"
+     data-sample-max-bytes="{{ sample_max_bytes }}"
+     data-production-max-bytes="{{ production_max_bytes }}"
+     data-can-sample="{% if can_upload_sample %}1{% else %}0{% endif %}"
+     data-can-production="{% if can_upload_production %}1{% else %}0{% endif %}"
+     data-has-published="{% if hub.has_published_version %}1{% else %}0{% endif %}"
+     hidden></div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Fase C · <span class="role-badge">FileIntake</span></p>
+        <h2>Carga de archivos</h2>
+        <p>Browse local → validación → almacenamiento interno. Extensiones: <strong>{{ accept_attr }}</strong></p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:file_intake_hub_help' project_slug=project.slug as file_intake_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=file_intake_help_url %}
+        <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Estado">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Muestras</p>
+        <p class="stat-value">{{ hub.samples_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Jobs subidos</p>
+        <p class="stat-value">{{ hub.jobs_uploaded_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Versión publicada</p>
+        <p class="stat-value" style="font-size:16px">
+            {% if hub.has_published_version %}Sí{% else %}No{% endif %}
+        </p>
+    </div>
+</div>
+
+<div class="fi-grid">
+    <section class="panel">
+        <div class="panel-body">
+            <h3 class="form-section-title">Archivo muestra (definición)</h3>
+            <p class="hint">Límite {{ hub.sample_max_label }}. Roles PA / ED. Útil para preview y sugerencias de encoding.</p>
+
+            {% if can_upload_sample %}
+            <div class="fi-dropzone" data-context="sample" tabindex="0">
+                <input type="file" id="fi-sample-input" accept="{{ accept_attr }}" hidden>
+                <p class="fi-drop-title">Arrastre un archivo o</p>
+                <button type="button" class="btn btn-secondary" data-action="browse" data-context="sample">Seleccionar archivo</button>
+                <p class="fi-file-meta" data-role="file-meta" data-context="sample">Ningún archivo seleccionado</p>
+                <div class="fi-actions">
+                    <button type="button" class="btn btn-secondary btn-sm" data-action="clear" data-context="sample" disabled>Quitar</button>
+                    <button type="button" class="btn btn-primary" data-action="upload" data-context="sample" disabled>Subir muestra</button>
+                </div>
+                <div class="fi-progress" data-role="progress" data-context="sample" hidden>
+                    <div class="fi-progress-bar" data-role="progress-bar"></div>
+                </div>
+            </div>
+            {% else %}
+            <p class="hint">No tiene permiso para subir muestras.</p>
+            {% endif %}
+
+            <div class="form-errors" id="fi-sample-errors" hidden></div>
+            <div id="fi-sample-result" class="fi-result" hidden></div>
+
+            <h4 class="form-section-title" style="margin-top:20px">Muestras recientes</h4>
+            {% if samples %}
+            <ul class="fi-list" id="fi-sample-list">
+                {% for item in samples %}
+                <li class="fi-list-item" data-sample-id="{{ item.id }}">
+                    <div>
+                        <strong>{{ item.original_filename }}</strong>
+                        <span class="hint"> · {{ item.size_label }}
+                            {% if item.suggestions.file_type_code %} · {{ item.suggestions.file_type_code }}{% endif %}
+                            {% if item.suggestions.encoding_code %} · {{ item.suggestions.encoding_code }}{% endif %}
+                        </span>
+                    </div>
+                    <div class="fi-list-actions">
+                        <button type="button" class="btn btn-secondary btn-sm" data-action="preview-sample" data-id="{{ item.id }}">Preview</button>
+                        {% if can_upload_sample %}
+                        <button type="button" class="btn btn-secondary btn-sm" data-action="delete-sample" data-id="{{ item.id }}">Eliminar</button>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty-state">
+                <h3>Sin muestras</h3>
+                <p>Suba un archivo de ejemplo para obtener preview y sugerencias.</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-body">
+            <h3 class="form-section-title">Archivo producción (ejecución)</h3>
+            <p class="hint">Límite {{ hub.production_max_label }}. Roles PA / ED / GE. Requiere versión publicada.</p>
+
+            {% if not hub.has_published_version %}
+            <div class="empty-state">
+                <h3>Publique una versión</h3>
+                <p>Antes de subir un archivo de producción debe publicar el borrador (origen, destino, mapeo y reglas).</p>
+                <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a publicar</a>
+            </div>
+            {% elif can_upload_production %}
+            <div class="fi-dropzone" data-context="production" tabindex="0">
+                <input type="file" id="fi-production-input" accept="{{ accept_attr }}" hidden>
+                <p class="fi-drop-title">Arrastre un archivo o</p>
+                <button type="button" class="btn btn-secondary" data-action="browse" data-context="production">Seleccionar archivo</button>
+                <p class="fi-file-meta" data-role="file-meta" data-context="production">Ningún archivo seleccionado</p>
+                <div class="fi-actions">
+                    <button type="button" class="btn btn-secondary btn-sm" data-action="clear" data-context="production" disabled>Quitar</button>
+                    <button type="button" class="btn btn-primary" data-action="upload" data-context="production" disabled>Subir producción</button>
+                </div>
+                <div class="fi-progress" data-role="progress" data-context="production" hidden>
+                    <div class="fi-progress-bar" data-role="progress-bar"></div>
+                </div>
+            </div>
+            {% else %}
+            <p class="hint">No tiene permiso para subir archivos de producción.</p>
+            {% endif %}
+
+            <div class="form-errors" id="fi-production-errors" hidden></div>
+            <div id="fi-production-result" class="fi-result" hidden></div>
+
+            <h4 class="form-section-title" style="margin-top:20px">Uploads recientes</h4>
+            {% if jobs %}
+            <ul class="fi-list">
+                {% for item in jobs %}
+                <li class="fi-list-item">
+                    <div>
+                        <strong>{{ item.original_filename }}</strong>
+                        <span class="hint"> · {{ item.size_label }} · {{ item.status }}
+                            {% if item.version_number %} · v{{ item.version_number }}{% endif %}
+                        </span>
+                    </div>
+                    <span class="flow-card-status flow-card-status--{% if item.status == 'uploaded' %}draft{% else %}empty{% endif %}">{{ item.status }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            <p class="hint" style="margin-top:12px">Tras subir, ejecute en
+                <a href="{% url 'dms:transform_execution_hub' project_slug=project.slug %}">Ejecutar transformación</a>
+                (dry run / job / descarga).
+            </p>
+            {% else %}
+            <div class="empty-state">
+                <h3>Sin uploads de producción</h3>
+                <p>Cuando suba un archivo se creará un job en estado <em>uploaded</em>.</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<dialog class="fi-dialog" id="fi-preview-dialog">
+    <div class="fi-dialog-body">
+        <div class="fi-dialog-head">
+            <h3 id="fi-preview-title">Preview</h3>
+            <button type="button" class="btn btn-secondary btn-sm" id="fi-preview-close">Cerrar</button>
+        </div>
+        <pre class="fi-preview-pre" id="fi-preview-body"></pre>
+    </div>
+</dialog>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/file_intake.js' %}"></script>
+{% endblock %}

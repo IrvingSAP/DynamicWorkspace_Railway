@@ -1,0 +1,129 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Hub {{ project.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Hub del proyecto</h2>
+        <p>Centro de control FilePipe: ciclo de vida, versiones, secciones y progreso del proyecto.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al hub</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            El hub resume el estado del proyecto <strong>{{ project.name }}</strong> y da acceso a cada etapa:
+            acceso (miembros), definición (origen → destino → mapeo → reglas → publicar) y ejecución (archivo, transformar, historial).
+        </p>
+
+        <h3 class="form-section-title">Cabecera y acciones</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Elemento</th><th>Qué es</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Código / visibilidad / rol</td>
+                    <td>Identifica el proyecto, si es público o privado, y tu permiso (p. ej. PA).</td>
+                </tr>
+                <tr>
+                    <td>Miembros</td>
+                    <td>Solo si eres PA: gestiona quién puede usar el proyecto.</td>
+                </tr>
+                <tr>
+                    <td>Publicar vN</td>
+                    <td>Congela el borrador (origen, destino, mapeo y reglas) y lo deja como versión activa. Requiere Fase B completa.</td>
+                </tr>
+                <tr>
+                    <td>← Proyectos</td>
+                    <td>Vuelve al listado Data Mapping.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Versiones</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Concepto</th><th>Significado</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Borrador</td>
+                    <td>Versión editable donde trabajas la definición.</td>
+                </tr>
+                <tr>
+                    <td>Versión activa</td>
+                    <td>Última publicada; es la que se usa al ejecutar transformación en producción.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Ciclo de vida (stepper)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Fase</th><th>Pasos</th><th>Para qué sirve</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>A — Acceso</td>
+                    <td>Crear · Visibilidad · Miembros</td>
+                    <td>Quién ve y quién edita el proyecto.</td>
+                </tr>
+                <tr>
+                    <td>B — Definición</td>
+                    <td>Origen · Destino · Mapeo · Reglas · Publicar</td>
+                    <td>Cómo se lee, transforma y escribe el archivo.</td>
+                </tr>
+                <tr>
+                    <td>C — Ejecución</td>
+                    <td>Archivo + transformar · Historial</td>
+                    <td>Subir archivo, ejecutar job y revisar resultados.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Pestañas y tarjetas</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Sección</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Resumen</td><td>Métricas de progreso (origen, destino, mapeo, versión) y atajos.</td></tr>
+                <tr><td>Origen</td><td>Perfil del archivo de entrada (tipo, encoding, layout, campos…).</td></tr>
+                <tr><td>Destino</td><td>Perfil del archivo de salida, incluido patrón de nombre.</td></tr>
+                <tr><td>Mapeo</td><td>Correspondencia origen → destino (directo, constante, concat, generado).</td></tr>
+                <tr><td>Reglas</td><td>Transformaciones post-mapeo (trim, upper, fechas, pad, default…).</td></tr>
+                <tr><td>Archivo</td><td>Carga de muestra o producción.</td></tr>
+                <tr><td>Ejecutar</td><td>Preview y transformación completa; acceso a historial.</td></tr>
+                <tr><td>Miembros</td><td>Invitar, cambiar rol o revocar (solo PA).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

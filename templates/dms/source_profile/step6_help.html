@@ -1,0 +1,54 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Paso 6 origen{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:source_hub' project_slug=project.slug %}">Origen</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:source_step6' project_slug=project.slug %}">Paso 6</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Paso 6 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Informe de procesamiento</h2>
+        <p>Qué debe reportar el sistema al ejecutar la transformación (no genera el informe aquí).</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:source_step6' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 6</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            Configura <code>processing_report</code>. La generación real ocurre en <strong>Ejecutar</strong>
+            (<code>(transform_execution)</code>.
+        </p>
+        <table class="help-table">
+            <thead><tr><th>Opción típica</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>Incluir errores por fila</td><td>Detalle de línea/campo/mensaje en el informe.</td></tr>
+                <tr><td>Resumen / contadores</td><td>Totales de filas leídas, omitidas, con error, etc.</td></tr>
+                <tr><td>Guardar borrador</td><td>Persiste la configuración del informe.</td></tr>
+                <tr><td>Publicar (si aplica)</td><td>Congela el origen completo del borrador cuando el asistente está listo.</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Al terminar este paso, el origen queda listo para combinar con destino, mapeo y reglas en el hub del proyecto.</p>
+    </div>
+</div>
+{% endblock %}

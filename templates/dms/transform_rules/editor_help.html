@@ -1,0 +1,68 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Editor de reglas{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/transform_rules.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:transform_rules_hub' project_slug=project.slug %}">Reglas</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:transform_rules_editor' project_slug=project.slug %}">Editor</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Editor de reglas</h2>
+        <p>Pipeline ordenado por campo destino. Vacío = se escribe el valor del mapeo sin transformar.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:transform_rules_editor' project_slug=project.slug %}" class="btn btn-secondary">← Volver al editor</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            Para cada campo destino mapeado define una secuencia de operaciones (transform_pipeline).
+            El orden importa: se aplican de arriba abajo.
+        </p>
+
+        <h3 class="form-section-title">Operaciones típicas (MVP)</h3>
+        <table class="help-table">
+            <thead><tr><th>Operación</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">trim</td><td>Quita espacios al inicio/fin.</td></tr>
+                <tr><td class="mono">upper / lower</td><td>Mayúsculas o minúsculas.</td></tr>
+                <tr><td class="mono">date_format</td><td>Reformatea fechas según patrón.</td></tr>
+                <tr><td class="mono">pad_left / pad_right</td><td>Rellena hasta una longitud.</td></tr>
+                <tr><td class="mono">default_if_empty</td><td>Valor por defecto si queda vacío.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>Guardar</td><td>Persiste los pipelines en el borrador.</td></tr>
+                <tr><td>Preview</td><td>Si está disponible, prueba el efecto sobre un valor de ejemplo.</td></tr>
+                <tr><td>← Hub reglas</td><td>Vuelve al resumen del módulo.</td></tr>
+            </tbody>
+        </table>
+
+        <p class="help-intro">Al terminar, puede publicar la versión en el hub del proyecto (junto con origen, destino y mapeo).</p>
+    </div>
+</div>
+{% endblock %}

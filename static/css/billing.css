@@ -1,0 +1,58 @@
+/* DynamicWorkspace — apps.billing */
+
+.status-pending { color: #b45309; }
+.status-pending .status-dot { background: #b45309; }
+
+.status-expired { color: var(--destructive); }
+.status-expired .status-dot { background: var(--destructive); }
+
+.status-canceled { color: var(--ink-tertiary); }
+.status-canceled .status-dot { background: var(--ink-muted); }
+
+.billing-nav-label {
+    margin: 16px 0 6px;
+    padding: 0 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+}
+
+.signature-box {
+    padding: 10px 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    word-break: break-all;
+    color: var(--ink-secondary);
+    background: var(--canvas);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-md);
+}
+
+.sub-table-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.sub-table-title h3 {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+}
+
+.table-dt-host--billing .dw-datatable {
+    min-width: 900px;
+}
+
+@media (max-width: 1100px) {
+    .table-dt-host--billing .dw-datatable {
+        min-width: 960px;
+    }
+}

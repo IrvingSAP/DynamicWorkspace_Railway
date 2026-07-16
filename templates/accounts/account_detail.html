@@ -1,0 +1,126 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ profile.user.username }} — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include sidebar_template %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'accounts:list' %}">Usuarios</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ profile.user.username }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">{{ management_scope.detail_eyebrow }}{% if management_scope.fixed_company %} · <span class="cell-badge">{{ profile.company.name_short }}</span>{% endif %}</p>
+        <h2>{{ profile.user.get_full_name|default:profile.user.username }}</h2>
+        <p>Perfil, seguridad y auditoría del usuario.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'accounts:update' pk=profile.pk %}" class="btn btn-primary">Editar</a>
+        <a href="{% url 'accounts:password' pk=profile.pk %}" class="btn btn-secondary">Contraseña</a>
+        <a href="{% url 'accounts:list' %}" class="btn btn-secondary">← Listado</a>
+    </div>
+</div>
+
+<div class="hero-panel">
+    <div class="hero-meta">
+        <span class="mono" style="font-size:13px;font-weight:600;">{{ profile.user.username }}</span>
+        <span class="user-type-badge {{ management_scope.target_badge_class }} status--offset">{{ profile.user_type }}</span>
+        {% if profile.user.is_active and profile.status == 'A' %}
+        <span class="status status-active status--offset"><span class="status-dot"></span>Activo</span>
+        {% else %}
+        <span class="status status-inactive status--offset"><span class="status-dot"></span>Inactivo</span>
+        {% endif %}
+        <h3>{{ profile.user.get_full_name|default:profile.user.username }}</h3>
+        <p class="hero-id">{{ profile.pk }}</p>
+    </div>
+</div>
+
+<div class="metric-row">
+    {% if management_scope.show_company_column %}
+    <div class="metric-card">
+        <p class="metric-label">Compañía</p>
+        <p class="metric-value metric-value--md"><a href="{% url 'company:detail' pk=profile.company.pk %}" class="cell-badge">{{ profile.company.name_short }}</a></p>
+    </div>
+    {% endif %}
+    <div class="metric-card">
+        <p class="metric-label">Seguridad</p>
+        <p class="metric-value metric-value--md">{% if profile.is_security_complete %}Completa{% else %}Pendiente{% endif %}</p>
+    </div>
+    {% if profile.user_type == 'US' %}
+    <div class="metric-card">
+        <p class="metric-label">UF creados</p>
+        <p class="metric-value">{{ detail.uf_count }}</p>
+        <p class="metric-sub">en {{ profile.company.name_short }}</p>
+    </div>
+    {% endif %}
+    {% if profile.user_type == 'UF' %}
+    <div class="metric-card">
+        <p class="metric-label">Proyectos</p>
+        <p class="metric-value">{{ detail.projects_count }}</p>
+        <p class="metric-sub">membresías activas</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="panel panel--gap">
+    <div class="panel-body">
+        <h3 class="form-section-title">Datos de la cuenta</h3>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <p class="dl">Usuario</p>
+                <p class="dd mono">{{ profile.user.username }}</p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Correo</p>
+                <p class="dd">{{ profile.user.email|default:"—" }}</p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Compañía</p>
+                <p class="dd">
+                    {% if management_scope.actor_type == 'UA' %}
+                    <a href="{% url 'company:detail' pk=profile.company.pk %}">{{ profile.company.name_short }} — {{ profile.company.name_long }}</a>
+                    {% else %}
+                    {{ profile.company.name_short }} — {{ profile.company.name_long }}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Tipo</p>
+                <p class="dd"><span class="user-type-badge {{ management_scope.target_badge_class }}">{{ profile.user_type }}</span></p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Correo verificado</p>
+                <p class="dd">{% if profile.email_confirmed %}Sí{% else %}No{% endif %}</p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">2FA (TOTP)</p>
+                <p class="dd">{% if profile.tfa_verified %}Configurado{% else %}Pendiente{% endif %}</p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Primer acceso</p>
+                <p class="dd">{% if profile.primer_acceso_completado %}Completado{% else %}Pendiente{% endif %}</p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Creado por</p>
+                <p class="dd mono">{% if profile.created_by %}{{ profile.created_by.username }}{% else %}—{% endif %}</p>
+            </div>
+            <div class="detail-item">
+                <p class="dl">Actualizado</p>
+                <p class="dd mono">{{ profile.updated_at|date:"d/m/Y H:i" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

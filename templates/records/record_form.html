@@ -1,0 +1,88 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Editar registro{% else %}Nuevo registro{% endif %} — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/records.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'projects:list' %}">Proyectos</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'projects:detail' slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'records:list' slug=project.slug %}">Registros</a>
+    <span class="breadcrumb-sep">/</span>
+    {% if is_edit and record %}
+    <a href="{% url 'records:detail' slug=project.slug pk=record.pk %}">Detalle</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Editar</span>
+    {% else %}
+    <span>Nuevo</span>
+    {% endif %}
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Alcance del proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    <span class="hint">·</span>
+    <span class="cell-badge cell-badge--sm">{{ company.name_short }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Datos del proyecto · <span class="role-code role-code--ed">{{ membership.role }}</span></p>
+        <h2>{% if is_edit %}Editar registro{% else %}Nuevo registro{% endif %}</h2>
+        {% if is_edit and record %}
+        <p class="record-id-badge">ID <span class="mono">{{ record.id }}</span></p>
+        {% else %}
+        <p>Completa los campos definidos en el esquema del proyecto.</p>
+        {% endif %}
+    </div>
+    <div class="page-actions">
+        {% if is_edit and record %}
+        <a href="{% url 'records:detail' slug=project.slug pk=record.pk %}" class="btn btn-secondary">← Detalle</a>
+        {% else %}
+        <a href="{% url 'records:list' slug=project.slug %}" class="btn btn-secondary">← Registros</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if not fields %}
+<div class="alert alert-info">
+    Este proyecto no tiene campos activos. <a href="{% url 'fields:list' slug=project.slug %}">Defina el esquema</a> antes de cargar registros.
+</div>
+{% else %}
+<div class="panel">
+    <div class="panel-body">
+        <form method="post" action="">
+            {% csrf_token %}
+            <div class="form-section">
+                <h3 class="form-section-title">Valores del registro</h3>
+                <p class="form-section-hint">{{ fields|length }} campo{{ fields|length|pluralize }} activo{{ fields|length|pluralize }} · orden según diseño del esquema</p>
+                <div class="form-grid">
+                    {% include "records/_form_fields.html" %}
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">{% if is_edit %}Guardar cambios{% else %}Guardar registro{% endif %}</button>
+                {% if is_edit and record %}
+                <a href="{% url 'records:detail' slug=project.slug pk=record.pk %}" class="btn btn-secondary">Cancelar</a>
+                {% else %}
+                <a href="{% url 'records:list' slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

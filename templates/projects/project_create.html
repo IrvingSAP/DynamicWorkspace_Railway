@@ -1,0 +1,87 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Nuevo proyecto — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'projects:list' %}">Proyectos</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Nuevo</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip" aria-label="Alcance de compañía">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Alta de workspace</p>
+        <h2>Nuevo proyecto</h2>
+        <p>Crear una tabla configurable en tu compañía. Quedarás como administrador del proyecto (PA).</p>
+    </div>
+    <div class="page-actions">
+        {% url 'projects:create_help' as projects_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=projects_help_url %}
+        <a href="{% url 'projects:list' %}" class="btn btn-secondary">← Listado</a>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    El proyecto se crea en <strong>{{ company.name_short }}</strong>. Solo usuarios de la misma compañía podrán ser invitados como miembros.
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="form-section">
+                <h3 class="form-section-title">Identidad del proyecto</h3>
+                <div class="form-grid">
+                    <div class="form-row two-cols">
+                        <div class="field{% if errors.name %} has-error{% endif %}">
+                            <label for="name">Nombre visible <span class="req">*</span></label>
+                            <input type="text" id="name" name="name" maxlength="200" placeholder="Inventario 2026" value="{{ posted.name }}" required>
+                            {% for msg in errors.name %}
+                            <p class="field-error">{{ msg }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="field{% if errors.slug %} has-error{% endif %}">
+                            <label for="slug">Slug URL <span class="req">*</span></label>
+                            <input type="text" id="slug" name="slug" class="mono" maxlength="220" placeholder="inventario-2026" value="{{ posted.slug }}" required>
+                            <p class="hint">Único en la compañía · usado en /app/proyectos/&lt;slug&gt;/</p>
+                            {% for msg in errors.slug %}
+                            <p class="field-error">{{ msg }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="field{% if errors.description %} has-error{% endif %}">
+                        <label for="description">Descripción</label>
+                        <textarea id="description" name="description" rows="3" placeholder="Control de existencias y movimientos del almacén…">{{ posted.description }}</textarea>
+                        {% for msg in errors.description %}
+                        <p class="field-error">{{ msg }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Crear proyecto</button>
+                <a href="{% url 'projects:list' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

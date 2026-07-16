@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DynamicWorkspace{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/public.css' %}">
+    <link rel="stylesheet" href="{% static 'css/security.css' %}">
+</head>
+<body class="auth-body">
+    <div class="auth-shell">
+        <header class="auth-header">
+            <a href="{% url 'public:home' %}" class="pub-brand">
+                <span class="pub-brand-mark">DW</span>
+                <span class="pub-brand-name">DynamicWorkspace</span>
+            </a>
+        </header>
+
+        {% if messages %}
+        <div class="pub-container pub-flash-wrap">
+            {% for message in messages %}
+            <div class="pub-flash pub-flash--{{ message.tags }}" role="alert">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <main class="auth-main">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="auth-footer">
+            {% block footer %}
+            <p><a href="{% url 'public:home' %}">Volver al inicio</a></p>
+            {% endblock %}
+        </footer>
+    </div>
+</body>
+</html>

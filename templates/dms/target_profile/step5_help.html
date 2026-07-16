@@ -1,0 +1,46 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Paso 5 destino{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:target_hub' project_slug=project.slug %}">Destino</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:target_step5' project_slug=project.slug %}">Paso 5</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Paso 5 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Serialización global</h2>
+        <p>Cómo se formatean los valores al escribirlos en el archivo destino.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:target_step5' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 5</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <p class="help-intro">Reglas a nivel archivo (no sustituyen el pipeline de reglas del mapeo). Ejemplos: formato de fecha, decimales, representación de nulos o booleanos.</p>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>Guardar / Continuar</td><td>Persiste la serialización y avanza a validación (paso 6).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

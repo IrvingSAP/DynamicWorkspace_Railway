@@ -1,0 +1,63 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Mapeo de campos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/field_mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:field_mapping_hub' project_slug=project.slug %}">Mapeo</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Hub de mapeo</h2>
+        <p>Resumen del estado origen → destino y acceso al editor de relaciones.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:field_mapping_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al hub</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            Define cómo cada campo de <strong>destino</strong> obtiene su valor a partir del <strong>origen</strong>
+            (o de constantes / generadores). Requiere perfiles de origen y destino con campos.
+        </p>
+
+        <h3 class="form-section-title">Indicadores</h3>
+        <table class="help-table">
+            <thead><tr><th>Indicador</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr><td>Mapeos</td><td>Cantidad de relaciones definidas.</td></tr>
+                <tr><td>Origen → Destino</td><td>Cantidad de campos en cada perfil.</td></tr>
+                <tr><td>Obligatorios sin mapear</td><td>Campos destino requeridos aún sin fuente.</td></tr>
+                <tr><td>Estado</td><td>Completo / en edición / pendiente.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>Abrir editor</td><td>Edita o crea mapeos (direct, constant, concat, generated).</td></tr>
+                <tr><td>Definir origen / destino</td><td>Si faltan campos, enlaces para completar esos asistentes.</td></tr>
+                <tr><td>← Proyecto</td><td>Vuelve al hub FilePipe.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

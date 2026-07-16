@@ -1,0 +1,97 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ detail_label }} — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/records.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'projects:list' %}">Proyectos</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'projects:detail' slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'records:list' slug=project.slug %}">Registros</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ detail_label|truncatechars:40 }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Alcance del proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    <span class="hint">·</span>
+    <span class="cell-badge cell-badge--sm">{{ company.name_short }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Datos del proyecto · <span class="role-code{% if membership.role == 'CO' %} role-code--co{% elif membership.role == 'ED' %} role-code--ed{% elif membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span></p>
+        <h2>{{ detail_label }}</h2>
+        <p>Detalle de registro · {% if can_edit %}puede editar{% else %}solo lectura{% endif %}.</p>
+    </div>
+    <div class="page-actions">
+        {% if can_edit %}
+        <a href="{% url 'records:update' slug=project.slug pk=record.pk %}" class="btn btn-primary">Editar</a>
+        {% endif %}
+        <a href="{% url 'records:list' slug=project.slug %}" class="btn btn-secondary">← Registros</a>
+    </div>
+</div>
+
+<div class="hero-panel">
+    <div class="hero-meta hero-meta--grow">
+        <span class="status status-active status--offset"><span class="status-dot"></span>Activo</span>
+        <p class="hint record-id-badge">ID <span class="mono">{{ record.id }}</span></p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Metadatos</h3>
+        <div class="record-meta-grid">
+            <div class="record-meta-item">
+                <span class="label">Creado por</span>
+                <span class="value">{{ record.created_by.get_full_name|default:record.created_by.username }} ({{ record.created_by.username }})</span>
+            </div>
+            <div class="record-meta-item">
+                <span class="label">Creado</span>
+                <span class="value mono">{{ record.created_at|date:"d/m/Y H:i" }}</span>
+            </div>
+            <div class="record-meta-item">
+                <span class="label">Última modificación</span>
+                <span class="value">
+                    {% if record.updated_by %}
+                    {{ record.updated_by.get_full_name|default:record.updated_by.username }} ({{ record.updated_by.username }})
+                    {% else %}—{% endif %}
+                </span>
+            </div>
+            <div class="record-meta-item">
+                <span class="label">Actualizado</span>
+                <span class="value mono">{{ record.updated_at|date:"d/m/Y H:i" }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="panel panel--gap">
+    <div class="panel-body">
+        <h3 class="form-section-title">Valores del registro</h3>
+        <div class="record-values-grid">
+            {% for row in detail_rows %}
+            <div class="field-readonly{% if row.is_full %} is-full{% endif %}">
+                <p class="label">{{ row.field.label }}</p>
+                <p class="value{% if row.field.field_type == 'text_short' or row.field.field_type == 'integer' or row.field.field_type == 'decimal' %} mono{% endif %}">{{ row.display }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
