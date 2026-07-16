@@ -292,7 +292,8 @@ apps/
 - **Sin Django Forms** (`forms.py`, `ModelForm`).
 - JavaScript en `static/js/` para filtros, tablas dinámicas y UX tipo hoja de cálculo.
 - Resend para invitaciones y notificaciones.
-- WhiteNoise + Gunicorn en Railway.
+- WhiteNoise + Gunicorn en Railway (`gthread`, `CONN_MAX_AGE=600`).
+- Producción: `DJANGO_SETTINGS_MODULE=dynamicworkspace.production` — detalle en [`README.md`](../README.md) § Deploy Railway.
 
 ### Flujo de una petición
 

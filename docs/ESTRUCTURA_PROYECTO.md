@@ -17,7 +17,7 @@ Referencia para replicar el layout de DynamicWorkspace en un proyecto nuevo.
 │   ├── DynamicWorkspace.md      # Visión de producto y arquitectura
 │   ├── definition_app/          # Un .md por app (modelos, URLs, reglas)
 │   └── security/                # Flujos e implementación de seguridad
-├── dynamicworkspace/           # Proyecto Django (settings, urls, wsgi)
+├── dynamicworkspace/           # Proyecto Django (settings, production.py, urls, wsgi)
 ├── media/                      # Subidas de usuario (gitignore)
 ├── prototype/                  # HTML estático de revisión UX (temporal)
 │   └── <app>/                  # Misma convención de nombres que templates/
@@ -34,7 +34,9 @@ Referencia para replicar el layout de DynamicWorkspace en un proyecto nuevo.
 ├── .env.example
 ├── .gitignore
 ├── manage.py
-├── railway.toml                # Deploy (opcional)
+├── railway.toml                # Deploy Railway (build/release/start)
+├── Procfile                    # Arranque web/release Railway
+├── gunicorn.conf.py            # Gunicorn gthread (solo producción)
 ├── README.md
 └── requirements.txt
 ```
@@ -43,15 +45,17 @@ Referencia para replicar el layout de DynamicWorkspace en un proyecto nuevo.
 
 ## Rol de cada capa
 
-| Carpeta | Propósito | ¿Va a producción? |
+| Carpeta / archivo | Propósito | ¿Va a producción? |
 |---------|-----------|-------------------|
 | `apps/` | Lógica Django: `models`, `views`, `urls`, `services/`, `admin` | Sí |
 | `templates/` | HTML con tags Django; hereda de `app_base` o `public/base` | Sí |
 | `static/` | CSS/JS servidos por WhiteNoise o CDN | Sí |
-| `prototype/` | Maquetas estáticas para validar UX antes de codificar | No |
+| `dynamicworkspace/production.py` | Settings solo Railway (Postgres, CONN_MAX_AGE) | Sí (runtime prod) |
+| `gunicorn.conf.py` / `railway.toml` / `Procfile` | Arranque y ciclo de deploy | Sí (deploy) |
+| `prototype/` | Maquetas estáticas para validar UX antes de codificar | No (gitignore) |
 | `docs/` | Definición funcional, modelo de datos, convenciones | No (solo repo) |
-| `.cursor/rules/` | Instrucciones persistentes para el agente | No (solo repo) |
-| `scripts/` | Tareas de desarrollo; no son parte del runtime web | No |
+| `.cursor/rules/` | Instrucciones persistentes para el agente | No (gitignore) |
+| `scripts/` | Tareas de desarrollo; no son parte del runtime web | Sí en repo / no runtime web |
 
 ---
 
