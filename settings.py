@@ -24,27 +24,6 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-# Django 4+ valida Origin/Referer en POST (fetch envía Origin).
-# En local el navegador a veces manda http://127.0.0.1 sin puerto además de :8001.
-_csrf_default_origins = []
-for _host in ALLOWED_HOSTS:
-    if "://" in _host:
-        _csrf_default_origins.append(_host.rstrip("/"))
-        continue
-    for _scheme in ("http", "https"):
-        _csrf_default_origins.append(f"{_scheme}://{_host}")
-        for _port in ("8000", "8001", "8080"):
-            _csrf_default_origins.append(f"{_scheme}://{_host}:{_port}")
-
-CSRF_TRUSTED_ORIGINS = [
-    origin.strip().rstrip("/")
-    for origin in os.environ.get(
-        "CSRF_TRUSTED_ORIGINS",
-        ",".join(_csrf_default_origins),
-    ).split(",")
-    if origin.strip()
-]
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -63,7 +42,6 @@ INSTALLED_APPS = [
     "apps.fields",
     "apps.records",
     "apps.help",
-    "apps.dms",
 ]
 
 MIDDLEWARE = [
@@ -89,7 +67,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "django.template.context_processors.csrf",
             ],
         },
     },
@@ -162,7 +139,7 @@ else:
     EMAIL_DELIVERY = os.environ.get("EMAIL_DELIVERY", "resend")
 
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "DynamicWorkspace <onboarding@resend.dev>")
-PUBLIC_CONTACT_EMAIL = os.environ.get("PUBLIC_CONTACT_EMAIL", "sistemaasociados@gmail.com")
+PUBLIC_CONTACT_EMAIL = os.environ.get("PUBLIC_CONTACT_EMAIL", "contacto@dynamicworkspace.app")
 
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 

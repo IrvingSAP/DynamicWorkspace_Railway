@@ -48,7 +48,7 @@ def submit_contact_message(posted: dict) -> OperationResult:
     recipient = getattr(
         settings,
         "PUBLIC_CONTACT_EMAIL",
-        "contacto@dynamicworkspace.app",
+        "sistemaasociados@gmail.com",
     )
     mail_result = send_email(
         to=[recipient],

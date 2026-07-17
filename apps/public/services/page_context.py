@@ -8,6 +8,6 @@ def public_page_context(nav_active: str) -> dict:
         "contact_email": getattr(
             settings,
             "PUBLIC_CONTACT_EMAIL",
-            "contacto@dynamicworkspace.app",
+            "sistemaasociados@gmail.com",
         ),
     }
