@@ -6,6 +6,7 @@ from apps.core.decorators import security_complete_required, user_type_required
 from apps.core.services.form_flash import clear_form_state, stash_form_state, take_form_state
 from apps.dms.mapping.services import mapping_project_service
 from apps.dms.catalogs.services.permission_package_service import role_choices_for_ui
+from apps.projects.services import project_service
 
 FORM_CREATE = "dms:mapping:create"
 
