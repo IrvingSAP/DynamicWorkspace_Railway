@@ -1,0 +1,8 @@
+{% load static %}
+{{ policy|json_script:"fg-gate-policy-data" }}
+<div id="fg-policy-save-config"
+     data-save-url="{{ policy_save_url }}"
+     data-csrf-token="{{ csrf_token }}"
+     hidden></div>
+<script src="{% static 'js/file_gate-policy-persistence.js' %}"></script>
+<script src="{% static 'js/file_gate-policy-wizard.js' %}"></script>

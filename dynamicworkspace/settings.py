@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "apps.records",
     "apps.help",
     "apps.dms",
+    "apps.file_gate",
 ]
 
 MIDDLEWARE = [

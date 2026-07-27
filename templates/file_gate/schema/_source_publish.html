@@ -1,0 +1,6 @@
+{% load static %}
+<div id="dms-source-publish-config"
+     data-publish-url="{{ source_publish_url }}"
+     data-csrf-token="{{ csrf_token }}"
+     hidden></div>
+<script src="{% static 'js/source_profile-publish.js' %}"></script>

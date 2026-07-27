@@ -1,0 +1,35 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Nuevo proyecto FILE GATE{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_create' %}">Nuevo</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Crear proyecto</h2>
+        <p>Código único, nombre visible y visibilidad (privado / público compañía).</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:project_create' %}" class="btn btn-secondary">← Volver</a>
+    </div>
+</div>
+<div class="panel help-panel"><div class="panel-body">
+    <p>Tras crear el proyecto quedará como administrador (PA) y podrá editar el contrato de validación.</p>
+</div></div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Políticas — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_policy.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Políticas</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_gate/policy/_project_scope.html" %}
+{% include "file_gate/policy/_policy_persistence.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 2 · <span class="role-badge">gate_policy</span></p>
+        <h2>Políticas de validación</h2>
+        <p>Decide cuánto revisar, cuándo detener el análisis y qué nivel de rechazo hace fallar el archivo.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_gate:policy_hub_help' project_slug=project.slug as policy_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=policy_help_url %}
+        <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}" class="btn btn-secondary">← Contrato</a>
+        <a href="{% url wizard.continue_step_url_name project_slug=project.slug %}" class="btn btn-primary">Editar políticas</a>
+    </div>
+</div>
+
+<div class="note-box">
+    La política se publica <strong>junto con el contrato</strong>. Las ejecuciones históricas conservarán su snapshot; cambiar el borrador no altera resultados anteriores.
+</div>
+
+<div class="policy-signature" aria-label="Flujo de decisión">
+    <div class="policy-node">
+        <p class="policy-node-label">Recorrido</p>
+        <strong>Recolectar incidencias</strong>
+        <p>Hasta {{ policy.max_errors }} errores o fin del archivo</p>
+    </div>
+    <div class="policy-arrow" aria-hidden="true">→</div>
+    <div class="policy-node is-decision">
+        <p class="policy-node-label">Decisión</p>
+        <strong>Máximo permitido: {{ wizard.threshold_label }}</strong>
+        <p>Se falla únicamente al superar el límite</p>
+    </div>
+    <div class="policy-arrow" aria-hidden="true">→</div>
+    <div class="policy-node">
+        <p class="policy-node-label">Resultado</p>
+        <strong>Estado del gate</strong>
+        <p>passed · warnings · failed · partial</p>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen de política">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Estrategia</p>
+        <p class="stat-value" style="font-size:16px">{{ policy.on_error }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Máximo de errores</p>
+        <p class="stat-value">{{ policy.max_errors }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Umbral</p>
+        <p class="stat-value" style="font-size:16px">{{ wizard.threshold_label }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Pasos</p>
+        <p class="stat-value">{{ wizard.steps_complete }} / {{ wizard.steps_total }}</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Configuración</h3>
+        <div class="policy-grid">
+            {% for step in wizard.steps %}
+            <a class="policy-card{% if step.status == 'done' %} is-complete{% elif step.status == 'draft' %} is-active{% endif %}"
+               href="{% url step.url_name project_slug=project.slug %}">
+                <h3>{{ step.title }}</h3>
+                <p>{{ step.summary }}</p>
+                <div class="policy-card-meta">
+                    <span>{{ step.slug }}</span>
+                    <span>
+                        {% if step.status == 'done' %}Completo{% elif step.status == 'draft' %}En edición{% else %}Pendiente{% endif %}
+                    </span>
+                </div>
+            </a>
+            {% endfor %}
+            <div class="policy-card" aria-disabled="true">
+                <h3>Fase 2 · Advertencias</h3>
+                <p><code>warn_only</code> y <code>fail_on_warnings</code> quedan fuera del MVP.</p>
+                <div class="policy-card-meta"><span>No editable</span><span>Fase 2</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

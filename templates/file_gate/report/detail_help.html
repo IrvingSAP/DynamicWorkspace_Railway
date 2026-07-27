@@ -1,0 +1,67 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Evidencia — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_run.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_report.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:report_detail' project_slug=project.slug job_id=job_id %}">Informe</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 4 · ayuda</p>
+        <h2>Cómo leer la evidencia</h2>
+        <p>Consulta el resumen, las incidencias y el certificado de una validación ya finalizada.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:report_detail' project_slug=project.slug job_id=job_id %}" class="btn btn-secondary">← Volver</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué incluye</h3>
+        <ul class="hint">
+            <li><strong>Resumen</strong> — veredicto, métricas y snapshots inmutables del job.</li>
+            <li><strong>Incidencias</strong> — línea, campo, código y mensaje; valores ofuscados por defecto.</li>
+            <li><strong>Descargas</strong> — JSON y CSV (TTL 7 días; no disponibles para rol CO).</li>
+            <li><strong>Certificado</strong> — hash + versión usada + resultado + usuario + timestamps.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Permisos</h3>
+        <table class="issue-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver resumen / certificado</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Ver incidencias</td><td>Sí</td><td>Sí</td><td>Sí</td><td>No</td></tr>
+                <tr><td>Revelar valores</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+                <tr><td>Descargar JSON / CSV</td><td>Sí</td><td>Sí</td><td>Sí</td><td>No</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

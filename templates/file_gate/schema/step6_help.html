@@ -1,0 +1,67 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Paso 6 — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}">Contrato</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:schema_step6' project_slug=project.slug %}">Paso 6</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 1 · paso 6 · ayuda</p>
+        <h2>Contrato de informe</h2>
+        <p>Define qué evidencia debe generar cada validación. Este paso no ejecuta el gate ni calcula el umbral de rechazo.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:schema_step6' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 6</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué configura</h3>
+        <table class="help-table">
+            <thead><tr><th>Opción</th><th>Efecto al validar</th></tr></thead>
+            <tbody>
+                <tr><td>Informe habilitado</td><td>Si está apagado, la corrida puede validar pero no ofrecerá descargas de evidencia.</td></tr>
+                <tr><td>Resumen / contadores</td><td>Incluye métricas (filas leídas, válidas, rechazadas, % rechazo) en el informe.</td></tr>
+                <tr><td>Detalle por fila</td><td>Incluye incidencias (línea, campo, código, mensaje) en la evidencia y, si aplica, en CSV.</td></tr>
+                <tr><td>Formatos</td><td>JSON y/o CSV disponibles en el informe (Módulo 4), sujetos a TTL y roles.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:10px">El umbral que decide <code>passed</code> / <code>failed</code> / <code>partial</code> se define en <strong>Políticas</strong>. Tras completar este paso, publique el contrato desde el hub para habilitar <strong>Validar archivo</strong>.</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Después de publicar</h3>
+        <ul class="hint">
+            <li>Las nuevas validaciones usan el snapshot publicado (no el borrador en edición).</li>
+            <li>Se crea un nuevo borrador para seguir mejorando el contrato sin afectar corridas en curso.</li>
+            <li>El informe y el certificado de cada job respetan lo congelado aquí.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

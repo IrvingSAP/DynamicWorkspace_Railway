@@ -48,6 +48,7 @@
         {% url 'dms:transform_execution_hub_help' project_slug=project.slug as transform_execution_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=transform_execution_help_url %}
         <a href="{% url 'dms:file_intake_hub' project_slug=project.slug %}" class="btn btn-secondary">Subir archivo</a>
+        <a href="{% url 'dms:file_gate_bridge_settings' project_slug=project.slug %}" class="btn btn-secondary">Integración FILE GATE</a>
         <a href="{% url 'dms:transform_execution_history' project_slug=project.slug %}" class="btn btn-secondary">Historial</a>
         <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
     </div>
@@ -63,6 +64,16 @@
 </div>
 {% else %}
 
+{% if bridge_enabled %}
+<div class="gate-seal" style="margin-bottom:16px;padding:14px 16px;border:1px solid rgba(14,116,144,0.28);border-radius:10px;background:rgba(14,116,144,0.08)">
+    <strong>Bridge FILE GATE activo</strong>
+    <p style="margin:4px 0 0;color:var(--ink-secondary);font-size:13px">
+        Se exige una corrida aceptada en <code>{{ bridge_gate_slug }}</code> con el mismo content hash antes de transformar.
+        <a href="{{ bridge_settings_url }}">Ajustar integración</a>
+    </p>
+</div>
+{% endif %}
+
 <div class="panel" style="margin-bottom:16px">
     <div class="panel-body">
         <h3 class="form-section-title">Jobs subidos (listos)</h3>
@@ -74,19 +85,48 @@
                         <th>Archivo</th>
                         <th>Tamaño</th>
                         <th>Versión</th>
+                        {% if bridge_enabled %}<th>FILE GATE</th>{% endif %}
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for job in uploaded_jobs %}
                     <tr data-job-id="{{ job.id }}">
-                        <td><strong>{{ job.original_filename }}</strong></td>
+                        <td>
+                            <strong>{{ job.original_filename }}</strong>
+                            {% if job.content_hash_short and job.content_hash_short != "—" %}
+                            <br><span class="hint">sha256:{{ job.content_hash_short }}</span>
+                            {% endif %}
+                        </td>
                         <td>{{ job.size_label }}</td>
                         <td>v{{ job.version_number }}</td>
+                        {% if bridge_enabled %}
+                        <td>
+                            {% if job.bridge.ok %}
+                            <span class="cell-badge" style="background:rgba(21,128,61,0.12);color:var(--success)">{{ job.bridge.status_label|default:"Listo" }}</span>
+                            {% if job.bridge.links.certificate %}
+                            <br><a href="{{ job.bridge.links.certificate }}" style="font-size:12px">Certificado</a>
+                            {% endif %}
+                            {% else %}
+                            <span class="cell-badge" style="background:rgba(180,83,9,0.12);color:var(--warn)">Bloqueado</span>
+                            <br><span class="hint">{{ job.bridge.message }}</span>
+                            {% if job.bridge.links.validate %}
+                            <br><a href="{{ job.bridge.links.validate }}" style="font-size:12px">Validar en FILE GATE</a>
+                            {% endif %}
+                            {% if job.bridge.links.report %}
+                            · <a href="{{ job.bridge.links.report }}" style="font-size:12px">Evidencia</a>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                        {% endif %}
                         <td class="te-actions">
                             {% if can_execute %}
                             <button type="button" class="btn btn-secondary btn-sm" data-action="preview" data-job-id="{{ job.id }}">Solo preview</button>
+                            {% if bridge_enabled and job.bridge and not job.bridge.ok %}
+                            <button type="button" class="btn btn-primary btn-sm" disabled title="{{ job.bridge.message }}">Ejecutar transformación</button>
+                            {% else %}
                             <button type="button" class="btn btn-primary btn-sm" data-action="run" data-job-id="{{ job.id }}">Ejecutar transformación</button>
+                            {% endif %}
                             {% endif %}
                         </td>
                     </tr>
@@ -102,6 +142,7 @@
         </div>
         {% endif %}
         <div class="form-errors" id="te-errors" hidden></div>
+        <div id="te-bridge-links" class="page-actions" style="margin-top:10px" hidden></div>
         <p class="step-save-status" id="te-status" aria-live="polite"></p>
     </div>
 </div>

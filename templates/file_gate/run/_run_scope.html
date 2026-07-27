@@ -1,0 +1,13 @@
+<div class="run-scope" aria-label="Alcance de la validación">
+    <span class="label">Proyecto</span><strong>{{ project.slug }}</strong>
+    {% if run.has_published_version %}
+    <span class="label">Publicada</span><span>v{{ run.published_version_number }}</span>
+    <span class="label">Tipo</span><span>{{ run.file_type_label }}</span>
+    <span class="label">Umbral</span><span>{{ run.threshold_label }}</span>
+    {% else %}
+    <span class="label">Publicada</span><span>—</span>
+    {% endif %}
+    {% if membership %}
+    <span class="label">Rol</span><code>{{ membership.role }}</code>
+    {% endif %}
+</div>

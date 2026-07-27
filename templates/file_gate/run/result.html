@@ -1,0 +1,150 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Resultado — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_policy.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_run.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}">Validar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Resultado</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 3 · resultado</p>
+        <h2>Resultado de validación</h2>
+        <p><code>{{ view.filename }}</code> · {{ view.size_label }}{% if view.published_version_number %} · contra publicada <strong>v{{ view.published_version_number }}</strong>{% endif %}</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_gate:run_result_help' project_slug=project.slug job_id=view.id as run_result_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=run_result_help_url %}
+        {% if run.can_execute %}
+        <a href="{% url 'file_gate:run_upload' project_slug=project.slug %}" class="btn btn-secondary">Validar otro</a>
+        {% endif %}
+        <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}" class="btn btn-primary">Volver al hub</a>
+    </div>
+</div>
+
+<div class="verdict">
+    <div class="verdict-status is-{{ view.gate_tone }}">
+        <strong>{{ view.gate_status_label }}</strong>
+        <small>{{ view.decision.reason }}</small>
+    </div>
+    <div class="verdict-copy">
+        {% if view.is_success %}
+        <h3>El archivo pasó el gate</h3>
+        {% elif view.is_partial %}
+        <h3>Recorrido incompleto (parcial)</h3>
+        {% else %}
+        <h3>El archivo no pasó el gate</h3>
+        {% endif %}
+        <p>{{ view.decision.message }}{% if view.error_message %} {{ view.error_message }}{% endif %}</p>
+    </div>
+</div>
+
+<div class="metric-grid">
+    <div class="metric-card">
+        <p class="label">Filas leídas</p>
+        <p class="value">{{ view.metrics.rows_read|default:0 }}</p>
+    </div>
+    <div class="metric-card">
+        <p class="label">Válidas</p>
+        <p class="value">{{ view.metrics.rows_valid|default:0 }}</p>
+    </div>
+    <div class="metric-card">
+        <p class="label">Rechazadas</p>
+        <p class="value">{{ view.metrics.rows_rejected|default:0 }}</p>
+    </div>
+    <div class="metric-card">
+        <p class="label">% rechazo</p>
+        <p class="value">{{ view.metrics.reject_rate_percent|default:0 }}%</p>
+    </div>
+</div>
+
+<div class="snapshot-grid" style="margin-bottom:16px">
+    <div class="snapshot-card">
+        <h3>Métricas de incidencias</h3>
+        <dl>
+            <dt>Errores</dt><dd>{{ view.metrics.issues_error|default:0 }}</dd>
+            <dt>Advertencias</dt><dd>{{ view.metrics.issues_warning|default:0 }}</dd>
+            <dt>Info</dt><dd>{{ view.metrics.issues_info|default:0 }}</dd>
+            <dt>Duración</dt><dd>{{ view.metrics.duration_ms|default:0 }} ms</dd>
+        </dl>
+    </div>
+    <div class="snapshot-card">
+        <h3>Snapshot de política</h3>
+        <dl>
+            <dt>on_error</dt><dd>{{ view.policy_snapshot.on_error }}</dd>
+            <dt>max_errors</dt><dd>{{ view.policy_snapshot.max_errors }}</dd>
+            <dt>Umbral</dt><dd>{{ view.policy_snapshot.reject_threshold.mode }} · {{ view.policy_snapshot.reject_threshold.value }}</dd>
+            <dt>Motivo</dt><dd>{{ view.decision.reason }}</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Incidencias {% if view.issues %}({{ view.issues|length }} mostradas){% endif %}</h3>
+        {% if view.issues %}
+        <table class="issue-table">
+            <thead>
+                <tr>
+                    <th>Línea</th>
+                    <th>Campo</th>
+                    <th>Severidad</th>
+                    <th>Código</th>
+                    <th>Mensaje</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for issue in view.issues %}
+                <tr>
+                    <td>{{ issue.line|default:"—" }}</td>
+                    <td>{% if issue.field %}<code>{{ issue.field }}</code>{% else %}—{% endif %}</td>
+                    <td><span class="sev sev-{{ issue.severity }}">{{ issue.severity }}</span></td>
+                    <td><code>{{ issue.code }}</code></td>
+                    <td>{{ issue.message }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p style="margin:12px 0 0;color:var(--ink-tertiary);font-size:12px">Una fila con varios errores cuenta una vez en rechazadas. Detalle completo en las descargas.</p>
+        {% else %}
+        <p class="hint">Sin incidencias registradas.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="page-actions" style="margin-top:16px">
+    {% if report_url %}
+    <a class="btn btn-primary" href="{{ report_url }}">Ver evidencia / informe</a>
+    {% endif %}
+    {% if certificate_url %}
+    <a class="btn btn-secondary" href="{{ certificate_url }}">Certificado</a>
+    {% endif %}
+    {% if view.downloads.report %}
+    <a class="btn btn-secondary" href="{{ view.downloads.report }}">Descargar JSON</a>
+    {% endif %}
+    {% if view.downloads.errors %}
+    <a class="btn btn-secondary" href="{{ view.downloads.errors }}">Descargar CSV</a>
+    {% endif %}
+</div>
+{% endblock %}

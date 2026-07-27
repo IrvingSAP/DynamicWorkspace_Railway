@@ -1,0 +1,87 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Bridge FilePipe — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_run.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_bridge.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Bridge</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="run-scope" aria-label="Alcance del bridge">
+    <span class="label">Proyecto</span><strong>{{ project.slug }}</strong>
+    {% if membership %}
+    <span class="label">Rol</span><code>{{ membership.role }}</code>
+    {% elif bridge.is_company_viewer %}
+    <span class="label">Rol</span><code>CO</code>
+    {% endif %}
+    <span class="label">Kind</span><span>file_gate</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 6 · <span class="role-badge">dms_bridge</span></p>
+        <h2>Integración con FilePipe</h2>
+        <p>Los proyectos DMS de la misma compañía pueden exigir que este gate esté en verde (mismo hash) antes de transformar. La configuración del flag vive en FilePipe; aquí ve el vínculo.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_gate:bridge_hub_help' project_slug=project.slug as bridge_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=bridge_help_url %}
+        <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}" class="btn btn-secondary">Validar</a>
+    </div>
+</div>
+
+{% if not bridge.has_links %}
+<div class="empty-bridge">
+    <h3>Sin proyectos FilePipe vinculados</h3>
+    <p>El flag «Exigir FILE GATE» se activa desde un proyecto DMS de la misma compañía. Cuando alguien lo configure, el vínculo aparecerá aquí.</p>
+</div>
+{% else %}
+<div class="bridge-grid">
+    {% for link in bridge.links %}
+    <article class="bridge-card">
+        <h3>
+            {{ link.dms_slug }}
+            {% if link.enabled %}
+            <span class="status-pill is-on">activo</span>
+            {% else %}
+            <span class="status-pill is-off">inactivo</span>
+            {% endif %}
+        </h3>
+        <p>{{ link.dms_name }}</p>
+        <dl>
+            <dt>Acepta</dt>
+            <dd>{% if link.accept == "passed" %}solo passed{% else %}passed + warnings{% endif %}</dd>
+            <dt>Frescura</dt>
+            <dd>{{ link.max_age_days }} días</dd>
+            <dt>Vinculado</dt>
+            <dd>{% if link.linked_at %}{{ link.linked_at|date:"d M Y" }}{% if link.linked_by %} · {{ link.linked_by }}{% endif %}{% else %}—{% endif %}</dd>
+            <dt>Último check</dt>
+            <dd>{{ link.last_status|default:"—" }}</dd>
+        </dl>
+        <div class="page-actions" style="margin:0">
+            <a class="btn btn-secondary" href="{{ link.execute_url }}">Abrir Ejecutar</a>
+            <a class="btn btn-secondary" href="{{ link.settings_url }}">Ajustes DMS</a>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

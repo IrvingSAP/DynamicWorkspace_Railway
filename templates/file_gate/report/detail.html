@@ -1,0 +1,240 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Evidencia — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_policy.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_run.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_report.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}">Validar</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:run_result' project_slug=project.slug job_id=view.id %}">Resultado</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Informe</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="run-scope" aria-label="Alcance del informe">
+    <span class="label">Proyecto</span><strong>{{ project.slug }}</strong>
+    <span class="label">Job</span><span>{{ view.id|truncatechars:13 }}</span>
+    {% if view.published_version_number %}
+    <span class="label">Publicada usada</span><span>v{{ view.published_version_number }}</span>
+    {% endif %}
+    <span class="label">TTL</span><span>{{ view.ttl_label }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 4 · <span class="role-badge">validation_report</span></p>
+        <h2>Evidencia de validación</h2>
+        <p>
+            <code>{{ view.filename }}</code> · {{ view.size_label }}
+            {% if view.content_hash %} · sha256:{{ view.content_hash|truncatechars:12 }}{% endif %}
+            {% if view.executed_by %} · ejecutado por <code>{{ view.executed_by }}</code>{% endif %}
+        </p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_gate:report_detail_help' project_slug=project.slug job_id=view.id as report_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=report_help_url %}
+        <a href="{% url 'file_gate:run_result' project_slug=project.slug job_id=view.id %}" class="btn btn-secondary">← Resultado</a>
+        <a href="{% url 'file_gate:history_hub' project_slug=project.slug %}" class="btn btn-secondary">Historial</a>
+        {% if view.can_certificate %}
+        <a href="{{ view.certificate_url }}" class="btn btn-primary">Certificado</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if view.is_expired %}
+<div class="expired-banner">
+    <strong>Evidencia expirada.</strong>
+    El TTL de descarga (7 días) venció. Los metadatos del job siguen visibles; JSON y CSV ya no se sirven.
+</div>
+{% endif %}
+
+{% if view.report_disabled_notice %}
+<div class="note-box">
+    El contrato tiene el informe deshabilitado (<code>report_enabled: false</code>). Se muestran metadatos mínimos del job.
+</div>
+{% endif %}
+
+<div class="verdict">
+    <div class="verdict-status is-{{ view.gate_tone }}">
+        <strong>{{ view.gate_status_label }}</strong>
+        <small>{{ view.decision.reason }}</small>
+    </div>
+    <div class="verdict-copy">
+        {% if view.is_success %}
+        <h3>El archivo pasó el gate</h3>
+        {% elif view.is_partial %}
+        <h3>Recorrido incompleto (parcial)</h3>
+        {% else %}
+        <h3>El archivo no pasó el gate</h3>
+        {% endif %}
+        <p>{{ view.decision.message }}{% if view.error_message %} {{ view.error_message }}{% endif %} Este informe es inmutable: refleja el snapshot de la versión usada, no el borrador actual.</p>
+    </div>
+</div>
+
+<div class="metric-grid">
+    <div class="metric-card">
+        <p class="label">Filas leídas</p>
+        <p class="value">{{ view.metrics.rows_read|default:0 }}</p>
+    </div>
+    <div class="metric-card">
+        <p class="label">Válidas</p>
+        <p class="value">{{ view.metrics.rows_valid|default:0 }}</p>
+    </div>
+    <div class="metric-card">
+        <p class="label">Rechazadas</p>
+        <p class="value">{{ view.metrics.rows_rejected|default:0 }}</p>
+    </div>
+    <div class="metric-card">
+        <p class="label">% rechazo</p>
+        <p class="value">{{ view.metrics.reject_rate_percent|default:0 }}%</p>
+    </div>
+</div>
+
+<div class="snapshot-grid" style="margin-bottom:16px">
+    <div class="snapshot-card">
+        <h3>Snapshot de contrato</h3>
+        <dl>
+            <dt>Versión</dt><dd>{% if view.published_version_number %}v{{ view.published_version_number }}{% else %}—{% endif %}</dd>
+            <dt>Tipo</dt><dd>{{ view.schema_snapshot.file_type_code|default:"—" }}</dd>
+            <dt>Campos</dt><dd>{{ view.schema_snapshot.fields_count|default:"—" }}</dd>
+            <dt>Formatos</dt><dd>{{ view.report_flags.formats|join:" · " }}</dd>
+        </dl>
+    </div>
+    <div class="snapshot-card">
+        <h3>Snapshot de política</h3>
+        <dl>
+            <dt>on_error</dt><dd>{{ view.policy_snapshot.on_error|default:"—" }}</dd>
+            <dt>max_errors</dt><dd>{{ view.policy_snapshot.max_errors|default:"—" }}</dd>
+            <dt>Umbral</dt>
+            <dd>
+                {% if view.policy_snapshot.reject_threshold %}
+                {{ view.policy_snapshot.reject_threshold.mode }} · {{ view.policy_snapshot.reject_threshold.value }}
+                {% else %}—{% endif %}
+            </dd>
+            <dt>Duración</dt><dd>{{ view.metrics.duration_ms|default:0 }} ms</dd>
+        </dl>
+    </div>
+</div>
+
+<h3 class="form-section-title">Descargas</h3>
+<div class="download-grid">
+    {% if view.downloads.report %}
+    <a class="download-card" href="{{ view.downloads.report }}">
+        <strong>JSON completo</strong>
+        <span>gate_report.json · resumen + issues + snapshots</span>
+    </a>
+    {% else %}
+    <div class="download-card is-disabled" aria-disabled="true">
+        <strong>JSON completo</strong>
+        <span>{% if view.is_expired %}No disponible — TTL vencido{% elif not view.can_download %}Sin permiso o no habilitado{% else %}No disponible{% endif %}</span>
+    </div>
+    {% endif %}
+
+    {% if view.downloads.errors %}
+    <a class="download-card" href="{{ view.downloads.errors }}">
+        <strong>CSV de incidencias</strong>
+        <span>gate_issues.csv · valores completos</span>
+    </a>
+    {% else %}
+    <div class="download-card is-disabled" aria-disabled="true">
+        <strong>CSV de incidencias</strong>
+        <span>{% if view.is_expired %}No disponible — TTL vencido{% elif not view.can_view_issues %}Sin permiso o sin detalle de filas{% else %}No disponible{% endif %}</span>
+    </div>
+    {% endif %}
+
+    {% if view.can_certificate %}
+    <a class="download-card" href="{{ view.certificate_url }}">
+        <strong>Certificado ligero</strong>
+        <span>Hash + versión + resultado · imprimible</span>
+    </a>
+    {% endif %}
+</div>
+
+{% if view.can_view_issues %}
+<div class="panel">
+    <div class="panel-body">
+        <div class="report-toolbar">
+            <h3 class="form-section-title" style="margin:0">Incidencias {% if view.issues_count %}({{ view.issues_count }}){% endif %}</h3>
+            <div class="toggles">
+                {% if view.can_reveal_values %}
+                <label class="toggle-mask" title="Solo PA/ED">
+                    <input type="checkbox" id="toggle-reveal-values">
+                    Revelar valores
+                </label>
+                {% else %}
+                <span class="hint" style="font-size:12px">Valores ofuscados (su rol no puede revelarlos)</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if view.issues %}
+        <div class="filter-row" role="group" aria-label="Filtrar severidad">
+            <button type="button" class="filter-chip is-active" data-sev-filter="all">Todas</button>
+            <button type="button" class="filter-chip" data-sev-filter="error">Errores</button>
+            <button type="button" class="filter-chip" data-sev-filter="warning">Advertencias</button>
+            <button type="button" class="filter-chip" data-sev-filter="info">Info</button>
+        </div>
+
+        <table class="issue-table">
+            <thead>
+                <tr>
+                    <th>Línea</th>
+                    <th>Campo</th>
+                    <th>Severidad</th>
+                    <th>Código</th>
+                    <th>Mensaje</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for issue in view.issues %}
+                <tr data-sev="{{ issue.severity }}">
+                    <td>{{ issue.line|default:"—" }}</td>
+                    <td>{% if issue.field %}<code>{{ issue.field }}</code>{% else %}—{% endif %}</td>
+                    <td><span class="sev sev-{{ issue.severity }}">{{ issue.severity }}</span></td>
+                    <td><code>{{ issue.code }}</code></td>
+                    <td>{{ issue.message }}</td>
+                    <td><span class="value-masked" data-raw-value="{{ issue.value_raw }}">{{ issue.value_display }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p style="margin:12px 0 0;color:var(--ink-tertiary);font-size:12px">
+            Valores ofuscados por defecto. Una fila con varios errores cuenta una vez en rechazadas.
+        </p>
+        {% else %}
+        <p class="hint">Sin incidencias registradas.</p>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="note-box">
+    Su rol no permite ver el detalle de incidencias por fila. Puede consultar el resumen y el certificado.
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if view.can_view_issues %}
+<script src="{% static 'js/file_gate-report.js' %}"></script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Integración FILE GATE — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_bridge.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:file_gate_bridge_settings' project_slug=project.slug %}">Integración FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FilePipe · ayuda bridge</p>
+        <h2>Pre-check FILE GATE</h2>
+        <p>Cuando el flag está activo, el job de transformación no avanza si no hay una corrida FILE GATE aceptada con el mismo hash dentro de la ventana de frescura.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'dms:file_gate_bridge_settings' project_slug=project.slug %}" class="btn btn-secondary">← Volver</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <ul class="hint">
+            <li>Matching por <strong>content hash</strong>, no por nombre de archivo.</li>
+            <li><code>failed</code>, <code>partial</code> y <code>error</code> nunca abren el paso.</li>
+            <li>Desactivar el flag restaura el comportamiento habitual de FilePipe; el vínculo puede permanecer.</li>
+            <li>No hay bypass en el MVP, ni para PA.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

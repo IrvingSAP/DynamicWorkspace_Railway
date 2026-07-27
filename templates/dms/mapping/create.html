@@ -64,7 +64,7 @@
                         <div class="field{% if errors.slug %} has-error{% endif %}">
                             <label for="slug">Nombre corto (código) <span class="req">*</span></label>
                             <input type="text" id="slug" name="slug" class="mono" maxlength="220" placeholder="nomina-sap" value="{{ posted.slug }}" required>
-                            <p class="hint">Único en la organización</p>
+                            <p class="hint">Único en la organización · compartido con Worksheets y FILE GATE</p>
                             {% for msg in errors.slug %}
                             <p class="field-error">{{ msg }}</p>
                             {% endfor %}

@@ -91,7 +91,7 @@
                 <span class="hint">Política de error del proyecto: <code>skip_row</code> / <code>abort</code></span>
                 <div class="wizard-footer-actions">
                     <a href="{% url 'dms:source_step4' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
-                    <a href="{% url 'dms:source_step6' project_slug=project.slug %}" class="btn btn-primary">Siguiente →</a>
+                    <button type="button" id="btn-content-rules-next" class="btn btn-primary" data-next="{% url 'dms:source_step6' project_slug=project.slug %}">Siguiente →</button>
                 </div>
             </div>
         </div>

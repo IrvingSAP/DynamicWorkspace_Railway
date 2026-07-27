@@ -1,0 +1,133 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 3 — Revisión — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_policy.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:policy_hub' project_slug=project.slug %}">Políticas</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Paso 3</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_gate/policy/_project_scope.html" %}
+{% include "file_gate/policy/_policy_persistence.html" %}
+{% include "file_gate/schema/_source_publish.html" %}
+
+<div id="policy-step-root" data-step="3" data-can-edit="{% if can_edit_source %}1{% else %}0{% endif %}">
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Paso 3 de 3 · <span class="role-badge">policy_review</span></p>
+        <h2>Revisión de la política</h2>
+        <p>Confirme el orden de decisión antes de publicar el contrato que usará el motor de validación.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_gate:policy_step3_help' project_slug=project.slug as policy_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=policy_help_url %}
+        <a href="{% url 'file_gate:policy_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
+    </div>
+</div>
+
+{% include "file_gate/policy/_wizard_stepper.html" %}
+
+<div class="policy-signature" aria-label="Política configurada">
+    <div class="policy-node">
+        <p class="policy-node-label">Recorrido</p>
+        <strong>{{ policy.on_error }}</strong>
+        <p>Corta al acumular {{ policy.max_errors }} errores</p>
+    </div>
+    <div class="policy-arrow" aria-hidden="true">→</div>
+    <div class="policy-node is-decision">
+        <p class="policy-node-label">Tolerancia</p>
+        <strong>Máximo {{ wizard.threshold_label }}</strong>
+        <p>Igual cumple; al superar falla</p>
+    </div>
+    <div class="policy-arrow" aria-hidden="true">→</div>
+    <div class="policy-node">
+        <p class="policy-node-label">Fatal</p>
+        <strong>Abortar y fallar</strong>
+        <p>Prioridad sobre el umbral</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <p id="step-save-status" class="step-save-status" aria-live="polite"></p>
+        <h3 class="form-section-title">Matriz de resultados</h3>
+        <table class="decision-table">
+            <thead>
+                <tr><th>Condición</th><th>Evaluación</th><th>Resultado</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Error fatal</td>
+                    <td>Detener inmediatamente</td>
+                    <td><span class="result-pill is-failed">failed</span></td>
+                </tr>
+                <tr>
+                    <td>{{ policy.max_errors }} errores antes de EOF</td>
+                    <td>Corte por límite; archivo incompleto</td>
+                    <td><span class="result-pill is-partial">partial</span></td>
+                </tr>
+                <tr>
+                    <td>Rechazo &gt; {{ wizard.threshold_label }}</td>
+                    <td>Umbral superado</td>
+                    <td><span class="result-pill is-failed">failed</span></td>
+                </tr>
+                <tr>
+                    <td>Rechazo ≤ {{ wizard.threshold_label }}, con advertencias</td>
+                    <td>Dentro de tolerancia</td>
+                    <td><span class="result-pill is-passed">passed_with_warnings</span></td>
+                </tr>
+                <tr>
+                    <td>Rechazo ≤ {{ wizard.threshold_label }}, sin advertencias</td>
+                    <td>Dentro de tolerancia</td>
+                    <td><span class="result-pill is-passed">passed</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title" style="margin-top:24px">Snapshot de política</h3>
+        <pre class="policy-json">{{ policy_json }}</pre>
+
+        <div class="note-box" style="margin-top:18px">
+            <strong>Publicación conjunta:</strong> la política queda congelada al publicar el contrato (esquema + política).
+        </div>
+
+        <div class="wizard-footer">
+            <span class="hint">Cambios posteriores se realizan en un nuevo borrador tras publicar.</span>
+            <div class="wizard-footer-actions">
+                <a href="{% url 'file_gate:policy_step2' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
+                {% if can_edit_source %}
+                <button type="button" class="btn btn-ghost" data-action="save-policy" data-can-edit="1">Confirmar revisión</button>
+                <button type="button"
+                        class="btn btn-primary"
+                        data-action="publish-version"
+                        data-draft-label="borrador v{{ version_publish.draft_version_number }}"
+                        data-next="{% url 'file_gate:schema_hub' project_slug=project.slug %}"
+                        data-status-target="step-save-status">
+                    Publicar contrato v{{ version_publish.draft_version_number }}
+                </button>
+                {% else %}
+                <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}" class="btn btn-primary">Ir al contrato →</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/source_profile-publish.js' %}"></script>
+{% endblock %}

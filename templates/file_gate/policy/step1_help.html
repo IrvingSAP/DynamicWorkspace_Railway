@@ -1,0 +1,105 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Paso 1 políticas — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_policy.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:policy_hub' project_slug=project.slug %}">Políticas</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:policy_step1' project_slug=project.slug %}">Paso 1</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 2 · ayuda</p>
+        <h2>Paso 1 — Recolección y corte</h2>
+        <p>Define <strong>cuánto</strong> recorre el motor y <strong>cuándo</strong> deja de acumular incidencias de error.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:policy_step1' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 1</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Estrategia ante errores de fila</h3>
+        <table class="issue-table">
+            <thead><tr><th>Opción</th><th>Comportamiento</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Recolectar incidencias</strong> (<code>collect_all</code>)</td>
+                    <td>Continúa mientras el archivo sea legible y guarda errores hasta el tope. Es la única estrategia del MVP.</td>
+                </tr>
+                <tr>
+                    <td><strong>Solo advertir</strong> (<code>warn_only</code>)</td>
+                    <td>Deshabilitada (Fase 2). No rechazaría filas por ciertas reglas.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px"><code>collect_all</code> <strong>no</strong> significa ilimitado: siempre hay un tope de errores.</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Error fatal</h3>
+        <ul class="hint">
+            <li><strong>Detener ante el primer error fatal</strong> está siempre activo en el MVP (no se puede desactivar).</li>
+            <li>Un fatal es un fallo estructural: encoding ilegible, JSON/XML irrecuperable, hoja inexistente, archivo corrupto, etc.</li>
+            <li>Produce resultado <code>failed</code> de inmediato; tiene prioridad sobre umbral y <code>max_errors</code>.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Máximo de errores (<code>max_errors</code>)</h3>
+        <table class="issue-table">
+            <thead><tr><th>Detalle</th><th>Regla</th></tr></thead>
+            <tbody>
+                <tr><td>Rango</td><td>1 a 10 000 (default típico: 500).</td></tr>
+                <tr><td>Qué cuenta</td><td>Solo incidencias con severidad <code>error</code>. Advertencias e info no consumen el tope.</td></tr>
+                <tr><td>Al alcanzar el tope</td><td>La corrida termina como <code>partial</code>: el archivo no se recorrió completo.</td></tr>
+                <tr><td>Qué no implica</td><td>No se asume que el resto del archivo sea válido.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px">Puede ajustar el valor con el deslizador o el campo numérico; ambos se sincronizan.</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Botones y acciones</h3>
+        <table class="issue-table">
+            <thead><tr><th>Control</th><th>Acción</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Ayuda</strong></td><td>Abre esta guía.</td></tr>
+                <tr><td><strong>← Resumen</strong></td><td>Vuelve al hub de políticas sin guardar automáticamente.</td></tr>
+                <tr><td><strong>Cancelar</strong></td><td>Igual que resumen: sale del paso.</td></tr>
+                <tr><td><strong>Guardar borrador</strong></td><td>Persiste la recolección en el borrador y permanece en el paso.</td></tr>
+                <tr><td><strong>Guardar y continuar →</strong></td><td>Guarda y avanza al Paso 2 (umbral).</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px">Los cambios quedan en <code>config.gate_policy</code> del borrador. Solo afectan validaciones nuevas tras <strong>publicar el contrato</strong>.</p>
+    </div>
+</div>
+{% endblock %}

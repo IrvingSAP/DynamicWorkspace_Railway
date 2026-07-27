@@ -22,6 +22,37 @@ ROLE_LABELS = {
     ProjectMembership.ROLE_GE: "GE — Generar",
 }
 
+# Etiquetas de producto para mensajes de slug compartido entre apps.
+KIND_APP_LABELS = {
+    Project.KIND_WORKSPACE: "Worksheets",
+    Project.KIND_DMS: "FilePipe (Data Mapping)",
+    Project.KIND_FILE_GATE: "FILE GATE (Validador)",
+}
+
+
+def kind_app_label(project_kind: str) -> str:
+    return KIND_APP_LABELS.get(project_kind) or project_kind or "otra aplicación"
+
+
+def find_project_by_slug(company, slug: str) -> Project | None:
+    slug = (slug or "").strip().lower()
+    if not slug:
+        return None
+    return Project.objects.filter(company=company, slug=slug).only(
+        "id", "name", "slug", "project_kind"
+    ).first()
+
+
+def slug_duplicate_message(existing: Project) -> str:
+    """Mensaje inline cuando el slug ya existe (único por compañía entre todas las apps)."""
+    app_label = kind_app_label(existing.project_kind)
+    return (
+        f"El código «{existing.slug}» ya está en uso por el proyecto "
+        f"«{existing.name}» en {app_label}. "
+        "Elija otro código; el slug es único en toda la compañía "
+        "(Worksheets, FilePipe y FILE GATE)."
+    )
+
 
 def _optional_model(app_label: str, model_name: str):
     try:
@@ -173,13 +204,9 @@ def validate_project_data(data: dict, company, project: Project | None = None) -
             "Use solo letras minúsculas, números y guiones (sin espacios)."
         )
     else:
-        qs = Project.objects.filter(company=company, slug=slug)
-        if project is not None:
-            qs = qs.exclude(pk=project.pk)
-        if qs.exists():
-            errors.setdefault("slug", []).append(
-                "Ya existe un proyecto con este slug en su compañía."
-            )
+        existing = find_project_by_slug(company, slug)
+        if existing is not None and (project is None or existing.pk != project.pk):
+            errors.setdefault("slug", []).append(slug_duplicate_message(existing))
 
     description = data.get("description", "")
     if len(description) > 5000:
@@ -224,10 +251,16 @@ def create_project(user, data: dict) -> OperationResult:
             )
     except IntegrityError:
         logger.exception("create_project IntegrityError slug=%s", data.get("slug"))
+        existing = find_project_by_slug(company, data.get("slug", ""))
+        slug_msg = (
+            slug_duplicate_message(existing)
+            if existing is not None
+            else "Ya existe un proyecto con este slug en su compañía."
+        )
         return OperationResult.failure(
             "duplicate",
             "Revise los datos marcados; no se pudo guardar.",
-            errors={"slug": ["Ya existe un proyecto con este slug en su compañía."]},
+            errors={"slug": [slug_msg]},
         )
     except Exception:
         logger.exception("create_project unexpected")

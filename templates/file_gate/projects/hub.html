@@ -1,0 +1,207 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ project.name }} — FILE GATE{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Validador</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ project.slug }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">
+            <span class="cell-badge">{{ project.slug }}</span>
+            {% if hub.visibility == 'company' %}
+            <span class="visibility-badge visibility-badge--public">{{ hub.visibility_label }}</span>
+            {% else %}
+            <span class="visibility-badge visibility-badge--private">{{ hub.visibility_label }}</span>
+            {% endif %}
+            {% if hub.is_pa %}
+            <span class="perm-badge perm-badge--admin">{{ hub.role_label }}</span>
+            {% else %}
+            <span class="perm-badge">{{ hub.role_label }}</span>
+            {% endif %}
+        </p>
+        <h2>{{ project.name }}</h2>
+        {% if project.description %}
+        <p>{{ project.description }}</p>
+        {% else %}
+        <p>Proyecto FILE GATE: validar archivos contra un contrato, sin transformar ni generar salida de negocio.</p>
+        {% endif %}
+    </div>
+    <div class="page-actions">
+        {% url 'file_gate:project_hub_help' project_slug=project.slug as gate_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=gate_help_url %}
+        {% if can_edit_definition %}
+        <button type="button"
+                class="btn btn-primary"
+                data-action="publish-version"
+                data-draft-label="borrador v{{ version_publish.draft_version_number }}"
+                data-next="{% url 'file_gate:project_hub' project_slug=project.slug %}"
+                data-status-target="hub-publish-status"
+                {% if not hub.can_publish %}disabled title="Complete el contrato (6 pasos) y las políticas antes de publicar"{% endif %}>
+            Publicar contrato v{{ version_publish.draft_version_number }}
+        </button>
+        {% endif %}
+        <a href="{% url 'file_gate:project_list' %}" class="btn btn-secondary">← Proyectos</a>
+    </div>
+</div>
+
+<p id="hub-publish-status" class="step-save-status" aria-live="polite"></p>
+
+<div id="dms-source-publish-config"
+     data-publish-url="{{ source_publish_url }}"
+     data-csrf-token="{{ csrf_token }}"
+     hidden></div>
+
+<div class="version-strip">
+    <strong>Borrador:</strong> v{{ version_publish.draft_version_number }}
+    ·
+    <strong>Versión activa:</strong> {{ version_publish.published_version_label }}
+</div>
+
+<div class="lifecycle-stepper" aria-label="Ciclo del proyecto">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Módulo 1 — Contrato</p>
+        <ol class="lifecycle-steps">
+            <li>
+                <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.schema_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.schema_complete %}✓{% else %}1{% endif %}</span> Esquema / contrato
+                </a>
+            </li>
+        </ol>
+    </div>
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Módulo 2 — Políticas</p>
+        <ol class="lifecycle-steps">
+            <li>
+                <a href="{% url 'file_gate:policy_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.policy_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.policy_complete %}✓{% else %}2{% endif %}</span> Políticas
+                </a>
+            </li>
+        </ol>
+    </div>
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Módulos 3–4 — Validar e informe</p>
+        <ol class="lifecycle-steps">
+            <li>
+                <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.run_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.run_complete %}✓{% else %}3{% endif %}</span> Validar archivo
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.report_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.report_complete %}✓{% else %}4{% endif %}</span> Informe / evidencia
+                </a>
+            </li>
+        </ol>
+    </div>
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Módulo 5 — Auditoría</p>
+        <ol class="lifecycle-steps">
+            <li>
+                <a href="{% url 'file_gate:history_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.history_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.run_complete %}✓{% else %}5{% endif %}</span> Historial
+                </a>
+            </li>
+        </ol>
+    </div>
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Módulo 6 — FilePipe</p>
+        <ol class="lifecycle-steps">
+            <li>
+                <a href="{% url 'file_gate:bridge_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.bridge_step_class }}">
+                    <span class="lifecycle-step-num">6</span> Bridge FilePipe
+                </a>
+            </li>
+        </ol>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Progreso del contrato">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Pasos del contrato</p>
+        <p class="stat-value">{{ hub.schema_steps_complete }} / {{ hub.schema_steps_total }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Tipo de archivo</p>
+        <p class="stat-value" style="font-size:16px">{{ hub.file_type_label }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Campos</p>
+        <p class="stat-value">{{ hub.fields_count }}</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Contrato de validación</h3>
+        <p class="hint">
+            Define qué debe cumplir el archivo (tipo, captura, campos, reglas e informe).
+            No transforma ni genera salida — eso es FilePipe.
+            {% if hub.has_published_schema %}
+            Hay una versión publicada lista para el motor de validación (módulo posterior).
+            {% else %}
+            Publique el contrato cuando el esquema y las políticas estén listos.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}" class="btn btn-secondary">Ver resumen del esquema</a>
+            <a href="{% url hub.continue_schema_url_name project_slug=project.slug %}" class="btn btn-primary">Continuar edición</a>
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Políticas de validación</h3>
+        <p class="hint">
+            Estrategia {{ hub.policy_collection_label }} · umbral {{ hub.policy_threshold_label }}.
+            Pasos {{ hub.policy_steps_complete }} / {{ hub.policy_steps_total }}.
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'file_gate:policy_hub' project_slug=project.slug %}" class="btn btn-secondary">Ver políticas</a>
+            <a href="{% url hub.continue_policy_url_name project_slug=project.slug %}" class="btn btn-primary">Editar políticas</a>
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Validar archivo</h3>
+        <p class="hint">
+            {% if hub.has_published_schema %}
+            Suba un archivo y compruébelo contra la versión publicada. No transforma ni genera salida de negocio.
+            {% else %}
+            Publique el contrato para habilitar la validación de archivos.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a validar</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/source_profile-publish.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Paso 2 políticas — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_policy.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:policy_hub' project_slug=project.slug %}">Políticas</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:policy_step2' project_slug=project.slug %}">Paso 2</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 2 · ayuda</p>
+        <h2>Paso 2 — Umbral de rechazo</h2>
+        <p>Establece la <strong>tolerancia máxima</strong> de filas rechazadas. El gate falla solo cuando se <strong>supera</strong> ese límite.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:policy_step2' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 2</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Unidad de decisión</h3>
+        <table class="issue-table">
+            <thead><tr><th>Modo</th><th>Cómo se mide</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Porcentaje</strong> (<code>percent</code>)</td>
+                    <td><code>(rechazadas / evaluadas) × 100</code></td>
+                    <td>Umbral 1 %; 15 de 1000 → falla</td>
+                </tr>
+                <tr>
+                    <td><strong>Cantidad</strong> (<code>count</code>)</td>
+                    <td>Número absoluto de filas rechazadas</td>
+                    <td>Umbral 10; 11 rechazadas → falla</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Semántica del límite</h3>
+        <ul class="hint">
+            <li>El valor es el <strong>máximo permitido</strong>.</li>
+            <li>Se falla con comparación estricta <code>&gt;</code>: igualar el umbral <strong>cumple</strong>; superarlo falla.</li>
+            <li>Con valor <strong>0</strong>, cualquier fila rechazada hace fallar el gate.</li>
+            <li><code>rows_evaluated = rows_valid + rows_rejected</code>. No entran encabezados, comentarios ni filas omitidas por captura.</li>
+            <li>Una fila con varios errores cuenta <strong>una sola vez</strong> en rechazadas.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Simulador de decisión</h3>
+        <p class="hint">Pruebe la regla antes de guardarla. Introduzca filas evaluadas y rechazadas; el panel muestra si el resultado sería PASSED o FAILED según el umbral actual del formulario (aún sin guardar).</p>
+        <ul class="hint">
+            <li>No ejecuta un archivo real: solo aplica la fórmula del umbral.</li>
+            <li>Los fatales y el corte por <code>max_errors</code> tienen prioridad en una corrida real y no se simulan aquí.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Botones y acciones</h3>
+        <table class="issue-table">
+            <thead><tr><th>Control</th><th>Acción</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Ayuda</strong></td><td>Abre esta guía.</td></tr>
+                <tr><td><strong>← Resumen</strong></td><td>Vuelve al hub de políticas.</td></tr>
+                <tr><td><strong>← Anterior</strong></td><td>Regresa al Paso 1 (recolección).</td></tr>
+                <tr><td><strong>Guardar borrador</strong></td><td>Persiste el umbral en el borrador y permanece en el paso.</td></tr>
+                <tr><td><strong>Guardar y revisar →</strong></td><td>Guarda y avanza al Paso 3 (revisión / publicación).</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px">Hasta que publique el contrato, las validaciones seguirán usando el umbral de la versión publicada anterior.</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+from django.contrib import messages
+from django.shortcuts import redirect, render
+
+from apps.core.decorators import security_complete_required, user_type_required
+from apps.file_gate.bridge.services import dms_bridge_service
+from apps.file_gate.projects.services import gate_project_service
+from apps.file_gate.report.services import validation_report_service as report_svc
+from apps.projects.services import project_service
+
+
+def _bridge_view(view_func):
+    return security_complete_required(user_type_required("UF")(view_func))
+
+
+def _get_gate_project_or_redirect(request, project_slug: str):
+    project = gate_project_service.get_project_for_user(request.user, project_slug)
+    if project is None:
+        messages.error(request, "No tiene acceso a este proyecto FILE GATE.")
+        return None
+    return project
+
+
+def _base_context(request, project) -> dict:
+    membership = project_service.get_membership(request.user, project)
+    return {
+        "project": project,
+        "membership": membership,
+        "company": project.company,
+        "app_nav_active": "file_gate",
+        "file_gate_nav_open": True,
+    }
+
+
+@_bridge_view
+def hub(request, project_slug: str):
+    project = _get_gate_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_gate:project_list")
+    if not report_svc.can_view_report(request.user, project):
+        messages.error(request, "No tiene permiso para ver la integración FilePipe.")
+        return redirect("file_gate:project_list")
+
+    ctx = _base_context(request, project)
+    ctx["bridge"] = dms_bridge_service.build_hub_context(request.user, project)
+    return render(request, "file_gate/bridge/hub.html", ctx)
+
+
+@_bridge_view
+def hub_help(request, project_slug: str):
+    project = _get_gate_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_gate:project_list")
+    ctx = _base_context(request, project)
+    return render(request, "file_gate/bridge/hub_help.html", ctx)

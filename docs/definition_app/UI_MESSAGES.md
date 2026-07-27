@@ -36,6 +36,7 @@ flowchart LR
 | Template listado / delete | `dwConfirmWarning` §3.3 · `data-dw-delete` |
 | Mensaje específico de app | `UI_MESSAGES.md` §3.5+ y doc de la app |
 | DMS SourceProfile / TargetProfile / FieldMapping / TransformRules | `UI_MESSAGES.md` §3.8 · [`source_definition.md`](../definition_app_DMS/source_definition.md) · [`target_definition.md`](../definition_app_DMS/target_definition.md) · [`field_mapping.md`](../definition_app_DMS/field_mapping.md) · [`transform_rules.md`](../definition_app_DMS/transform_rules.md) |
+| FILE GATE (contrato, políticas, validar, informe, historial, bridge) | `UI_MESSAGES.md` §3.9 · [`../FILE_GATE.md`](../FILE_GATE.md) · [`../definition_app_FILE_GATE/`](../definition_app_FILE_GATE/) |
 
 ---
 
@@ -225,6 +226,126 @@ Fuente funcional: [`../definition_app_DMS/source_definition.md`](../definition_a
 
 > **Advertencias:** no bloquean guardar (modo no strict); en publicar (`strict`) los obligatorios sin mapeo sí bloquean. Se muestran con `dwShowMessage('warning', …)` o `messages.warning` tras PRG.
 
+### 3.9 Mensajes específicos — `apps.file_gate` (FILE GATE)
+
+Fuente funcional: [`../FILE_GATE.md`](../FILE_GATE.md) · [`../definition_app_FILE_GATE/`](../definition_app_FILE_GATE/) (módulos 1–6).  
+Código: `apps/file_gate/` · pre-check DMS en `apps/file_gate/bridge/` + `DmsProjectConfig.file_gate_*`.
+
+Códigos adicionales usados en FILE GATE (además de §2):
+
+| `error_code` | Uso |
+|--------------|-----|
+| `forbidden` | Sin permiso / kind incorrecto (equivalente práctico a `unauthorized`). |
+| `gone` | Evidencia o archivo de descarga fuera de TTL / ya no en storage (HTTP 410). |
+| `config_invalid` / `gate_not_published` / `no_hash` / `no_matching_job` / `status_not_accepted` / `stale` | Pre-check bridge (HTTP 409 en Ejecutar DMS). |
+
+#### Acceso y proyectos
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin acceso al proyecto FILE GATE | `error` | No tiene acceso a este proyecto FILE GATE. |
+| Solo UF crea proyectos | `error` | Solo usuarios UF pueden crear proyectos FILE GATE. |
+| Validación create | `error` + inline | Revise los datos marcados; no se pudo guardar. |
+| Slug duplicado | `error` | Ya existe un proyecto con este slug en su compañía. |
+| Proyecto creado | `success` | Proyecto FILE GATE creado correctamente. |
+| Kind incorrecto (servicio) | `error` | Este proyecto no es de tipo FILE GATE. |
+
+#### Módulo 1 — Contrato / esquema
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Contrato guardado (borrador) | `success` | Contrato de validación guardado correctamente. |
+| Validación bloqueante al guardar | `error` + inline | Revise los datos del contrato de validación. |
+| Sin permiso editar contrato | `error` | No tiene permiso para editar el contrato de este proyecto. |
+| JSON de contrato inválido (POST) | `error` | JSON de contrato inválido. |
+| Tipo sin editor de campos (paso 4) | `warning` | El tipo de archivo seleccionado aún no tiene editor de campos. Elija txt_fixed, csv, txt_delimited, xlsx, json o xml en el paso 1. |
+| Sin permiso publicar | `error` | No tiene permiso para publicar el contrato de este proyecto. |
+| Sin borrador | `error` | No hay borrador disponible para publicar. |
+| Borrador sin perfil | `error` | El borrador no tiene contrato de validación. |
+| Publicar con esquema inválido | `error` + inline | Complete y corrija el contrato antes de publicar. |
+| Publicar con política inválida | `error` + inline | Complete y corrija la política de validación antes de publicar. |
+| Informe deshabilitado al publicar | `warning` | El informe del gate está deshabilitado; se recomienda dejarlo activo. |
+| Publicación OK | `success` | Contrato v{N} publicado correctamente. Nuevo borrador v{N+1} listo para edición. |
+| Error al publicar | `error` | Ocurrió un error al publicar. Si persiste, contacte al administrador. |
+
+> Guardar el contrato reutiliza `source_persistence_service.save_source`; el texto anterior aplica cuando `project_kind = file_gate`. En proyectos DMS sigue §3.8 («Perfil de origen…»).
+
+#### Módulo 2 — Políticas
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Política guardada | `success` | Política de validación guardada correctamente. |
+| Sin permiso editar políticas | `error` | No tiene permiso para editar las políticas de este proyecto. |
+| Validación bloqueante | `error` + inline | Revise los datos de la política; no se pudo guardar. |
+| JSON de política inválido | `error` | JSON de política inválido. |
+| Inline (ejemplos) | — | En el MVP solo se admite la estrategia Recolectar incidencias (collect_all). / El aborto ante error fatal debe permanecer activo. / Indique un máximo de errores entre {min} y {max}. / Seleccione umbral por cantidad o por porcentaje. / El umbral por cantidad debe ser un entero entre 0 y {max}. / El umbral porcentual debe estar entre 0 y 100. |
+| Warning umbral 100% | `warning` | Con 100% solo un error fatal o un corte haría fallar el gate. |
+| Warning max_errors bajo | `warning` | Un tope muy bajo aumenta la probabilidad de resultado partial. |
+
+#### Módulo 3 — Validar (run)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin contrato publicado | `error` | Publique el contrato antes de validar. |
+| Sin permiso ejecutar | `error` | No tiene permiso para validar archivos en este proyecto. |
+| Sin archivo | `error` + inline | Seleccione un archivo para validar. |
+| Extensión no permitida | `error` + inline | La extensión del archivo no coincide con el contrato publicado. |
+| Archivo vacío | `error` + inline | El archivo está vacío. |
+| Archivo supera límite | `error` + inline | El archivo supera el límite de {size}. |
+| Error al guardar upload | `error` | Ocurrió un error al guardar. Si persiste, contacte al administrador. |
+| Error técnico del motor | `error` | Ocurrió un error al validar. Si persiste, contacte al administrador. |
+| Validación finalizada | `success` | Validación finalizada: {estado} ({rechazadas} de {leídas} filas rechazadas). |
+| Job no encontrado | `error` | No se encontró la validación solicitada. |
+
+Estados de `{estado}`: Aprobado · Aprobado con advertencias · Rechazado · Parcial · Error técnico.
+
+#### Módulo 4 — Informe / evidencia / certificado
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin permiso ver evidencia | `error` | No tiene permiso para ver la evidencia. |
+| Sin permiso ver certificado | `error` | No tiene permiso para ver el certificado. |
+| Job no final | `warning` | La validación aún no finalizó. |
+| Sin permiso descargar | JSON 403 | No tiene permiso para descargar la evidencia de este job. |
+| TTL vencido | JSON 410 (`gone`) | La evidencia expiró (TTL de 7 días). Los metadatos del job siguen disponibles. |
+| Informe deshabilitado en contrato | JSON 400 | El contrato deshabilitó el informe descargable. |
+| Formato no habilitado | JSON 400 | El formato JSON/CSV no está habilitado en el contrato. |
+| Sin detalle por fila | JSON 400 | El contrato no incluye detalle de incidencias por fila. |
+| Archivo no encontrado | JSON 404 | Archivo de evidencia no encontrado. |
+| Archivo ya no en storage | JSON 410 | El archivo de evidencia ya no está disponible. |
+
+#### Módulo 5 — Historial
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin permiso ver historial | `error` | No tiene permiso para ver el historial de este proyecto. |
+| Versión no numérica (filtro) | inline | La versión debe ser un número. |
+| Rango de fechas invertido | inline | «Hasta» no puede ser anterior a «Desde». |
+| Fecha inválida | inline | Fecha inválida (formato AAAA-MM-DD). |
+
+> Vacío / sin resultados de filtro: copy en plantilla (no `messages`); no son errores.
+
+#### Módulo 6 — Bridge FilePipe
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin permiso ver bridge (FG) | `error` | No tiene permiso para ver la integración FilePipe. |
+| Sin permiso configurar (DMS) | `error` | No tiene permiso para configurar la integración FILE GATE. |
+| Solo aplica a DMS | `error` | La integración solo aplica a proyectos FilePipe (DMS). |
+| Validación config | `error` + inline | Revise los campos de la integración FILE GATE. |
+| Inline proyecto / frescura | — | Elija un proyecto FILE GATE. / Proyecto FILE GATE inválido o de otra compañía. / La frescura debe ser un número ≥ 1. / Política de aceptación inválida. |
+| Integración guardada (ON) | `success` | Integración FILE GATE guardada. |
+| Integración desactivada (OFF) | `success` | Integración FILE GATE desactivada. FilePipe ejecutará sin pre-check. |
+| Aviso tipos distintos (B9) | hint UI | El tipo de archivo del contrato FILE GATE ({gate}) no coincide con el origen DMS ({dms}). |
+| Pre-check `config_invalid` | JSON 409 | La integración FILE GATE está mal configurada. Revise el proyecto vinculado. |
+| Pre-check `gate_not_published` | JSON 409 | El proyecto FILE GATE no tiene un contrato publicado. Publique el esquema antes de transformar. |
+| Pre-check `no_hash` | JSON 409 | El archivo de entrada no tiene hash. Vuelva a subirlo antes de transformar. |
+| Pre-check `no_matching_job` | JSON 409 | Valide este archivo en FILE GATE antes de transformar. No hay una corrida aceptada con el mismo contenido. |
+| Pre-check `status_not_accepted` | JSON 409 | La última validación FILE GATE de este archivo no está aceptada. Corrija el archivo o revise la evidencia antes de transformar. |
+| Pre-check `stale` | JSON 409 | La validación FILE GATE de este archivo expiró por frescura. Vuelva a validarlo en FILE GATE. |
+
+> El pre-check **no** usa bypass (D6). En hub Ejecutar DMS el botón puede ir deshabilitado; el mismo texto aplica si se fuerza el POST.
+
 ---
 
 ## 4. Qué no mostrar al usuario
@@ -299,7 +420,7 @@ return redirect("company:detail", pk=result.company.pk)
 | Validación por campo en formularios del wizard | Inline | Bajo el input / lista de errores del paso; no sustituir con modal |
 | Éxito tras navegación PRG | Modal | `messages.*` → `#dw-flash-messages` → cola al cargar |
 
-Textos literales: solo catálogo §3 (p. ej. `session_expired` en §3.4).
+Textos literales: solo catálogo §3 (p. ej. `session_expired` en §3.4; FILE GATE en §3.9).
 
 ---
 
@@ -353,7 +474,7 @@ class OperationResult:
 - [ ] ¿Excepciones técnicas van a `logger.exception`?
 - [ ] ¿Eliminar usa `dwConfirmWarning` con texto de §3.3?
 - [ ] ¿Permisos y licencia usan mensajes de §3.4?
-- [ ] ¿Mensajes específicos de la app documentados en §3.5+?
+- [ ] ¿Mensajes específicos de la app documentados en §3.5+ (FILE GATE → §3.9)?
 
 ### Checklist por servicio
 
@@ -376,4 +497,6 @@ class OperationResult:
 - [`../definition_app_DMS/field_mapping.md`](../definition_app_DMS/field_mapping.md) — FieldMapping / mapeo origen→destino (§3.8)
 - [`../definition_app_DMS/transform_rules.md`](../definition_app_DMS/transform_rules.md) — TransformRules / pipeline post-mapeo (§3.8)
 - [`../definition_app_DMS/README.md`](../definition_app_DMS/README.md) — índice DMS
+- [`../FILE_GATE.md`](../FILE_GATE.md) — producto FILE GATE (§3.9)
+- [`../definition_app_FILE_GATE/README.md`](../definition_app_FILE_GATE/README.md) — definición módulos 1–6 (§3.9)
 - [`.cursor/rules/ui-messages.mdc`](../../.cursor/rules/ui-messages.mdc)

@@ -573,10 +573,15 @@ def save_source(
     *,
     strict: bool = False,
 ) -> OperationResult:
+    is_file_gate = project.project_kind == Project.KIND_FILE_GATE
     if not user_can_edit_source(user, project):
         return OperationResult.failure(
             "forbidden",
-            "No tiene permiso para editar la definición de origen.",
+            (
+                "No tiene permiso para editar el contrato de este proyecto."
+                if is_file_gate
+                else "No tiene permiso para editar la definición de origen."
+            ),
         )
 
     version = get_or_create_draft_version(project)
@@ -611,7 +616,11 @@ def save_source(
     if errors:
         return OperationResult.failure(
             "validation_form",
-            "Revise los datos del perfil de origen.",
+            (
+                "Revise los datos del contrato de validación."
+                if is_file_gate
+                else "Revise los datos del perfil de origen."
+            ),
             errors=errors,
             warnings=warnings,
         )
@@ -629,7 +638,11 @@ def save_source(
         )
 
     return OperationResult.success(
-        user_message="Perfil de origen guardado correctamente.",
+        user_message=(
+            "Contrato de validación guardado correctamente."
+            if is_file_gate
+            else "Perfil de origen guardado correctamente."
+        ),
         payload={
             "source": profile_to_dict(profile),
             "version": version,

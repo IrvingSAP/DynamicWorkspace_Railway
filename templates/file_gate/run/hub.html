@@ -1,0 +1,124 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Validar — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_policy.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_run.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Validar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_gate/run/_run_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 3 · <span class="role-badge">validation_run</span></p>
+        <h2>Validar archivo</h2>
+        <p>Sube un archivo y compruébalo contra el contrato y la política publicados. No se transforma ni se genera salida de negocio.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_gate:run_hub_help' project_slug=project.slug as run_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=run_help_url %}
+        <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}" class="btn btn-secondary">Ver contrato</a>
+        {% if run.has_published_version and run.can_execute %}
+        <a href="{% url 'file_gate:run_upload' project_slug=project.slug %}" class="btn btn-primary">Subir y validar</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if not run.has_published_version %}
+<div class="blocked-panel">
+    <h3>Publique el contrato primero</h3>
+    <p>No hay versión publicada. El gate solo valida contra el contrato congelado. Complete el esquema y las políticas, luego publique desde el hub del contrato.</p>
+    <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}" class="btn btn-primary">Abrir esquema / contrato</a>
+</div>
+{% else %}
+
+{% if run.can_execute %}
+<div class="ready-strip">
+    <div>
+        <strong>Contrato listo para validar</strong>
+        <p style="margin:4px 0 0;color:var(--ink-secondary);font-size:13px">
+            Versión publicada v{{ run.published_version_number }} · {{ run.collection_label }} · umbral {{ run.threshold_label }}
+        </p>
+    </div>
+    <a href="{% url 'file_gate:run_upload' project_slug=project.slug %}" class="btn btn-primary">Ejecutar ahora</a>
+</div>
+{% else %}
+<div class="note-box">
+    Su rol permite consultar los resultados, pero no ejecutar validaciones. Se requiere rol PA, ED o GE.
+</div>
+{% endif %}
+
+<div class="stats-strip" aria-label="Resumen del gate">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Versión activa</p>
+        <p class="stat-value">v{{ run.published_version_number }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Tipo de archivo</p>
+        <p class="stat-value" style="font-size:16px">{{ run.file_type_label }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Campos</p>
+        <p class="stat-value">{{ run.fields_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Máximo de errores</p>
+        <p class="stat-value">{{ run.max_errors }}</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Últimas ejecuciones</h3>
+        {% if run.recent_jobs %}
+        <table class="issue-table">
+            <thead>
+                <tr>
+                    <th>Archivo</th>
+                    <th>Estado</th>
+                    <th>% rechazo</th>
+                    <th>Fecha</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in run.recent_jobs %}
+                <tr>
+                    <td><code>{{ row.filename }}</code></td>
+                    <td><span class="sev sev-{% if row.gate_tone == 'passed' %}info{% elif row.gate_tone == 'partial' %}warning{% else %}error{% endif %}">{{ row.gate_status_label }}</span></td>
+                    <td>{% if row.reject_rate != None %}{{ row.reject_rate }}%{% else %}—{% endif %}</td>
+                    <td>{{ row.created_at|date:"d M Y · H:i" }}</td>
+                    <td><a href="{% url 'file_gate:run_result' project_slug=project.slug job_id=row.id %}">Resultado</a>
+                        · <a href="{% url 'file_gate:report_detail' project_slug=project.slug job_id=row.id %}">Informe</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p style="margin:12px 0 0;font-size:12px"><a href="{% url 'file_gate:history_hub' project_slug=project.slug %}">Ver historial completo con filtros y auditoría →</a></p>
+        {% else %}
+        <p class="hint">Aún no hay validaciones. Suba un archivo para ejecutar la primera.</p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

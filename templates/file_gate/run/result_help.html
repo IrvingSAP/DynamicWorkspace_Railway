@@ -1,0 +1,172 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Resultado — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_run.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}">Validar</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:run_result' project_slug=project.slug job_id=job_id %}">Resultado</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 3 · ayuda</p>
+        <h2>Cómo leer el resultado de validación</h2>
+        <p>Esta pantalla muestra el veredicto inmediato de una corrida ya ejecutada contra el contrato y la política <strong>publicados</strong>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:run_result' project_slug=project.slug job_id=job_id %}" class="btn btn-secondary">← Volver al resultado</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es esta pantalla</h3>
+        <ul class="hint">
+            <li>Resume si el archivo <strong>pasó</strong>, pasó con advertencias, fue <strong>rechazado</strong> o quedó <strong>parcial</strong>.</li>
+            <li>Usa siempre la versión publicada indicada en el encabezado (p. ej. <code>v3</code>), no el borrador del esquema.</li>
+            <li>No transforma ni genera un archivo de negocio: solo valida y registra evidencia.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Veredicto (estado del gate)</h3>
+        <table class="issue-table">
+            <thead><tr><th>Estado en pantalla</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr><td><span class="sev sev-info">Aprobado</span></td><td>Sin errores de contenido; el archivo cumple el contrato.</td></tr>
+                <tr><td><span class="sev sev-info">Aprobado con advertencias</span></td><td>Hay incidencias, pero el rechazo quedó <strong>dentro del umbral</strong> de la política.</td></tr>
+                <tr><td><span class="sev sev-error">Rechazado</span></td><td>Se superó el umbral de rechazo o hubo un error fatal de contrato (archivo ilegible / incompatible).</td></tr>
+                <tr><td><span class="sev sev-warning">Parcial</span></td><td>Se alcanzó <code>max_errors</code> antes de terminar el archivo; el recorrido quedó incompleto.</td></tr>
+                <tr><td><span class="sev sev-error">Error técnico</span></td><td>Falló la ejecución por un problema técnico; reintente o contacte al administrador.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px">El texto bajo el estado es el <strong>motivo de decisión</strong> (código interno) y el mensaje explicativo de la política aplicada.</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Métricas</h3>
+        <table class="issue-table">
+            <thead><tr><th>Indicador</th><th>Qué mide</th></tr></thead>
+            <tbody>
+                <tr><td>Filas leídas</td><td>Líneas/registros procesados tras captura y reglas globales.</td></tr>
+                <tr><td>Válidas</td><td>Filas que pasaron todas las validaciones de campo.</td></tr>
+                <tr><td>Rechazadas</td><td>Filas distintas con al menos un error (una fila con varios errores cuenta una sola vez).</td></tr>
+                <tr><td>% rechazo</td><td><code>rechazadas / leídas × 100</code>; se compara con el umbral de la política.</td></tr>
+                <tr><td>Errores / advertencias / info</td><td>Conteo de incidencias por severidad.</td></tr>
+                <tr><td>Duración</td><td>Tiempo de la validación en milisegundos.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Snapshot de política</h3>
+        <p class="hint">Copia inmutable de la política usada en esta corrida (no cambia si luego edita el borrador):</p>
+        <ul class="hint">
+            <li><code>on_error</code> — comportamiento ante error de fila (p. ej. continuar recolectando).</li>
+            <li><code>max_errors</code> — tope de errores antes de cortar el recorrido (estado parcial).</li>
+            <li><strong>Umbral</strong> — modo (<code>count</code> o porcentaje) y valor máximo de rechazo permitido.</li>
+            <li><strong>Motivo</strong> — código de la decisión final del gate.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Tabla de incidencias</h3>
+        <table class="issue-table">
+            <thead><tr><th>Columna</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr><td>Línea</td><td>Número de línea en el archivo de entrada (1-based).</td></tr>
+                <tr><td>Campo</td><td>Nombre técnico del campo del esquema; «—» si el error es de línea completa.</td></tr>
+                <tr><td>Severidad</td><td><code>error</code> cuenta para rechazo; <code>warning</code> / <code>info</code> no suelen bloquear el umbral.</td></tr>
+                <tr><td>Código</td><td>Código estable (p. ej. <code>CONTENT_TYPE_MISMATCH</code>, <code>LINE_LENGTH_MISMATCH</code>).</td></tr>
+                <tr><td>Mensaje</td><td>Explicación legible del problema en esa fila/campo.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px">La tabla muestra una vista previa. El detalle completo está en las descargas JSON/CSV o en el informe de evidencia.</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Botones y acciones</h3>
+        <table class="issue-table">
+            <thead><tr><th>Control</th><th>Acción</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Ayuda</strong></td>
+                    <td>Abre esta guía (significado de la pantalla y de cada control).</td>
+                </tr>
+                <tr>
+                    <td><strong>Validar otro</strong></td>
+                    <td>Vuelve a la subida de archivo para lanzar una nueva corrida (roles PA / ED / GE).</td>
+                </tr>
+                <tr>
+                    <td><strong>Volver al hub</strong></td>
+                    <td>Regresa al hub de Validar (contrato activo y jobs recientes).</td>
+                </tr>
+                <tr>
+                    <td><strong>Ver evidencia / informe</strong></td>
+                    <td>Abre el informe detallado del job (Módulo 4): resumen, incidencias y opciones de evidencia.</td>
+                </tr>
+                <tr>
+                    <td><strong>Certificado</strong></td>
+                    <td>Muestra el certificado ligero (hash del archivo, versión usada, resultado, usuario y marcas de tiempo).</td>
+                </tr>
+                <tr>
+                    <td><strong>Descargar JSON</strong></td>
+                    <td>Descarga el informe estructurado de la corrida (sujeto a TTL y permisos).</td>
+                </tr>
+                <tr>
+                    <td><strong>Descargar CSV</strong></td>
+                    <td>Descarga el listado de errores en CSV para análisis o intercambio (sujeto a TTL y permisos).</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px">Si un botón de descarga no aparece, el job no generó ese artefacto, expiró el TTL o su rol no tiene permiso (p. ej. consultor CO).</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Motivos de decisión frecuentes</h3>
+        <table class="issue-table">
+            <thead><tr><th>Código</th><th>Interpretación</th></tr></thead>
+            <tbody>
+                <tr><td><code>clean</code></td><td>Sin incidencias de error.</td></tr>
+                <tr><td><code>within_threshold</code></td><td>Hay errores, pero dentro del umbral permitido.</td></tr>
+                <tr><td><code>reject_threshold_exceeded</code></td><td>El rechazo superó el máximo de la política.</td></tr>
+                <tr><td><code>max_errors_reached</code></td><td>Se cortó por <code>max_errors</code> (parcial).</td></tr>
+                <tr><td><code>fatal_error</code></td><td>No se pudo procesar el archivo contra el contrato.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

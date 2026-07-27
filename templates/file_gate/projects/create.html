@@ -1,0 +1,109 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Nuevo proyecto — FILE GATE{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Validador</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Nuevo</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip" aria-label="Alcance de compañía">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Acceso</p>
+        <h2>Nuevo proyecto</h2>
+        <p>Quedarás como <strong>administrador del proyecto</strong> automáticamente. Luego definirás el contrato de validación.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_gate:project_create_help' as gate_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=gate_help_url %}
+        <a href="{% url 'file_gate:project_list' %}" class="btn btn-secondary">← Listado</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="form-section">
+                <h3 class="form-section-title">Identidad</h3>
+                <div class="form-grid">
+                    <div class="form-row two-cols">
+                        <div class="field{% if errors.slug %} has-error{% endif %}">
+                            <label for="slug">Nombre corto (código) <span class="req">*</span></label>
+                            <input type="text" id="slug" name="slug" class="mono" maxlength="220" placeholder="gate-nomina-sap" value="{{ posted.slug }}" required>
+                            <p class="hint">Único en la organización · compartido con Worksheets y FilePipe</p>
+                            {% for msg in errors.slug %}
+                            <p class="field-error">{{ msg }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="field{% if errors.name %} has-error{% endif %}">
+                            <label for="name">Nombre visible <span class="req">*</span></label>
+                            <input type="text" id="name" name="name" maxlength="200" placeholder="Validación nómina SAP" value="{{ posted.name }}" required>
+                            {% for msg in errors.name %}
+                            <p class="field-error">{{ msg }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="field{% if errors.description %} has-error{% endif %}">
+                        <label for="description">Descripción</label>
+                        <textarea id="description" name="description" rows="3" placeholder="Contrato para validar TXT posicional de nómina…">{{ posted.description }}</textarea>
+                        {% for msg in errors.description %}
+                        <p class="field-error">{{ msg }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="form-section-title">Visibilidad</h3>
+                <div class="radio-cards{% if errors.visibility %} has-error{% endif %}">
+                    <label class="radio-card">
+                        <input type="radio" name="visibility" value="members_only"{% if posted.visibility == 'members_only' or not posted.visibility %} checked{% endif %}>
+                        <strong>Privado</strong>
+                        <span>Solo usuarios que agregues explícitamente.</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="visibility" value="company"{% if posted.visibility == 'company' %} checked{% endif %}>
+                        <strong>Público</strong>
+                        <span>Todos los usuarios UF de tu compañía pueden ver el proyecto.</span>
+                    </label>
+                </div>
+                {% for msg in errors.visibility %}
+                <p class="field-error">{{ msg }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="alert alert-info">
+                Tras crear, define el <strong>contrato de validación</strong> (asistente de 6 pasos). La validación de archivos llegará en módulos posteriores.
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Crear y continuar</button>
+                <a href="{% url 'file_gate:project_list' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

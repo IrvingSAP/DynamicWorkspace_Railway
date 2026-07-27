@@ -1,0 +1,86 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Historial — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_run.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_history.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:history_hub' project_slug=project.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 5 · ayuda</p>
+        <h2>Cómo usar el historial</h2>
+        <p>El historial lista las validaciones finalizadas del proyecto y conserva la trazabilidad aunque la evidencia descargable haya expirado.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:history_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué se lista</h3>
+        <p class="hint">Solo corridas <strong>finalizadas</strong> de este proyecto. Las subidas sin ejecutar y los jobs en cola o en ejecución no aparecen. El historial no recalcula veredictos: muestra el resultado que quedó registrado en la corrida.</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Filtros</h3>
+        <table class="issue-table">
+            <thead><tr><th>Filtro</th><th>Comportamiento</th></tr></thead>
+            <tbody>
+                <tr><td>Estado</td><td>Veredicto del gate: aprobado, con advertencias, rechazado, parcial o error técnico.</td></tr>
+                <tr><td>Archivo</td><td>Coincidencia parcial sobre el nombre original, sin distinguir mayúsculas.</td></tr>
+                <tr><td>Versión</td><td>Versión publicada del contrato con la que se validó.</td></tr>
+                <tr><td>Usuario</td><td>Quién ejecutó la validación.</td></tr>
+                <tr><td>TTL</td><td>Vigente o expirado según la ventana de {{ ttl_days }} días.</td></tr>
+                <tr><td>Desde / Hasta</td><td>Rango sobre la fecha de finalización. «Hasta» no puede ser anterior a «Desde».</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:10px">Los filtros se combinan con Y lógico y los contadores del resumen reflejan todo el conjunto filtrado, no solo la página visible.</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">TTL y evidencia</h3>
+        <p class="hint">Pasados {{ ttl_days }} días desde la finalización, la corrida se marca como <span class="ttl-badge is-expired">expirado</span>. Los metadatos, el resultado y el certificado siguen disponibles; lo que deja de funcionar es la descarga del informe JSON y del CSV de incidencias.</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Permisos</h3>
+        <table class="issue-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver historial y filtrar</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Abrir resultado y evidencia</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Resumen y certificado</td></tr>
+                <tr><td>Descargar JSON / CSV</td><td>Sí</td><td>Sí</td><td>Sí</td><td>No</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

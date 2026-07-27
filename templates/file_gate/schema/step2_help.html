@@ -1,0 +1,55 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Paso 2 — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}">Contrato</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:schema_step2' project_slug=project.slug %}">Paso 2</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 1 · paso 2 · ayuda</p>
+        <h2>Inicio de captura</h2>
+        <p>Indica desde qué punto del archivo empiezan los datos a validar. Todo lo anterior (títulos, banners, metadatos) se ignora.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:schema_step2' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 2</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="hint">Muchos archivos traen cabeceras o líneas de control antes del detalle. Si el inicio está mal, el gate leerá basura como si fueran registros y fallará campos obligatorios o tipos.</p>
+        <table class="help-table">
+            <thead><tr><th>Elemento</th><th>Uso típico</th></tr></thead>
+            <tbody>
+                <tr><td>Modo de inicio</td><td>Número de línea, tras un patrón, primera línea con datos, etc. (catálogo de límites de captura).</td></tr>
+                <tr><td>Parámetros</td><td>Valor del modo: número de línea, texto del patrón, etc.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:10px">La unidad es <strong>líneas</strong>. El fin (paso 3) debe ser coherente con este inicio: el fin no puede quedar “antes” del inicio.</p>
+    </div>
+</div>
+{% endblock %}

@@ -192,6 +192,13 @@ def run_full_job(user, project: Project, job_id) -> OperationResult:
             "Este job ya fue ejecutado o está en ejecución.",
         )
 
+    # Módulo 6 — pre-check FILE GATE (B4). Sin override (D6).
+    from apps.file_gate.bridge.services import dms_bridge_service
+
+    gate_check = dms_bridge_service.precheck_job(project, job)
+    if not gate_check.ok:
+        return gate_check
+
     job.status = DmsExecutionJob.STATUS_RUNNING
     job.job_type = DmsExecutionJob.JOB_FULL
     job.started_at = dj_timezone.now()
@@ -270,6 +277,12 @@ def run_full_job(user, project: Project, job_id) -> OperationResult:
         job.status = (
             DmsExecutionJob.STATUS_PARTIAL if errors else DmsExecutionJob.STATUS_COMPLETED
         )
+        # B8: sello de auditoría del pre-check (si el bridge estuvo activo).
+        seal = (gate_check.payload or {}).get("seal")
+        if seal:
+            suggestions = dict(job.input_suggestions or {})
+            suggestions["file_gate_check"] = seal
+            job.input_suggestions = suggestions
         job.save()
         project.save(update_fields=["updated_at"])
     except (
