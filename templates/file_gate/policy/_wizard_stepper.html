@@ -1,0 +1,11 @@
+<nav class="wizard-stepper" aria-label="Pasos de políticas">
+    <a href="{% url 'file_gate:policy_step1' project_slug=project.slug %}" class="wizard-step{% if current_step == 1 %} is-active{% elif current_step > 1 %} is-done{% endif %}">
+        <span class="wizard-step-num">{% if current_step > 1 %}✓{% else %}1{% endif %}</span> Recolección
+    </a>
+    <a href="{% url 'file_gate:policy_step2' project_slug=project.slug %}" class="wizard-step{% if current_step == 2 %} is-active{% elif current_step > 2 %} is-done{% endif %}">
+        <span class="wizard-step-num">{% if current_step > 2 %}✓{% else %}2{% endif %}</span> Umbral
+    </a>
+    <a href="{% url 'file_gate:policy_step3' project_slug=project.slug %}" class="wizard-step{% if current_step == 3 %} is-active{% endif %}">
+        <span class="wizard-step-num">3</span> Revisión
+    </a>
+</nav>

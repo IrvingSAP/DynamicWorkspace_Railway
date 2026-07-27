@@ -1,0 +1,34 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Validador FILE GATE{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Listado de proyectos</h2>
+        <p>Proyectos FILE GATE de su compañía. Cada uno tiene un contrato de validación versionable.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:project_list' %}" class="btn btn-secondary">← Volver</a>
+    </div>
+</div>
+<div class="panel help-panel"><div class="panel-body">
+    <p>Cree un proyecto, defina el contrato (6 pasos) y publíquelo. La validación de archivos llegará en módulos posteriores.</p>
+    <p>La guía completa se actualizará al culminar el desarrollo.</p>
+</div></div>
+{% endblock %}

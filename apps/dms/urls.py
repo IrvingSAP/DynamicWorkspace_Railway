@@ -32,4 +32,8 @@ urlpatterns = [
         "proyectos/<slug:project_slug>/ejecutar/",
         include("apps.dms.transform_execution.urls"),
     ),
+    path(
+        "proyectos/<slug:project_slug>/integracion/file-gate/",
+        include("apps.file_gate.bridge.dms_urls"),
+    ),
 ]

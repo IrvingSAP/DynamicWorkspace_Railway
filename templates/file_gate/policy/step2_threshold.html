@@ -1,0 +1,112 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 2 — Umbral — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_policy.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:policy_hub' project_slug=project.slug %}">Políticas</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Paso 2</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_gate/policy/_project_scope.html" %}
+{% include "file_gate/policy/_policy_persistence.html" %}
+
+<div id="policy-step-root" data-step="2" data-can-edit="{% if can_edit_source %}1{% else %}0{% endif %}">
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Paso 2 de 3 · <span class="role-badge">reject_threshold</span></p>
+        <h2>Umbral de rechazo</h2>
+        <p>Establece la tolerancia máxima. El gate falla solo cuando las filas rechazadas superan este límite.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_gate:policy_step2_help' project_slug=project.slug as policy_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=policy_help_url %}
+        <a href="{% url 'file_gate:policy_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
+    </div>
+</div>
+
+{% include "file_gate/policy/_wizard_stepper.html" %}
+
+<div class="panel">
+    <div class="panel-body">
+        <p id="step-save-status" class="step-save-status" aria-live="polite"></p>
+        <h3 class="form-section-title">Unidad de decisión</h3>
+        <div class="threshold-mode" role="group" aria-label="Unidad del umbral">
+            <label>
+                <input type="radio" name="threshold_mode" value="percent"{% if policy.reject_threshold.mode != 'count' %} checked{% endif %}{% if not can_edit_source %} disabled{% endif %}>
+                Porcentaje
+            </label>
+            <label>
+                <input type="radio" name="threshold_mode" value="count"{% if policy.reject_threshold.mode == 'count' %} checked{% endif %}{% if not can_edit_source %} disabled{% endif %}>
+                Cantidad
+            </label>
+        </div>
+
+        <div class="form-grid" style="margin-top:18px">
+            <div class="field">
+                <label for="threshold_value">Máximo permitido <span class="req">*</span></label>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <input type="number" id="threshold_value" class="mono" min="0"
+                           value="{{ policy.reject_threshold.value }}"{% if not can_edit_source %} disabled{% endif %}>
+                    <strong id="threshold_unit">{% if policy.reject_threshold.mode == 'count' %}filas{% else %}%{% endif %}</strong>
+                </div>
+                <p class="hint" id="threshold_hint">Falla cuando el valor medido supera este límite.</p>
+            </div>
+        </div>
+
+        <div class="note-box">
+            El valor es el <strong>máximo permitido</strong>: con 1 %, exactamente 1 % cumple; al superarlo falla. Con valor 0, cualquier fila rechazada hace fallar.
+        </div>
+
+        <h3 class="form-section-title" style="margin-top:24px">Simulador de decisión</h3>
+        <p class="hint">Pruebe la regla antes de guardarla. Las filas omitidas por captura no entran en el denominador.</p>
+        <div class="decision-lab" style="margin-top:10px">
+            <div class="decision-input">
+                <label for="lab_rows">Filas evaluadas</label>
+                <input type="number" id="lab_rows" class="mono" min="0" value="1000">
+            </div>
+            <div class="decision-input">
+                <label for="lab_rejected">Filas rechazadas</label>
+                <input type="number" id="lab_rejected" class="mono" min="0" value="10">
+            </div>
+            <div class="decision-outcome" id="decision_outcome" aria-live="polite">
+                <strong id="decision_status">PASSED</strong>
+                <small id="decision_detail">—</small>
+            </div>
+        </div>
+
+        <h3 class="form-section-title" style="margin-top:24px">Cómo se calcula</h3>
+        <div class="report-preview">
+            <pre>reject_rate = (rows_rejected / rows_evaluated) × 100
+
+rows_evaluated = rows_valid + rows_rejected
+failed          = measured_value &gt; configured_threshold</pre>
+        </div>
+
+        <div class="wizard-footer">
+            <span class="hint">Los errores fatales y cortes por <code>max_errors</code> tienen prioridad.</span>
+            <div class="wizard-footer-actions">
+                <a href="{% url 'file_gate:policy_step1' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
+                {% if can_edit_source %}
+                <button type="button" class="btn btn-ghost" data-action="save-policy" data-can-edit="1">Guardar borrador</button>
+                <button type="button" class="btn btn-primary" data-action="save-policy" data-can-edit="1"
+                        data-next="{% url 'file_gate:policy_step3' project_slug=project.slug %}">Guardar y revisar →</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

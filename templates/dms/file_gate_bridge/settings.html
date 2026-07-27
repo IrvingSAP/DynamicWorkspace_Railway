@@ -1,0 +1,118 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Integración FILE GATE — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/transform_execution.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_bridge.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'dms:mapping_list' %}">FilePipe</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Integración FILE GATE</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    {% if membership %}<span class="hint">· rol {{ membership.role }}</span>{% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FilePipe · Módulo 6 FILE GATE · <span class="role-badge">dms_bridge</span></p>
+        <h2>Exigir FILE GATE antes de transformar</h2>
+        <p>Si activa el bridge, Ejecutar no arranca la transformación hasta que exista una corrida aceptada en el proyecto FILE GATE con el mismo content hash del archivo subido.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'dms:file_gate_bridge_settings_help' project_slug=project.slug as bridge_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=bridge_help_url %}
+        <a href="{% url 'dms:transform_execution_hub' project_slug=project.slug %}" class="btn btn-secondary">Ejecutar</a>
+        <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+    </div>
+</div>
+
+{% if not bridge.can_configure %}
+<div class="panel">
+    <div class="panel-body">
+        <p class="hint">Solo los roles PA y ED pueden cambiar esta configuración. Estado actual:
+            {% if bridge.enabled %}<span class="status-pill is-on">activo</span> → {{ bridge.gate_project_slug }}{% else %}<span class="status-pill is-off">inactivo</span>{% endif %}
+        </p>
+    </div>
+</div>
+{% else %}
+
+<form method="post" class="bridge-form" id="bridge-settings-form" aria-label="Configuración del bridge">
+    {% csrf_token %}
+    <label class="bridge-toggle">
+        <input id="bridge-enabled" name="file_gate_enabled" type="checkbox" {% if bridge.enabled %}checked{% endif %}>
+        <span>
+            <strong>Exigir validación FILE GATE</strong>
+            <span>Pre-check obligatorio. En el MVP nadie puede saltarlo.</span>
+        </span>
+    </label>
+
+    <div id="bridge-config-panel" {% if not bridge.enabled %}hidden{% endif %}>
+        <div class="field{% if bridge.errors.file_gate_project_id %} has-error{% endif %}">
+            <label class="field-label" for="gate_project">Proyecto FILE GATE</label>
+            <select id="gate_project" name="file_gate_project_id">
+                <option value="">— Elegir —</option>
+                {% for opt in bridge.candidates %}
+                <option value="{{ opt.id }}" {% if bridge.gate_project_id == opt.id %}selected{% endif %}>
+                    {{ opt.slug }} · {{ opt.name }}
+                </option>
+                {% endfor %}
+            </select>
+            {% if bridge.errors.file_gate_project_id %}<p class="field-error">{{ bridge.errors.file_gate_project_id.0 }}</p>{% endif %}
+        </div>
+
+        <div class="field{% if bridge.errors.file_gate_accept %} has-error{% endif %}">
+            <label class="field-label" for="accept">Estados que abren el paso</label>
+            <select id="accept" name="file_gate_accept">
+                {% for opt in bridge.accept_choices %}
+                <option value="{{ opt.value }}" {% if bridge.accept == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field{% if bridge.errors.file_gate_max_age_days %} has-error{% endif %}">
+            <label class="field-label" for="max_age">Frescura máxima (días)</label>
+            <input id="max_age" name="file_gate_max_age_days" type="number" min="1" value="{{ bridge.max_age_days }}">
+            {% if bridge.errors.file_gate_max_age_days %}<p class="field-error">{{ bridge.errors.file_gate_max_age_days.0 }}</p>{% endif %}
+        </div>
+
+        {% if bridge.file_type_warning %}
+        <p class="hint">{{ bridge.file_type_warning }}</p>
+        {% endif %}
+    </div>
+
+    <div class="page-actions" style="margin:0">
+        <button type="submit" class="btn btn-primary">Guardar integración</button>
+    </div>
+</form>
+
+<script>
+(function () {
+  var toggle = document.getElementById("bridge-enabled");
+  var panel = document.getElementById("bridge-config-panel");
+  if (!toggle || !panel) return;
+  function sync() { panel.hidden = !toggle.checked; }
+  toggle.addEventListener("change", sync);
+  sync();
+})();
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Paso 3 políticas — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_policy.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:policy_hub' project_slug=project.slug %}">Políticas</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:policy_step3' project_slug=project.slug %}">Paso 3</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 2 · ayuda</p>
+        <h2>Paso 3 — Revisión y publicación</h2>
+        <p>Confirme la política del borrador y, si corresponde, <strong>publique el contrato</strong> (esquema + política juntos).</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:policy_step3' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 3</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué revisa esta pantalla</h3>
+        <ul class="hint">
+            <li><strong>Diagrama</strong> — recorrido (<code>on_error</code> / <code>max_errors</code>), tolerancia (umbral) y prioridad del fatal.</li>
+            <li><strong>Matriz de resultados</strong> — qué condición produce <code>failed</code>, <code>partial</code>, <code>passed_with_warnings</code> o <code>passed</code>.</li>
+            <li><strong>Snapshot JSON</strong> — política tal como queda en el borrador (<code>gate_policy</code>).</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Matriz de resultados (lectura)</h3>
+        <table class="issue-table">
+            <thead><tr><th>Condición</th><th>Resultado</th></tr></thead>
+            <tbody>
+                <tr><td>Error fatal</td><td><code>failed</code></td></tr>
+                <tr><td><code>max_errors</code> antes de EOF</td><td><code>partial</code></td></tr>
+                <tr><td>Rechazo &gt; umbral</td><td><code>failed</code></td></tr>
+                <tr><td>Rechazo ≤ umbral, con advertencias</td><td><code>passed_with_warnings</code></td></tr>
+                <tr><td>Rechazo ≤ umbral, sin advertencias</td><td><code>passed</code></td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px">El orden de prioridad es: fatal → parcial (corte) → umbral → advertencias → limpio.</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Publicación conjunta</h3>
+        <ul class="hint">
+            <li>No existe «publicar solo políticas». Al publicar se congelan <strong>esquema + política</strong> en la misma versión.</li>
+            <li>Las validaciones (Módulo 3) usan únicamente esa versión publicada.</li>
+            <li>Si el esquema aún está incompleto, la publicación puede fallar o quedar deshabilitada: complete el contrato de 6 pasos primero.</li>
+            <li>Tras publicar, los cambios siguientes se hacen en un nuevo borrador.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Botones y acciones</h3>
+        <table class="issue-table">
+            <thead><tr><th>Control</th><th>Acción</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Ayuda</strong></td><td>Abre esta guía.</td></tr>
+                <tr><td><strong>← Resumen</strong></td><td>Vuelve al hub de políticas.</td></tr>
+                <tr><td><strong>← Anterior</strong></td><td>Regresa al Paso 2 (umbral).</td></tr>
+                <tr><td><strong>Confirmar revisión</strong></td><td>Marca/guarda el paso de revisión en el borrador sin publicar todavía.</td></tr>
+                <tr><td><strong>Publicar contrato vN</strong></td><td>Congela esquema + política como versión publicada y redirige al hub del contrato.</td></tr>
+                <tr><td><strong>Ir al contrato →</strong></td><td>(Solo lectura) Abre el hub del esquema si no puede editar/publicar.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px">Después de publicar, vuelva a <strong>Validar archivo</strong> para probar con la nueva política.</p>
+    </div>
+</div>
+{% endblock %}

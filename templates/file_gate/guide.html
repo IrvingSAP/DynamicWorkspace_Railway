@@ -1,0 +1,47 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — FILE GATE{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">UF</span></p>
+        <h2>Ayuda — FILE GATE</h2>
+        <p>Documentación de uso del validador de archivos. Se completará al cerrar el desarrollo de los módulos.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:project_list' %}" class="btn btn-secondary">← Validador</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Estado</h3>
+        <p class="help-intro">
+            FILE GATE valida un archivo contra un <strong>contrato</strong> (esquema), sin transformar ni generar salida de negocio.
+            El Módulo 1 (definición del contrato) ya está disponible; la guía detallada se publicará aquí al culminar el desarrollo.
+        </p>
+        <ul>
+            <li><strong>Módulo 1</strong> — Contrato / esquema (asistente de 6 pasos) — disponible</li>
+            <li><strong>Módulos 2–5</strong> — Políticas, ejecución, informe e historial — pendientes</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

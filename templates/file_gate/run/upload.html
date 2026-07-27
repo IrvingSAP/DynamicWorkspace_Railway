@@ -1,0 +1,95 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Subir y validar — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_policy.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_run.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}">Validar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Subir</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_gate/run/_run_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 3 · paso upload</p>
+        <h2>Subir y ejecutar</h2>
+        <p>Un archivo por corrida. La extensión debe coincidir con el tipo del contrato publicado.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+</div>
+
+<div class="snapshot-grid">
+    <div class="snapshot-card">
+        <h3>Contrato publicado</h3>
+        <dl>
+            <dt>Versión</dt><dd>v{{ run.published_version_number }}</dd>
+            <dt>Tipo</dt><dd>{{ run.file_type_code|default:"—" }}</dd>
+            <dt>Campos</dt><dd>{{ run.fields_count }}</dd>
+            <dt>Extensiones</dt><dd>{{ run.allowed_extensions_label }}</dd>
+        </dl>
+    </div>
+    <div class="snapshot-card">
+        <h3>Política publicada</h3>
+        <dl>
+            <dt>Recorrido</dt><dd>{{ run.collection_label }}</dd>
+            <dt>Máx. errores</dt><dd>{{ run.max_errors }}</dd>
+            <dt>Umbral</dt><dd>{{ run.threshold_label }}</dd>
+            <dt>Tamaño máx.</dt><dd>{{ run.max_size_label }}</dd>
+        </dl>
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data"
+      action="{% url 'file_gate:run_execute' project_slug=project.slug %}">
+    {% csrf_token %}
+    <div class="panel" style="margin-top:16px">
+        <div class="panel-body">
+            <h3 class="form-section-title">Archivo de entrada</h3>
+            <div class="dropzone" id="run-dropzone" role="button" tabindex="0" aria-label="Zona de carga">
+                <strong>Arrastra el archivo aquí</strong>
+                <span>o haz clic para seleccionar{% if run.allowed_extensions_label != '—' %} · {{ run.allowed_extensions_label }}{% endif %} · máx. {{ run.max_size_label }}</span>
+                <div class="file-chip" id="run-file-chip" hidden>
+                    <span id="run-file-name">archivo</span>
+                </div>
+            </div>
+            <input type="file" name="file" id="run-file-input"
+                   {% if run.allowed_extensions %}accept="{{ run.allowed_extensions|join:',' }}"{% endif %} hidden>
+
+            <p style="margin:12px 0 0;color:var(--ink-tertiary);font-size:12px">
+                El archivo es de solo lectura para el motor. Un job = un archivo. La corrida se ejecuta y muestra el resultado inmediatamente.
+            </p>
+
+            <div class="page-actions" style="margin-top:18px;justify-content:flex-end">
+                <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}" class="btn btn-secondary">Volver</a>
+                <button type="submit" class="btn btn-primary" id="btn-run-validate" disabled>Ejecutar validación</button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/file_gate-run-upload.js' %}"></script>
+{% endblock %}

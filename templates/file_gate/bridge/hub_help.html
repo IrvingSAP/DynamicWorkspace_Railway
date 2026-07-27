@@ -1,0 +1,148 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Bridge — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_bridge.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:bridge_hub' project_slug=project.slug %}">Bridge</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 6 · ayuda</p>
+        <h2>Cómo funciona el bridge FilePipe</h2>
+        <p>El bridge es un <strong>pre-check</strong>: FilePipe no transforma hasta que exista una corrida FILE GATE <strong>aceptada</strong> del mismo archivo (mismo content hash). FILE GATE no genera destino de negocio.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:bridge_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al bridge</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es esta pantalla</h3>
+        <ul class="hint">
+            <li>Muestra los proyectos <strong>FilePipe / DMS</strong> de la misma compañía que apuntan a este gate.</li>
+            <li>Desde aquí solo se <strong>consulta</strong> el vínculo. El flag «Exigir FILE GATE» se activa en el lado DMS.</li>
+            <li>Si no hay vínculos, verá el estado vacío hasta que un PA/ED de FilePipe configure la integración.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Flujo resumido</h3>
+        <ol class="hint">
+            <li>En FilePipe se activa «Exigir validación FILE GATE» y se elige este proyecto.</li>
+            <li>El operador valida el archivo aquí (Módulo 3) y obtiene un resultado aceptado.</li>
+            <li>Al subir el <strong>mismo archivo</strong> en FilePipe, el sistema busca una corrida con el mismo hash.</li>
+            <li>Si el gate está en verde (y fresco), FilePipe puede transformar; si no, queda bloqueado con enlaces a validar.</li>
+        </ol>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Matching por content hash</h3>
+        <table class="issue-table">
+            <thead><tr><th>Regla</th><th>Detalle</th></tr></thead>
+            <tbody>
+                <tr><td>Clave de empareje</td><td><code>content_hash</code> (SHA-256) del archivo de entrada.</td></tr>
+                <tr><td>Qué no cuenta</td><td>El nombre del archivo ni la ruta. Dos archivos con el mismo contenido comparten hash.</td></tr>
+                <tr><td>Origen del hash</td><td>Se calcula al validar en FILE GATE y al subir en FilePipe (intake DMS).</td></tr>
+                <tr><td>Si no hay job con ese hash</td><td>FilePipe bloquea: hay que validar primero en este proyecto.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué estados acepta FilePipe</h3>
+        <table class="issue-table">
+            <thead><tr><th>Política «Acepta»</th><th>Permite transformar</th></tr></thead>
+            <tbody>
+                <tr><td>solo <code>passed</code></td><td>Únicamente gate limpio, sin errores.</td></tr>
+                <tr><td><code>passed</code> + warnings</td><td>También <code>passed_with_warnings</code> (dentro del umbral).</td></tr>
+                <tr><td>Nunca</td><td><code>failed</code>, <code>partial</code> o error técnico. No abren el paso.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px"><strong>Frescura:</strong> la corrida debe estar dentro de la ventana configurada (p. ej. 7 días). Un passed antiguo fuera de ventana también bloquea.</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Tarjeta de vínculo (cuando hay DMS)</h3>
+        <table class="issue-table">
+            <thead><tr><th>Campo</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr><td>Slug / nombre</td><td>Proyecto FilePipe vinculado.</td></tr>
+                <tr><td><span class="status-pill is-on">activo</span> / <span class="status-pill is-off">inactivo</span></td><td>Si el flag de pre-check está encendido en ese DMS.</td></tr>
+                <tr><td>Acepta</td><td>Política de estados que desbloquean la transformación.</td></tr>
+                <tr><td>Frescura</td><td>Máxima antigüedad del job gate (días).</td></tr>
+                <tr><td>Vinculado</td><td>Cuándo (y quién) configuró el vínculo.</td></tr>
+                <tr><td>Último check</td><td>Resultado del último pre-check registrado desde FilePipe.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Botones y acciones</h3>
+        <table class="issue-table">
+            <thead><tr><th>Control</th><th>Acción</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Ayuda</strong></td><td>Abre esta guía.</td></tr>
+                <tr><td><strong>Validar</strong></td><td>Va al hub de validación de este proyecto FILE GATE (para generar un job aceptado).</td></tr>
+                <tr><td><strong>Abrir Ejecutar</strong></td><td>Deep-link al Ejecutar del proyecto DMS vinculado.</td></tr>
+                <tr><td><strong>Ajustes DMS</strong></td><td>Abre la configuración de integración FILE GATE en FilePipe (donde se activa el flag).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Quién configura y permisos</h3>
+        <ul class="hint">
+            <li>Solo <code>PA</code> / <code>ED</code> del proyecto <strong>DMS</strong> activan o cambian el flag y el proyecto gate.</li>
+            <li>Desde FILE GATE, los miembros del proyecto (y consulta CO según permisos) ven el vínculo.</li>
+            <li>En el MVP <strong>nadie puede saltar</strong> el pre-check si está activo (ni el PA de FilePipe).</li>
+            <li>Ambos proyectos deben pertenecer a la <strong>misma compañía</strong>.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Prerrequisitos habituales</h3>
+        <ul class="hint">
+            <li>Contrato FILE GATE <strong>publicado</strong> (esquema + políticas).</li>
+            <li>Al menos una validación finalizada con el hash del archivo que se transformará.</li>
+            <li>Estado del gate dentro de la política de aceptación y de la ventana de frescura.</li>
+        </ul>
+        <p class="hint" style="margin-top:12px">Si FilePipe bloquea, valide aquí el mismo archivo, espere un resultado aceptado y reintente Ejecutar en DMS.</p>
+    </div>
+</div>
+{% endblock %}

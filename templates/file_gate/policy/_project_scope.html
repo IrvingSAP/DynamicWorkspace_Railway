@@ -1,0 +1,10 @@
+<div class="policy-scope" aria-label="Alcance del proyecto">
+    <span class="label">Proyecto</span><strong>{{ project.slug }}</strong>
+    <span class="label">Contrato</span><span>{{ wizard.version_label }}</span>
+    {% if membership %}
+    <span class="label">Rol</span><code>{{ membership.role }}</code>
+    {% endif %}
+    {% if version_publish.has_published_version %}
+    <span class="label">Publicada</span><span>{{ version_publish.published_version_label }}</span>
+    {% endif %}
+</div>

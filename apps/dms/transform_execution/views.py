@@ -189,11 +189,27 @@ def _json_result(result):
     status = 403 if result.error_code == "forbidden" else 400
     if result.error_code == "not_found":
         status = 404
-    return JsonResponse(
-        {
-            "ok": False,
-            "message": result.user_message,
-            "errors": result.errors or {},
-        },
-        status=status,
-    )
+    # Pre-check FILE GATE: 409 Conflict — el job existe pero no puede avanzar.
+    if result.error_code in {
+        "config_invalid",
+        "gate_not_published",
+        "no_hash",
+        "no_matching_job",
+        "status_not_accepted",
+        "stale",
+    }:
+        status = 409
+    body = {
+        "ok": False,
+        "message": result.user_message,
+        "errors": result.errors or {},
+        "error_code": result.error_code,
+    }
+    payload = result.payload or {}
+    if payload.get("links"):
+        body["links"] = payload["links"]
+    if payload.get("gate_project_slug"):
+        body["gate_project_slug"] = payload["gate_project_slug"]
+    if payload.get("gate_status"):
+        body["gate_status"] = payload["gate_status"]
+    return JsonResponse(body, status=status)

@@ -1,0 +1,116 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Certificado — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_policy.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_run.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_report.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{{ report_url }}">Informe</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Certificado</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 4 · certificado ligero</p>
+        <h2>Certificado de validación</h2>
+        <p>Evidencia operativa: hash del archivo + versión del contrato + resultado. No es firma criptográfica.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ report_url }}" class="btn btn-secondary">← Evidencia</a>
+        <a href="{{ certificate_download_url }}" class="btn btn-secondary">Descargar JSON</a>
+        <button type="button" class="btn btn-primary" onclick="window.print()">Imprimir</button>
+    </div>
+</div>
+
+<article class="cert-sheet" aria-label="Certificado FILE GATE">
+    <header>
+        <div class="brand">
+            <span class="brand-mark">FG</span>
+            <div>
+                <h2>FILE GATE — Certificado</h2>
+                <p style="margin:4px 0 0;color:var(--ink-secondary);font-size:13px">
+                    {{ cert.company }} · {{ cert.project_slug }}
+                </p>
+            </div>
+        </div>
+        <div class="cert-meta">
+            certificate_version {{ cert.certificate_version }}<br>
+            job {{ cert.job_id|truncatechars:13 }}
+        </div>
+    </header>
+
+    <div class="cert-verdict is-{{ cert.gate_tone }}">
+        <div>
+            <strong>{{ cert.gate_status_label }}</strong>
+            <div style="margin-top:4px;font-size:13px;color:var(--ink-secondary)">
+                {{ cert.reason }}{% if cert.is_error %} · error técnico{% endif %}
+            </div>
+        </div>
+        <span class="sev sev-{% if cert.is_success %}info{% elif cert.is_partial %}warning{% else %}error{% endif %}">
+            {% if cert.is_success %}conforme{% elif cert.is_partial %}parcial{% elif cert.is_error %}error{% else %}no conforme{% endif %}
+        </span>
+    </div>
+
+    <dl class="cert-grid">
+        <div>
+            <dt>Archivo</dt>
+            <dd>{{ cert.filename }} · {{ cert.size_label }}</dd>
+            <dt>Hash (SHA-256)</dt>
+            <dd>{{ cert.content_hash|default:"—" }}</dd>
+            <dt>Contrato usado</dt>
+            <dd>
+                {% if cert.published_version %}v{{ cert.published_version }}{% else %}—{% endif %}
+                {% if cert.file_type_code %} · {{ cert.file_type_code }}{% endif %}
+                {% if cert.fields_count %} · {{ cert.fields_count }} campos{% endif %}
+            </dd>
+        </div>
+        <div>
+            <dt>Métricas</dt>
+            <dd>
+                {{ cert.metrics.rows_read|default:0 }} leídas ·
+                {{ cert.metrics.rows_valid|default:0 }} OK ·
+                {{ cert.metrics.rows_rejected|default:0 }} rechazadas ·
+                {{ cert.metrics.reject_rate_percent|default:0 }}%
+            </dd>
+            <dt>Ejecutado por</dt>
+            <dd>{{ cert.executed_by|default:"—" }}</dd>
+            <dt>Timestamps</dt>
+            <dd>
+                {% if cert.started_at %}{{ cert.started_at|date:"Y-m-d H:i:s" }}{% else %}—{% endif %}
+                →
+                {% if cert.finished_at %}{{ cert.finished_at|date:"H:i:s" }}{% else %}—{% endif %}
+            </dd>
+        </div>
+    </dl>
+
+    {% if cert.message %}
+    <p style="margin:0;color:var(--ink-secondary);font-size:13px;max-width:60ch">{{ cert.message }}</p>
+    {% endif %}
+
+    <p class="cert-footnote">
+        Este documento es un certificado ligero de FILE GATE. No constituye sello notarial ni firma digital.
+        Para auditoría, conserve el hash del archivo junto con este job id.
+        La versión referenciada es la usada en la corrida, no la publicada actual.
+        {% if cert.is_expired %} Las descargas de storage de este job ya expiraron; este certificado de metadatos sigue disponible.{% endif %}
+    </p>
+</article>
+{% endblock %}

@@ -27,6 +27,9 @@
 | [`docs/definition_app/`](definition_app/README.md) | Definición, reglas y diseño por app Django |
 | [`docs/definition_app_DMS/`](definition_app_DMS/README.md) | **Data Mapping Studio** — ETL acoplado a la plataforma ([integración](definition_app_DMS/dms_integration.md); origen MVP: [source_definition.md](definition_app_DMS/source_definition.md)) |
 | [`docs/ESTRUCTURA_PROYECTO.md`](ESTRUCTURA_PROYECTO.md) | Árbol de carpetas y checklist para nuevos proyectos |
+| [`docs/APP_FACTORY.md`](APP_FACTORY.md) | **APP FACTORY** — propuestas de nuevos desarrollos / verticales sobre el chasis |
+| [`docs/FILE_GATE.md`](FILE_GATE.md) | **FILE GATE** — Validador de archivos (prioridad #1 APP_FACTORY) |
+| [`docs/definition_app_FILE_GATE/`](definition_app_FILE_GATE/) | Definición por módulo FILE GATE (espejo `definition_app_DMS`) |
 | [`docs/definition_app/UI_MESSAGES.md`](definition_app/UI_MESSAGES.md) | Catálogo de mensajes UI, `error_code`, reglas vista/servicio |
 | [`docs/definition_app/DynamicWorkspace_Model.md`](definition_app/DynamicWorkspace_Model.md) | Modelos de datos, relaciones e integridad |
 | [`docs/security/SEGURIDAD_Y_ACCESOS.md`](security/SEGURIDAD_Y_ACCESOS.md) | Flujos de login, correo, 2FA |

@@ -384,10 +384,25 @@
     background: var(--surface);
     text-decoration: none;
     color: inherit;
+    transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .step-summary-card:hover {
     border-color: rgba(15, 92, 76, 0.35);
+}
+
+.step-summary-card.is-done {
+    background: rgba(21, 128, 61, 0.08);
+    border-color: rgba(21, 128, 61, 0.28);
+}
+
+.step-summary-card.is-done:hover {
+    border-color: rgba(21, 128, 61, 0.45);
+}
+
+.step-summary-card.is-draft {
+    background: rgba(180, 83, 9, 0.06);
+    border-color: rgba(180, 83, 9, 0.28);
 }
 
 .step-summary-card h4 {
@@ -403,14 +418,39 @@
 }
 
 .flow-card-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
     font-size: 11px;
     font-weight: 600;
     white-space: nowrap;
 }
 
-.flow-card-status--done { color: var(--accent); }
-.flow-card-status--draft { color: #b45309; }
-.flow-card-status--empty { color: var(--ink-muted); }
+.flow-card-status--done {
+    color: #166534;
+    background: rgba(21, 128, 61, 0.14);
+}
+
+.flow-card-status--draft {
+    color: #b45309;
+    background: rgba(180, 83, 9, 0.12);
+}
+
+.flow-card-status--empty {
+    color: var(--ink-muted);
+    background: rgba(15, 23, 42, 0.05);
+}
+
+/* Stat card: progreso completo (p. ej. 6 / 6) */
+.stat-card.is-done {
+    background: rgba(21, 128, 61, 0.08);
+    border-color: rgba(21, 128, 61, 0.28);
+}
+
+.stat-card.is-done .stat-value {
+    color: var(--success);
+}
 
 @media (max-width: 768px) {
     .rules-grid { grid-template-columns: 1fr; }

@@ -61,7 +61,7 @@
                         <div class="field{% if errors.slug %} has-error{% endif %}">
                             <label for="slug">Slug URL <span class="req">*</span></label>
                             <input type="text" id="slug" name="slug" class="mono" maxlength="220" placeholder="inventario-2026" value="{{ posted.slug }}" required>
-                            <p class="hint">Único en la compañía · usado en /app/proyectos/&lt;slug&gt;/</p>
+                            <p class="hint">Único en la compañía · usado en /app/proyectos/&lt;slug&gt;/ · también reservado en FilePipe y FILE GATE</p>
                             {% for msg in errors.slug %}
                             <p class="field-error">{{ msg }}</p>
                             {% endfor %}

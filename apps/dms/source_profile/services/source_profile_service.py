@@ -431,7 +431,7 @@ def get_step4_positional_context(project) -> dict:
 
 def get_step5_content_rules_context(project) -> dict:
     source = source_persistence_service.get_source_dict(project)
-    rules = source.get("content_rules") or DEFAULT_CONTENT_RULES
+    rules = {**DEFAULT_CONTENT_RULES, **(source.get("content_rules") or {})}
     return {
         "content_rules_json": json.dumps(rules),
     }

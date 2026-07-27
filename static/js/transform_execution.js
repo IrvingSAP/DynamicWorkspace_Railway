@@ -85,9 +85,43 @@
             if (response.status === 401 || response.status === 403) {
                 throw new Error(data.message || MSG_SESSION);
             }
-            throw new Error(data.message || MSG_UNEXPECTED);
+            const err = new Error(data.message || MSG_UNEXPECTED);
+            err.links = data.links || null;
+            err.errorCode = data.error_code || "";
+            throw err;
         }
         return data;
+    }
+
+    function renderBridgeLinks(links) {
+        const node = document.getElementById("te-bridge-links");
+        if (!node) {
+            return;
+        }
+        node.innerHTML = "";
+        if (!links) {
+            node.hidden = true;
+            return;
+        }
+        const items = [
+            ["validate", "Validar en FILE GATE", "btn btn-primary"],
+            ["history", "Historial del gate", "btn btn-secondary"],
+            ["report", "Ver evidencia", "btn btn-secondary"],
+            ["certificate", "Certificado", "btn btn-secondary"],
+        ];
+        let shown = 0;
+        items.forEach(function (item) {
+            if (!links[item[0]]) {
+                return;
+            }
+            const a = document.createElement("a");
+            a.className = item[2];
+            a.href = links[item[0]];
+            a.textContent = item[1];
+            node.appendChild(a);
+            shown += 1;
+        });
+        node.hidden = shown === 0;
     }
 
     function renderPreview(data) {
@@ -233,6 +267,7 @@
             } catch (err) {
                 setStatus(err.message || MSG_UNEXPECTED, true);
                 setErrors(err.message || MSG_UNEXPECTED);
+                renderBridgeLinks(err.links || null);
                 show("error", err.message || MSG_UNEXPECTED);
             }
         };

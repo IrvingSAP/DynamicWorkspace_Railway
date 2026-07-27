@@ -1,0 +1,106 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 1 — Recolección — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_policy.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:policy_hub' project_slug=project.slug %}">Políticas</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Paso 1</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_gate/policy/_project_scope.html" %}
+{% include "file_gate/policy/_policy_persistence.html" %}
+
+<div id="policy-step-root" data-step="1" data-can-edit="{% if can_edit_source %}1{% else %}0{% endif %}">
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Paso 1 de 3 · <span class="role-badge">collection_policy</span></p>
+        <h2>Recolección y corte</h2>
+        <p>Define cuánto debe recorrer el motor antes de dejar de acumular incidencias.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_gate:policy_step1_help' project_slug=project.slug as policy_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=policy_help_url %}
+        <a href="{% url 'file_gate:policy_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
+    </div>
+</div>
+
+{% include "file_gate/policy/_wizard_stepper.html" %}
+
+<div class="panel">
+    <div class="panel-body">
+        <p id="step-save-status" class="step-save-status" aria-live="polite"></p>
+        <h3 class="form-section-title">Estrategia ante errores de fila</h3>
+        <div class="choice-stack">
+            <label class="policy-choice">
+                <input type="radio" name="on_error" value="collect_all"{% if policy.on_error == 'collect_all' or not policy.on_error %} checked{% endif %}{% if not can_edit_source %} disabled{% endif %}>
+                <span>
+                    <strong>Recolectar incidencias</strong>
+                    <span>Continúa mientras el archivo sea legible y conserva errores hasta el límite configurado.</span>
+                </span>
+                <span class="policy-choice-badge is-mvp">MVP · default</span>
+            </label>
+            <label class="policy-choice" aria-disabled="true">
+                <input type="radio" name="on_error" value="warn_only" disabled>
+                <span>
+                    <strong>Solo advertir</strong>
+                    <span>No rechaza filas por determinadas reglas. Requiere clasificación avanzada por regla.</span>
+                </span>
+                <span class="policy-choice-badge">Fase 2</span>
+            </label>
+        </div>
+
+        <h3 class="form-section-title" style="margin-top:24px">Errores fatales</h3>
+        <div class="locked-policy">
+            <span class="locked-policy-icon" aria-hidden="true">!</span>
+            <div>
+                <strong>Detener ante el primer error fatal</strong>
+                <p>Siempre activo en MVP. Un archivo corrupto o una estructura irrecuperable produce <code>failed</code>.</p>
+            </div>
+        </div>
+
+        <h3 class="form-section-title" style="margin-top:24px">Límite de incidencias</h3>
+        <div class="range-layout">
+            <div>
+                <label for="max_errors_range">Máximo de errores conservados</label>
+                <input type="range" id="max_errors_range" min="1" max="10000" step="1" value="{{ policy.max_errors }}"{% if not can_edit_source %} disabled{% endif %}>
+                <p class="hint">Al alcanzar el tope antes de EOF, el job termina <code>partial</code>.</p>
+            </div>
+            <div class="field">
+                <label for="max_errors">Valor</label>
+                <input type="number" id="max_errors" class="mono" min="1" max="10000" value="{{ policy.max_errors }}"{% if not can_edit_source %} disabled{% endif %}>
+                <p class="hint" id="max_errors_output">{{ policy.max_errors }} errores</p>
+            </div>
+        </div>
+
+        <div class="note-box" style="margin-top:18px">
+            <strong>Importante:</strong> <code>collect_all</code> no significa ilimitado. El tope protege memoria, informe y tiempo de ejecución.
+        </div>
+
+        <div class="wizard-footer">
+            <span class="hint">Se guarda en <code>config.gate_policy</code> del borrador.</span>
+            <div class="wizard-footer-actions">
+                <a href="{% url 'file_gate:policy_hub' project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
+                {% if can_edit_source %}
+                <button type="button" class="btn btn-ghost" data-action="save-policy" data-can-edit="1">Guardar borrador</button>
+                <button type="button" class="btn btn-primary" data-action="save-policy" data-can-edit="1"
+                        data-next="{% url 'file_gate:policy_step2' project_slug=project.slug %}">Guardar y continuar →</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

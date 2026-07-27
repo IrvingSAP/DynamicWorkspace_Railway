@@ -1,0 +1,113 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Políticas — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_policy.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:policy_hub' project_slug=project.slug %}">Políticas</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 2 · ayuda</p>
+        <h2>Cómo usar el hub de políticas</h2>
+        <p>La política responde <strong>cómo recorrer y decidir</strong>. El esquema (Módulo 1) responde <strong>qué validar</strong>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:policy_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver a políticas</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué hace este módulo</h3>
+        <ul class="hint">
+            <li>Define cuántos errores se acumulan y cuándo cortar el recorrido.</li>
+            <li>Define el umbral de rechazo que hace fallar el gate.</li>
+            <li>Se guarda en el <strong>borrador</strong> y se congela al <strong>publicar el contrato</strong> (no hay publicación aparte de políticas).</li>
+            <li>Las corridas históricas usan el snapshot de su versión; editar el borrador no cambia resultados ya ejecutados.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Flujo de decisión (resumen)</h3>
+        <table class="issue-table">
+            <thead><tr><th>Prioridad</th><th>Condición</th><th>Resultado</th></tr></thead>
+            <tbody>
+                <tr><td>1</td><td>Error fatal (archivo ilegible / estructura irrecuperable)</td><td><code>failed</code></td></tr>
+                <tr><td>2</td><td>Se alcanza <code>max_errors</code> antes del fin del archivo</td><td><code>partial</code></td></tr>
+                <tr><td>3</td><td>Rechazo supera el umbral</td><td><code>failed</code></td></tr>
+                <tr><td>4</td><td>Dentro del umbral, con advertencias</td><td><code>passed_with_warnings</code></td></tr>
+                <tr><td>5</td><td>Sin errores ni advertencias</td><td><code>passed</code></td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px"><code>partial</code> no es un gate verde: el archivo no se recorrió completo.</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Los 3 pasos</h3>
+        <table class="issue-table">
+            <thead><tr><th>Paso</th><th>Qué configura</th></tr></thead>
+            <tbody>
+                <tr><td><strong>1 · Recolección</strong></td><td>Estrategia <code>collect_all</code>, aborto fatal (fijo) y tope <code>max_errors</code>.</td></tr>
+                <tr><td><strong>2 · Umbral</strong></td><td>Máximo permitido por cantidad o porcentaje; se falla solo al <strong>superarlo</strong> (<code>&gt;</code>).</td></tr>
+                <tr><td><strong>3 · Revisión</strong></td><td>Matriz de resultados, snapshot JSON y publicación conjunta del contrato.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Elementos del hub</h3>
+        <table class="issue-table">
+            <thead><tr><th>Elemento</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr><td>Diagrama Recorrido → Decisión → Resultado</td><td>Vista rápida de la política activa en el borrador.</td></tr>
+                <tr><td>Tarjetas de estadísticas</td><td>Estrategia, máximo de errores, umbral y progreso de pasos.</td></tr>
+                <tr><td>Tarjetas de configuración</td><td>Enlaces a cada paso (Completo / En edición / Pendiente).</td></tr>
+                <tr><td>Fase 2 · Advertencias</td><td>Reservado (<code>warn_only</code> / <code>fail_on_warnings</code>); no editable en MVP.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Botones y acciones</h3>
+        <table class="issue-table">
+            <thead><tr><th>Control</th><th>Acción</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Ayuda</strong></td><td>Abre esta guía.</td></tr>
+                <tr><td><strong>← Proyecto</strong></td><td>Vuelve al hub del proyecto FILE GATE.</td></tr>
+                <tr><td><strong>← Contrato</strong></td><td>Abre el hub del esquema / contrato (Módulo 1).</td></tr>
+                <tr><td><strong>Editar políticas</strong></td><td>Continúa en el primer paso pendiente o incompleto del asistente.</td></tr>
+                <tr><td><strong>Tarjeta de un paso</strong></td><td>Entra directamente a ese paso para revisar o editar.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

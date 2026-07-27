@@ -42,6 +42,7 @@ def get_project_for_user(user, slug: str) -> Project | None:
             "company",
             "owner",
             "dms_config",
+            "dms_config__file_gate_project",
         ).get(
             company=profile.company,
             slug=slug,
@@ -222,10 +223,16 @@ def create_project(user, data: dict) -> OperationResult:
             )
     except IntegrityError:
         logger.exception("create_dms_project IntegrityError slug=%s", data.get("slug"))
+        existing = project_service.find_project_by_slug(company, data.get("slug", ""))
+        slug_msg = (
+            project_service.slug_duplicate_message(existing)
+            if existing is not None
+            else "Ya existe un proyecto con este slug en su compañía."
+        )
         return OperationResult.failure(
             "duplicate",
             "Revise los datos marcados; no se pudo guardar.",
-            errors={"slug": ["Ya existe un proyecto con este slug en su compañía."]},
+            errors={"slug": [slug_msg]},
         )
     except Exception:
         logger.exception("create_dms_project unexpected")

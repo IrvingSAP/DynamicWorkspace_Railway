@@ -1,0 +1,73 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Validar — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_run.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}">Validar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 3 · ayuda</p>
+        <h2>Cómo validar un archivo</h2>
+        <p>Ejecuta un archivo real contra el contrato y la política publicados y obtén el veredicto del gate.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Prerrequisito</h3>
+        <p class="hint">Debe existir una versión <strong>publicada</strong> del contrato. Si no la hay, el hub muestra un bloqueo con acceso directo a publicar. Solo los roles <code>PA</code>, <code>ED</code> y <code>GE</code> pueden ejecutar validaciones.</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Estados del gate</h3>
+        <table class="issue-table">
+            <thead><tr><th>Estado</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr><td><span class="sev sev-info">Aprobado</span></td><td>Sin errores; el archivo cumple el contrato.</td></tr>
+                <tr><td><span class="sev sev-info">Aprobado con advertencias</span></td><td>Dentro del umbral permitido; hay incidencias no bloqueantes.</td></tr>
+                <tr><td><span class="sev sev-error">Rechazado</span></td><td>Se superó el umbral de rechazo o hubo un error fatal de contrato.</td></tr>
+                <tr><td><span class="sev sev-warning">Parcial</span></td><td>Se alcanzó el máximo de errores antes del fin del archivo; recorrido incompleto.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Reglas de subida</h3>
+        <ul class="hint">
+            <li>Solo archivos locales (clic o arrastrar); un job = un archivo.</li>
+            <li>La extensión debe coincidir con el tipo del contrato publicado.</li>
+            <li>Nombres inseguros y rutas se sanitizan; el archivo es de solo lectura.</li>
+            <li>Tamaño máximo alineado al intake de producción (50 MB en el MVP).</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,6 +1,6 @@
 /**
  * SourceProfile — Paso 5 reglas globales de contenido
- * Borrador en sessionStorage hasta persistir DmsSourceProfile.
+ * Persistencia en servidor vía dmsSourceProfile.save.
  */
 (function () {
     "use strict";
@@ -10,14 +10,14 @@
         return;
     }
 
-    const projectSlug = root.dataset.projectSlug;
     const defaultNode = document.getElementById("content-rules-default");
     const defaults = defaultNode
         ? JSON.parse(defaultNode.textContent || "{}")
-        : (window.dmsSourceProfile ? window.dmsSourceProfile.getSource().content_rules || {} : {});
+        : {};
     const statusEl = document.getElementById("content-rules-status");
     const previewEl = document.getElementById("content-rules-preview");
     const btnSave = document.getElementById("btn-save-content-rules");
+    const btnNext = document.getElementById("btn-content-rules-next");
     const form = document.getElementById("content-rules-form");
 
     const fields = {
@@ -74,10 +74,10 @@
     }
 
     function loadRules() {
-        if (window.dmsSourceProfile) {
-            return window.dmsSourceProfile.getSource().content_rules || defaults;
-        }
-        return { ...defaults };
+        const saved = window.dmsSourceProfile
+            ? (window.dmsSourceProfile.getSource().content_rules || {})
+            : {};
+        return Object.assign({}, defaults, saved);
     }
 
     function setStatus(message, isError) {
@@ -96,16 +96,26 @@
         previewEl.textContent = JSON.stringify(payload, null, 2);
     }
 
-    function saveRules(showMessage) {
+    function saveRules(options) {
+        const opts = options || {};
+        const nextUrl = opts.nextUrl || "";
+        const showMessage = Boolean(opts.showMessage);
         const data = readForm();
         if (!window.dmsSourceProfile) {
             updatePreview();
+            if (nextUrl) {
+                window.location.href = nextUrl;
+            }
             return Promise.resolve();
         }
+        setStatus("Guardando…", false);
         return window.dmsSourceProfile.save({ content_rules: data }).then(function () {
             updatePreview();
-            if (showMessage) {
+            if (showMessage && !nextUrl) {
                 setStatus("Borrador guardado en el servidor.", false);
+            }
+            if (nextUrl) {
+                window.location.href = nextUrl;
             }
         }).catch(function (err) {
             const message = err.message || "No se pudo guardar.";
@@ -119,12 +129,19 @@
     }
 
     writeForm(loadRules());
-    setStatus("Los cambios se guardan en el servidor al pulsar «Guardar borrador».", false);
+    setStatus("Los cambios se guardan al pulsar «Guardar borrador» o «Siguiente».", false);
 
     if (btnSave) {
         btnSave.addEventListener("click", function (e) {
             e.preventDefault();
-            saveRules(true);
+            saveRules({ showMessage: true });
+        });
+    }
+
+    if (btnNext) {
+        btnNext.addEventListener("click", function (e) {
+            e.preventDefault();
+            saveRules({ nextUrl: btnNext.dataset.next || "" });
         });
     }
 
@@ -139,7 +156,7 @@
         });
         form.addEventListener("submit", function (e) {
             e.preventDefault();
-            saveRules(true);
+            saveRules({ showMessage: true });
         });
     }
 })();

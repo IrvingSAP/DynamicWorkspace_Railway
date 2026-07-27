@@ -1,0 +1,170 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Proyecto — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · ayuda</p>
+        <h2>Cómo usar el hub del proyecto</h2>
+        <p>Esta pantalla es el punto de entrada del validador: resume el contrato, las políticas y el acceso a validar, historial y bridge. <strong>No transforma</strong> ni genera salida de negocio.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al proyecto</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es este hub</h3>
+        <ul class="hint">
+            <li>Muestra el estado del ciclo FILE GATE (módulos 1 a 6) y accesos directos a cada área.</li>
+            <li>Indica <strong>borrador</strong> vs <strong>versión activa publicada</strong>: Validar usa solo lo publicado.</li>
+            <li>Permite publicar el contrato (esquema + política) cuando ambos están completos.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Encabezado y versiones</h3>
+        <table class="issue-table">
+            <thead><tr><th>Elemento</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr><td>Slug / visibilidad / rol</td><td>Identificador del proyecto, si es público o privado en la compañía, y su rol (PA, ED, GE, CO…).</td></tr>
+                <tr><td><strong>Borrador vN</strong></td><td>Versión editable actual. Los cambios viven aquí hasta publicar.</td></tr>
+                <tr><td><strong>Versión activa</strong></td><td>Contrato congelado que usa el motor al validar. Si aún no hay, debe publicar primero.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Ciclo del proyecto (pasos 1–6)</h3>
+        <table class="issue-table">
+            <thead><tr><th>Paso</th><th>Qué es</th><th>Cuándo marca ✓</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>1 · Esquema / contrato</strong></td>
+                    <td>Asistente de 6 pasos: tipo, captura, campos, reglas e informe.</td>
+                    <td>Los 6 pasos del esquema están completos.</td>
+                </tr>
+                <tr>
+                    <td><strong>2 · Políticas</strong></td>
+                    <td>Recolección, <code>max_errors</code> y umbral de rechazo.</td>
+                    <td>Los 3 pasos de políticas están completos.</td>
+                </tr>
+                <tr>
+                    <td><strong>3 · Validar archivo</strong></td>
+                    <td>Subir un archivo y ejecutarlo contra la versión publicada.</td>
+                    <td>Existe al menos una validación finalizada en el proyecto.</td>
+                </tr>
+                <tr>
+                    <td><strong>4 · Informe / evidencia</strong></td>
+                    <td>Informe JSON/CSV y certificado de una corrida.</td>
+                    <td>Hay al menos un job finalizado con informe generado.</td>
+                </tr>
+                <tr>
+                    <td><strong>5 · Historial</strong></td>
+                    <td>Listado y filtros de corridas anteriores.</td>
+                    <td>Hay al menos una validación finalizada (mismo criterio que el paso 3).</td>
+                </tr>
+                <tr>
+                    <td><strong>6 · Bridge FilePipe</strong></td>
+                    <td>Enlace con FilePipe (pre-check / aceptación de gate).</td>
+                    <td>Queda activo cuando hay contrato publicado; el tilde depende de la configuración del bridge.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px">Estados visuales: <strong>completo</strong> (✓), <strong>activo</strong> (siguiente a trabajar) o <strong>pendiente</strong> (bloqueado por un paso anterior).</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Tarjetas de progreso</h3>
+        <ul class="hint">
+            <li><strong>Pasos del contrato</strong> — avance del asistente de esquema (p. ej. 6 / 6).</li>
+            <li><strong>Tipo de archivo</strong> — tipo configurado en el borrador (TXT posicional, CSV, etc.).</li>
+            <li><strong>Campos</strong> — cantidad de campos definidos en el esquema.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Paneles de acceso rápido</h3>
+        <table class="issue-table">
+            <thead><tr><th>Panel</th><th>Para qué sirve</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Contrato de validación</strong></td>
+                    <td><em>Ver resumen del esquema</em> abre el hub del contrato; <em>Continuar edición</em> va al primer paso incompleto.</td>
+                </tr>
+                <tr>
+                    <td><strong>Políticas de validación</strong></td>
+                    <td>Muestra estrategia y umbral del borrador; enlaces a ver o editar políticas.</td>
+                </tr>
+                <tr>
+                    <td><strong>Validar archivo</strong></td>
+                    <td>Entra al hub de validación. Requiere versión publicada; si no hay, el flujo pedirá publicar primero.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Botones y acciones</h3>
+        <table class="issue-table">
+            <thead><tr><th>Control</th><th>Acción</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Ayuda</strong></td><td>Abre esta guía.</td></tr>
+                <tr>
+                    <td><strong>Publicar contrato vN</strong></td>
+                    <td>Congela esquema + política como versión publicada. Solo habilitado si el contrato (6 pasos) y las políticas están completos. Tras publicar se crea un nuevo borrador.</td>
+                </tr>
+                <tr><td><strong>← Proyectos</strong></td><td>Vuelve al listado de proyectos FILE GATE.</td></tr>
+                <tr><td><strong>Pasos del ciclo</strong></td><td>Cada paso es un enlace al módulo correspondiente.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Orden recomendado</h3>
+        <ol class="hint">
+            <li>Completar el <strong>esquema</strong> (6 pasos).</li>
+            <li>Completar las <strong>políticas</strong> (3 pasos).</li>
+            <li><strong>Publicar</strong> el contrato.</li>
+            <li><strong>Validar</strong> un archivo de prueba y revisar resultado / informe.</li>
+            <li>Consultar el <strong>historial</strong> cuando necesite auditar corridas.</li>
+            <li>Configurar el <strong>bridge</strong> si FilePipe debe exigir el gate.</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}

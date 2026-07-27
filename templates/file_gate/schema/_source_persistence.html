@@ -1,0 +1,7 @@
+{% load static %}
+{{ source|json_script:"dms-source-profile-data" }}
+<div id="dms-source-save-config"
+     data-save-url="{{ source_save_url }}"
+     data-csrf-token="{{ csrf_token }}"
+     hidden></div>
+<script src="{% static 'js/source_profile-persistence.js' %}"></script>

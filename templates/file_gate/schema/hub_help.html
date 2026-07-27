@@ -1,0 +1,97 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Contrato — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}">Contrato</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 1 · ayuda</p>
+        <h2>Cómo definir el contrato de validación</h2>
+        <p>El contrato describe qué debe cumplir un archivo para considerarse válido. No genera salida de negocio: solo congela el criterio que usará Validar.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al contrato</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Complete los 6 pasos del asistente en el <strong>borrador</strong>.</li>
+            <li>Guarde en cada paso (el progreso se refleja en el hub).</li>
+            <li>Cuando el contrato esté listo, pulse <strong>Publicar contrato</strong>.</li>
+            <li>Solo la versión publicada alimenta Validar archivo, el informe y el bridge FilePipe.</li>
+        </ol>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Indicadores del hub</h3>
+        <table class="help-table">
+            <thead><tr><th>Indicador</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr><td>Pasos completos</td><td>Cuántos de los 6 pasos tienen lo mínimo para avanzar.</td></tr>
+                <tr><td>Tipo de archivo</td><td>Formato del contrato (paso 1): posicional, CSV, Excel, etc.</td></tr>
+                <tr><td>Campos definidos</td><td>Cantidad de campos del paso 4. Al publicar hace falta al menos uno.</td></tr>
+                <tr><td>Borrador / activa</td><td>Edita siempre el borrador; las validaciones usan la versión publicada.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Asistente (6 pasos)</h3>
+        <table class="help-table">
+            <thead><tr><th>Paso</th><th>Qué configura</th></tr></thead>
+            <tbody>
+                <tr><td>1 · Tipo</td><td>Formato, encoding y fin de línea del archivo a validar.</td></tr>
+                <tr><td>2 · Inicio</td><td>Desde dónde empiezan los datos útiles (salta cabeceras o títulos).</td></tr>
+                <tr><td>3 · Fin</td><td>Dónde termina la captura (EOF, línea o patrón).</td></tr>
+                <tr><td>4 · Campos</td><td>Estructura y criterios de rechazo por campo (<code>required</code>, tipo, patrón…).</td></tr>
+                <tr><td>5 · Reglas</td><td>Normalización y exclusiones globales de contenido.</td></tr>
+                <tr><td>6 · Informe</td><td>Qué debe incluir la evidencia de cada validación (JSON/CSV, resumen, filas).</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:10px">El umbral que decide <code>passed</code> / <code>failed</code> no vive aquí: se configura en <strong>Políticas</strong> (Módulo 2).</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Roles y publicación</h3>
+        <table class="help-table">
+            <thead><tr><th>Quién</th><th>Puede</th></tr></thead>
+            <tbody>
+                <tr><td><code>PA</code> / <code>ED</code></td><td>Editar el borrador y publicar el contrato.</td></tr>
+                <tr><td><code>GE</code> / <code>CO</code></td><td>Consultar el hub; no editan ni publican.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:10px">Publicar congela un snapshot. Luego se crea un nuevo borrador editable. Cambiar el tipo de archivo con campos ya definidos puede exigir limpiar o redefinir el paso 4.</p>
+    </div>
+</div>
+{% endblock %}
