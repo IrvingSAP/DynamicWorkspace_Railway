@@ -30,6 +30,7 @@
 | [`docs/APP_FACTORY.md`](APP_FACTORY.md) | **APP FACTORY** — propuestas de nuevos desarrollos / verticales sobre el chasis |
 | [`docs/FILE_GATE.md`](FILE_GATE.md) | **FILE GATE** — Validador de archivos (prioridad #1 APP_FACTORY) |
 | [`docs/REVERSE_STUDIO.md`](REVERSE_STUDIO.md) | **Reverse Studio** — Emisor de layouts (CSV/Excel → posicional/JSON/XML) |
+| [`docs/FILE_MATCH.md`](FILE_MATCH.md) | **FILE MATCH** — Conciliador de archivos (A vs B por clave) |
 | [`docs/definition_app_FILE_GATE/`](definition_app_FILE_GATE/) | Definición por módulo FILE GATE (espejo `definition_app_DMS`) |
 | [`docs/definition_app/UI_MESSAGES.md`](definition_app/UI_MESSAGES.md) | Catálogo de mensajes UI, `error_code`, reglas vista/servicio |
 | [`docs/definition_app/DynamicWorkspace_Model.md`](definition_app/DynamicWorkspace_Model.md) | Modelos de datos, relaciones e integridad |

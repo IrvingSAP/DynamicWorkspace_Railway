@@ -61,7 +61,7 @@ Cada aplicativo nuevo ≈ un nuevo `project_kind` (o un módulo sobre un kind ex
 |------------|---------------|-------|
 | **Reverse Studio** (CSV/Excel → posicional / JSON / XML) | DMS “invertido”: mismos perfiles, mapeo y serializadores | Camino inverso ya casi cubierto por el motor actual — ver [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) |
 | **Validador de archivos** (sin transformar) | `SourceProfile` + reglas + reporte de rechazos | Subir → validar esquema → informe OK/errores (bancos, gobierno, intercambio) — ver [`FILE_GATE.md`](FILE_GATE.md) |
-| **Conciliador de archivos** | 2 `SourceProfile` + comparación por clave | Cruzar banco vs ERP (u orígenes similares) y reportar diferencias — ver [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §4 |
+| **Conciliador de archivos** | 2 `SourceProfile` + comparación por clave | Cruzar banco vs ERP (u orígenes similares) y reportar diferencias — ver [`FILE_MATCH.md`](FILE_MATCH.md) |
 | **Catálogos / maestros gestionados** | DynamicWorkspace + `replace_map` / `lookup` | Tablas de referencia que alimentan reglas DMS |
 
 ---
@@ -95,10 +95,11 @@ Cada aplicativo nuevo ≈ un nuevo `project_kind` (o un módulo sobre un kind ex
 |-------|------------|---------|
 | 1 | **Validador de archivos** | **Hecho** — [`FILE_GATE.md`](FILE_GATE.md) |
 | 2 | **Reverse Studio** | Reutiliza serializadores/parsers del DMS — [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) |
-| 3 | **Formularios de captura** | Abre el producto a usuarios que no manejan archivos |
-| 4 | **Scheduling / API** | Ya en roadmap DMS Fase 3; multiplica valor de proyectos existentes |
+| 3 | **Conciliador de archivos** | Doble parse + comparador — [`FILE_MATCH.md`](FILE_MATCH.md) |
+| 4 | **Formularios de captura** | Abre el producto a usuarios que no manejan archivos |
+| 5 | **Scheduling / API** | Ya en roadmap DMS Fase 3; multiplica valor de proyectos existentes |
 
-> Conciliador y Catálogos (§2) quedan priorizados tras Reverse Studio; ver orden en [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §11.
+> Catálogos (§2) quedan tras Match; ver orden en [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §11.
 
 ---
 
@@ -132,7 +133,7 @@ Si la respuesta es “sí” a 1–4, conviene un doc hermano al estilo `DataMap
 |------|--------|
 | Validador de archivos | **Hecho (MVP M1–M6)** — [`FILE_GATE.md`](FILE_GATE.md) · `apps/file_gate/` |
 | Reverse Studio | **En definición / implementación** — [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) · `apps/reverse_studio/` · rama `feature/reverse-studio` |
-| Conciliador de archivos | **Propuesta detallada** — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §4 (`FILE_MATCH`) |
+| Conciliador de archivos | **En definición** — [`FILE_MATCH.md`](FILE_MATCH.md) · rama `feature/file-match` · resumen [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §4 |
 | Catálogos / maestros | **Propuesta detallada** — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §5 (`MASTER_CATALOG`) |
 | Formularios de captura | Propuesta |
 | Checklists / inspecciones | Propuesta |

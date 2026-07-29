@@ -85,7 +85,7 @@ Aplicativo vendible sin reescribir el ETL
 |------------|-------------|--------|------------------------|
 | **Validador de archivos** | `FILE_GATE` | **Hecho** (M1–M6) | [`FILE_GATE.md`](FILE_GATE.md) |
 | **Reverse Studio** | `REVERSE_STUDIO` | **En definición / implementación** | [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) · resumen §3 |
-| **Conciliador de archivos** | `FILE_MATCH` | Propuesta | §4 de este archivo |
+| **Conciliador de archivos** | `FILE_MATCH` | **En definición** | [`FILE_MATCH.md`](FILE_MATCH.md) · resumen §4 |
 | **Catálogos / maestros** | `MASTER_CATALOG` | Propuesta | §5 de este archivo |
 
 ### Por qué existen (problema → solución)
@@ -257,7 +257,9 @@ Seguir [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) §18. Resumen:
 
 ## 4. FILE MATCH — Conciliador de archivos
 
-> **Nemotécnico:** `FILE_MATCH` · **Kind propuesto:** `file_match`
+> **Nemotécnico:** `FILE_MATCH` · **Kind propuesto:** `file_match`  
+> **Documento de producto:** [`FILE_MATCH.md`](FILE_MATCH.md) (lineamientos completos; este §4 es el resumen en el paraguas §2).  
+> **Rama Git:** `feature/file-match` (no desplegar a producción hasta merge a `main`).
 
 ### 4.0 Qué es, qué hace y para qué sirve
 
@@ -411,10 +413,11 @@ Implementación preferida: dos `DmsSourceProfile` (o snapshots) + JSON `match_ru
 
 ### 4.13 Próximos pasos
 
-1. Prototipo de reglas de cruce + informe de diferencias.
-2. Spike de rendimiento (archivos medianos en memoria vs sort-merge).
-3. Extraer lineamientos a `docs/FILE_MATCH.md` + `definition_app_FILE_MATCH/` (rama `feature/file-match`).
-4. Rama `feature/file-match`.
+1. Seguir el plan en [`FILE_MATCH.md`](FILE_MATCH.md) §18 (rama `feature/file-match`).
+2. Prototipo de reglas de cruce + informe de diferencias.
+3. Spike de rendimiento (archivos medianos en memoria vs sort-merge).
+4. `definition_app_FILE_MATCH/` con módulos 1–7 (+ bridge Fase 2).
+5. PR a `main` cuando el MVP esté revisado (no desplegar desde la feature).
 
 ---
 
@@ -635,7 +638,7 @@ docs/
 ├── APP_FACTORY_HIGH_REUSE.md   ← este archivo
 ├── FILE_GATE.md
 ├── REVERSE_STUDIO.md           ← producto Reverse Studio (lineamientos)
-├── FILE_MATCH.md               ← opcional: extraer §4 al priorizar (rama feature/file-match)
+├── FILE_MATCH.md               ← producto Conciliador (lineamientos; rama feature/file-match)
 └── MASTER_CATALOG.md           ← opcional: extraer §5
 
 apps/
@@ -734,6 +737,7 @@ Antes de abrir rama de implementación para cualquiera de estos verticales:
 | [`APP_FACTORY.md`](APP_FACTORY.md) | Visión y prioridad; §2 origen de este doc |
 | [`FILE_GATE.md`](FILE_GATE.md) | Primer vertical §2 implementado |
 | [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) | Segundo vertical §2 (emisor) |
+| [`FILE_MATCH.md`](FILE_MATCH.md) | Tercer vertical §2 (conciliador) |
 | [`DataMappingStudio.md`](DataMappingStudio.md) | Motor ETL FilePipe |
 | [`DynamicWorkspace.md`](DynamicWorkspace.md) | Motor de esquema / records |
 | [`definition_app_DMS/`](definition_app_DMS/) | Specs técnicas a reutilizar |
