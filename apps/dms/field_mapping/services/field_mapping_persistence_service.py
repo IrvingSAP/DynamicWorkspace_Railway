@@ -284,7 +284,11 @@ def save_mappings(
     if not user_can_edit_mappings(user, project):
         return OperationResult.failure(
             "forbidden",
-            "No tiene permiso para editar el mapeo de campos.",
+            (
+                "No tiene permiso para editar el mapeo de este proyecto."
+                if project.project_kind == Project.KIND_REVERSE
+                else "No tiene permiso para editar el mapeo de campos."
+            ),
         )
 
     version = get_or_create_draft_with_mappings(project)
@@ -305,7 +309,11 @@ def save_mappings(
     if errors:
         return OperationResult.failure(
             "validation_form",
-            "Revise los datos del mapeo de campos.",
+            (
+                "Revise los datos del mapeo."
+                if project.project_kind == Project.KIND_REVERSE
+                else "Revise los datos del mapeo de campos."
+            ),
             errors=errors,
             warnings=warnings,
         )
@@ -323,7 +331,11 @@ def save_mappings(
         )
 
     return OperationResult.success(
-        user_message="Mapeo de campos guardado correctamente.",
+        user_message=(
+            "Mapeo guardado correctamente."
+            if project.project_kind == Project.KIND_REVERSE
+            else "Mapeo de campos guardado correctamente."
+        ),
         payload={
             "mappings": set_to_dict(mapping_set)["mappings"],
             "version": version,

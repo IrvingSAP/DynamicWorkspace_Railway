@@ -1,0 +1,52 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Publicar {{ project.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:publish_hub' project_slug=project.slug %}">Publicar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span> · Módulo 4</p>
+        <h2>Ayuda — Publicar definición</h2>
+        <p>Qué se congela y quién puede publicar.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'reverse_studio:publish_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <table class="help-table">
+            <thead><tr><th>Tema</th><th>Detalle</th></tr></thead>
+            <tbody>
+                <tr><td>Roles</td><td>Solo <span class="mono">PA</span> / <span class="mono">ED</span>.</td></tr>
+                <tr><td>Snapshot</td><td>Entrada + layout + mapeo + reglas del borrador.</td></tr>
+                <tr><td>Después</td><td>Versión activa + nuevo borrador; generar = Módulo 5.</td></tr>
+                <tr><td>Motor</td><td>Mismo <span class="mono">publish_draft_version</span> que FilePipe, con whitelist Reverse.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

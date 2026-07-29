@@ -1,0 +1,19 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Paso 4 — {{ project.name }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/source_profile.css' %}"><link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div><h2>Ayuda — Campos de la planilla</h2></div>
+    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'reverse_studio:input_step4' project_slug=project.slug %}">← Volver</a></div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li><strong>Nombre interno</strong> será la clave en el mapeo (Módulo 3).</li>
+    <li>Nombres con espacios → <code>alphanumeric_spaces</code> o <code>free_text</code>.</li>
+    <li>Teléfonos con guion → <code>free_text</code> o patrón <code>custom</code>.</li>
+    <li>Solo CSV / Excel / delimitado; sin wizard posicional/JSON/XML de entrada.</li>
+</ul>
+</div></div>
+{% endblock %}

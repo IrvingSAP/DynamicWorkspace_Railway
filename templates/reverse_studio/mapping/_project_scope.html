@@ -1,0 +1,14 @@
+{# Contexto: project, hub, membership, version_publish #}
+<div class="project-scope-strip" aria-label="Proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    {% if membership %}
+    <span class="hint">·</span>
+    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    {% endif %}
+    <span class="hint">· {{ hub.version_label }}</span>
+    {% if version_publish.has_published_version %}
+    <span class="hint">· {{ version_publish.published_version_label }}</span>
+    {% endif %}
+</div>

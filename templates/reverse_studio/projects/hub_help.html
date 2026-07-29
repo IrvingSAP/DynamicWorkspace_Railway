@@ -1,0 +1,32 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Proyecto — {{ project.name }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb">
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span><span>Ayuda</span>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Hub del proyecto</h2>
+        <p>Punto de entrada del emisor. Disponibles M1–M4 (entrada, salida, mapeo, publicar) y miembros (PA).</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">← Volver</a>
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li><strong>Miembros:</strong> solo PA invita UF y asigna roles.</li>
+    <li><strong>Entrada / salida / mapeo:</strong> se editan en borrador.</li>
+    <li><strong>Publicar:</strong> congela la definición; generar = Módulo 5 (pendiente).</li>
+</ul>
+</div></div>
+{% endblock %}

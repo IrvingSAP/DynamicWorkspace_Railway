@@ -1,0 +1,11 @@
+{{ rule_rows|json_script:"dms-transform-rules-data" }}
+{{ transform_ops|json_script:"dms-transform-ops-catalog" }}
+{{ pipeline_templates|json_script:"dms-transform-pipeline-templates" }}
+{{ sample_preview_row|json_script:"dms-transform-sample-row" }}
+<div id="dms-transform-rules-config"
+     data-save-url="{{ rules_save_url }}"
+     data-preview-url="{{ rules_preview_url }}"
+     data-csrf-token="{{ csrf_token }}"
+     data-can-edit="{% if can_edit_rules %}1{% else %}0{% endif %}"
+     data-has-sample="{% if has_sample_preview %}1{% else %}0{% endif %}"
+     hidden></div>

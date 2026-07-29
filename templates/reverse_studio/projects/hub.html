@@ -1,0 +1,254 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ project.name }} — Reverse Studio{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Emisor</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ project.slug }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">
+            <span class="cell-badge">{{ project.slug }}</span>
+            {% if hub.visibility == 'company' %}
+            <span class="visibility-badge visibility-badge--public">{{ hub.visibility_label }}</span>
+            {% else %}
+            <span class="visibility-badge visibility-badge--private">{{ hub.visibility_label }}</span>
+            {% endif %}
+            {% if hub.is_pa %}
+            <span class="perm-badge perm-badge--admin">{{ hub.role_label }}</span>
+            {% else %}
+            <span class="perm-badge">{{ hub.role_label }}</span>
+            {% endif %}
+        </p>
+        <h2>{{ project.name }}</h2>
+        {% if project.description %}
+        <p>{{ project.description }}</p>
+        {% else %}
+        <p>Proyecto Reverse Studio: planilla amigable → layout de envío (posicional / JSON / XML).</p>
+        {% endif %}
+    </div>
+    <div class="page-actions">
+        {% url 'reverse_studio:project_hub_help' project_slug=project.slug as rs_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=rs_help_url %}
+        {% if hub.can_manage_members %}
+        <a href="{% url 'reverse_studio:project_members' project_slug=project.slug %}" class="btn btn-secondary">Miembros</a>
+        {% endif %}
+        <a href="{% url 'reverse_studio:project_list' %}" class="btn btn-secondary">← Proyectos</a>
+    </div>
+</div>
+
+<div class="version-strip">
+    <strong>Versión:</strong> {{ hub.version_label }}
+    · <strong>Activa:</strong> {{ hub.published_version_label }}
+    · <strong>Miembros:</strong> {{ hub.member_count }}
+</div>
+
+<div class="lifecycle-stepper" aria-label="Ciclo del proyecto">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Módulos 1–4</p>
+        <ol class="lifecycle-steps">
+            <li>
+                <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.input_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.input_complete %}✓{% else %}1{% endif %}</span> Planilla / entrada
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.output_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.output_complete %}✓{% else %}2{% endif %}</span> Salida
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'reverse_studio:mapping_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.mapping_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.mapping_complete %}✓{% else %}3{% endif %}</span> Mapeo
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'reverse_studio:publish_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.publish_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.has_published_version %}✓{% else %}4{% endif %}</span> Publicar
+                </a>
+            </li>
+        </ol>
+    </div>
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Módulos 5–6</p>
+        <ol class="lifecycle-steps">
+            <li>
+                {% if hub.has_published_version %}
+                <a href="{% url 'reverse_studio:run_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.run_step_class }}">
+                    <span class="lifecycle-step-num">5</span> Generar
+                </a>
+                {% else %}
+                <span class="lifecycle-step {{ hub.run_step_class }}"><span class="lifecycle-step-num">5</span> Generar</span>
+                {% endif %}
+            </li>
+            <li>
+                <a href="{% url 'reverse_studio:history_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.history_step_class }}">
+                    <span class="lifecycle-step-num">6</span> Historial
+                </a>
+            </li>
+        </ol>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Progreso">
+    <div class="stat-card{% if hub.input_complete %} is-done{% else %} is-accent{% endif %}">
+        <p class="stat-label">Entrada</p>
+        <p class="stat-value">{{ hub.input_steps_complete }} / {{ hub.input_steps_total }}</p>
+    </div>
+    <div class="stat-card{% if hub.output_complete %} is-done{% elif hub.input_complete %} is-accent{% endif %}">
+        <p class="stat-label">Salida</p>
+        <p class="stat-value">{{ hub.output_steps_complete }} / {{ hub.output_steps_total }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Layout</p>
+        <p class="stat-value" style="font-size:16px">{{ hub.output_file_type_label }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Campos salida</p>
+        <p class="stat-value">{{ hub.output_fields_count }}</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Contrato de entrada</h3>
+        <p class="hint">
+            Define cómo viene la planilla (CSV / Excel / delimitado). No publica sola ni genera el archivo de envío.
+            {% if hub.input_complete %}
+            Entrada completa en borrador.
+            {% else %}
+            Complete los 6 pasos del asistente de entrada.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}" class="btn btn-secondary">Ver resumen de entrada</a>
+            <a href="{% url hub.continue_input_url_name project_slug=project.slug %}" class="btn btn-primary">Continuar entrada</a>
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Contrato de salida</h3>
+        <p class="hint">
+            Define el layout de envío (TXT posicional / JSON / XML).
+            {% if not hub.input_complete %}
+            Recomendado: complete la entrada primero; puede editar la salida igualmente.
+            {% elif hub.output_complete %}
+            Salida completa en borrador — continúe con el mapeo.
+            {% else %}
+            Complete los 6 pasos del asistente de salida.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}" class="btn btn-secondary">Ver resumen de salida</a>
+            <a href="{% url hub.continue_output_url_name project_slug=project.slug %}" class="btn btn-primary">Continuar salida</a>
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Mapeo y reglas</h3>
+        <p class="hint">
+            Enlaza planilla → layout y aplica reglas (trim, upper, …).
+            {% if not hub.output_complete %}
+            Recomendado: complete la salida primero.
+            {% elif hub.mapping_complete %}
+            Mapeo completo en borrador — continúe a publicar.
+            {% else %}
+            Abra el hub de mapeo para enlazar campos y reglas.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'reverse_studio:mapping_hub' project_slug=project.slug %}" class="btn btn-secondary">Ver resumen de mapeo</a>
+            <a href="{% url 'reverse_studio:mapping_editor' project_slug=project.slug %}" class="btn btn-primary">Continuar mapeo</a>
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Publicar definición</h3>
+        <p class="hint">
+            Congela entrada + salida + mapeo para generación.
+            {% if hub.has_published_version %}
+            Versión activa: <strong>{{ hub.published_version_label }}</strong>.
+            {% elif not hub.mapping_complete %}
+            Recomendado: complete el mapeo primero.
+            {% else %}
+            Listo para publicar el borrador actual.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'reverse_studio:publish_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a publicar</a>
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Generar archivo de envío</h3>
+        <p class="hint">
+            Suba la planilla y emita el layout con la definición publicada.
+            {% if hub.has_published_version %}
+            Listo para generar con <strong>{{ hub.published_version_label }}</strong>.
+            {% else %}
+            Primero publique una definición (Módulo 4).
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            {% if hub.has_published_version %}
+            <a href="{% url 'reverse_studio:run_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a generar</a>
+            {% else %}
+            <a href="{% url 'reverse_studio:publish_hub' project_slug=project.slug %}" class="btn btn-secondary">Publicar primero</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Historial de generaciones</h3>
+        <p class="hint">
+            Auditoría filtrable de emisiones, TTL de descargas y detalle de cada job.
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'reverse_studio:history_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a historial</a>
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Integración FILE GATE</h3>
+        <p class="hint">
+            Opcional (Fase 2): exigir una validación FILE GATE en verde sobre la misma planilla antes de generar.
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'reverse_studio:bridge_hub' project_slug=project.slug %}" class="btn btn-primary">Configurar bridge</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

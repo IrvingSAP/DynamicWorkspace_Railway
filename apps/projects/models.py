@@ -10,10 +10,12 @@ class Project(models.Model):
     KIND_WORKSPACE = "workspace"
     KIND_DMS = "dms"
     KIND_FILE_GATE = "file_gate"
+    KIND_REVERSE = "reverse"
     KIND_CHOICES = [
         (KIND_WORKSPACE, "Workspace (tabla)"),
         (KIND_DMS, "DMS (FilePipe)"),
         (KIND_FILE_GATE, "FILE GATE (Validador)"),
+        (KIND_REVERSE, "Reverse Studio (Emisor)"),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

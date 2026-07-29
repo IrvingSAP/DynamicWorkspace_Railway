@@ -1,7 +1,7 @@
-"""Bridge FILE GATE ↔ FilePipe — Módulo 6 (dms_bridge.md).
+"""Bridge FILE GATE ↔ FilePipe / Reverse Studio.
 
-Config vive en DmsProjectConfig (lado DMS). El pre-check reutiliza jobs
-FILE GATE por content_hash; no recalcula el gate (B2).
+Config vive en DmsProjectConfig (lado emisor: DMS o Reverse). El pre-check
+reutiliza jobs FILE GATE por content_hash; no recalcula el gate (B2 / BR2).
 """
 
 from __future__ import annotations
@@ -27,6 +27,8 @@ DEFAULT_MAX_AGE_DAYS = 7
 
 ACCEPT_PASSED = DmsProjectConfig.ACCEPT_PASSED
 ACCEPT_PASSED_WITH_WARNINGS = DmsProjectConfig.ACCEPT_PASSED_WITH_WARNINGS
+
+BRIDGEABLE_KINDS = frozenset({Project.KIND_DMS, Project.KIND_REVERSE})
 
 NON_FINAL_JOB_STATUSES = (
     DmsExecutionJob.STATUS_UPLOADED,
@@ -58,9 +60,43 @@ MSG = {
     ),
 }
 
+MSG_REVERSE = {
+    "config_invalid": (
+        "La integración FILE GATE está mal configurada. Revise el proyecto vinculado."
+    ),
+    "gate_not_published": (
+        "El proyecto FILE GATE no tiene un contrato publicado. Publique el esquema antes de generar."
+    ),
+    "no_hash": (
+        "La planilla no tiene hash. Vuelva a subirla antes de generar."
+    ),
+    "no_matching_job": (
+        "Valide esta planilla en FILE GATE antes de generar. "
+        "No hay una corrida aceptada con el mismo contenido."
+    ),
+    "status_not_accepted": (
+        "La última validación FILE GATE de esta planilla no está aceptada. "
+        "Corrija el archivo o revise la evidencia antes de generar."
+    ),
+    "stale": (
+        "La validación FILE GATE de esta planilla expiró por frescura. "
+        "Vuelva a validarla en FILE GATE."
+    ),
+}
+
+
+def is_bridgeable_project(project: Project) -> bool:
+    return project.project_kind in BRIDGEABLE_KINDS
+
+
+def _message(code: str, project: Project | None = None) -> str:
+    if project is not None and project.project_kind == Project.KIND_REVERSE:
+        return MSG_REVERSE.get(code, MSG.get(code, "Pre-check FILE GATE fallido."))
+    return MSG.get(code, "Pre-check FILE GATE fallido.")
+
 
 def user_can_configure(user, project: Project) -> bool:
-    """PA/ED del proyecto DMS."""
+    """PA/ED del proyecto emisor (DMS o Reverse)."""
     membership = project_service.get_membership(user, project)
     if membership is None:
         return False
@@ -76,7 +112,7 @@ def get_or_create_config(project: Project) -> DmsProjectConfig:
 
 
 def list_gate_candidates(dms_project: Project) -> list[dict]:
-    """Proyectos FILE GATE de la misma compañía (B1)."""
+    """Proyectos FILE GATE de la misma compañía (B1 / BR1)."""
     qs = (
         Project.objects.filter(
             company_id=dms_project.company_id,
@@ -99,12 +135,17 @@ def _published_file_type(project: Project) -> str:
 
 
 def file_type_mismatch_warning(dms_project: Project, gate_project: Project | None) -> str:
-    """B9: aviso suave si los tipos no coinciden."""
+    """B9 / BR9: aviso suave si los tipos no coinciden."""
     if gate_project is None:
         return ""
     dms_type = _published_file_type(dms_project)
     gate_type = _published_file_type(gate_project)
     if dms_type and gate_type and dms_type != gate_type:
+        if dms_project.project_kind == Project.KIND_REVERSE:
+            return (
+                f"El tipo de archivo del contrato FILE GATE ({gate_type}) "
+                f"no coincide con la planilla de entrada ({dms_type})."
+            )
         return (
             f"El tipo de archivo del contrato FILE GATE ({gate_type}) "
             f"no coincide con el origen DMS ({dms_type})."
@@ -140,6 +181,7 @@ def get_settings_context(user, dms_project: Project) -> dict:
                 "label": "passed o passed_with_warnings",
             },
         ],
+        "is_reverse": dms_project.project_kind == Project.KIND_REVERSE,
     }
 
 
@@ -154,10 +196,10 @@ def save_settings(user, dms_project: Project, data: dict) -> OperationResult:
             "forbidden",
             "No tiene permiso para configurar la integración FILE GATE.",
         )
-    if dms_project.project_kind != Project.KIND_DMS:
+    if not is_bridgeable_project(dms_project):
         return OperationResult.failure(
             "validation_form",
-            "La integración solo aplica a proyectos FilePipe (DMS).",
+            "La integración solo aplica a proyectos FilePipe o Reverse Studio.",
         )
 
     errors: dict[str, list[str]] = {}
@@ -192,14 +234,12 @@ def save_settings(user, dms_project: Project, data: dict) -> OperationResult:
                     "Proyecto FILE GATE inválido o de otra compañía."
                 ]
     elif gate_id:
-        # B7: puede conservar el vínculo aunque el flag esté OFF.
         gate_project = Project.objects.filter(
             id=gate_id,
             company_id=dms_project.company_id,
             project_kind=Project.KIND_FILE_GATE,
         ).first()
     else:
-        # Flag OFF y sin selección → conservar el vínculo previo (B7).
         config_preview = get_or_create_config(dms_project)
         gate_project = config_preview.file_gate_project
         if gate_project is not None and (
@@ -231,12 +271,19 @@ def save_settings(user, dms_project: Project, data: dict) -> OperationResult:
         config.file_gate_linked_by = None
 
     config.save()
+    is_reverse = dms_project.project_kind == Project.KIND_REVERSE
+    if enabled:
+        user_message = "Integración FILE GATE guardada."
+    elif is_reverse:
+        user_message = (
+            "Integración FILE GATE desactivada. Generar funcionará sin pre-check."
+        )
+    else:
+        user_message = (
+            "Integración FILE GATE desactivada. FilePipe ejecutará sin pre-check."
+        )
     return OperationResult.success(
-        user_message=(
-            "Integración FILE GATE guardada."
-            if enabled
-            else "Integración FILE GATE desactivada. FilePipe ejecutará sin pre-check."
-        ),
+        user_message=user_message,
         payload={"config_id": str(config.id)},
     )
 
@@ -272,7 +319,14 @@ def _gate_links(gate_project: Project, job: DmsExecutionJob | None = None) -> di
     return links
 
 
-def _block(code: str, *, gate_project: Project | None = None, job=None, **extra) -> OperationResult:
+def _block(
+    code: str,
+    *,
+    project: Project | None = None,
+    gate_project: Project | None = None,
+    job=None,
+    **extra,
+) -> OperationResult:
     payload = {"links": {}}
     if gate_project is not None:
         payload["links"] = _gate_links(gate_project, job)
@@ -284,7 +338,7 @@ def _block(code: str, *, gate_project: Project | None = None, job=None, **extra)
     payload.update(extra)
     return OperationResult.failure(
         code,
-        MSG.get(code, "Pre-check FILE GATE fallido."),
+        _message(code, project),
         **payload,
     )
 
@@ -296,7 +350,7 @@ def _status_accepted(status: str, accept: str) -> bool:
 
 
 def precheck(dms_project: Project, *, content_hash: str) -> OperationResult:
-    """Algoritmo B1–B6 / D3–D5. No recalcula el gate."""
+    """Algoritmo B1–B6 / BR1–BR6. No recalcula el gate."""
     config = (
         DmsProjectConfig.objects.select_related("file_gate_project")
         .filter(project_id=dms_project.id)
@@ -311,14 +365,16 @@ def precheck(dms_project: Project, *, content_hash: str) -> OperationResult:
         or gate_project.project_kind != Project.KIND_FILE_GATE
         or gate_project.company_id != dms_project.company_id
     ):
-        return _block("config_invalid")
+        return _block("config_invalid", project=dms_project)
 
     if file_intake_persistence_service.get_published_version(gate_project) is None:
-        return _block("gate_not_published", gate_project=gate_project)
+        return _block(
+            "gate_not_published", project=dms_project, gate_project=gate_project
+        )
 
     hash_value = (content_hash or "").strip()
     if not hash_value:
-        return _block("no_hash", gate_project=gate_project)
+        return _block("no_hash", project=dms_project, gate_project=gate_project)
 
     max_age = config.file_gate_max_age_days or DEFAULT_MAX_AGE_DAYS
     cutoff = timezone.now() - timedelta(days=max_age)
@@ -336,7 +392,6 @@ def precheck(dms_project: Project, *, content_hash: str) -> OperationResult:
 
     final_jobs = [job for job in candidates if report_svc.is_job_final(job)]
     if not final_jobs:
-        # Distinguir frescura: ¿hay job matching pero viejo?
         any_match = (
             DmsExecutionJob.objects.filter(
                 project=gate_project,
@@ -346,15 +401,22 @@ def precheck(dms_project: Project, *, content_hash: str) -> OperationResult:
             .exists()
         )
         if any_match:
-            return _block("stale", gate_project=gate_project)
-        return _block("no_matching_job", gate_project=gate_project)
+            return _block("stale", project=dms_project, gate_project=gate_project)
+        return _block(
+            "no_matching_job", project=dms_project, gate_project=gate_project
+        )
 
     job = final_jobs[0]
     gate = (job.input_suggestions or {}).get("gate_result") or {}
     status = gate.get("status") or job.status
     accept = config.file_gate_accept or ACCEPT_PASSED_WITH_WARNINGS
     if not _status_accepted(status, accept):
-        return _block("status_not_accepted", gate_project=gate_project, job=job)
+        return _block(
+            "status_not_accepted",
+            project=dms_project,
+            gate_project=gate_project,
+            job=job,
+        )
 
     snapshot = gate.get("schema_snapshot") or {}
     version = gate.get("published_version_number") or snapshot.get("version")
@@ -392,7 +454,7 @@ def precheck_job(dms_project: Project, job: DmsExecutionJob) -> OperationResult:
 
 
 def stamp_job(job: DmsExecutionJob, seal: dict) -> None:
-    """B8: sello de auditoría en input_suggestions del job DMS."""
+    """B8 / BR8: sello de auditoría en input_suggestions del job."""
     suggestions = dict(job.input_suggestions or {})
     suggestions["file_gate_check"] = seal
     job.input_suggestions = suggestions
@@ -400,7 +462,7 @@ def stamp_job(job: DmsExecutionJob, seal: dict) -> None:
 
 
 def build_hub_context(user, gate_project: Project) -> dict:
-    """Hub bridge lado FILE GATE: vínculos entrantes."""
+    """Hub bridge lado FILE GATE: vínculos entrantes (DMS + Reverse)."""
     configs = (
         DmsProjectConfig.objects.filter(file_gate_project=gate_project)
         .select_related("project", "file_gate_linked_by")
@@ -408,12 +470,12 @@ def build_hub_context(user, gate_project: Project) -> dict:
     )
     links = []
     for cfg in configs:
-        dms = cfg.project
-        if dms.project_kind != Project.KIND_DMS:
+        emitter = cfg.project
+        if not is_bridgeable_project(emitter):
             continue
         last_check = (
             DmsExecutionJob.objects.filter(
-                project=dms,
+                project=emitter,
                 input_suggestions__has_key="file_gate_check",
             )
             .order_by("-finished_at", "-created_at")
@@ -423,10 +485,41 @@ def build_hub_context(user, gate_project: Project) -> dict:
         if last_check is not None:
             seal = (last_check.input_suggestions or {}).get("file_gate_check") or {}
             last_status = seal.get("gate_status") or ""
+
+        is_reverse = emitter.project_kind == Project.KIND_REVERSE
+        if is_reverse:
+            settings_url = reverse(
+                "reverse_studio:bridge_hub",
+                kwargs={"project_slug": emitter.slug},
+            )
+            execute_url = reverse(
+                "reverse_studio:run_hub",
+                kwargs={"project_slug": emitter.slug},
+            )
+            product_label = "Reverse Studio"
+            open_label = "Abrir Generar"
+            settings_label = "Ajustes Reverse"
+        else:
+            settings_url = reverse(
+                "dms:file_gate_bridge_settings",
+                kwargs={"project_slug": emitter.slug},
+            )
+            execute_url = reverse(
+                "dms:transform_execution_hub",
+                kwargs={"project_slug": emitter.slug},
+            )
+            product_label = "FilePipe"
+            open_label = "Abrir Ejecutar"
+            settings_label = "Ajustes DMS"
+
         links.append(
             {
-                "dms_slug": dms.slug,
-                "dms_name": dms.name,
+                "dms_slug": emitter.slug,
+                "dms_name": emitter.name,
+                "product_label": product_label,
+                "open_label": open_label,
+                "settings_label": settings_label,
+                "is_reverse": is_reverse,
                 "enabled": bool(cfg.file_gate_enabled),
                 "accept": cfg.file_gate_accept,
                 "max_age_days": cfg.file_gate_max_age_days,
@@ -440,14 +533,8 @@ def build_hub_context(user, gate_project: Project) -> dict:
                     else ""
                 ),
                 "last_status": last_status,
-                "settings_url": reverse(
-                    "dms:file_gate_bridge_settings",
-                    kwargs={"project_slug": dms.slug},
-                ),
-                "execute_url": reverse(
-                    "dms:transform_execution_hub",
-                    kwargs={"project_slug": dms.slug},
-                ),
+                "settings_url": settings_url,
+                "execute_url": execute_url,
             }
         )
 

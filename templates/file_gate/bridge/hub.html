@@ -38,8 +38,8 @@
 <div class="page-header">
     <div>
         <p class="page-eyebrow">FILE GATE · Módulo 6 · <span class="role-badge">dms_bridge</span></p>
-        <h2>Integración con FilePipe</h2>
-        <p>Los proyectos DMS de la misma compañía pueden exigir que este gate esté en verde (mismo hash) antes de transformar. La configuración del flag vive en FilePipe; aquí ve el vínculo.</p>
+        <h2>Integración con emisores</h2>
+        <p>Los proyectos FilePipe o Reverse Studio de la misma compañía pueden exigir que este gate esté en verde (mismo hash) antes de transformar o generar. La configuración del flag vive en el emisor; aquí ve el vínculo.</p>
     </div>
     <div class="page-actions">
         {% url 'file_gate:bridge_hub_help' project_slug=project.slug as bridge_help_url %}
@@ -50,8 +50,8 @@
 
 {% if not bridge.has_links %}
 <div class="empty-bridge">
-    <h3>Sin proyectos FilePipe vinculados</h3>
-    <p>El flag «Exigir FILE GATE» se activa desde un proyecto DMS de la misma compañía. Cuando alguien lo configure, el vínculo aparecerá aquí.</p>
+    <h3>Sin proyectos emisores vinculados</h3>
+    <p>El flag «Exigir FILE GATE» se activa desde un proyecto FilePipe o Reverse Studio de la misma compañía. Cuando alguien lo configure, el vínculo aparecerá aquí.</p>
 </div>
 {% else %}
 <div class="bridge-grid">
@@ -65,7 +65,7 @@
             <span class="status-pill is-off">inactivo</span>
             {% endif %}
         </h3>
-        <p>{{ link.dms_name }}</p>
+        <p>{{ link.dms_name }} · {{ link.product_label|default:"FilePipe" }}</p>
         <dl>
             <dt>Acepta</dt>
             <dd>{% if link.accept == "passed" %}solo passed{% else %}passed + warnings{% endif %}</dd>
@@ -77,8 +77,8 @@
             <dd>{{ link.last_status|default:"—" }}</dd>
         </dl>
         <div class="page-actions" style="margin:0">
-            <a class="btn btn-secondary" href="{{ link.execute_url }}">Abrir Ejecutar</a>
-            <a class="btn btn-secondary" href="{{ link.settings_url }}">Ajustes DMS</a>
+            <a class="btn btn-secondary" href="{{ link.execute_url }}">{{ link.open_label|default:"Abrir Ejecutar" }}</a>
+            <a class="btn btn-secondary" href="{{ link.settings_url }}">{{ link.settings_label|default:"Ajustes DMS" }}</a>
         </div>
     </article>
     {% endfor %}

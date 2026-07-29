@@ -212,6 +212,9 @@
         if (links) {
             links.innerHTML = "";
             const downloads = data.downloads || {};
+            const labelOutput = config.dataset.labelDownloadOutput || "Descargar salida";
+            const labelReport = config.dataset.labelDownloadReport || "Descargar informe";
+            const labelErrors = config.dataset.labelDownloadErrors || "Descargar errores";
             ["output", "report", "errors"].forEach(function (kind) {
                 if (!downloads[kind]) {
                     return;
@@ -221,25 +224,26 @@
                 a.href = downloads[kind];
                 a.textContent =
                     kind === "output"
-                        ? "Descargar salida"
+                        ? labelOutput
                         : kind === "report"
-                          ? "Descargar informe"
-                          : "Descargar errores";
+                          ? labelReport
+                          : labelErrors;
                 links.appendChild(a);
             });
+            const historyUrl =
+                (config.dataset.historyUrl || "").trim() ||
+                location.pathname.replace(/\/?$/, "/") + "historial/";
             const hist = document.createElement("a");
             hist.className = "btn btn-primary";
-            hist.href = location.pathname.replace(/\/?$/, "/") + "historial/";
-            // Fix: hub path ends with ejecutar/
-            hist.href = location.pathname.replace(/\/?$/, "/") + "historial/";
-            hist.textContent = "Ver historial";
+            hist.href = historyUrl;
+            hist.textContent = config.dataset.labelHistory || "Ver historial";
             links.appendChild(hist);
         }
     }
 
     async function onPreview(jobId) {
         setErrors("");
-        setStatus("Generando preview…");
+        setStatus(config.dataset.statusPreview || "Generando preview…");
         try {
             const data = await post(urlFor(config.dataset.previewTemplate, jobId));
             setStatus(data.message || "Preview listo.");
@@ -255,11 +259,16 @@
     async function onRun(jobId) {
         const run = async function () {
             setErrors("");
-            setStatus("Ejecutando transformación…");
+            setStatus(config.dataset.statusRun || "Ejecutando transformación…");
             try {
                 const data = await post(urlFor(config.dataset.runTemplate, jobId));
                 setStatus(data.message || "Listo.");
-                show("success", data.message || "Transformación finalizada.");
+                show(
+                    "success",
+                    data.message ||
+                        config.dataset.msgRunSuccess ||
+                        "Transformación finalizada."
+                );
                 renderResult(data);
                 window.setTimeout(function () {
                     window.location.reload();
@@ -272,11 +281,12 @@
             }
         };
         const message =
+            config.dataset.runConfirm ||
             "¿Ejecutar transformación del job seleccionado? Se generará el archivo destino.";
         if (typeof window.dwConfirmWarning === "function") {
             window.dwConfirmWarning(message, run, {
-                title: "Ejecutar transformación",
-                okLabel: "Ejecutar",
+                title: config.dataset.runConfirmTitle || "Ejecutar transformación",
+                okLabel: config.dataset.runConfirmOk || "Ejecutar",
             });
         } else if (window.confirm(message)) {
             run();

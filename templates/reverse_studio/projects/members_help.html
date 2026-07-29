@@ -1,0 +1,76 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Miembros {{ project.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_members' project_slug=project.slug %}">Miembros</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span> · <span class="perm-badge perm-badge--admin">PA</span></p>
+        <h2>Ayuda — Miembros y permisos</h2>
+        <p>Quién puede ver y trabajar en este proyecto Reverse Studio y qué hace cada rol.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'reverse_studio:project_members' project_slug=project.slug %}" class="btn btn-secondary">← Volver a miembros</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            Solo el <strong>administrador (PA)</strong> gestiona miembros. Se invitan usuarios UF de la compañía
+            {{ company.name_short }}. Misma membresía compartida con Worksheets / FilePipe
+            (<code>ProjectMembership</code>).
+        </p>
+
+        <h3 class="form-section-title">Roles en Reverse Studio</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Código</th><th>Nombre</th><th>Permisos principales</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">PA</td><td>Admin</td><td>Editar definición, publicar, miembros, generar.</td></tr>
+                <tr><td class="mono">ED</td><td>Editor</td><td>Editar entrada/salida/mapeo y publicar; generar.</td></tr>
+                <tr><td class="mono">GE</td><td>Generar</td><td>Generar / descargar archivo de envío (sin editar definición).</td></tr>
+                <tr><td class="mono">CO</td><td>Consulta</td><td>Ver proyecto e historial; sin editar ni generar datos de negocio.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Tabla de miembros</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Autorizar</td><td>Crea o reactiva membresía con el rol elegido.</td></tr>
+                <tr><td>Cambiar</td><td>Actualiza el rol (no aplica al propietario).</td></tr>
+                <tr><td>Revocar</td><td>Desactiva el acceso (con confirmación).</td></tr>
+                <tr><td>Reactivar</td><td>Vuelve a activar un miembro inactivo.</td></tr>
+                <tr><td>Propietario</td><td>El dueño no se revoca ni pierde PA desde esta pantalla.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -9,7 +9,14 @@ from apps.dms.transform_execution.services import execution_service
 from apps.file_gate.bridge.services import dms_bridge_service
 
 
-def get_hub_context(project, membership) -> dict:
+def get_hub_context(
+    project,
+    membership,
+    *,
+    download_url_namespace: str = "dms",
+    download_url_names: dict[str, str] | None = None,
+    force_bridge_disabled: bool = False,
+) -> dict:
     publish = version_publish_service.get_publish_context(project)
     published = file_intake_persistence_service.get_published_version(project)
     uploaded = execution_service.list_uploaded_jobs(project)
@@ -18,7 +25,7 @@ def get_hub_context(project, membership) -> dict:
     config = getattr(project, "dms_config", None)
     if config is None:
         config = DmsProjectConfig.objects.filter(project=project).first()
-    bridge_enabled = bool(config and config.file_gate_enabled)
+    bridge_enabled = bool(config and config.file_gate_enabled) and not force_bridge_disabled
     gate_slug = ""
     if config and config.file_gate_project_id:
         gate_slug = config.file_gate_project.slug
@@ -83,7 +90,12 @@ def get_hub_context(project, membership) -> dict:
                 "expired": execution_service.is_download_expired(job),
                 "file_gate_check": (job.input_suggestions or {}).get("file_gate_check"),
                 "downloads": (
-                    execution_service.build_download_links(project.slug, job)
+                    execution_service.build_download_links(
+                        project.slug,
+                        job,
+                        url_namespace=download_url_namespace,
+                        url_names=download_url_names,
+                    )
                     if job.status
                     in {"completed", "partial"}
                     and not execution_service.is_download_expired(job)

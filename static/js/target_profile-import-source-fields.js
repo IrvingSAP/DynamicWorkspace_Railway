@@ -15,6 +15,19 @@
         return;
     }
 
+    const copy = {
+        confirmEmpty:
+            btn.dataset.confirmEmpty ||
+            "¿Cargar los campos definidos en el perfil de origen?",
+        confirmReplace:
+            btn.dataset.confirmReplace ||
+            "Ya hay {count} campo(s) destino. ¿Reemplazarlos con los campos del origen?",
+        confirmTitle: btn.dataset.confirmTitle || "Importar desde origen",
+        errorFallback:
+            btn.dataset.errorFallback ||
+            "No se pudieron importar los campos desde el origen.",
+    };
+
     function currentFieldsCount() {
         const target = window.dmsTargetProfile.getTarget() || {};
         const fields = target.fields;
@@ -44,7 +57,7 @@
             .then(function (result) {
                 const data = result.data;
                 if (!result.okHttp || !data.ok) {
-                    const message = data.message || "No se pudieron importar los campos desde el origen.";
+                    const message = data.message || copy.errorFallback;
                     if (typeof window.dwShowMessage === "function") {
                         window.dwShowMessage("error", message);
                     }
@@ -77,7 +90,7 @@
                     return;
                 }
                 if (typeof window.dwShowMessage === "function") {
-                    window.dwShowMessage("error", "No se pudieron importar los campos desde el origen.");
+                    window.dwShowMessage("error", copy.errorFallback);
                 }
             })
             .finally(function () {
@@ -89,10 +102,8 @@
         const count = currentFieldsCount();
         const message =
             count > 0
-                ? "Ya hay " +
-                  count +
-                  " campo(s) destino. ¿Reemplazarlos con los campos del origen?"
-                : "¿Cargar los campos definidos en el perfil de origen?";
+                ? copy.confirmReplace.replace("{count}", String(count))
+                : copy.confirmEmpty;
 
         if (typeof window.dwConfirmWarning === "function") {
             window.dwConfirmWarning(
@@ -101,7 +112,7 @@
                     runImport();
                 },
                 {
-                    title: "Importar desde origen",
+                    title: copy.confirmTitle,
                     okLabel: "Cargar",
                 }
             );

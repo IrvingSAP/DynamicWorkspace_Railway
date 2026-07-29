@@ -1,0 +1,19 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Nuevo proyecto — Reverse Studio{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div><h2>Ayuda — Crear proyecto</h2>
+    <p>Nombre, código (slug) y visibilidad.</p></div>
+    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'reverse_studio:project_create' %}">← Volver</a></div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>El slug es único por compañía (compartido entre apps).</li>
+    <li>Quien crea queda como PA del proyecto.</li>
+    <li>Tras crear: gestiona miembros (privado) y configura el contrato de entrada (6 pasos).</li>
+</ul>
+</div></div>
+{% endblock %}

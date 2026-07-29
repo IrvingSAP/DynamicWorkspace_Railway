@@ -22,8 +22,8 @@
 }
 
 .sidebar-nav-group-toggle:hover {
-    color: var(--ink);
-    background: var(--canvas);
+    color: var(--accent);
+    background: var(--accent-subtle);
 }
 
 .sidebar-nav-group-toggle svg:first-child {
@@ -75,8 +75,54 @@
 }
 
 .sidebar-sublink:hover {
-    color: var(--ink);
-    background: var(--canvas);
+    color: var(--accent);
+    background: var(--accent-subtle);
+}
+
+/* Modo iconos: ocultar submenús y chevron; tooltip en el toggle */
+html.sidebar-icons .sidebar-nav-group-chevron,
+html.sidebar-icons .sidebar-nav-submenu {
+    display: none;
+}
+
+html.sidebar-icons .sidebar-nav-group-toggle {
+    justify-content: center;
+    padding: 10px;
+    position: relative;
+}
+
+html.sidebar-icons .sidebar-nav-group-toggle[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--ink);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    z-index: 20;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(28, 25, 23, 0.18);
+}
+
+@media (max-width: 768px) {
+    html.sidebar-icons .sidebar-nav-group-chevron {
+        display: block;
+    }
+    html.sidebar-icons .sidebar-nav-group.is-open .sidebar-nav-submenu {
+        display: flex;
+    }
+    html.sidebar-icons .sidebar-nav-group-toggle {
+        justify-content: flex-start;
+        padding: 9px 12px;
+    }
+    html.sidebar-icons .sidebar-nav-group-toggle[title]:hover::after {
+        content: none;
+    }
 }
 
 .sidebar-sublink.is-active {

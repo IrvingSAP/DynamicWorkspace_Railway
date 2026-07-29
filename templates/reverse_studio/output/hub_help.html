@@ -1,0 +1,40 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Salida — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}">Salida</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Reverse Studio · ayuda</p>
+        <h2>Cómo usar el contrato de salida</h2>
+        <p>Describe el layout que exige el receptor. No genera el archivo de envío.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}">← Volver</a>
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+    <ul>
+        <li>Solo tipos MVP: TXT posicional, JSON, XML.</li>
+        <li>Guarde borrador por paso; publicar definición completa = Módulo 4.</li>
+        <li>Tras 6/6 → continuar a mapeo (Módulo 3).</li>
+        <li>OUT3 / OUT11: whitelist de tipos y encoding sin <code>auto</code>.</li>
+    </ul>
+</div></div>
+{% endblock %}

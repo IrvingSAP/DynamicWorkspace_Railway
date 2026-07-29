@@ -1,0 +1,110 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paso 6 — Informe de lectura — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">Entrada</a>
+    <span class="breadcrumb-sep">/</span><span>Paso 6</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "reverse_studio/input/_project_scope.html" %}
+{% include "reverse_studio/input/_source_persistence.html" %}
+
+<div id="processing-report-root" data-project-slug="{{ project.slug }}">
+
+    <div class="page-header">
+        <div>
+            <p class="page-eyebrow">Reverse Studio · Paso 6 de 6 · <span class="role-badge">processing_report</span></p>
+            <h2>Informe de lectura</h2>
+            <p>Qué registrar al parsear la planilla en una generación. No define el layout de salida (Módulo 2) ni publica la definición (Módulo 4).</p>
+        </div>
+        <div class="page-actions">
+            {% url 'reverse_studio:input_step6_help' project_slug=project.slug as source_help_url %}
+            {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+            <button type="button" id="btn-save-processing-report" class="btn btn-ghost btn-sm"{% if not can_edit_source %} disabled{% endif %}>Guardar borrador</button>
+        </div>
+    </div>
+
+    {% include "reverse_studio/input/_wizard_stepper.html" %}
+
+    <div class="panel">
+        <div class="panel-body">
+            <p id="processing-report-status" class="content-rules-status" aria-live="polite"></p>
+
+            <div class="note-box" style="margin-bottom:16px">
+                <strong>IN7:</strong> completar la entrada no habilita generar. Faltan salida, mapeo y publicar definición.
+            </div>
+
+            <form id="processing-report-form" novalidate>
+                <h3 class="form-section-title">Opciones del informe de lectura</h3>
+                <div class="form-grid">
+                    <div class="toggle-row">
+                        <input type="checkbox" id="report_enabled" name="report_enabled" checked{% if not can_edit_source %} disabled{% endif %}>
+                        <label for="report_enabled">Informe habilitado (<code>report_enabled</code>)</label>
+                    </div>
+                    <div class="toggle-row">
+                        <input type="checkbox" id="include_summary" name="include_summary" checked{% if not can_edit_source %} disabled{% endif %}>
+                        <label for="include_summary">Incluir resumen — filas leídas, OK y rechazadas</label>
+                    </div>
+                    <div class="toggle-row">
+                        <input type="checkbox" id="include_row_errors" name="include_row_errors" checked{% if not can_edit_source %} disabled{% endif %}>
+                        <label for="include_row_errors">Detalle por fila — línea, campo y mensaje</label>
+                    </div>
+                    <div class="form-row two-cols">
+                        <div class="field">
+                            <label for="reject_alert_threshold">Umbral de alerta</label>
+                            <input type="number" id="reject_alert_threshold" name="reject_alert_threshold" class="mono" value="10" min="0"{% if not can_edit_source %} disabled{% endif %}>
+                        </div>
+                        <div class="field">
+                            <label for="reject_alert_threshold_unit">Unidad</label>
+                            <select id="reject_alert_threshold_unit" name="reject_alert_threshold_unit"{% if not can_edit_source %} disabled{% endif %}>
+                                <option value="count" selected>Cantidad</option>
+                                <option value="percent">Porcentaje</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="report_format">Formato</label>
+                        <select id="report_format" name="report_format"{% if not can_edit_source %} disabled{% endif %}>
+                            <option value="json" selected>JSON</option>
+                            <option value="csv">CSV</option>
+                            <option value="html">HTML</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+
+            <div class="report-preview" style="margin-top:20px">
+                <h3 class="form-section-title">Vista previa</h3>
+                <pre id="processing-report-preview" class="mono" aria-label="Vista previa processing_report"></pre>
+            </div>
+
+            <div class="wizard-footer">
+                <span class="hint">Borrador · no publica la definición</span>
+                <div class="wizard-footer-actions">
+                    <a href="{% url 'reverse_studio:input_step5' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
+                    {% if can_edit_source %}
+                    <button type="button" id="btn-save-processing-report-footer" class="btn btn-ghost" onclick="document.getElementById('btn-save-processing-report').click()">Guardar borrador</button>
+                    {% endif %}
+                    <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}" class="btn btn-primary">Finalizar entrada →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/source_profile-report.js' %}"></script>
+{% endblock %}

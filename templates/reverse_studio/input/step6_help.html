@@ -1,0 +1,18 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Paso 6 — {{ project.name }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/source_profile.css' %}"><link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div><h2>Ayuda — Informe de lectura</h2></div>
+    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'reverse_studio:input_step6' project_slug=project.slug %}">← Volver</a></div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>Configura qué se registra al parsear la planilla en una generación.</li>
+    <li>No publica la definición ni define el archivo de envío.</li>
+    <li>CTA de cierre: volver al hub de entrada (salida = Módulo 2).</li>
+</ul>
+</div></div>
+{% endblock %}

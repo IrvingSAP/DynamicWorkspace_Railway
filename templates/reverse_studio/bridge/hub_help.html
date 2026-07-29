@@ -1,0 +1,69 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Integración FILE GATE{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_bridge.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:bridge_hub' project_slug=project.slug %}">Integración FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Integración FILE GATE</h2>
+        <p>Pre-check opcional de la planilla antes de emitir el archivo de envío.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'reverse_studio:bridge_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver a integración</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            Exige una corrida FILE GATE aceptada (mismo content hash) antes de <strong>generar</strong>.
+            No fusiona contratos ni sustituye al validador.
+        </p>
+
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <table class="help-table">
+            <thead><tr><th>Paso</th><th>Dónde</th></tr></thead>
+            <tbody>
+                <tr><td>1. Validar planilla</td><td>FILE GATE → Validar</td></tr>
+                <tr><td>2. Gate en verde</td><td>passed / passed_with_warnings</td></tr>
+                <tr><td>3. Generar layout</td><td>Reverse Studio → Generar</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Rol</th><th>Puede</th></tr></thead>
+            <tbody>
+                <tr><td>PA / ED</td><td>Configurar bridge</td></tr>
+                <tr><td>PA / ED / GE</td><td>Generar si el pre-check pasa</td></tr>
+                <tr><td>Cualquiera</td><td>No saltar el check en MVP</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no hace</h3>
+        <ul>
+            <li>No genera el archivo de envío desde FILE GATE.</li>
+            <li>No sincroniza el contrato de entrada con el esquema FG.</li>
+            <li>No es obligatorio: con el flag apagado, Generar funciona como M5.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

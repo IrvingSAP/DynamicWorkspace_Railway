@@ -1,13 +1,13 @@
-{# Navegación lateral UF — Worksheets + FilePipe + FILE GATE #}
-<a href="{% url 'dashboard:home' %}" class="sidebar-link{% if app_nav_active == 'home' %} is-active{% endif %}">
+{# Navegación lateral UF — Worksheets + FilePipe + FILE GATE + Reverse Studio #}
+<a href="{% url 'dashboard:home' %}" class="sidebar-link{% if app_nav_active == 'home' %} is-active{% endif %}" title="Inicio">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 6.5L8 2l6 4.5V13a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"/></svg>
-    Inicio
+    <span class="sidebar-link-label">Inicio</span>
 </a>
 
 <div class="sidebar-nav-group{% if app_nav_active == 'projects' or app_nav_active == 'help' %} is-open is-active{% endif %}" data-nav-group="worksheets">
-    <button type="button" class="sidebar-nav-group-toggle" aria-expanded="{% if app_nav_active == 'projects' or app_nav_active == 'help' %}true{% else %}false{% endif %}" aria-controls="worksheets-submenu">
+    <button type="button" class="sidebar-nav-group-toggle" title="Worksheets" aria-expanded="{% if app_nav_active == 'projects' or app_nav_active == 'help' %}true{% else %}false{% endif %}" aria-controls="worksheets-submenu">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 3h12M2 8h12M2 13h8"/></svg>
-        Worksheets
+        <span class="sidebar-link-label">Worksheets</span>
         <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
     </button>
     <div class="sidebar-nav-submenu" id="worksheets-submenu">
@@ -17,9 +17,9 @@
 </div>
 
 <div class="sidebar-nav-group{% if filepipe_nav_open or app_nav_active == 'filepipe_mapping' or app_nav_active == 'filepipe_catalogs' or app_nav_active == 'filepipe_guide' %} is-open{% endif %}{% if app_nav_active == 'filepipe_mapping' or app_nav_active == 'filepipe_catalogs' or app_nav_active == 'filepipe_guide' %} is-active{% endif %}" data-nav-group="filepipe">
-    <button type="button" class="sidebar-nav-group-toggle" aria-expanded="{% if filepipe_nav_open or app_nav_active == 'filepipe_mapping' or app_nav_active == 'filepipe_catalogs' or app_nav_active == 'filepipe_guide' %}true{% else %}false{% endif %}" aria-controls="filepipe-submenu">
+    <button type="button" class="sidebar-nav-group-toggle" title="FilePipe" aria-expanded="{% if filepipe_nav_open or app_nav_active == 'filepipe_mapping' or app_nav_active == 'filepipe_catalogs' or app_nav_active == 'filepipe_guide' %}true{% else %}false{% endif %}" aria-controls="filepipe-submenu">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 8h3l2-4 2 8 2-4h3"/></svg>
-        FilePipe
+        <span class="sidebar-link-label">FilePipe</span>
         <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
     </button>
     <div class="sidebar-nav-submenu" id="filepipe-submenu">
@@ -30,13 +30,25 @@
 </div>
 
 <div class="sidebar-nav-group{% if file_gate_nav_open or app_nav_active == 'file_gate' or app_nav_active == 'file_gate_guide' %} is-open{% endif %}{% if app_nav_active == 'file_gate' or app_nav_active == 'file_gate_guide' %} is-active{% endif %}" data-nav-group="file-gate">
-    <button type="button" class="sidebar-nav-group-toggle" aria-expanded="{% if file_gate_nav_open or app_nav_active == 'file_gate' or app_nav_active == 'file_gate_guide' %}true{% else %}false{% endif %}" aria-controls="file-gate-submenu">
+    <button type="button" class="sidebar-nav-group-toggle" title="FILE GATE" aria-expanded="{% if file_gate_nav_open or app_nav_active == 'file_gate' or app_nav_active == 'file_gate_guide' %}true{% else %}false{% endif %}" aria-controls="file-gate-submenu">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3M5 8h6M5 11h4"/></svg>
-        FILE GATE
+        <span class="sidebar-link-label">FILE GATE</span>
         <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
     </button>
     <div class="sidebar-nav-submenu" id="file-gate-submenu">
         <a href="{% url 'file_gate:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_gate' %} is-active{% endif %}">Validador</a>
         <a href="{% url 'file_gate:file_gate_guide' %}" class="sidebar-sublink{% if app_nav_active == 'file_gate_guide' %} is-active{% endif %}">Ayuda</a>
+    </div>
+</div>
+
+<div class="sidebar-nav-group{% if reverse_studio_nav_open or app_nav_active == 'reverse_studio' or app_nav_active == 'reverse_studio_guide' %} is-open{% endif %}{% if app_nav_active == 'reverse_studio' or app_nav_active == 'reverse_studio_guide' %} is-active{% endif %}" data-nav-group="reverse-studio">
+    <button type="button" class="sidebar-nav-group-toggle" title="Reverse Studio" aria-expanded="{% if reverse_studio_nav_open or app_nav_active == 'reverse_studio' or app_nav_active == 'reverse_studio_guide' %}true{% else %}false{% endif %}" aria-controls="reverse-studio-submenu">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 12l4-8h4l4 8M5 9h6"/><path d="M8 4v8"/></svg>
+        <span class="sidebar-link-label">Reverse Studio</span>
+        <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="sidebar-nav-submenu" id="reverse-studio-submenu">
+        <a href="{% url 'reverse_studio:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'reverse_studio' %} is-active{% endif %}">Emisor</a>
+        <a href="{% url 'reverse_studio:reverse_studio_guide' %}" class="sidebar-sublink{% if app_nav_active == 'reverse_studio_guide' %} is-active{% endif %}">Ayuda</a>
     </div>
 </div>

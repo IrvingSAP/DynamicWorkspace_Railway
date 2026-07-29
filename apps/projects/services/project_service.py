@@ -27,6 +27,7 @@ KIND_APP_LABELS = {
     Project.KIND_WORKSPACE: "Worksheets",
     Project.KIND_DMS: "FilePipe (Data Mapping)",
     Project.KIND_FILE_GATE: "FILE GATE (Validador)",
+    Project.KIND_REVERSE: "Reverse Studio (Emisor)",
 }
 
 

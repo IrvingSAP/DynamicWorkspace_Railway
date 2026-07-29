@@ -341,10 +341,15 @@ def save_target(
     *,
     strict: bool = False,
 ) -> OperationResult:
+    is_reverse = project.project_kind == Project.KIND_REVERSE
     if not user_can_edit_target(user, project):
         return OperationResult.failure(
             "forbidden",
-            "No tiene permiso para editar la definición de destino.",
+            (
+                "No tiene permiso para editar el contrato de este proyecto."
+                if is_reverse
+                else "No tiene permiso para editar la definición de destino."
+            ),
         )
 
     version = get_or_create_draft_with_target(project)
@@ -352,8 +357,22 @@ def save_target(
     current = profile_to_dict(profile)
     merged = merge_target_dict(current, partial)
 
-    new_type = (merged.get("file_type_code") or "").strip()
-    old_type = (current.get("file_type_code") or "").strip()
+    if is_reverse:
+        from apps.reverse_studio.output.services.output_whitelist import (
+            reject_auto_write_format,
+            reject_non_whitelist_file_type,
+        )
+
+        whitelist_error = reject_non_whitelist_file_type(merged.get("file_type_code"))
+        if whitelist_error is not None:
+            return whitelist_error
+        auto_error = reject_auto_write_format(
+            merged.get("encoding_code"),
+            merged.get("line_ending_code"),
+        )
+        if auto_error is not None:
+            return auto_error
+
     new_type = (merged.get("file_type_code") or "").strip()
     old_type = (current.get("file_type_code") or "").strip()
     if new_type and new_type != old_type:
@@ -386,7 +405,11 @@ def save_target(
     if errors:
         return OperationResult.failure(
             "validation_form",
-            "Revise los datos del perfil de destino.",
+            (
+                "Revise los datos del contrato de salida."
+                if is_reverse
+                else "Revise los datos del perfil de destino."
+            ),
             errors=errors,
             warnings=warnings,
         )
@@ -404,7 +427,11 @@ def save_target(
         )
 
     return OperationResult.success(
-        user_message="Perfil de destino guardado correctamente.",
+        user_message=(
+            "Contrato de salida guardado correctamente."
+            if is_reverse
+            else "Perfil de destino guardado correctamente."
+        ),
         payload={
             "target": profile_to_dict(profile),
             "version": version,

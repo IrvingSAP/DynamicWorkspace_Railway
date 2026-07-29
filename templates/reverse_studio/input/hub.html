@@ -1,0 +1,91 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Contrato de entrada — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Entrada</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "reverse_studio/input/_project_scope.html" %}
+{% include "reverse_studio/input/_source_persistence.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Reverse Studio · Módulo 1 · <span class="role-badge">InputDefinition</span></p>
+        <h2>Contrato de entrada (planilla)</h2>
+        <p>Defina cómo viene la planilla de negocio (CSV / Excel / delimitado). No genera el archivo de envío:
+            eso es salida + mapeo + publicar (módulos 2–4). Versión: <strong>{{ wizard.version_label }}</strong>.
+        </p>
+    </div>
+    <div class="page-actions">
+        {% url 'reverse_studio:input_hub_help' project_slug=project.slug as source_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+        <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url wizard.continue_step_url_name project_slug=project.slug %}" class="btn btn-primary">Continuar edición</a>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Progreso">
+    <div class="stat-card{% if wizard.steps_complete == wizard.steps_total %} is-done{% else %} is-accent{% endif %}">
+        <p class="stat-label">Pasos completos</p>
+        <p class="stat-value">{{ wizard.steps_complete }} / {{ wizard.steps_total }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Tipo planilla</p>
+        <p class="stat-value" style="font-size:16px">{{ wizard.file_type_label }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Campos definidos</p>
+        <p class="stat-value">{{ wizard.fields_count }}</p>
+    </div>
+</div>
+
+{% if wizard.steps_complete >= wizard.steps_total %}
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Siguiente módulo</h3>
+        <p class="hint">La entrada está completa en borrador. Continúe con el <strong>contrato de salida</strong> (Módulo 2).
+            Publicar la definición completa es el Módulo 4 (entrada + salida + mapeo).</p>
+        <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}" class="btn btn-primary">Continuar a salida →</a>
+    </div>
+</div>
+{% endif %}
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Pasos del asistente</h3>
+        <div class="step-summary-list">
+            {% for step in wizard.steps %}
+            <a href="{% url step.url_name project_slug=project.slug %}" class="step-summary-card{% if step.status == 'done' %} is-done{% elif step.status == 'draft' %} is-draft{% endif %}">
+                <div>
+                    <h4>{{ step.title }}</h4>
+                    <p>{{ step.summary }}</p>
+                </div>
+                <span class="flow-card-status flow-card-status--{% if step.status == 'done' %}done{% elif step.status == 'draft' %}draft{% else %}empty{% endif %}">
+                    {% if step.status == 'done' %}Completo{% elif step.status == 'draft' %}En edición{% else %}Pendiente{% endif %}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

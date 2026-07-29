@@ -1,0 +1,228 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Historial — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/transform_execution.css' %}">
+<link rel="stylesheet" href="{% static 'css/reverse_studio_history.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Historial</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    {% if membership %}
+    <span class="hint">·</span>
+    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    {% elif history.is_consulta %}
+    <span class="hint">·</span>
+    <span class="role-code">CO</span>
+    {% endif %}
+    <span class="hint">· TTL {{ history.ttl_days }} días</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Reverse Studio · Módulo 6 · <span class="role-badge">Historial</span></p>
+        <h2>Historial de generaciones</h2>
+        <p>Consulte emisiones del proyecto. Los metadatos permanecen tras el TTL; las descargas del archivo de envío caducan a los {{ history.ttl_days }} días.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'reverse_studio:history_hub_help' project_slug=project.slug as history_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=history_help_url %}
+        <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{{ history.run_hub_url }}" class="btn btn-secondary">Generar</a>
+    </div>
+</div>
+
+{% if history.is_consulta %}
+<div class="note-box" style="margin-bottom:16px">
+    <strong>Rol consulta:</strong> ve metadatos de las generaciones; no descarga archivos con datos de negocio.
+</div>
+{% endif %}
+
+{% if not history.has_any_job and not history.has_active_filters %}
+<div class="empty-history">
+    <h3>Sin generaciones registradas</h3>
+    <p>Este proyecto todavía no tiene emisiones. Genere el primer archivo de envío para empezar el historial.</p>
+    {% if history.can_execute %}
+    <a href="{{ history.run_hub_url }}" class="btn btn-primary">Ir a generar</a>
+    {% else %}
+    <p class="hint">Su rol no permite generar archivos en este proyecto.</p>
+    {% endif %}
+</div>
+{% else %}
+
+<div class="history-stats" aria-label="Resumen del historial">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Total</p>
+        <p class="stat-value">{{ history.stats.total }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Completadas</p>
+        <p class="stat-value">{{ history.stats.completed }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Parcial / fallidas</p>
+        <p class="stat-value">{{ history.stats.problems }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">TTL expirado</p>
+        <p class="stat-value">{{ history.stats.expired }}</p>
+    </div>
+</div>
+
+<form method="get" class="history-filters" aria-label="Filtros del historial">
+    <div>
+        <label for="f-status">Estado</label>
+        <select id="f-status" name="status">
+            <option value="all">Todos</option>
+            {% for opt in history.status_options %}
+            <option value="{{ opt.value }}" {% if history.filters.status == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="f-filename">Planilla</label>
+        <input id="f-filename" name="filename" type="search" placeholder="contiene…" value="{{ history.filters.filename }}">
+    </div>
+    <div{% if history.errors.version %} class="has-error"{% endif %}>
+        <label for="f-version">Versión</label>
+        <select id="f-version" name="version">
+            <option value="">Todas</option>
+            {% for number in history.version_options %}
+            <option value="{{ number }}" {% if history.filters.version == number %}selected{% endif %}>v{{ number }}</option>
+            {% endfor %}
+        </select>
+        {% if history.errors.version %}<p class="field-error">{{ history.errors.version.0 }}</p>{% endif %}
+    </div>
+    <div>
+        <label for="f-user">Usuario</label>
+        <select id="f-user" name="executed_by">
+            <option value="">Todos</option>
+            {% for opt in history.executed_by_options %}
+            <option value="{{ opt.value }}" {% if history.filters.executed_by == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="f-ttl">TTL</label>
+        <select id="f-ttl" name="ttl">
+            <option value="all">Todos</option>
+            <option value="active" {% if history.filters.ttl == 'active' %}selected{% endif %}>Vigente</option>
+            <option value="expired" {% if history.filters.ttl == 'expired' %}selected{% endif %}>Expirado</option>
+        </select>
+    </div>
+    <div{% if history.errors.date_from %} class="has-error"{% endif %}>
+        <label for="f-from">Desde</label>
+        <input id="f-from" name="date_from" type="date" value="{% if history.filters.date_from %}{{ history.filters.date_from|date:'Y-m-d' }}{% endif %}">
+        {% if history.errors.date_from %}<p class="field-error">{{ history.errors.date_from.0 }}</p>{% endif %}
+    </div>
+    <div{% if history.errors.date_to %} class="has-error"{% endif %}>
+        <label for="f-to">Hasta</label>
+        <input id="f-to" name="date_to" type="date" value="{% if history.filters.date_to %}{{ history.filters.date_to|date:'Y-m-d' }}{% endif %}">
+        {% if history.errors.date_to %}<p class="field-error">{{ history.errors.date_to.0 }}</p>{% endif %}
+    </div>
+    <div class="filter-actions">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        <a href="{% url 'reverse_studio:history_hub' project_slug=project.slug %}" class="btn btn-secondary">Limpiar</a>
+    </div>
+</form>
+
+<div class="panel">
+    <div class="panel-body">
+        {% if history.rows %}
+        <div class="table-scroll">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Planilla</th>
+                        <th>Estado</th>
+                        <th>Versión</th>
+                        <th>OK / rej</th>
+                        <th>Usuario</th>
+                        <th>Fecha</th>
+                        <th>TTL</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in history.rows %}
+                    <tr>
+                        <td>
+                            <strong>{{ row.filename }}</strong>
+                            <span class="file-meta">{{ row.size_label }} · sha256:{{ row.content_hash_short }} · job {{ row.short_id }}{% if row.output_filename %} · {{ row.output_filename }}{% endif %}</span>
+                        </td>
+                        <td><span class="status-pill {{ row.tone }}">{{ row.status_label }}</span></td>
+                        <td>{% if row.version %}v{{ row.version }}{% else %}—{% endif %}</td>
+                        <td>{{ row.rows_ok }} / {{ row.rows_rejected }}</td>
+                        <td><code>{{ row.executed_by }}</code></td>
+                        <td>{% if row.finished_at %}{{ row.finished_at|date:"d M Y · H:i" }}{% else %}—{% endif %}</td>
+                        <td>
+                            {% if row.is_expired %}
+                            <span class="ttl-badge is-expired">expirado</span>
+                            {% else %}
+                            <span class="ttl-badge is-active">vigente</span>
+                            {% endif %}
+                        </td>
+                        <td class="history-actions">
+                            <a href="{{ row.detail_url }}">Detalle</a>
+                            {% if history.can_download and row.downloads.output %}
+                            <a href="{{ row.downloads.output }}">Envío</a>
+                            {% endif %}
+                            {% if history.can_download and row.downloads.report %}
+                            <a href="{{ row.downloads.report }}">Informe</a>
+                            {% endif %}
+                            {% if history.can_download and row.downloads.errors %}
+                            <a href="{{ row.downloads.errors }}">Errores</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-bar">
+            <span>Mostrando {{ history.showing_from }}–{{ history.showing_to }} de {{ history.stats.total }} · página {{ history.page }} de {{ history.total_pages }}</span>
+            <span class="pagination-links">
+                {% if history.prev_query %}
+                <a href="?{{ history.prev_query }}">← Anteriores</a>
+                {% endif %}
+                {% if history.next_query %}
+                <a href="?{{ history.next_query }}">Siguientes →</a>
+                {% endif %}
+            </span>
+        </div>
+
+        {% if history.scan_truncated %}
+        <p class="hint" style="margin-top:10px">Se muestran las {{ history.max_scan }} generaciones más recientes. Acote el rango de fechas para revisar anteriores.</p>
+        {% endif %}
+        {% else %}
+        <div class="empty-history">
+            <h3>Sin resultados</h3>
+            <p>Ninguna generación coincide con los filtros aplicados. Pruebe limpiarlos o ampliar el rango de fechas.</p>
+            <a href="{% url 'reverse_studio:history_hub' project_slug=project.slug %}" class="btn btn-secondary">Limpiar filtros</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
