@@ -1,0 +1,152 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Mapeo y reglas — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/field_mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Mapeo</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "reverse_studio/mapping/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Reverse Studio · Módulo 3 · <span class="role-badge">MappingRules</span></p>
+        <h2>Mapeo y reglas</h2>
+        <p>Enlace planilla → layout de envío · borrador <strong>{{ hub.version_label }}</strong>.
+            No genera el archivo ni publica la definición.
+        </p>
+    </div>
+    <div class="page-actions">
+        {% url 'reverse_studio:mapping_hub_help' project_slug=project.slug as field_mapping_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=field_mapping_help_url %}
+        <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        {% if source_fields and target_fields %}
+        <a href="{% url 'reverse_studio:mapping_editor' project_slug=project.slug %}" class="btn btn-primary">Abrir editor de enlaces</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if not input_complete or not output_complete %}
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <div class="note-box">
+            <strong>Recomendado:</strong>
+            entrada {{ input_steps_complete }}/{{ input_steps_total }} ·
+            salida {{ output_steps_complete }}/{{ output_steps_total }}.
+            Puede mapear si ya hay campos;
+            {% if not source_fields %}
+            <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">completar entrada</a>
+            {% elif not target_fields %}
+            <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}">completar salida</a>
+            {% else %}
+            conviene terminar los asistentes.
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="stats-strip" aria-label="Estado del mapeo">
+    <div class="stat-card{% if hub.is_complete %} is-done{% else %} is-accent{% endif %}">
+        <p class="stat-label">Mapeos</p>
+        <p class="stat-value">{{ hub.mappings_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Entrada → Layout</p>
+        <p class="stat-value" style="font-size:16px">{{ hub.source_fields_count }} → {{ hub.target_fields_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Obligatorios sin mapear</p>
+        <p class="stat-value">{{ hub.unmapped_required }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Con reglas</p>
+        <p class="stat-value">{{ mapping_summary.pipelines_with_steps }}</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        {% if not source_fields or not target_fields %}
+        <div class="empty-state">
+            <h3>Faltan contratos</h3>
+            <p>Complete entrada y salida antes de crear enlaces.</p>
+            <div class="page-actions" style="justify-content:center; margin-top:12px;">
+                {% if not source_fields %}
+                <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}" class="btn btn-primary">Definir entrada</a>
+                {% endif %}
+                {% if not target_fields %}
+                <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}" class="btn btn-primary">Definir salida</a>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <h3 class="form-section-title">Áreas del módulo</h3>
+        <div class="step-summary-list">
+            <a href="{% url 'reverse_studio:mapping_editor' project_slug=project.slug %}" class="step-summary-card">
+                <div>
+                    <h4>1 · Enlaces (entrada → layout)</h4>
+                    <p>Directo, constante, concat, generado… · sugerir por nombre.</p>
+                </div>
+                <span class="flow-card-status flow-card-status--{% if hub.is_complete %}done{% elif hub.mappings_count %}draft{% else %}empty{% endif %}">
+                    {% if hub.is_complete %}Completo{% elif hub.mappings_count %}En edición{% else %}Pendiente{% endif %}
+                </span>
+            </a>
+            <a href="{% url 'reverse_studio:mapping_rules_hub' project_slug=project.slug %}" class="step-summary-card">
+                <div>
+                    <h4>2 · Reglas de transformación</h4>
+                    <p>Pipeline post-enlace: trim, upper, date_format, replace_map…</p>
+                </div>
+                <span class="flow-card-status flow-card-status--{% if mapping_summary.pipelines_with_steps %}draft{% else %}empty{% endif %}">
+                    {% if mapping_summary.pipelines_with_steps %}Parcial{% else %}Pendiente{% endif %}
+                </span>
+            </a>
+            <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}" class="step-summary-card">
+                <div>
+                    <h4>Entrada · {{ source_file_type }}</h4>
+                    <p>{{ hub.source_fields_count }} campos de planilla.</p>
+                </div>
+                <span class="flow-card-status flow-card-status--done">Listo</span>
+            </a>
+            <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}" class="step-summary-card">
+                <div>
+                    <h4>Salida · {{ target_file_type }}</h4>
+                    <p>{{ hub.target_fields_count }} campos del layout.</p>
+                </div>
+                <span class="flow-card-status flow-card-status--done">Listo</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if hub.is_complete %}
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Siguiente módulo</h3>
+        <p class="hint">El mapeo cubre los obligatorios del layout. Continúe a <strong>publicar</strong> (Módulo 4).
+            Generar el archivo es el Módulo 5.</p>
+        <a href="{% url 'reverse_studio:publish_hub' project_slug=project.slug %}" class="btn btn-primary">Continuar a publicar →</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

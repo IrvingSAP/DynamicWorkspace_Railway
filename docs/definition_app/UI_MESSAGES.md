@@ -346,6 +346,138 @@ Estados de `{estado}`: Aprobado · Aprobado con advertencias · Rechazado · Par
 
 > El pre-check **no** usa bypass (D6). En hub Ejecutar DMS el botón puede ir deshabilitado; el mismo texto aplica si se fuerza el POST.
 
+### 3.10 Mensajes específicos — `apps.reverse_studio` (Reverse Studio)
+
+Fuente funcional: [`../REVERSE_STUDIO.md`](../REVERSE_STUDIO.md) · [`../definition_app_REVERSE/input_definition.md`](../definition_app_REVERSE/input_definition.md) · [`../definition_app_REVERSE/output_definition.md`](../definition_app_REVERSE/output_definition.md) · [`../definition_app_REVERSE/mapping_rules.md`](../definition_app_REVERSE/mapping_rules.md) · [`../definition_app_REVERSE/publish.md`](../definition_app_REVERSE/publish.md) · [`../definition_app_REVERSE/generate_run.md`](../definition_app_REVERSE/generate_run.md) · [`../definition_app_REVERSE/history.md`](../definition_app_REVERSE/history.md) · [`../definition_app_REVERSE/gate_bridge.md`](../definition_app_REVERSE/gate_bridge.md).  
+Código: `apps/reverse_studio/` · kind `Project.KIND_REVERSE = "reverse"`.
+
+#### Acceso y proyectos
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin acceso al proyecto | `error` | No tiene acceso a este proyecto Reverse Studio. |
+| Solo UF crea proyectos | `error` | Solo usuarios UF pueden crear proyectos Reverse Studio. |
+| Validación create | `error` + inline | Revise los datos marcados; no se pudo guardar. |
+| Proyecto creado | `success` | Proyecto Reverse Studio creado correctamente. |
+| Solo PA gestiona miembros | `error` | Solo el administrador del proyecto (PA) puede gestionar miembros. |
+
+#### Miembros del proyecto
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Invitar / rol / revocar / reactivar | `success` / `error` | Textos del servicio compartido `project_service` (misma compañía, al menos un PA, propietario protegido). |
+
+> La UI de miembros reutiliza `invite_member` / `update_member_role` / `set_member_active` de `apps.projects`. Matriz de roles Reverse: [`../REVERSE_STUDIO.md`](../REVERSE_STUDIO.md) §12.
+
+#### Módulo 1 — Contrato de entrada
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Entrada guardada (borrador) | `success` | Contrato de entrada guardado correctamente. |
+| Validación bloqueante al guardar | `error` + inline | Revise los datos del contrato de entrada. |
+| Sin permiso editar | `error` | No tiene permiso para editar el contrato de este proyecto. |
+| JSON inválido (POST) | `error` | JSON de contrato de entrada inválido. |
+| Tipo fuera de whitelist (IN3) | `error` + inline | El tipo de planilla no está permitido en Reverse Studio. Use CSV, Excel o TXT delimitado. |
+| Tipo sin editor de campos | `warning` | Elija un tipo de planilla permitido (CSV, Excel o TXT delimitado) en el paso 1. |
+
+> Guardar reutiliza `source_persistence_service.save_source`; el texto anterior aplica cuando `project_kind = reverse`. No hay publicar solo-entrada (publicar definición = Módulo 4).
+
+#### Módulo 2 — Contrato de salida
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Salida guardada (borrador) | `success` | Contrato de salida guardado correctamente. |
+| Validación bloqueante al guardar | `error` + inline | Revise los datos del contrato de salida. |
+| Sin permiso editar | `error` | No tiene permiso para editar el contrato de este proyecto. |
+| JSON inválido (POST) | `error` | JSON de contrato de salida inválido. |
+| Tipo fuera de whitelist (OUT3) | `error` + inline | El tipo de layout no está permitido en Reverse Studio. Use TXT posicional, JSON o XML. |
+| Encoding / line ending auto (OUT11) | `error` + inline | La codificación o el final de línea no pueden ser automáticos en el layout de envío. Elija un valor explícito. |
+| Tipo sin editor de campos | `warning` | Elija un tipo de layout permitido (TXT posicional, JSON o XML) en el paso 1. |
+| Cargar campos desde entrada (OK) | JSON / toast | Campos cargados desde la entrada. |
+| Cargar campos desde entrada (error) | JSON | No se pudieron cargar los campos. / mensaje del servicio con «origen»→«entrada». |
+
+> Guardar reutiliza `target_persistence_service.save_target`; el texto anterior aplica cuando `project_kind = reverse`. No hay publicar solo-salida (publicar definición = Módulo 4).
+
+#### Módulo 3 — Mapeo y reglas
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Mapeo guardado (borrador) | `success` | Mapeo guardado correctamente. |
+| Validación bloqueante mapeo | `error` + inline | Revise los datos del mapeo. |
+| Sin permiso editar mapeo | `error` | No tiene permiso para editar el mapeo de este proyecto. |
+| JSON mapeo inválido | `error` | JSON de mapeo inválido. |
+| Faltan entrada/salida | `warning` | Complete primero el contrato de entrada y el de salida antes de mapear campos. |
+| Reglas guardadas | `success` | Reglas guardadas correctamente. |
+| Sin permiso editar reglas | `error` | No tiene permiso para editar las reglas de este proyecto. |
+| JSON reglas inválido | `error` | JSON de reglas inválido. |
+| Sin mapeos para reglas | `warning` | Defina al menos un enlace de mapeo antes de configurar reglas de transformación. |
+| Preview fila entrada inválida | `error` | JSON de fila de entrada inválido. |
+
+> Guardar reutiliza `field_mapping_persistence_service` + `transform_rules_persistence_service`. CTA post-mapeo = publicar (M4), no generar.
+
+#### Módulo 4 — Publicar definición
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Definición publicada | `success` | Definición v{N} publicada correctamente. Nuevo borrador v{N+1} listo para edición. |
+| Sin permiso | `error` | No tiene permiso para publicar la definición de este proyecto. |
+| Checklist incompleto / validación | `error` + inline | Complete el contrato de entrada/salida… / Revise el mapeo… / Corrija las reglas… |
+| Whitelist entrada/salida | `error` | Mensajes IN3 / OUT3 / OUT11 al publicar. |
+| Error inesperado | `error` | Ocurrió un error al publicar. Si persiste, contacte al administrador. |
+
+> Motor: `publish_service.publish_definition` → `version_publish_service.publish_draft_version` + preflight Reverse.
+
+#### Módulo 5 — Generar archivo de envío
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Planilla subida | `success` / JSON | Planilla subida correctamente. |
+| Vista previa OK | `success` / JSON | Preview generado correctamente. |
+| Archivo generado | `success` / JSON | Archivo de envío generado: {n} filas OK… |
+| Sin versión publicada | vacío UX | Publique una definición (bloqueo hub + CTA). |
+| Sin permiso generar | `error` / JSON | No tiene permiso para generar archivos de envío en este proyecto. |
+| Sin planilla en job | `error` / JSON | El job no tiene una planilla subida. |
+| Job ya ejecutado | `error` / JSON | Esta generación ya se ejecutó o está en curso. |
+| Enlace descarga inválido | `error` / JSON | Enlace de descarga inválido o expirado. |
+| Archivo expirado | `error` / JSON | Archivo expirado. |
+| Extensión / tamaño | `error` / JSON | Mensajes de file intake DMS (tipo no permitido, tamaño…). |
+| Error inesperado generate | `error` / JSON | Ocurrió un error al generar el archivo. Si persiste, contacte al administrador. |
+| Sin acceso a recientes | `error` | No tiene acceso al historial de este proyecto. |
+
+> Motor: `file_intake_persistence_service.upload_production` + `execution_service` (dry_run / run_full) vía `apps/reverse_studio/run/`. Descarga solo PA/ED/GE (GEN2). Sin bridge FILE GATE (M7).
+
+#### Módulo 6 — Historial de generaciones
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin permiso historial | `error` | No tiene permiso para ver el historial de este proyecto. |
+| Vacío sin jobs | UX | Sin generaciones registradas + CTA Generar. |
+| Filtro sin matches | UX | Sin resultados + limpiar filtros. |
+| Fechas invertidas | inline | «Hasta» no puede ser anterior a «Desde». |
+| Versión no numérica | inline | La versión debe ser un número. |
+| Fecha inválida | inline | Fecha inválida (formato AAAA-MM-DD). |
+| Archivo expirado (detalle) | hint | Archivo expirado… regenere desde Generar. |
+| Enlace descarga inválido | `error` / JSON | Enlace de descarga inválido o expirado. (M5) |
+| Archivo expirado (HTTP) | `error` / JSON | Archivo expirado. (M5) |
+
+> Motor: `apps/reverse_studio/history/` sobre `DmsExecutionJob`. Descargas reutilizan rutas M5. CO solo metadatos (HIS5).
+
+#### Módulo 7 — Integración FILE GATE
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Integración guardada (ON) | `success` | Integración FILE GATE guardada. |
+| Integración desactivada | `success` | Integración FILE GATE desactivada. Generar funcionará sin pre-check. |
+| Sin permiso configurar | `error` | No tiene permiso para configurar la integración FILE GATE. |
+| Validación form bridge | `error` + inline | Revise los campos de la integración FILE GATE. |
+| Gate no publicado | `error` / JSON 409 | El proyecto FILE GATE no tiene un contrato publicado. Publique el esquema antes de generar. |
+| Planilla sin hash | `error` / JSON 409 | La planilla no tiene hash. Vuelva a subirla antes de generar. |
+| Sin corrida matching | `error` / JSON 409 | Valide esta planilla en FILE GATE antes de generar… |
+| Estado no aceptado | `error` / JSON 409 | La última validación FILE GATE de esta planilla no está aceptada… |
+| Frescura vencida | `error` / JSON 409 | La validación FILE GATE de esta planilla expiró por frescura… |
+| Config inválida | `error` / JSON 409 | La integración FILE GATE está mal configurada. Revise el proyecto vinculado. |
+
+> Motor: `dms_bridge_service` (kind DMS + Reverse) vía `apps/reverse_studio/bridge/`. Pre-check enganchado en `run_full_job` (M5).
 ---
 
 ## 4. Qué no mostrar al usuario

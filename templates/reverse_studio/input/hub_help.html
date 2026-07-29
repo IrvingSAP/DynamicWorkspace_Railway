@@ -1,0 +1,50 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Entrada — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">Entrada</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Reverse Studio · ayuda</p>
+        <h2>Cómo usar el contrato de entrada</h2>
+        <p>Describe la planilla de negocio. No genera el archivo del banco/ERP.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">← Volver</a>
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+    <h3 class="form-section-title">Función</h3>
+    <ul>
+        <li>Configura tipo (solo CSV / Excel / delimitado), captura, campos y reglas.</li>
+        <li>Guarda borrador; la publicación completa es el Módulo 4.</li>
+        <li>Tras completar los 6 pasos → continuar a contrato de salida (Módulo 2).</li>
+    </ul>
+    <h3 class="form-section-title" style="margin-top:18px">Reglas clave</h3>
+    <ul>
+        <li><strong>IN1</strong> — Solo PA/ED editan</li>
+        <li><strong>IN3</strong> — Whitelist de tipos de planilla</li>
+        <li><strong>IN7</strong> — Completar M1 solo no habilita generar</li>
+    </ul>
+</div></div>
+{% endblock %}

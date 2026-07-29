@@ -163,7 +163,14 @@ def dry_run_job(user, project: Project, job_id, *, limit: int = PREVIEW_ROW_LIMI
 
 
 @transaction.atomic
-def run_full_job(user, project: Project, job_id) -> OperationResult:
+def run_full_job(
+    user,
+    project: Project,
+    job_id,
+    *,
+    download_url_namespace: str = "dms",
+    download_url_names: dict[str, str] | None = None,
+) -> OperationResult:
     if not user_can_execute(user, project):
         return OperationResult.failure(
             "forbidden",
@@ -318,21 +325,36 @@ def run_full_job(user, project: Project, job_id) -> OperationResult:
             "rows_ok": job.rows_ok,
             "rows_rejected": job.rows_rejected,
             "output_filename": job.output_filename,
-            "downloads": build_download_links(project.slug, job),
+            "downloads": build_download_links(
+                project.slug,
+                job,
+                url_namespace=download_url_namespace,
+                url_names=download_url_names,
+            ),
         },
     )
 
 
-def build_download_links(project_slug: str, job: DmsExecutionJob) -> dict:
+_DEFAULT_DOWNLOAD_URL_NAMES = {
+    "output": "transform_execution_download_output",
+    "report": "transform_execution_download_report",
+    "errors": "transform_execution_download_errors",
+}
+
+
+def build_download_links(
+    project_slug: str,
+    job: DmsExecutionJob,
+    *,
+    url_namespace: str = "dms",
+    url_names: dict[str, str] | None = None,
+) -> dict:
+    names = url_names or _DEFAULT_DOWNLOAD_URL_NAMES
     links = {}
     for kind in ("output", "report", "errors"):
-        path_name = {
-            "output": "transform_execution_download_output",
-            "report": "transform_execution_download_report",
-            "errors": "transform_execution_download_errors",
-        }[kind]
+        path_name = names[kind]
         base = reverse(
-            f"dms:{path_name}",
+            f"{url_namespace}:{path_name}",
             kwargs={"project_slug": project_slug, "job_id": job.id},
         )
         links[kind] = f"{base}?{download_token_service.download_querystring(str(job.id), kind)}"

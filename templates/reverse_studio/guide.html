@@ -1,0 +1,314 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Reverse Studio{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Guía de trabajo · <span class="role-badge">UF</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>Cómo funciona Reverse Studio</h2>
+        <p>
+            <strong>Reverse Studio</strong> (Emisor de layouts) convierte una <strong>planilla amigable</strong>
+            (CSV, Excel o delimitado) en el <strong>archivo rígido</strong> que exige el banco, el ERP o el proveedor
+            (TXT posicional, JSON o XML), sin scripts sueltos.
+        </p>
+        <p>
+            Esta página describe el <strong>flujo completo</strong>. En cada pantalla también hay ayuda contextual
+            (botón <span class="mono">?</span> / Ayuda) con el detalle de esa vista.
+        </p>
+    </div>
+    <aside class="guide-hero-aside" aria-label="Ruta rápida">
+        <h3>Ruta rápida</h3>
+        <ol class="guide-quick-path">
+            <li>Crea un proyecto emisor y define la planilla de entrada.</li>
+            <li>Define el layout de envío, mapea campos, publica la versión.</li>
+            <li>Sube la planilla, genera el archivo y consulta el historial.</li>
+        </ol>
+    </aside>
+</div>
+
+<div class="guide-role-strip" aria-label="Roles en proyectos Reverse Studio">
+    <span class="label">Roles</span>
+    <span class="guide-role-item"><span class="role-code role-code--pa">PA</span><span>Admin — define, publica y gestiona miembros</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--ed">ED</span><span>Editor — ajusta definición y genera</span></span>
+    <span class="guide-role-item"><span class="role-code">GE</span><span>Generar — sube planilla y descarga el envío</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--co">CO</span><span>Consulta — metadatos e historial; sin descarga de datos</span></span>
+</div>
+
+<div class="guide-layout">
+    <nav class="guide-spine" aria-label="Índice de la guía">
+        <h3>Secciones</h3>
+        <nav>
+            <a href="#que-es">Qué es</a>
+            <a href="#funcion">Función</a>
+            <a href="#no-es">Qué no es</a>
+            <a href="#flujo">Flujo de trabajo</a>
+            <a href="#modulos">Módulos</a>
+            <a href="#fronteras">Frente a otras apps</a>
+            <a href="#casos">Casos típicos</a>
+        </nav>
+    </nav>
+
+    <div class="guide-flows">
+        <article class="flow-card" id="que-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">1</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué es Reverse Studio</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    Es el aplicativo de DynamicWorkspace pensado para equipos de <strong>tesorería, RRHH, operaciones
+                    e integradores</strong> que deben enviar archivos en un layout fijo, pero trabajan día a día con Excel o CSV.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>En una frase</h4>
+                        <p>
+                            Un <strong>emisor de layouts</strong>: proyecto reutilizable con contrato de entrada,
+                            contrato de salida, mapeo versionado y generación auditable.
+                        </p>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Resultado que entrega</h4>
+                        <ul>
+                            <li>Archivo de envío descargable (posicional / JSON / XML).</li>
+                            <li>Informe de la corrida y errores.</li>
+                            <li>Historial de quién generó qué, cuándo y con qué versión.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="funcion">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">2</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Cuál es la función de esta app</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>Función principal:</strong> parsear la planilla → aplicar mapeo y reglas →
+                    <strong>escribir</strong> el archivo que exige el receptor, siempre contra una <strong>definición publicada</strong>.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Problema que resuelve</h4>
+                        <ul>
+                            <li>El banco/ERP exige TXT, XML o JSON rígido.</li>
+                            <li>El negocio solo maneja Excel/CSV.</li>
+                            <li>Hoy se usan scripts frágiles o se edita el archivo a mano.</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Qué ganas</h4>
+                        <ul>
+                            <li>Misma planilla cada ciclo (mes, quincena, lote).</li>
+                            <li>Menos scripts y menos error humano.</li>
+                            <li>Evidencia de emisión (versión + historial).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="no-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">3</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué no es (y qué sí usar en su lugar)</h3>
+                </header>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Reverse Studio no…</h4>
+                        <ul>
+                            <li>No es un validador “solo gate” (no deja de generar por sí mismo un certificado de calidad).</li>
+                            <li>No es un ETL abierto a cualquier origen → destino.</li>
+                            <li>No concilia dos archivos ni reemplaza un ERP.</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Usa otra app si…</h4>
+                        <ul>
+                            <li><strong>FILE GATE</strong> — solo necesitas validar que la planilla cumple un contrato.</li>
+                            <li><strong>FilePipe</strong> — necesitas orígenes/destinos fuera del MVP o un pipeline genérico.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="flujo">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">4</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Flujo de trabajo</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    Camino fijo del producto: <strong>planilla fácil → layout rígido</strong>.
+                </p>
+                <ol>
+                    <li><strong>Entrada</strong> — define cómo viene la planilla (CSV / Excel / delimitado).</li>
+                    <li><strong>Salida</strong> — define el layout de envío (posicional / JSON / XML).</li>
+                    <li><strong>Mapeo + reglas</strong> — enlaza columnas de la planilla con campos del layout y limpia valores.</li>
+                    <li><strong>Publicar</strong> — congela la definición; la generación solo usa la versión publicada.</li>
+                    <li><strong>Generar</strong> — sube la planilla, ejecuta el job y descarga el archivo de envío.</li>
+                    <li><strong>Historial</strong> — consulta corridas, filtros y descargas vigentes (TTL).</li>
+                    <li><strong>FILE GATE (opcional)</strong> — exige una validación en verde de la misma planilla antes de generar.</li>
+                </ol>
+            </div>
+        </article>
+
+        <article class="flow-card" id="modulos">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">5</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Módulos del producto</h3>
+                </header>
+                <table class="help-table help-table--compact">
+                        <thead>
+                            <tr>
+                                <th>Módulo</th>
+                                <th>Qué hace</th>
+                                <th>Tipos / notas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1 · Entrada</strong></td>
+                                <td>Contrato de la planilla de negocio (campos, encoding, captura).</td>
+                                <td>CSV, Excel, delimitado</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2 · Salida</strong></td>
+                                <td>Contrato del layout que exige el receptor.</td>
+                                <td>TXT posicional, JSON, XML</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3 · Mapeo</strong></td>
+                                <td>Enlaces entrada → layout y reglas de transformación.</td>
+                                <td>direct, constant, concat, …</td>
+                            </tr>
+                            <tr>
+                                <td><strong>4 · Publicar</strong></td>
+                                <td>Pasa el borrador a versión publicada e inicia un nuevo borrador.</td>
+                                <td>Sin publicar no hay emisión</td>
+                            </tr>
+                            <tr>
+                                <td><strong>5 · Generar</strong></td>
+                                <td>Upload de planilla → job → descarga de layout + informe.</td>
+                                <td>PA / ED / GE</td>
+                            </tr>
+                            <tr>
+                                <td><strong>6 · Historial</strong></td>
+                                <td>Listado filtrable de generaciones y evidencia.</td>
+                                <td>TTL de descargas; CO solo metadatos</td>
+                            </tr>
+                            <tr>
+                                <td><strong>7 · Bridge</strong></td>
+                                <td>Pre-check opcional con FILE GATE (mismo hash de planilla).</td>
+                                <td>No genera el envío; solo bloquea o permite</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                <div class="flow-card-links">
+                    <a href="{% url 'reverse_studio:project_list' %}" class="btn btn-ghost btn-sm">Abrir proyectos</a>
+                    <a href="{% url 'reverse_studio:project_create' %}" class="btn btn-ghost btn-sm">Nuevo proyecto</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="fronteras">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">6</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Frente a FILE GATE y FilePipe</h3>
+                </header>
+                <table class="help-table help-table--compact">
+                        <thead>
+                            <tr>
+                                <th>App</th>
+                                <th>Pregunta que responde</th>
+                                <th>Relación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Reverse Studio</strong></td>
+                                <td>¿Puedo <em>generar</em> el archivo de envío?</td>
+                                <td>Escribe el layout destino</td>
+                            </tr>
+                            <tr>
+                                <td><strong>FILE GATE</strong></td>
+                                <td>¿El archivo cumple el contrato?</td>
+                                <td>Complemento opcional (Módulo 7) antes de generar</td>
+                            </tr>
+                            <tr>
+                                <td><strong>FilePipe</strong></td>
+                                <td>¿Cómo transformo origen ↔ destino genéricos?</td>
+                                <td>Mismo motor técnico; Reverse lo empaqueta para emisión</td>
+                            </tr>
+                        </tbody>
+                    </table>
+            </div>
+        </article>
+
+        <article class="flow-card" id="casos">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">7</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Casos típicos</h3>
+                </header>
+                <ul>
+                    <li><strong>Pagos / banco</strong> — Excel de abonos → TXT posicional del banco.</li>
+                    <li><strong>Nómina</strong> — CSV de RRHH → XML del proveedor de pagos.</li>
+                    <li><strong>Altas ERP</strong> — planilla de altas → JSON batch.</li>
+                    <li><strong>Emisión mensual</strong> — misma definición publicada; nueva planilla cada ciclo.</li>
+                    <li><strong>Pre-check + emisión</strong> — validar en FILE GATE → generar en Reverse Studio.</li>
+                </ul>
+                <div class="flow-card-links">
+                    <a href="{% url 'reverse_studio:project_list' %}" class="btn btn-primary btn-sm">Ir a Reverse Studio</a>
+                </div>
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}

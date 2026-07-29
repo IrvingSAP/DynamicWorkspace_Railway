@@ -1,0 +1,18 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Paso 2 — {{ project.name }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/source_profile.css' %}"><link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div><h2>Ayuda — Inicio de captura</h2></div>
+    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'reverse_studio:input_step2' project_slug=project.slug %}">← Volver</a></div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>Define dónde empiezan los datos de la planilla.</li>
+    <li>Si hay encabezado, configure también la fila en el paso 4.</li>
+    <li>Misma semántica que captura DMS (<code>capture_start</code>).</li>
+</ul>
+</div></div>
+{% endblock %}

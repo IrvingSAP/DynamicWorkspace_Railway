@@ -1,0 +1,102 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Generaciones recientes — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/transform_execution.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:run_hub' project_slug=project.slug %}">Generar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Recientes</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Reverse Studio · Módulo 5</p>
+        <h2>Generaciones recientes</h2>
+        <p>Vista mínima de jobs. Filtros, evidencia y certificado llegan en el Módulo 6.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'reverse_studio:run_hub' project_slug=project.slug %}" class="btn btn-secondary">← Generar</a>
+    </div>
+</div>
+
+{% if is_consulta %}
+<div class="note-box" style="margin-bottom:16px">
+    <strong>Rol consulta:</strong> ve metadatos; no descarga archivos con datos de negocio.
+</div>
+{% endif %}
+
+<div class="panel">
+    <div class="panel-body">
+        {% if history_jobs %}
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Estado</th>
+                        <th>Fin</th>
+                        <th>Versión</th>
+                        <th>Planilla</th>
+                        <th>Salida</th>
+                        <th>OK / rej</th>
+                        <th>Quién</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in history_jobs %}
+                    <tr>
+                        <td><span class="cell-badge">{{ job.status }}</span></td>
+                        <td>{% if job.finished_at %}{{ job.finished_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
+                        <td>{% if job.version_number %}v{{ job.version_number }}{% else %}—{% endif %}</td>
+                        <td>{{ job.input_filename }}</td>
+                        <td>{{ job.output_filename|default:"—" }}</td>
+                        <td>{{ job.rows_ok }} / {{ job.rows_rejected }}</td>
+                        <td>{{ job.executed_by }}</td>
+                        <td class="te-actions">
+                            {% if can_download and job.downloads.output %}
+                            <a class="btn btn-secondary btn-sm" href="{{ job.downloads.output }}">Envío</a>
+                            {% endif %}
+                            {% if can_download and job.downloads.report %}
+                            <a class="btn btn-secondary btn-sm" href="{{ job.downloads.report }}">Informe</a>
+                            {% endif %}
+                            {% if can_download and job.downloads.errors %}
+                            <a class="btn btn-secondary btn-sm" href="{{ job.downloads.errors }}">Errores</a>
+                            {% endif %}
+                            {% if job.expired %}
+                            <span class="hint">Expirado</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>Sin generaciones aún</h3>
+            <p>Cuando genere un archivo de envío aparecerá aquí.</p>
+            <a href="{% url 'reverse_studio:run_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a generar</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

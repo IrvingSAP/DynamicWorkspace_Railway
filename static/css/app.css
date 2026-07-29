@@ -28,6 +28,7 @@
     --radius-md: 6px;
     --radius-lg: 10px;
     --sidebar-w: 248px;
+    --sidebar-w-icons: 64px;
     --font: "IBM Plex Sans", system-ui, sans-serif;
     --font-mono: "IBM Plex Mono", ui-monospace, monospace;
     --ease: cubic-bezier(0.23, 1, 0.32, 1);
@@ -138,6 +139,46 @@ body {
     display: flex;
     flex-direction: column;
     padding: 16px 12px;
+    transition: width 0.2s var(--ease), padding 0.2s var(--ease);
+}
+
+.sidebar-collapse-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    color: var(--ink-secondary);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    transition: background 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.sidebar-collapse-btn:hover {
+    background: var(--accent-subtle);
+    color: var(--accent);
+}
+
+.sidebar-collapse-btn svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    opacity: 0.75;
+}
+
+.sidebar-collapse-btn .sidebar-collapse-icon-expand {
+    display: none;
+}
+
+.sidebar-link-label {
+    white-space: nowrap;
 }
 
 .sidebar-section-label {
@@ -170,8 +211,8 @@ body {
 }
 
 .sidebar-link:hover {
-    background: var(--surface);
-    color: var(--ink);
+    background: var(--accent-subtle);
+    color: var(--accent);
 }
 
 .sidebar-link svg {
@@ -292,38 +333,53 @@ body {
     flex-wrap: wrap;
 }
 
-/* —— Stats strip (list focal) —— */
+/* —— Stats strip (list focal) ——
+   Compact ledger strip: glanceable counts, not dashboard cards.
+   auto-fit so 3–4 metrics stay on one row when space allows. */
 .stats-strip {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
 }
 
 .stat-card {
-    padding: 14px 16px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 12px;
     background: var(--surface);
     border: 1px solid var(--rule);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
+    min-width: 0;
 }
 
 .stat-label {
-    margin: 0 0 4px;
+    margin: 0;
     font-size: 11px;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--ink-muted);
+    line-height: 1.3;
 }
 
 .stat-value {
     margin: 0;
-    font-size: 28px;
+    font-family: var(--font-mono);
+    font-size: 18px;
     font-weight: 600;
     letter-spacing: -0.03em;
     font-variant-numeric: tabular-nums;
     color: var(--ink);
-    line-height: 1.1;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.stat-card.is-accent {
+    border-color: rgba(15, 92, 76, 0.22);
+    background: var(--accent-subtle);
 }
 
 .stat-card.is-accent .stat-value {
@@ -948,6 +1004,7 @@ tbody tr:last-child td {
         flex-wrap: wrap;
         padding: 12px;
     }
+    .sidebar-collapse-btn { display: none; }
     .sidebar-nav { flex-direction: row; flex-wrap: wrap; flex: 1; }
     .sidebar-footer {
         margin-top: 0;
@@ -958,9 +1015,30 @@ tbody tr:last-child td {
         padding-top: 8px;
         border-top: 1px solid var(--rule);
     }
-    .stats-strip,
+    .stats-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .metric-row { grid-template-columns: 1fr; }
     .app-main { padding: 16px; }
+
+    /* En móvil el menú es horizontal: no aplicar modo iconos */
+    html.sidebar-icons .sidebar-left {
+        width: 100%;
+        padding: 12px;
+    }
+    html.sidebar-icons .sidebar-section-label,
+    html.sidebar-icons .sidebar-link-label,
+    html.sidebar-icons .billing-nav-label,
+    html.sidebar-icons .sidebar-username {
+        display: revert;
+    }
+    html.sidebar-icons .sidebar-link,
+    html.sidebar-icons .sidebar-footer button.sidebar-link {
+        justify-content: flex-start;
+        padding: 8px 10px;
+    }
+    html.sidebar-icons .sidebar-link[title]:hover::after,
+    html.sidebar-icons .sidebar-footer button.sidebar-link[title]:hover::after {
+        content: none;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1185,4 +1263,54 @@ body.dw-modal-open {
     color: var(--accent);
     background: var(--accent-subtle);
     font-weight: 500;
+}
+
+/* —— Sidebar colapsado: solo iconos (localStorage dw.sidebar.collapsed) —— */
+html.sidebar-icons .sidebar-left {
+    width: var(--sidebar-w-icons);
+    padding: 12px 8px;
+}
+
+html.sidebar-icons .sidebar-section-label,
+html.sidebar-icons .sidebar-link-label,
+html.sidebar-icons .billing-nav-label,
+html.sidebar-icons .sidebar-username,
+html.sidebar-icons .sidebar-collapse-btn .sidebar-link-label {
+    display: none;
+}
+
+html.sidebar-icons .sidebar-collapse-btn .sidebar-collapse-icon-collapse {
+    display: none;
+}
+
+html.sidebar-icons .sidebar-collapse-btn .sidebar-collapse-icon-expand {
+    display: block;
+}
+
+html.sidebar-icons .sidebar-link,
+html.sidebar-icons .sidebar-collapse-btn,
+html.sidebar-icons .sidebar-footer button.sidebar-link {
+    justify-content: center;
+    padding: 10px;
+    position: relative;
+}
+
+html.sidebar-icons .sidebar-link[title]:hover::after,
+html.sidebar-icons .sidebar-collapse-btn[title]:hover::after,
+html.sidebar-icons .sidebar-footer button.sidebar-link[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--ink);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    z-index: 20;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(28, 25, 23, 0.18);
 }

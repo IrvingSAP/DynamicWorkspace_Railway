@@ -1,0 +1,71 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Generar archivo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/transform_execution.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:run_hub' project_slug=project.slug %}">Generar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Generar archivo de envío</h2>
+        <p>Suba la planilla, genere el layout publicado y descargue el archivo.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'reverse_studio:run_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver a generar</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            Emite el <strong>archivo de envío</strong> (banco / ERP) a partir de una planilla de negocio,
+            usando solo la <strong>definición publicada</strong>. No edita el contrato ni publica versiones.
+        </p>
+
+        <h3 class="form-section-title">Prerrequisitos</h3>
+        <table class="help-table">
+            <thead><tr><th>Requisito</th><th>Dónde se resuelve</th></tr></thead>
+            <tbody>
+                <tr><td>Definición publicada</td><td>Módulo 4 — Publicar.</td></tr>
+                <tr><td>Planilla de producción</td><td>Esta pantalla (sección subir).</td></tr>
+                <tr><td>Permiso de generación</td><td>Roles PA / ED / GE.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones principales</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>Subir planilla</td><td>Crea un job listo (estado uploaded) contra la versión publicada.</td></tr>
+                <tr><td>Vista previa</td><td>Dry run de N filas para validar sin cerrar el job completo.</td></tr>
+                <tr><td>Generar archivo</td><td>Job completo: layout + informe + errores si aplica.</td></tr>
+                <tr><td>Descargas</td><td>Enlaces firmados (TTL típico 7 días). Rol CO no descarga datos de negocio.</td></tr>
+                <tr><td>Recientes</td><td>Listado mínimo; historial filtrable = Módulo 6.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no hace este módulo</h3>
+        <ul>
+            <li>No edita entrada, salida ni mapeo.</li>
+            <li>No exige pre-check FILE GATE (Módulo 7 / Fase 2).</li>
+            <li>No sustituye al historial avanzado.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

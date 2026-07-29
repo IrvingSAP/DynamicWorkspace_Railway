@@ -1,0 +1,17 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Paso 3 — {{ project.name }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/source_profile.css' %}"><link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div><h2>Ayuda — Fin de captura</h2></div>
+    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'reverse_studio:input_step3' project_slug=project.slug %}">← Volver</a></div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li><code>eof</code> es el default habitual para emisiones mensuales.</li>
+    <li><code>max_rows</code> sirve para pruebas sin leer todo el archivo.</li>
+</ul>
+</div></div>
+{% endblock %}

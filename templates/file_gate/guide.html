@@ -4,6 +4,7 @@
 {% block title %}Ayuda — FILE GATE{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 {% endblock %}
 
@@ -11,37 +12,361 @@
 {% include "includes/sidebar_uf.html" %}
 {% endblock %}
 
-{% block breadcrumb %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
 <nav class="breadcrumb" aria-label="Ruta">
     <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
     <span class="breadcrumb-sep">/</span>
     <span>Ayuda</span>
 </nav>
-{% endblock %}
 
-{% block content %}
-<div class="page-header">
-    <div>
-        <p class="page-eyebrow">Referencia · <span class="role-badge">UF</span></p>
-        <h2>Ayuda — FILE GATE</h2>
-        <p>Documentación de uso del validador de archivos. Se completará al cerrar el desarrollo de los módulos.</p>
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Guía de trabajo · <span class="role-badge">UF</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>Cómo funciona FILE GATE</h2>
+        <p>
+            <strong>FILE GATE</strong> (Validador de archivos) permite definir un <strong>contrato</strong> (esquema)
+            y comprobar si un archivo real lo cumple — sin transformar ni generar salida de negocio.
+        </p>
+        <p>
+            Esta página describe el <strong>flujo completo</strong>. En cada pantalla también hay ayuda contextual
+            (botón <span class="mono">?</span> / Ayuda) con el detalle de esa vista.
+        </p>
     </div>
-    <div class="page-actions">
-        <a href="{% url 'file_gate:project_list' %}" class="btn btn-secondary">← Validador</a>
-    </div>
+    <aside class="guide-hero-aside" aria-label="Ruta rápida">
+        <h3>Ruta rápida</h3>
+        <ol class="guide-quick-path">
+            <li>Crea un proyecto validador y define el esquema (contrato).</li>
+            <li>Ajusta políticas, publica la versión y sube un archivo.</li>
+            <li>Revisa el informe, el certificado y el historial.</li>
+        </ol>
+    </aside>
 </div>
 
-<div class="panel help-panel">
-    <div class="panel-body">
-        <h3 class="form-section-title">Estado</h3>
-        <p class="help-intro">
-            FILE GATE valida un archivo contra un <strong>contrato</strong> (esquema), sin transformar ni generar salida de negocio.
-            El Módulo 1 (definición del contrato) ya está disponible; la guía detallada se publicará aquí al culminar el desarrollo.
-        </p>
-        <ul>
-            <li><strong>Módulo 1</strong> — Contrato / esquema (asistente de 6 pasos) — disponible</li>
-            <li><strong>Módulos 2–5</strong> — Políticas, ejecución, informe e historial — pendientes</li>
-        </ul>
+<div class="guide-role-strip" aria-label="Roles en proyectos FILE GATE">
+    <span class="label">Roles</span>
+    <span class="guide-role-item"><span class="role-code role-code--pa">PA</span><span>Admin — define esquema, publica y gestiona miembros</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--ed">ED</span><span>Editor — ajusta contrato/políticas y valida</span></span>
+    <span class="guide-role-item"><span class="role-code">GE</span><span>Generar — ejecuta validación y descarga informe</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--co">CO</span><span>Consulta — ve historial/metadatos; sin descarga de filas</span></span>
+</div>
+
+<div class="guide-layout">
+    <nav class="guide-spine" aria-label="Índice de la guía">
+        <h3>Secciones</h3>
+        <nav>
+            <a href="#que-es">Qué es</a>
+            <a href="#funcion">Función</a>
+            <a href="#no-es">Qué no es</a>
+            <a href="#flujo">Flujo de trabajo</a>
+            <a href="#modulos">Módulos</a>
+            <a href="#resultados">Resultados</a>
+            <a href="#fronteras">Frente a otras apps</a>
+            <a href="#casos">Casos típicos</a>
+        </nav>
+    </nav>
+
+    <div class="guide-flows">
+        <article class="flow-card" id="que-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">1</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué es FILE GATE</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    Es el aplicativo de DynamicWorkspace pensado para equipos de
+                    <strong>operaciones, control de calidad de datos, integradores y supervisores de intercambio</strong>
+                    que necesitan <strong>certificar</strong> que un archivo cumple el layout acordado
+                    <em>antes</em> de cargarlo al ERP, enviarlo al banco o pasarlo a una transformación.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>En una frase</h4>
+                        <p>
+                            Un <strong>validador de archivos</strong>: proyecto reutilizable con esquema versionado,
+                            políticas de decisión, ejecución y evidencia auditable.
+                        </p>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Resultado que entrega</h4>
+                        <ul>
+                            <li>Veredicto: OK / con advertencias / rechazado / parcial.</li>
+                            <li>Informe de errores (resumen + detalle por fila/campo).</li>
+                            <li>Certificado ligero (hash + versión + resultado) e historial.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="funcion">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">2</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Cuál es la función de esta app</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>Función principal:</strong> parsear el archivo → validar campos y reglas de contenido →
+                    aplicar políticas → emitir un <strong>informe de conformidad</strong> contra la versión
+                    <strong>publicada</strong> del contrato.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Problema que resuelve</h4>
+                        <ul>
+                            <li>Archivos corruptos o fuera de layout llegan tarde al proceso.</li>
+                            <li>Validar “a ojo” en Excel no escala ni audita.</li>
+                            <li>Scripts puntuales no tienen roles, versiones ni historial.</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Qué ganas</h4>
+                        <ul>
+                            <li>Detección temprana antes de la carga o el envío.</li>
+                            <li>Contrato reutilizable (misma definición cada ciclo).</li>
+                            <li>Evidencia para proveedores, terceros y auditoría interna.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="no-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">3</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué no es (y qué sí usar en su lugar)</h3>
+                </header>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>FILE GATE no…</h4>
+                        <ul>
+                            <li>No escribe un archivo de salida de negocio (no transforma).</li>
+                            <li>No mapea origen → destino ni serializa un layout nuevo.</li>
+                            <li>No concilia dos archivos ni corrige automáticamente el archivo completo.</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Usa otra app si…</h4>
+                        <ul>
+                            <li><strong>FilePipe</strong> — necesitas transformar y generar un archivo destino.</li>
+                            <li><strong>Reverse Studio</strong> — tienes Excel/CSV y debes <em>emitir</em> el layout del banco/ERP.</li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="flow-card-purpose" style="margin-top:12px">
+                    Sí puede exportar un <strong>archivo de errores</strong> (CSV/JSON de rechazos): eso es informe, no transformación.
+                </p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="flujo">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">4</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Flujo de trabajo</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    Camino del producto: <strong>definir contrato → validar archivo → evidencia</strong>.
+                </p>
+                <ol>
+                    <li><strong>Esquema</strong> — define tipo, encoding, captura, campos y reglas de contenido (asistente de 6 pasos).</li>
+                    <li><strong>Políticas</strong> — cómo recolectar errores, tope de errores y umbral de rechazo.</li>
+                    <li><strong>Publicar</strong> — congela el borrador; las validaciones usan solo la versión publicada.</li>
+                    <li><strong>Validar</strong> — sube el archivo, ejecuta el job y obtén el veredicto.</li>
+                    <li><strong>Informe</strong> — resumen, detalle, descargas y certificado ligero.</li>
+                    <li><strong>Historial</strong> — consulta corridas, filtros y TTL de evidencias.</li>
+                    <li><strong>Bridge FilePipe / Reverse</strong> — opcional: exigir FILE GATE en verde antes de transformar o generar.</li>
+                </ol>
+            </div>
+        </article>
+
+        <article class="flow-card" id="modulos">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">5</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Módulos del producto</h3>
+                </header>
+                <table class="help-table help-table--compact">
+                    <thead>
+                        <tr>
+                            <th>Módulo</th>
+                            <th>Qué hace</th>
+                            <th>Notas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>1 · Esquema</strong></td>
+                            <td>Contrato de validación (tipo, captura, campos, reglas).</td>
+                            <td>Reusa SourceProfile; no define destino</td>
+                        </tr>
+                        <tr>
+                            <td><strong>2 · Políticas</strong></td>
+                            <td>Recolección, corte (<span class="mono">max_errors</span>) y umbral de decisión.</td>
+                            <td>abort / collect_all / reject_threshold</td>
+                        </tr>
+                        <tr>
+                            <td><strong>3 · Validar</strong></td>
+                            <td>Upload + parseo + validación + persistencia del job.</td>
+                            <td>Solo contra versión publicada</td>
+                        </tr>
+                        <tr>
+                            <td><strong>4 · Informe</strong></td>
+                            <td>Resumen, detalle de errores, descargas y certificado.</td>
+                            <td>Hash + versión + resultado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>5 · Historial</strong></td>
+                            <td>Listado filtrable de validaciones y auditoría.</td>
+                            <td>TTL de evidencia; CO solo metadatos</td>
+                        </tr>
+                        <tr>
+                            <td><strong>6 · Bridge</strong></td>
+                            <td>Vínculo con FilePipe (y emisores Reverse) para pre-check.</td>
+                            <td>Matching por <span class="mono">content_hash</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="flow-card-links">
+                    <a href="{% url 'file_gate:project_list' %}" class="btn btn-ghost btn-sm">Abrir validador</a>
+                    <a href="{% url 'file_gate:project_create' %}" class="btn btn-ghost btn-sm">Nuevo proyecto</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="resultados">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">6</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Estados de una validación</h3>
+                </header>
+                <table class="help-table help-table--compact">
+                    <thead>
+                        <tr>
+                            <th>Estado</th>
+                            <th>Significado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>passed</strong></td>
+                            <td>0 errores (advertencias permitidas según política).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>passed_with_warnings</strong></td>
+                            <td>0 errores, hay advertencias.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>failed</strong></td>
+                            <td>Hay errores o se superó el umbral / abort.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>partial</strong></td>
+                            <td>Tope de filas o <span class="mono">max_errors</span> antes de llegar al final del archivo.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="flow-card-grid" style="margin-top:16px">
+                    <div class="flow-card-block">
+                        <h4>Severidades</h4>
+                        <ul>
+                            <li><strong>Error</strong> — obligatorio vacío, tipo inválido, longitud/patrón fallido.</li>
+                            <li><strong>Advertencia</strong> — encoding distinto, columnas extra, filas cortas.</li>
+                            <li><strong>Info</strong> — filas omitidas por captura, detección automática.</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Reglas clave</h4>
+                        <ul>
+                            <li>Solo se valida contra versión <strong>publicada</strong>.</li>
+                            <li>El job <strong>no modifica</strong> el perfil ni el archivo de entrada.</li>
+                            <li>Aislamiento por compañía + membresía del proyecto.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="fronteras">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">7</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Frente a FilePipe y Reverse Studio</h3>
+                </header>
+                <table class="help-table help-table--compact">
+                    <thead>
+                        <tr>
+                            <th>App</th>
+                            <th>Pregunta que responde</th>
+                            <th>Relación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>FILE GATE</strong></td>
+                            <td>¿El archivo cumple el contrato?</td>
+                            <td>Solo valida; no escribe salida de negocio</td>
+                        </tr>
+                        <tr>
+                            <td><strong>FilePipe</strong></td>
+                            <td>¿Cómo transformo origen → destino?</td>
+                            <td>Puede exigir FILE GATE en verde (bridge) antes de ejecutar</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Reverse Studio</strong></td>
+                            <td>¿Puedo <em>generar</em> el archivo de envío?</td>
+                            <td>Puede exigir validación de la planilla antes de emitir</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="flow-card" id="casos">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">8</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Casos típicos</h3>
+                </header>
+                <ul>
+                    <li><strong>Intercambio bancario</strong> — validar layout de abonos antes de enviar al banco.</li>
+                    <li><strong>Nómina / RRHH</strong> — comprobar TXT posicional del ERP antes de la carga de pagos.</li>
+                    <li><strong>Proveedores</strong> — gate de recepción: el proveedor sube y ve el informe de conformidad.</li>
+                    <li><strong>Reportes regulatorios</strong> — certificar columnas y tipos exigidos en un CSV.</li>
+                    <li><strong>Pre-check FilePipe / Reverse</strong> — exigir validación en verde antes de transformar o generar.</li>
+                    <li><strong>Onboarding de layouts</strong> — documentar el contrato y usarlo como prueba de aceptación.</li>
+                </ul>
+                <div class="flow-card-links">
+                    <a href="{% url 'file_gate:project_list' %}" class="btn btn-primary btn-sm">Ir a FILE GATE</a>
+                </div>
+            </div>
+        </article>
     </div>
 </div>
 {% endblock %}

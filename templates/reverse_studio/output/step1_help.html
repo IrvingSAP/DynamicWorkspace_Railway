@@ -1,0 +1,47 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Paso 1 layout de envío{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}">Salida</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:output_step1' project_slug=project.slug %}">Paso 1</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Paso 1 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Tipo de layout de envío</h2>
+        <p>Formato rígido del archivo que recibe el banco/ERP (<code>TargetFileType</code>, whitelist Reverse).</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'reverse_studio:output_step1' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 1</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <p class="help-intro">Elija solo formatos de emisión del MVP. Condiciona estructura, campos y serialización. CSV/Excel no aplican como salida (son entrada).</p>
+        <table class="help-table">
+            <thead><tr><th>Elemento</th><th>Qué hace</th></tr></thead>
+            <tbody>
+                <tr><td>Tarjetas de tipo</td><td>Solo <span class="mono">txt_fixed</span>, <span class="mono">json</span> o <span class="mono">xml</span>.</td></tr>
+                <tr><td>Guardar / Continuar</td><td>Persiste el tipo y avanza al paso 2 (codificación).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

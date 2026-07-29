@@ -1,0 +1,123 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Detalle generación — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/reverse_studio_history.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:history_hub' project_slug=project.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ job_row.short_id }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Reverse Studio · Módulo 6 · <span class="role-badge">Job</span></p>
+        <h2>Detalle de generación</h2>
+        <p>Metadatos persistidos. No recalcula el pipeline.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'reverse_studio:history_hub' project_slug=project.slug %}" class="btn btn-secondary">← Historial</a>
+        {% if can_download and job_row.downloads.output %}
+        <a href="{{ job_row.downloads.output }}" class="btn btn-primary">Descargar archivo de envío</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if is_consulta %}
+<div class="note-box" style="margin-bottom:16px">
+    <strong>Rol consulta:</strong> ve métricas y metadatos; no descarga archivos con datos de negocio.
+</div>
+{% endif %}
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Identificación</h3>
+        <dl class="rs-history-kv">
+            <dt>Job</dt>
+            <dd><code>{{ job_row.id }}</code></dd>
+            <dt>Estado</dt>
+            <dd>
+                <span class="status-pill {{ job_row.tone }}">{{ job_row.status_label }}</span>
+                {% if job_row.is_expired %}
+                · <span class="ttl-badge is-expired">TTL expirado</span>
+                {% else %}
+                · <span class="ttl-badge is-active">TTL vigente ({{ ttl_days }} días)</span>
+                {% endif %}
+            </dd>
+            <dt>Versión publicada</dt>
+            <dd>{% if job_row.version %}v{{ job_row.version }}{% else %}—{% endif %}</dd>
+            <dt>Ejecutado por</dt>
+            <dd><code>{{ job_row.executed_by }}</code></dd>
+            <dt>Inicio / fin</dt>
+            <dd>
+                {% if job_row.started_at %}{{ job_row.started_at|date:"d M Y · H:i" }}{% else %}—{% endif %}
+                →
+                {% if job_row.finished_at %}{{ job_row.finished_at|date:"d M Y · H:i" }}{% else %}—{% endif %}
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Planilla de entrada</h3>
+        <dl class="rs-history-kv">
+            <dt>Archivo</dt>
+            <dd>{{ job_row.filename }}</dd>
+            <dt>Tamaño</dt>
+            <dd>{{ job_row.size_label }}</dd>
+            <dt>Hash</dt>
+            <dd><code>sha256:{{ job_row.content_hash|default:"—" }}</code></dd>
+        </dl>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Resultado</h3>
+        <dl class="rs-history-kv">
+            <dt>Archivo de envío</dt>
+            <dd><code>{{ job_row.output_filename|default:"—" }}</code></dd>
+            <dt>Filas leídas</dt>
+            <dd>{{ job_row.rows_read }}</dd>
+            <dt>OK / rechazadas</dt>
+            <dd>{{ job_row.rows_ok }} / {{ job_row.rows_rejected }}</dd>
+            {% if job_row.error_message %}
+            <dt>Mensaje</dt>
+            <dd>{{ job_row.error_message }}</dd>
+            {% endif %}
+        </dl>
+        {% if can_download and job_row.downloads %}
+        <div class="page-actions" style="margin-top:16px">
+            {% if job_row.downloads.output %}
+            <a class="btn btn-primary" href="{{ job_row.downloads.output }}">Descargar envío</a>
+            {% endif %}
+            {% if job_row.downloads.report %}
+            <a class="btn btn-secondary" href="{{ job_row.downloads.report }}">Descargar informe</a>
+            {% endif %}
+            {% if job_row.downloads.errors %}
+            <a class="btn btn-secondary" href="{{ job_row.downloads.errors }}">Descargar errores</a>
+            {% endif %}
+        </div>
+        {% elif job_row.is_expired %}
+        <p class="hint" style="margin-top:12px">Archivo expirado. Los metadatos permanecen; regenere desde el módulo Generar si necesita el layout de nuevo.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{{ mappings|json_script:"dms-field-mappings-data" }}
+{{ source_fields|json_script:"dms-field-mapping-source" }}
+{{ target_fields|json_script:"dms-field-mapping-target" }}
+{{ suggestions|json_script:"dms-field-mapping-suggestions" }}
+<div id="dms-field-mapping-save-config"
+     data-save-url="{{ mapping_save_url }}"
+     data-preview-url="{{ mapping_preview_url }}"
+     data-csrf-token="{{ csrf_token }}"
+     data-can-edit="{% if can_edit_mappings %}1{% else %}0{% endif %}"
+     hidden></div>
+{{ sample_preview_row|json_script:"dms-field-mapping-sample-row" }}

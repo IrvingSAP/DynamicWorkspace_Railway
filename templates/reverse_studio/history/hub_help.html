@@ -1,0 +1,71 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Historial{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/reverse_studio_history.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:history_hub' project_slug=project.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Historial de generaciones</h2>
+        <p>Consulta filtrable de emisiones. No genera archivos ni edita la definición.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'reverse_studio:history_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al historial</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            Libro de auditoría del emisor: quién generó qué layout, con qué planilla y versión publicada.
+            Las descargas caducan a los <strong>{{ ttl_days }} días</strong>; los metadatos permanecen.
+        </p>
+
+        <h3 class="form-section-title">Filtros</h3>
+        <table class="help-table">
+            <thead><tr><th>Filtro</th><th>Uso</th></tr></thead>
+            <tbody>
+                <tr><td>Estado</td><td>Completado / Parcial / Fallido</td></tr>
+                <tr><td>Planilla</td><td>Nombre contiene…</td></tr>
+                <tr><td>Versión</td><td>Versión publicada usada en el job</td></tr>
+                <tr><td>Usuario</td><td>Quién ejecutó la generación</td></tr>
+                <tr><td>TTL</td><td>Vigente vs expirado</td></tr>
+                <tr><td>Fechas</td><td>Rango sobre fecha de fin</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Rol</th><th>Puede</th></tr></thead>
+            <tbody>
+                <tr><td>PA / ED / GE</td><td>Ver, filtrar, detalle, descargar si TTL vigente</td></tr>
+                <tr><td>CO</td><td>Ver y filtrar metadatos; sin descarga de negocio</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no hace</h3>
+        <ul>
+            <li>No regenera el archivo (vuelva a Generar).</li>
+            <li>No exige FILE GATE (Módulo 7).</li>
+            <li>No sustituye un certificado formal (Fase 3).</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

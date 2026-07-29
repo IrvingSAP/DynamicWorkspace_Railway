@@ -1,0 +1,26 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Paso 1 — {{ project.name }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb"><a href="{% url 'reverse_studio:input_step1' project_slug=project.slug %}">Paso 1</a><span class="breadcrumb-sep">/</span><span>Ayuda</span></nav>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div><h2>Ayuda — Tipo de planilla</h2><p>Whitelist MVP y parámetros de texto.</p></div>
+    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'reverse_studio:input_step1' project_slug=project.slug %}">← Volver</a></div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li><strong>Permitidos:</strong> <code>xlsx</code>, <code>csv</code>, <code>txt_delimited</code>.</li>
+    <li><strong>Bloqueados:</strong> posicional / JSON / XML como entrada (FilePipe o salida M2).</li>
+    <li>Encoding y fin de línea afectan la lectura de la planilla.</li>
+    <li>Cambiar tipo con campos existentes dispara confirmación (IN4).</li>
+</ul>
+</div></div>
+{% endblock %}

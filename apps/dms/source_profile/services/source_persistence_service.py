@@ -574,20 +574,27 @@ def save_source(
     strict: bool = False,
 ) -> OperationResult:
     is_file_gate = project.project_kind == Project.KIND_FILE_GATE
+    is_reverse = project.project_kind == Project.KIND_REVERSE
     if not user_can_edit_source(user, project):
-        return OperationResult.failure(
-            "forbidden",
-            (
-                "No tiene permiso para editar el contrato de este proyecto."
-                if is_file_gate
-                else "No tiene permiso para editar la definición de origen."
-            ),
-        )
+        if is_file_gate or is_reverse:
+            forbidden_msg = "No tiene permiso para editar el contrato de este proyecto."
+        else:
+            forbidden_msg = "No tiene permiso para editar la definición de origen."
+        return OperationResult.failure("forbidden", forbidden_msg)
 
     version = get_or_create_draft_version(project)
     profile = version.source_profile
     current = profile_to_dict(profile)
     merged = merge_source_dict(current, partial)
+
+    if is_reverse:
+        from apps.reverse_studio.input.services.input_whitelist import (
+            reject_non_whitelist_file_type,
+        )
+
+        whitelist_error = reject_non_whitelist_file_type(merged.get("file_type_code"))
+        if whitelist_error is not None:
+            return whitelist_error
 
     new_type = (merged.get("file_type_code") or "").strip()
     old_type = (current.get("file_type_code") or "").strip()
@@ -614,13 +621,15 @@ def save_source(
 
     errors, warnings = validate_source_dict(merged, strict=strict)
     if errors:
+        if is_file_gate:
+            validation_msg = "Revise los datos del contrato de validación."
+        elif is_reverse:
+            validation_msg = "Revise los datos del contrato de entrada."
+        else:
+            validation_msg = "Revise los datos del perfil de origen."
         return OperationResult.failure(
             "validation_form",
-            (
-                "Revise los datos del contrato de validación."
-                if is_file_gate
-                else "Revise los datos del perfil de origen."
-            ),
+            validation_msg,
             errors=errors,
             warnings=warnings,
         )
@@ -637,12 +646,15 @@ def save_source(
             "Ocurrió un error al guardar. Si persiste, contacte al administrador.",
         )
 
+    if is_file_gate:
+        success_msg = "Contrato de validación guardado correctamente."
+    elif is_reverse:
+        success_msg = "Contrato de entrada guardado correctamente."
+    else:
+        success_msg = "Perfil de origen guardado correctamente."
+
     return OperationResult.success(
-        user_message=(
-            "Contrato de validación guardado correctamente."
-            if is_file_gate
-            else "Perfil de origen guardado correctamente."
-        ),
+        user_message=success_msg,
         payload={
             "source": profile_to_dict(profile),
             "version": version,

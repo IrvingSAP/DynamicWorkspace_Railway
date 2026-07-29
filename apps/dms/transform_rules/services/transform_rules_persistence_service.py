@@ -299,7 +299,11 @@ def save_pipelines(
     if not user_can_edit_rules(user, project):
         return OperationResult.failure(
             "forbidden",
-            "No tiene permiso para editar las reglas de transformación.",
+            (
+                "No tiene permiso para editar las reglas de este proyecto."
+                if project.project_kind == Project.KIND_REVERSE
+                else "No tiene permiso para editar las reglas de transformación."
+            ),
         )
 
     version = field_mapping_persistence_service.get_or_create_draft_with_mappings(project)
@@ -384,7 +388,11 @@ def save_pipelines(
 
     warnings = {**map_warnings, **pipe_warnings}
     return OperationResult.success(
-        user_message="Reglas de transformación guardadas correctamente.",
+        user_message=(
+            "Reglas de transformación guardadas correctamente."
+            if project.project_kind != Project.KIND_REVERSE
+            else "Reglas guardadas correctamente."
+        ),
         payload={
             "mappings": field_mapping_persistence_service.set_to_dict(mapping_set)["mappings"],
             "warnings": warnings,

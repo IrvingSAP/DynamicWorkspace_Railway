@@ -1,0 +1,18 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Paso 5 — {{ project.name }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/source_profile.css' %}"><link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div><h2>Ayuda — Reglas de contenido</h2></div>
+    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'reverse_studio:input_step5' project_slug=project.slug %}">← Volver</a></div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>Aplican al leer la planilla, antes del mapeo.</li>
+    <li>En Excel/CSV, <code>trim_lines</code> suele ayudar.</li>
+    <li>Los cambios deben persistirse al guardar o al pulsar Siguiente.</li>
+</ul>
+</div></div>
+{% endblock %}

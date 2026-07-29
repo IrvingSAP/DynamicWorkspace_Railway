@@ -1,0 +1,19 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Listado — Reverse Studio{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div><h2>Ayuda — Proyectos Reverse Studio</h2>
+    <p>Listado de emisores de layout de su compañía.</p></div>
+    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'reverse_studio:project_list' %}">← Volver</a></div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>Cada proyecto tiene kind <code>reverse</code> (aislado de FilePipe y FILE GATE).</li>
+    <li>El PA gestiona miembros y roles (PA/ED/GE/CO) en la pantalla Miembros.</li>
+    <li>Empiece por el contrato de entrada; salida y generación vienen después.</li>
+</ul>
+</div></div>
+{% endblock %}
