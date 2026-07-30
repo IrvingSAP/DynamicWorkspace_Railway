@@ -1,7 +1,7 @@
-"""Bridge FILE GATE ↔ FilePipe / Reverse Studio.
+"""Bridge FILE GATE ↔ FilePipe / Reverse Studio / FILE MATCH.
 
-Config vive en DmsProjectConfig (lado emisor: DMS o Reverse). El pre-check
-reutiliza jobs FILE GATE por content_hash; no recalcula el gate (B2 / BR2).
+Config vive en DmsProjectConfig (lado emisor: DMS, Reverse o Match). El pre-check
+reutiliza jobs FILE GATE por content_hash; no recalcula el gate (B2 / BR2 / MB-R2).
 """
 
 from __future__ import annotations
@@ -28,7 +28,9 @@ DEFAULT_MAX_AGE_DAYS = 7
 ACCEPT_PASSED = DmsProjectConfig.ACCEPT_PASSED
 ACCEPT_PASSED_WITH_WARNINGS = DmsProjectConfig.ACCEPT_PASSED_WITH_WARNINGS
 
-BRIDGEABLE_KINDS = frozenset({Project.KIND_DMS, Project.KIND_REVERSE})
+BRIDGEABLE_KINDS = frozenset(
+    {Project.KIND_DMS, Project.KIND_REVERSE, Project.KIND_FILE_MATCH}
+)
 
 NON_FINAL_JOB_STATUSES = (
     DmsExecutionJob.STATUS_UPLOADED,
@@ -84,19 +86,53 @@ MSG_REVERSE = {
     ),
 }
 
+MSG_MATCH = {
+    "config_invalid": (
+        "La integración FILE GATE está mal configurada. Revise el proyecto vinculado."
+    ),
+    "gate_not_published": (
+        "El proyecto FILE GATE no tiene un contrato publicado. "
+        "Publique el esquema antes de conciliar."
+    ),
+    "no_hash": (
+        "El archivo {side} no tiene hash. Vuelva a subirlo antes de conciliar."
+    ),
+    "no_matching_job": (
+        "Valide el archivo {side} en FILE GATE antes de conciliar. "
+        "No hay una corrida aceptada con el mismo contenido."
+    ),
+    "status_not_accepted": (
+        "La última validación FILE GATE del archivo {side} no está aceptada. "
+        "Corrija el archivo o revise la evidencia antes de conciliar."
+    ),
+    "stale": (
+        "La validación FILE GATE del archivo {side} expiró por frescura. "
+        "Vuelva a validarlo en FILE GATE."
+    ),
+    "sides_required": "Marque al menos «Exigir en A» o «Exigir en B».",
+}
+
 
 def is_bridgeable_project(project: Project) -> bool:
     return project.project_kind in BRIDGEABLE_KINDS
 
 
-def _message(code: str, project: Project | None = None) -> str:
+def _message(
+    code: str,
+    project: Project | None = None,
+    *,
+    side: str | None = None,
+) -> str:
     if project is not None and project.project_kind == Project.KIND_REVERSE:
         return MSG_REVERSE.get(code, MSG.get(code, "Pre-check FILE GATE fallido."))
+    if project is not None and project.project_kind == Project.KIND_FILE_MATCH:
+        template = MSG_MATCH.get(code, MSG.get(code, "Pre-check FILE GATE fallido."))
+        return template.format(side=side or "A/B")
     return MSG.get(code, "Pre-check FILE GATE fallido.")
 
 
 def user_can_configure(user, project: Project) -> bool:
-    """PA/ED del proyecto emisor (DMS o Reverse)."""
+    """PA/ED del proyecto emisor (DMS, Reverse o Match)."""
     membership = project_service.get_membership(user, project)
     if membership is None:
         return False
@@ -146,6 +182,11 @@ def file_type_mismatch_warning(dms_project: Project, gate_project: Project | Non
                 f"El tipo de archivo del contrato FILE GATE ({gate_type}) "
                 f"no coincide con la planilla de entrada ({dms_type})."
             )
+        if dms_project.project_kind == Project.KIND_FILE_MATCH:
+            return (
+                f"El tipo de archivo del contrato FILE GATE ({gate_type}) "
+                f"no coincide con el perfil publicado del conciliador ({dms_type})."
+            )
         return (
             f"El tipo de archivo del contrato FILE GATE ({gate_type}) "
             f"no coincide con el origen DMS ({dms_type})."
@@ -163,6 +204,8 @@ def get_settings_context(user, dms_project: Project) -> dict:
         "gate_project_slug": gate.slug if gate_id_safe(gate) else "",
         "accept": config.file_gate_accept or ACCEPT_PASSED_WITH_WARNINGS,
         "max_age_days": config.file_gate_max_age_days or DEFAULT_MAX_AGE_DAYS,
+        "require_a": bool(config.file_gate_require_a),
+        "require_b": bool(config.file_gate_require_b),
         "linked_at": config.file_gate_linked_at,
         "linked_by": (
             (
@@ -182,6 +225,7 @@ def get_settings_context(user, dms_project: Project) -> dict:
             },
         ],
         "is_reverse": dms_project.project_kind == Project.KIND_REVERSE,
+        "is_match": dms_project.project_kind == Project.KIND_FILE_MATCH,
     }
 
 
@@ -199,11 +243,13 @@ def save_settings(user, dms_project: Project, data: dict) -> OperationResult:
     if not is_bridgeable_project(dms_project):
         return OperationResult.failure(
             "validation_form",
-            "La integración solo aplica a proyectos FilePipe o Reverse Studio.",
+            "La integración solo aplica a proyectos FilePipe, Reverse Studio o FILE MATCH.",
         )
 
     errors: dict[str, list[str]] = {}
     enabled = bool(data.get("file_gate_enabled"))
+    require_a = bool(data.get("file_gate_require_a"))
+    require_b = bool(data.get("file_gate_require_b"))
     gate_id = (data.get("file_gate_project_id") or "").strip()
     accept = (data.get("file_gate_accept") or ACCEPT_PASSED_WITH_WARNINGS).strip()
     if accept not in (ACCEPT_PASSED, ACCEPT_PASSED_WITH_WARNINGS):
@@ -218,6 +264,12 @@ def save_settings(user, dms_project: Project, data: dict) -> OperationResult:
     if max_age < 1:
         errors["file_gate_max_age_days"] = ["La frescura debe ser un número ≥ 1."]
         max_age = DEFAULT_MAX_AGE_DAYS
+
+    is_match = dms_project.project_kind == Project.KIND_FILE_MATCH
+    if enabled and is_match and not require_a and not require_b:
+        errors["file_gate_require_sides"] = [
+            _message("sides_required", dms_project)
+        ]
 
     gate_project = None
     if enabled:
@@ -259,6 +311,12 @@ def save_settings(user, dms_project: Project, data: dict) -> OperationResult:
     config.file_gate_enabled = enabled
     config.file_gate_accept = accept
     config.file_gate_max_age_days = max_age
+    if is_match:
+        config.file_gate_require_a = require_a
+        config.file_gate_require_b = require_b
+    elif not enabled:
+        # Keep require flags as-is for non-match; no-op
+        pass
 
     previous_gate_id = config.file_gate_project_id
     new_gate_id = gate_project.id if gate_project else None
@@ -270,10 +328,26 @@ def save_settings(user, dms_project: Project, data: dict) -> OperationResult:
         config.file_gate_linked_at = None
         config.file_gate_linked_by = None
 
-    config.save()
+    update_fields = [
+        "file_gate_enabled",
+        "file_gate_accept",
+        "file_gate_max_age_days",
+        "file_gate_project",
+        "file_gate_linked_at",
+        "file_gate_linked_by",
+        "updated_at",
+    ]
+    if is_match:
+        update_fields.extend(["file_gate_require_a", "file_gate_require_b"])
+    config.save(update_fields=update_fields)
+
     is_reverse = dms_project.project_kind == Project.KIND_REVERSE
     if enabled:
         user_message = "Integración FILE GATE guardada."
+    elif is_match:
+        user_message = (
+            "Integración FILE GATE desactivada. Conciliar funcionará sin pre-check."
+        )
     elif is_reverse:
         user_message = (
             "Integración FILE GATE desactivada. Generar funcionará sin pre-check."
@@ -325,9 +399,10 @@ def _block(
     project: Project | None = None,
     gate_project: Project | None = None,
     job=None,
+    side: str | None = None,
     **extra,
 ) -> OperationResult:
-    payload = {"links": {}}
+    payload = {"links": {}, "side": side or ""}
     if gate_project is not None:
         payload["links"] = _gate_links(gate_project, job)
         payload["gate_project_slug"] = gate_project.slug
@@ -338,7 +413,7 @@ def _block(
     payload.update(extra)
     return OperationResult.failure(
         code,
-        _message(code, project),
+        _message(code, project, side=side),
         **payload,
     )
 
@@ -349,8 +424,13 @@ def _status_accepted(status: str, accept: str) -> bool:
     return status in (engine.STATUS_PASSED, engine.STATUS_PASSED_WITH_WARNINGS)
 
 
-def precheck(dms_project: Project, *, content_hash: str) -> OperationResult:
-    """Algoritmo B1–B6 / BR1–BR6. No recalcula el gate."""
+def precheck(
+    dms_project: Project,
+    *,
+    content_hash: str,
+    side: str | None = None,
+) -> OperationResult:
+    """Algoritmo B1–B6 / BR1–BR6 / MB. No recalcula el gate."""
     config = (
         DmsProjectConfig.objects.select_related("file_gate_project")
         .filter(project_id=dms_project.id)
@@ -365,16 +445,21 @@ def precheck(dms_project: Project, *, content_hash: str) -> OperationResult:
         or gate_project.project_kind != Project.KIND_FILE_GATE
         or gate_project.company_id != dms_project.company_id
     ):
-        return _block("config_invalid", project=dms_project)
+        return _block("config_invalid", project=dms_project, side=side)
 
     if file_intake_persistence_service.get_published_version(gate_project) is None:
         return _block(
-            "gate_not_published", project=dms_project, gate_project=gate_project
+            "gate_not_published",
+            project=dms_project,
+            gate_project=gate_project,
+            side=side,
         )
 
     hash_value = (content_hash or "").strip()
     if not hash_value:
-        return _block("no_hash", project=dms_project, gate_project=gate_project)
+        return _block(
+            "no_hash", project=dms_project, gate_project=gate_project, side=side
+        )
 
     max_age = config.file_gate_max_age_days or DEFAULT_MAX_AGE_DAYS
     cutoff = timezone.now() - timedelta(days=max_age)
@@ -401,9 +486,14 @@ def precheck(dms_project: Project, *, content_hash: str) -> OperationResult:
             .exists()
         )
         if any_match:
-            return _block("stale", project=dms_project, gate_project=gate_project)
+            return _block(
+                "stale", project=dms_project, gate_project=gate_project, side=side
+            )
         return _block(
-            "no_matching_job", project=dms_project, gate_project=gate_project
+            "no_matching_job",
+            project=dms_project,
+            gate_project=gate_project,
+            side=side,
         )
 
     job = final_jobs[0]
@@ -416,6 +506,7 @@ def precheck(dms_project: Project, *, content_hash: str) -> OperationResult:
             project=dms_project,
             gate_project=gate_project,
             job=job,
+            side=side,
         )
 
     snapshot = gate.get("schema_snapshot") or {}
@@ -427,6 +518,7 @@ def precheck(dms_project: Project, *, content_hash: str) -> OperationResult:
     return OperationResult.success(
         payload={
             "skipped": False,
+            "side": side or "",
             "gate_project_slug": gate_project.slug,
             "gate_project_id": str(gate_project.id),
             "gate_job_id": str(job.id),
@@ -443,6 +535,7 @@ def precheck(dms_project: Project, *, content_hash: str) -> OperationResult:
                 "gate_job_id": str(job.id),
                 "gate_status": status,
                 "content_hash": f"sha256:{hash_value}" if hash_value else "",
+                "side": side or "",
                 "checked_at": timezone.now().isoformat().replace("+00:00", "Z"),
             },
         }
@@ -453,6 +546,77 @@ def precheck_job(dms_project: Project, job: DmsExecutionJob) -> OperationResult:
     return precheck(dms_project, content_hash=job.input_content_hash or "")
 
 
+def precheck_match_sides(
+    match_project: Project,
+    *,
+    hash_a: str,
+    hash_b: str,
+) -> OperationResult:
+    """Pre-check dual para FILE MATCH (require_a / require_b)."""
+    if match_project.project_kind != Project.KIND_FILE_MATCH:
+        return OperationResult.success(payload={"skipped": True})
+
+    config = (
+        DmsProjectConfig.objects.select_related("file_gate_project")
+        .filter(project_id=match_project.id)
+        .first()
+    )
+    if config is None or not config.file_gate_enabled:
+        return OperationResult.success(payload={"skipped": True})
+
+    require_a = bool(config.file_gate_require_a)
+    require_b = bool(config.file_gate_require_b)
+    if not require_a and not require_b:
+        return _block("config_invalid", project=match_project)
+
+    sides: dict = {}
+    seal: dict = {}
+
+    if require_a:
+        result_a = precheck(match_project, content_hash=hash_a or "", side="A")
+        sides["a"] = {
+            "ok": result_a.ok,
+            "error_code": result_a.error_code,
+            "user_message": result_a.user_message,
+            **(result_a.payload or {}),
+        }
+        if not result_a.ok:
+            return OperationResult.failure(
+                result_a.error_code or "gate_blocked",
+                result_a.user_message,
+                **{**(result_a.payload or {}), "sides": sides, "failed_side": "A"},
+            )
+        if not result_a.payload.get("skipped"):
+            seal["a"] = result_a.payload.get("seal") or {}
+
+    if require_b:
+        result_b = precheck(match_project, content_hash=hash_b or "", side="B")
+        sides["b"] = {
+            "ok": result_b.ok,
+            "error_code": result_b.error_code,
+            "user_message": result_b.user_message,
+            **(result_b.payload or {}),
+        }
+        if not result_b.ok:
+            return OperationResult.failure(
+                result_b.error_code or "gate_blocked",
+                result_b.user_message,
+                **{**(result_b.payload or {}), "sides": sides, "failed_side": "B"},
+            )
+        if not result_b.payload.get("skipped"):
+            seal["b"] = result_b.payload.get("seal") or {}
+
+    return OperationResult.success(
+        payload={
+            "skipped": False,
+            "sides": sides,
+            "seal": seal,
+            "require_a": require_a,
+            "require_b": require_b,
+        }
+    )
+
+
 def stamp_job(job: DmsExecutionJob, seal: dict) -> None:
     """B8 / BR8: sello de auditoría en input_suggestions del job."""
     suggestions = dict(job.input_suggestions or {})
@@ -461,8 +625,18 @@ def stamp_job(job: DmsExecutionJob, seal: dict) -> None:
     job.save(update_fields=["input_suggestions", "updated_at"])
 
 
+def stamp_match_job(job, seal: dict) -> None:
+    """MB-R9: sello de auditoría en metrics del FileMatchJob."""
+    metrics = dict(job.metrics or {})
+    metrics["file_gate_check"] = seal
+    job.metrics = metrics
+    job.save(update_fields=["metrics"])
+
+
 def build_hub_context(user, gate_project: Project) -> dict:
-    """Hub bridge lado FILE GATE: vínculos entrantes (DMS + Reverse)."""
+    """Hub bridge lado FILE GATE: vínculos entrantes (DMS + Reverse + Match)."""
+    from apps.file_match.models import FileMatchJob
+
     configs = (
         DmsProjectConfig.objects.filter(file_gate_project=gate_project)
         .select_related("project", "file_gate_linked_by")
@@ -473,21 +647,39 @@ def build_hub_context(user, gate_project: Project) -> dict:
         emitter = cfg.project
         if not is_bridgeable_project(emitter):
             continue
-        last_check = (
-            DmsExecutionJob.objects.filter(
-                project=emitter,
-                input_suggestions__has_key="file_gate_check",
-            )
-            .order_by("-finished_at", "-created_at")
-            .first()
-        )
-        last_status = ""
-        if last_check is not None:
-            seal = (last_check.input_suggestions or {}).get("file_gate_check") or {}
-            last_status = seal.get("gate_status") or ""
 
-        is_reverse = emitter.project_kind == Project.KIND_REVERSE
-        if is_reverse:
+        last_status = ""
+        if emitter.project_kind == Project.KIND_FILE_MATCH:
+            last_match = (
+                FileMatchJob.objects.filter(project=emitter)
+                .exclude(status=FileMatchJob.STATUS_RUNNING)
+                .order_by("-finished_at", "-created_at")
+                .first()
+            )
+            if last_match is not None:
+                seal = (last_match.metrics or {}).get("file_gate_check") or {}
+                if isinstance(seal, dict):
+                    for key in ("a", "b"):
+                        side_seal = seal.get(key) or {}
+                        if side_seal.get("gate_status"):
+                            last_status = side_seal["gate_status"]
+                            break
+                    if not last_status:
+                        last_status = seal.get("gate_status") or ""
+        else:
+            last_check = (
+                DmsExecutionJob.objects.filter(
+                    project=emitter,
+                    input_suggestions__has_key="file_gate_check",
+                )
+                .order_by("-finished_at", "-created_at")
+                .first()
+            )
+            if last_check is not None:
+                seal = (last_check.input_suggestions or {}).get("file_gate_check") or {}
+                last_status = seal.get("gate_status") or ""
+
+        if emitter.project_kind == Project.KIND_REVERSE:
             settings_url = reverse(
                 "reverse_studio:bridge_hub",
                 kwargs={"project_slug": emitter.slug},
@@ -499,6 +691,18 @@ def build_hub_context(user, gate_project: Project) -> dict:
             product_label = "Reverse Studio"
             open_label = "Abrir Generar"
             settings_label = "Ajustes Reverse"
+        elif emitter.project_kind == Project.KIND_FILE_MATCH:
+            settings_url = reverse(
+                "file_match:bridge_hub",
+                kwargs={"project_slug": emitter.slug},
+            )
+            execute_url = reverse(
+                "file_match:run_hub",
+                kwargs={"project_slug": emitter.slug},
+            )
+            product_label = "FILE MATCH"
+            open_label = "Abrir Conciliar"
+            settings_label = "Ajustes Match"
         else:
             settings_url = reverse(
                 "dms:file_gate_bridge_settings",
@@ -519,8 +723,11 @@ def build_hub_context(user, gate_project: Project) -> dict:
                 "product_label": product_label,
                 "open_label": open_label,
                 "settings_label": settings_label,
-                "is_reverse": is_reverse,
+                "is_reverse": emitter.project_kind == Project.KIND_REVERSE,
+                "is_match": emitter.project_kind == Project.KIND_FILE_MATCH,
                 "enabled": bool(cfg.file_gate_enabled),
+                "require_a": bool(cfg.file_gate_require_a),
+                "require_b": bool(cfg.file_gate_require_b),
                 "accept": cfg.file_gate_accept,
                 "max_age_days": cfg.file_gate_max_age_days,
                 "linked_at": cfg.file_gate_linked_at,

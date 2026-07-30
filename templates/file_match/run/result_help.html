@@ -1,0 +1,37 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda resultado — {{ project.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:run_result' project_slug=project.slug job_id=view.id %}">← Resultado</a>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Ayuda · Resultado</p>
+        <h2>Cómo leer el resultado</h2>
+        <p>El veredicto respeta las flags <code>verdict</code> de las reglas publicadas.</p>
+    </div>
+</div>
+<div class="panel">
+    <div class="panel-body">
+        <ul class="help-list">
+            <li><strong>passed</strong> — no hay buckets que disparen fallo según la política.</li>
+            <li><strong>failed</strong> — hay only_*, mismatch o duplicados según flags.</li>
+            <li><strong>partial</strong> — se alcanzó el tope de filas del MVP.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

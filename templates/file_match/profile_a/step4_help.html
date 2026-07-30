@@ -1,0 +1,73 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Paso 4 — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Módulo 1 · paso 4 · ayuda</p>
+        <h2>Campos del contrato</h2>
+        <p>Declara la estructura del archivo y los criterios que harán fallar o aceptar cada valor. La interfaz cambia según el tipo elegido en el paso 1.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:profile_a_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Criterios de rechazo</h3>
+        <p class="hint">En FILE MATCH cada campo es un criterio de conformidad, no un origen para mapear a un destino. Al publicar se exige al menos un campo.</p>
+        <table class="help-table">
+            <thead><tr><th>Propiedad</th><th>Significado en el gate</th></tr></thead>
+            <tbody>
+                <tr><td>Nombre</td><td>Identificador del campo en el informe y en las incidencias.</td></tr>
+                <tr><td>Tipo de contenido</td><td>Qué forma se espera (texto, número, fecha, enum…). Un valor incompatible genera error de contenido.</td></tr>
+                <tr><td>Obligatorio</td><td>Si está vacío, cuenta como rechazo (según políticas de umbral).</td></tr>
+                <tr><td>Patrón / reglas</td><td>Expresiones o restricciones adicionales; si no cumplen, la fila/campo se reporta.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Según tipo de archivo</h3>
+        <table class="help-table">
+            <thead><tr><th>Tipo</th><th>Qué define</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">txt_fixed</td><td>Posiciones: inicio/fin, inicio/longitud o marcador de carácter. Use la regla de vista previa para alinear columnas.</td></tr>
+                <tr><td class="mono">csv / txt_delimited</td><td>Delimitador, comillas, fila de encabezado y columna (nombre o índice) por campo.</td></tr>
+                <tr><td class="mono">xlsx</td><td>Hoja, fila de inicio y columna (letra o encabezado) por campo.</td></tr>
+                <tr><td class="mono">json</td><td>Ruta al arreglo de registros y <code>json_path</code> de cada campo.</td></tr>
+                <tr><td class="mono">xml</td><td>Elemento repetido y etiqueta hijo por campo.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:10px">Guarde el borrador con frecuencia. <strong>Continuar</strong> avanza al paso 5 (reglas globales).</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,162 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Claves de cruce — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<style>.pair-arrow{font-family:ui-monospace,monospace;color:#78716c;font-weight:600;text-align:center;vertical-align:middle}</style>
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:rules_hub' project_slug=project.slug %}">Reglas</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Claves</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_match/rules/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Reglas · Sección 1</p>
+        <h2>Claves de cruce</h2>
+        <p>Empareje campos A↔B. Varios pares = clave compuesta (el orden importa).</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:rules_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
+    </div>
+</div>
+
+{% include "file_match/rules/_section_nav.html" %}
+
+{% if not fields_a or not fields_b %}
+<div class="panel" style="margin-bottom:16px"><div class="panel-body">
+    <p class="hint">
+        {% if not fields_a %}El perfil A no tiene campos. {% endif %}
+        {% if not fields_b %}El perfil B no tiene campos. {% endif %}
+        Defínalos antes de publicar.
+        <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a> ·
+        <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}">Perfil B</a>
+    </p>
+</div></div>
+{% endif %}
+
+<div class="panel"><div class="panel-body">
+    <form method="post" action="{{ rules_save_url }}" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'file_match:rules_compare' project_slug=project.slug %}">
+        <h3 class="form-section-title">Pares de clave</h3>
+        <table class="fields-table" id="key-pairs-table">
+            <thead><tr><th>Campo A</th><th></th><th>Campo B</th><th></th></tr></thead>
+            <tbody id="key-pairs-body">
+                {% for pair in rules.key %}
+                <tr>
+                    <td>
+                        <select name="key_a"{% if not can_edit_source %} disabled{% endif %}>
+                            <option value="">—</option>
+                            {% for name in fields_a %}
+                            <option value="{{ name }}"{% if pair.a == name %} selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                            {% if pair.a and pair.a not in fields_a %}
+                            <option value="{{ pair.a }}" selected>{{ pair.a }} (faltante)</option>
+                            {% endif %}
+                        </select>
+                    </td>
+                    <td class="pair-arrow">↔</td>
+                    <td>
+                        <select name="key_b"{% if not can_edit_source %} disabled{% endif %}>
+                            <option value="">—</option>
+                            {% for name in fields_b %}
+                            <option value="{{ name }}"{% if pair.b == name %} selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                            {% if pair.b and pair.b not in fields_b %}
+                            <option value="{{ pair.b }}" selected>{{ pair.b }} (faltante)</option>
+                            {% endif %}
+                        </select>
+                    </td>
+                    <td>{% if can_edit_source %}<button type="button" class="btn btn-ghost" data-remove-row>Quitar</button>{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td>
+                        <select name="key_a"{% if not can_edit_source %} disabled{% endif %}>
+                            <option value="">—</option>
+                            {% for name in fields_a %}<option value="{{ name }}">{{ name }}</option>{% endfor %}
+                        </select>
+                    </td>
+                    <td class="pair-arrow">↔</td>
+                    <td>
+                        <select name="key_b"{% if not can_edit_source %} disabled{% endif %}>
+                            <option value="">—</option>
+                            {% for name in fields_b %}<option value="{{ name }}">{{ name }}</option>{% endfor %}
+                        </select>
+                    </td>
+                    <td>{% if can_edit_source %}<button type="button" class="btn btn-ghost" data-remove-row>Quitar</button>{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if can_edit_source %}
+        <p style="margin-top:10px"><button type="button" class="btn btn-ghost" id="add-key-row">+ Añadir componente de clave</button></p>
+        {% endif %}
+        <p class="hint">Al menos un par es obligatorio para publicar (R4).</p>
+        <div class="form-actions">
+            <a href="{% url 'file_match:rules_hub' project_slug=project.slug %}" class="btn btn-secondary">Atrás</a>
+            <div class="form-actions-right">
+                {% if can_edit_source %}
+                <button type="submit" class="btn btn-ghost" formaction="{{ rules_save_url }}" name="next" value="{% url 'file_match:rules_keys' project_slug=project.slug %}">Guardar borrador</button>
+                <button type="submit" class="btn btn-primary">Guardar y continuar</button>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+</div></div>
+
+<template id="key-row-template">
+    <tr>
+        <td>
+            <select name="key_a">
+                <option value="">—</option>
+                {% for name in fields_a %}<option value="{{ name }}">{{ name }}</option>{% endfor %}
+            </select>
+        </td>
+        <td class="pair-arrow">↔</td>
+        <td>
+            <select name="key_b">
+                <option value="">—</option>
+                {% for name in fields_b %}<option value="{{ name }}">{{ name }}</option>{% endfor %}
+            </select>
+        </td>
+        <td><button type="button" class="btn btn-ghost" data-remove-row>Quitar</button></td>
+    </tr>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+  var body = document.getElementById('key-pairs-body');
+  var tpl = document.getElementById('key-row-template');
+  var addBtn = document.getElementById('add-key-row');
+  if (addBtn && tpl && body) {
+    addBtn.addEventListener('click', function(){
+      body.appendChild(tpl.content.cloneNode(true));
+    });
+  }
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('[data-remove-row]');
+    if (!btn) return;
+    var tr = btn.closest('tr');
+    if (tr && body && body.querySelectorAll('tr').length > 1) tr.remove();
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Reglas de cruce — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<style>
+.preview-json { margin:0; padding:12px 14px; background:#1c1917; color:#e7e5e4; border-radius:8px; font-family:ui-monospace,monospace; font-size:12px; overflow-x:auto; white-space:pre; line-height:1.45; }
+.pair-arrow { font-family:ui-monospace,monospace; color:#78716c; font-weight:600; text-align:center; }
+</style>
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Reglas</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_match/rules/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Módulo 3 · <span class="role-badge">MatchRules</span></p>
+        <h2>Reglas de cruce</h2>
+        <p>Declare la clave A↔B, los campos a comparar y la normalización.
+            No publica ni ejecuta el match. Versión: <strong>{{ wizard.version_label }}</strong>.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_match:rules_hub_help' project_slug=project.slug as rules_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=rules_help_url %}
+        <a href="{% url 'file_match:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url wizard.continue_section_url_name project_slug=project.slug %}" class="btn btn-primary">Continuar edición</a>
+    </div>
+</div>
+
+{% if not wizard.profile_a_complete or not wizard.profile_b_complete %}
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Recomendación</h3>
+        <p class="hint">Complete los perfiles A y B (campos) antes de publicar. Puede editar reglas igualmente.</p>
+        <div class="page-actions" style="margin-top:8px">
+            {% if not wizard.profile_a_complete %}
+            <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-ghost">Perfil A</a>
+            {% endif %}
+            {% if not wizard.profile_b_complete %}
+            <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}" class="btn btn-ghost">Perfil B</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="stats-strip" aria-label="Resumen">
+    <div class="stat-card{% if wizard.key_count %} is-done{% else %} is-accent{% endif %}">
+        <p class="stat-label">Pares clave</p>
+        <p class="stat-value">{{ wizard.key_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">A comparar</p>
+        <p class="stat-value">{{ wizard.compare_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Normalize</p>
+        <p class="stat-value" style="font-size:14px">{{ wizard.normalize_label }}</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Secciones</h3>
+        <div class="step-summary-list">
+            {% for section in wizard.sections %}
+            <a href="{% url section.url_name project_slug=project.slug %}" class="step-summary-card{% if section.status == 'done' %} is-done{% elif section.status == 'draft' %} is-draft{% endif %}">
+                <div>
+                    <h4>{{ section.title }}</h4>
+                    <p>{{ section.summary }}</p>
+                </div>
+                <span class="flow-card-status flow-card-status--{% if section.status == 'done' %}done{% elif section.status == 'draft' %}draft{% else %}empty{% endif %}">
+                    {% if section.status == 'done' %}Completo{% elif section.status == 'draft' %}En edición{% else %}Pendiente{% endif %}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Vista previa <code>match_rules</code></h3>
+        <pre class="preview-json">{{ rules_json }}</pre>
+    </div>
+</div>
+
+{% if wizard.rules_complete %}
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Siguiente módulo</h3>
+        <p class="hint">Cuando A + B + reglas estén listos, publique la definición (Módulo 4).</p>
+        <a href="{% url 'file_match:publish_hub' project_slug=project.slug %}" class="btn btn-primary">Continuar a Publicar →</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

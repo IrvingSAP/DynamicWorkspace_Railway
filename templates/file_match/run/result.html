@@ -1,0 +1,170 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Resultado — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<style>
+.verdict-banner{
+  display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+  padding:14px 16px; border-radius:10px; margin-bottom:14px;
+  border:1px solid rgba(28,25,23,.1); background:#f6f4f0;
+}
+.verdict-banner.is-passed{ background:rgba(21,128,61,.08); border-color:rgba(21,128,61,.25); }
+.verdict-banner.is-failed{ background:rgba(185,28,28,.08); border-color:rgba(185,28,28,.2); }
+.verdict-banner.is-partial{ background:rgba(180,83,9,.1); border-color:rgba(180,83,9,.25); }
+.verdict-banner h3{ margin:0; font-size:1.1rem; }
+.verdict-banner p{ margin:4px 0 0; font-size:13px; color:#44403c; }
+.bucket-table{ width:100%; border-collapse:collapse; font-size:13px; }
+.bucket-table th,.bucket-table td{ padding:8px 10px; border-bottom:1px solid rgba(28,25,23,.08); text-align:left; }
+.bucket-table th{ font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:#a8a29e; background:#f6f4f0; }
+</style>
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:run_hub' project_slug=project.slug %}">Ejecutar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Resultado</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Job">
+    <span class="label">Job</span>
+    <span class="cell-badge">{{ view.id|slice:":8" }}…</span>
+    <span class="hint">· definición v{{ view.published_version_number }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Módulo 5 · <span class="role-badge">Result</span></p>
+        <h2>Resultado de conciliación</h2>
+        <p>Resumen inmediato del job. Informe profundo = Módulo 6.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_match:run_result_help' project_slug=project.slug job_id=view.id as result_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=result_help_url %}
+        <a href="{% url 'file_match:run_hub' project_slug=project.slug %}" class="btn btn-secondary">Nueva corrida</a>
+        <a href="{% url 'file_match:report_detail' project_slug=project.slug job_id=view.id %}" class="btn btn-primary">Ver informe</a>
+        {% if run.can_download and view.downloads.diff %}
+        <a href="{{ view.downloads.diff }}" class="btn btn-secondary">Descargar CSV</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="verdict-banner {% if view.is_success %}is-passed{% elif view.is_partial %}is-partial{% else %}is-failed{% endif %}">
+    <div>
+        <h3>Veredicto: {{ view.verdict_label }} <code>({{ view.verdict }})</code></h3>
+        <p>
+            {% if view.error_message %}{{ view.error_message }}{% else %}
+            Filas A/B {{ view.metrics.rows_a|default:"—" }} / {{ view.metrics.rows_b|default:"—" }}.
+            {% endif %}
+        </p>
+    </div>
+    <div class="hint">
+        {% if view.duration_ms %}{{ view.duration_ms }} ms · {% endif %}
+        hash A/B registrados
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Métricas">
+    <div class="stat-card">
+        <p class="stat-label">Filas A / B</p>
+        <p class="stat-value" style="font-size:16px">{{ view.metrics.rows_a|default:0 }} / {{ view.metrics.rows_b|default:0 }}</p>
+    </div>
+    <div class="stat-card is-accent">
+        <p class="stat-label">Matched</p>
+        <p class="stat-value">{{ view.metrics.matched|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Mismatch</p>
+        <p class="stat-value">{{ view.metrics.value_mismatch|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Only A / B</p>
+        <p class="stat-value" style="font-size:16px">{{ view.metrics.only_a|default:0 }} / {{ view.metrics.only_b|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">% cuadre</p>
+        <p class="stat-value" style="font-size:16px">{{ view.metrics.match_pct|default:"—" }}%</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Buckets</h3>
+        <table class="bucket-table">
+            <thead><tr><th>Bucket</th><th>Cantidad</th></tr></thead>
+            <tbody>
+                <tr><td><code>matched</code></td><td>{{ view.metrics.matched|default:0 }}</td></tr>
+                <tr><td><code>value_mismatch</code></td><td>{{ view.metrics.value_mismatch|default:0 }}</td></tr>
+                <tr><td><code>only_a</code></td><td>{{ view.metrics.only_a|default:0 }}</td></tr>
+                <tr><td><code>only_b</code></td><td>{{ view.metrics.only_b|default:0 }}</td></tr>
+                <tr><td><code>duplicate_key</code></td><td>{{ view.metrics.duplicate_key|default:0 }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if view.detail_preview %}
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Detalle (vista previa)</h3>
+        <table class="bucket-table">
+            <thead><tr><th>Bucket</th><th>Clave</th><th>Notas</th></tr></thead>
+            <tbody>
+                {% for item in view.detail_preview %}
+                <tr>
+                    <td><code>{{ item.bucket }}</code></td>
+                    <td>{{ item.key }}</td>
+                    <td>
+                        {% if item.diffs %}
+                            {% for d in item.diffs %}{{ d.a }}={{ d.value_a }} ≠ {{ d.b }}={{ d.value_b }}{% if not forloop.last %}; {% endif %}{% endfor %}
+                        {% elif item.bucket == "duplicate_key" %}
+                            A×{{ item.count_a }} · B×{{ item.count_b }}
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if view.metrics.detail_capped %}
+        <p class="hint">Vista previa limitada; descargue el CSV/JSON para el detalle completo de diferencias.</p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Archivos de esta corrida</h3>
+        <p class="hint">
+            A: <code>{{ view.file_a_name }}</code> ({{ view.file_a_size_label }})
+            · B: <code>{{ view.file_b_name }}</code> ({{ view.file_b_size_label }})
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            {% if run.can_download and view.downloads.report %}
+            <a href="{{ view.downloads.report }}" class="btn btn-secondary">Informe JSON</a>
+            {% endif %}
+            {% if run.can_download and view.downloads.diff %}
+            <a href="{{ view.downloads.diff }}" class="btn btn-secondary">Diferencias CSV</a>
+            {% endif %}
+            <a href="{% url 'file_match:report_detail' project_slug=project.slug job_id=view.id %}" class="btn btn-primary">Ver informe / evidencia</a>
+            <a href="{% url 'file_match:history_hub' project_slug=project.slug %}" class="btn btn-secondary">Ir a historial</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

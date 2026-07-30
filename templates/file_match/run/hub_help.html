@@ -1,0 +1,53 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Ejecutar {{ project.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:run_hub' project_slug=project.slug %}">Ejecutar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Módulo 5</p>
+        <h2>Ayuda — Ejecutar conciliación</h2>
+        <p>Quién puede ejecutar y qué produce el job.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:run_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <table class="help-table">
+            <thead><tr><th>Tema</th><th>Detalle</th></tr></thead>
+            <tbody>
+                <tr><td>Roles</td><td>PA / ED / GE ejecutan. CO no descarga filas de negocio.</td></tr>
+                <tr><td>Prerrequisito</td><td>Versión publicada (A + B + reglas).</td></tr>
+                <tr><td>Motor</td><td>Parsers DMS ×2 + comparador Match 1:1.</td></tr>
+                <tr><td>Buckets</td><td>matched, value_mismatch, only_a, only_b, duplicate_key.</td></tr>
+                <tr><td>Descargas MVP</td><td>JSON informe + CSV de diferencias.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

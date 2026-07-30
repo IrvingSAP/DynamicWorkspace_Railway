@@ -1,0 +1,54 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Paso 5 — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_step5' project_slug=project.slug %}">Paso 5</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Módulo 1 · paso 5 · ayuda</p>
+        <h2>Reglas globales de contenido</h2>
+        <p>Normalización y exclusiones a nivel de archivo o línea, aplicadas al leer el archivo. Complementan (no sustituyen) las reglas por campo del paso 4.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:profile_a_step5' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 5</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Bloques</h3>
+        <table class="help-table">
+            <thead><tr><th>Bloque</th><th>Ejemplos</th></tr></thead>
+            <tbody>
+                <tr><td>Normalización de líneas</td><td>Recortar espacios, unificar vacíos, homogenizar saltos antes de validar campos.</td></tr>
+                <tr><td>Caracteres y patrones</td><td>Caracteres prohibidos o patrones que marcan la línea como inválida.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:10px">Las violaciones aparecen en el informe de lectura del lado A (paso 6) al parsear en la conciliación (Módulo 5). Aquí no se decide el veredicto del match.</p>
+    </div>
+</div>
+{% endblock %}

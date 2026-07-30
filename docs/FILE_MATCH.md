@@ -88,6 +88,7 @@ Subir A y B → conciliar → informe (matched / only_A / only_B / mismatch)
 | Pieza | Relación |
 |-------|----------|
 | Chasis (`Company`, seguridad, billing, roles) | Reutilizado al 100 % |
+| Chasis — `Project` + `ProjectMembership` | Alta de proyecto Conciliador + **gestión de miembros/autorizaciones** (mismo patrón Worksheets `/app/proyectos/<slug>/miembros/`) |
 | DMS — SourceProfile, parsers, intake | **Núcleo** ×2 (lado A y lado B) |
 | DMS — Target / Field mapping / serialize salida de negocio | **Fuera de alcance** del MVP |
 | DMS — ExecutionJob / errores / storage | Base para jobs e informe (especializar o job propio) |
@@ -138,7 +139,7 @@ Escenarios típicos:
 | Job de match | 1:1 por clave; buckets + conteos |
 | Informe | Resumen + detalle por clave + descarga JSON/CSV |
 | Historial | Quién concilió, cuándo, archivos, versión, estado |
-| Roles | Diseñar / publicar / ejecutar / consultar (PA/ED/GE/CO) |
+| Roles + miembros | Mismos roles PA/ED/GE/CO del chasis; el **PA** asigna/autoriza miembros del proyecto (reuso `ProjectMembership`) |
 
 ### 4.2 Excluido (MVP)
 
@@ -214,41 +215,53 @@ Flujo opcional recomendado (Fase 2): validar A y B en FILE GATE → si ambos `pa
 
 ### Módulo 1 — Perfil A (origen A)
 
-> **Spec:** `definition_app_FILE_MATCH/profile_a.md` · Estado: **pendiente**
+> **Spec:** [`definition_app_FILE_MATCH/profile_a.md`](definition_app_FILE_MATCH/profile_a.md) · Estado: **spec + prototipos**  
+> **Demo:** [`prototype/file_match/profile_a/hub.html`](../prototype/file_match/profile_a/hub.html)
 
 - SourceProfile lado A (tipo, encoding, captura, campos, reglas de contenido).
 - Copy UX: “archivo A / lado A / extracto / origen de referencia”, no “origen para transformar”.
-- Reuso: asistente source_definition DMS / patrón FILE GATE esquema.
+- Reuso: asistente source_definition DMS / patrón FILE GATE esquema / Reverse input.
+- Whitelist MVP: CSV, Excel, delimitado, posicional (+ JSON/XML si parsers activos).
+- CTA post-6: Perfil B (no publicar solo A).
 
 ### Módulo 2 — Perfil B (origen B)
 
-> **Spec:** `definition_app_FILE_MATCH/profile_b.md` · Estado: **pendiente**
+> **Spec:** [`definition_app_FILE_MATCH/profile_b.md`](definition_app_FILE_MATCH/profile_b.md) · Estado: **implementado**
 
 - SourceProfile lado B (puede diferir en tipo de archivo respecto a A).
 - Copy UX: “archivo B / lado B / contraparte”.
 - Misma base técnica que Módulo 1.
+- Persistencia: `FileMatchSourceB` (`match_source_b`) + `profile_b_persistence_service`.
+- Prototipos: `prototype/file_match/profile_b/`.
+- URLs: `/app/file-match/proyectos/<slug>/perfil-b/...`.
 
 ### Módulo 3 — Reglas de cruce
 
-> **Spec:** `definition_app_FILE_MATCH/match_rules.md` · Estado: **pendiente**
+> **Spec:** [`definition_app_FILE_MATCH/match_rules.md`](definition_app_FILE_MATCH/match_rules.md) · Estado: **implementado**
 
 - Clave simple o compuesta (campos de A ↔ campos de B).
 - Campos a comparar (monto, estado, fecha…).
-- Normalización MVP: trim, case-fold en clave/campos seleccionados.
+- Normalización MVP: trim, case-fold en clave.
 - Tolerancia numérica: **no** en MVP (Fase 2).
-- Completitud: al menos una clave usable y ≥ 0 campos a comparar (comparar solo presencia = only_A/only_B).
+- Completitud: al menos una clave usable y ≥ 0 campos a comparar.
+- Persistencia: `FileMatchRules` (`match_rules`) + `match_rules_persistence_service`.
+- URLs: `/app/file-match/proyectos/<slug>/reglas/...`.
+- Prototipos: `prototype/file_match/rules/`.
 
 ### Módulo 4 — Publicar definición
 
-> **Spec:** `definition_app_FILE_MATCH/publish.md` · Estado: **pendiente**
+> **Spec:** `definition_app_FILE_MATCH/publish.md` · Estado: **implementado**
 
 - Publicar congela perfil A + perfil B + reglas de cruce.
 - Jobs solo contra versión publicada (espíritu DMS / GATE / Reverse).
-- Nuevo borrador editable tras publicar.
+- Nuevo borrador editable tras publicar (clon A + `FileMatchSourceB` + `FileMatchRules`).
+- Motor **propio** Match (`publish_match_definition`; no `publish_draft_version` FilePipe).
+- URLs: `/app/file-match/proyectos/<slug>/publicar/...`.
+- Prototipos: `prototype/file_match/publish/`.
 
 ### Módulo 5 — Ejecutar conciliación (Match Run)
 
-> **Spec:** `definition_app_FILE_MATCH/match_run.md` · Estado: **pendiente**
+> **Spec:** `definition_app_FILE_MATCH/match_run.md` · Estado: **implementado**
 
 ```
 Upload archivo A + archivo B
@@ -282,31 +295,46 @@ Veredicto agregado del job (configurable en políticas o reglas):
 | `failed` | Hay `only_*` / mismatches / duplicados por encima de umbral, o fatal de parseo |
 | `partial` | Tope de filas / errores antes de completar ambos lados |
 
+- Motor: parsers DMS ×2 + `match_engine`; modelo `FileMatchJob`.
+- URLs: `/app/file-match/proyectos/<slug>/ejecutar/...`.
+- Prototipos: `prototype/file_match/run/`.
+
 ### Módulo 6 — Informe y evidencia
 
-> **Spec:** `definition_app_FILE_MATCH/match_report.md` · Estado: **pendiente**
+> **Spec:** `definition_app_FILE_MATCH/match_report.md` · Estado: **implementado**
 
 | Entrega | Contenido |
 |---------|-----------|
 | Resumen | Filas A/B, matched, only_A, only_B, mismatches, % cuadre, duración |
 | Detalle | Por clave: valores A/B de campos comparados, bucket, mensajes |
-| Descarga | JSON + CSV de diferencias (MVP) |
-| Evidencia | Hash de A y B + versión de definición + usuario + timestamp |
+| Descarga | JSON + CSV de diferencias (MVP; reuso archivos M5) |
+| Evidencia | Hash de A y B + versión de definición + usuario + timestamp (certificado ligero) |
+
+- URLs: `/app/file-match/proyectos/<slug>/informe/<job_id>/...`.
+- Prototipos: `prototype/file_match/report/`.
+- App: `apps/file_match/report/` (`match_report_service`).
 
 ### Módulo 7 — Historial y auditoría
 
-> **Spec:** `definition_app_FILE_MATCH/history.md` · Estado: **pendiente**
+> **Spec:** `definition_app_FILE_MATCH/history.md` · Estado: **implementado**
 
-- Listado filtrable: fecha, usuario, nombres/hash A/B, versión, estado, TTL.
-- Detalle de job + descarga de informe vigente.
-- CO: metadatos sí; detalle con datos de negocio: denegar u ofuscar en MVP.
+- Listado filtrable: fecha, usuario, nombres/hash A/B, versión, veredicto, TTL.
+- Detalle de job + descarga de informe vigente (vía M5/M6).
+- CO: metadatos sí; detalle con datos de negocio: denegar en MVP.
+- URLs: `/app/file-match/proyectos/<slug>/historial/...`.
+- Prototipos: `prototype/file_match/history/`.
+- App: `apps/file_match/history/` (`match_history_service`).
 
 ### Módulo 8 — Integración FILE GATE (Fase 2)
 
-> **Spec:** `definition_app_FILE_MATCH/gate_bridge.md` · Estado: **pendiente (Fase 2)**
+> **Spec:** `definition_app_FILE_MATCH/gate_bridge.md` · Estado: **implementado**
 
-- Opción: exigir FILE GATE `passed` sobre A y/o B (mismo `content_hash`) antes de conciliar.
-- Reuso del patrón bridge FilePipe / Reverse.
+- Un proyecto FILE GATE (misma compañía) + flags **Exigir en A** / **Exigir en B**.
+- Pre-check por `content_hash` (`file_a_hash` / `file_b_hash`) antes de conciliar.
+- Reuso `DmsProjectConfig.file_gate_*` + `dms_bridge_service` (patrón FilePipe / Reverse).
+- URLs: `/app/file-match/proyectos/<slug>/bridge/...`.
+- Prototipos: `prototype/file_match/bridge/`.
+- App: `apps/file_match/bridge/` (`match_bridge_service`).
 
 ---
 
@@ -330,19 +358,20 @@ Veredicto agregado del job (configurable en políticas o reglas):
 ### 7.2 Funcionalidades MVP (checklist)
 
 - [ ] `project_kind = file_match` + crear proyecto + hub
+- [ ] **Miembros / autorizaciones** — UI PA para asignar roles PA/ED/GE/CO (reuso `project_service` / `ProjectMembership`; espejo Worksheets y Reverse Studio)
 - [ ] Sidebar / navegación Conciliador (FILE MATCH)
 - [ ] Editor perfil A (reuso source)
 - [ ] Editor perfil B (reuso source)
 - [ ] Reglas de cruce (clave + campos a comparar + normalización básica)
 - [ ] Publicar versión
 - [ ] Upload A+B + ejecutar + informe
-- [ ] Historial básico filtrable
+- [x] Historial básico filtrable
 - [ ] Mensajes UI (`UI_MESSAGES` § FILE MATCH)
 - [ ] Ayudas de hub y pasos clave
 
 ### 7.3 Funcionalidades Fase 2
 
-- [ ] Pre-check FILE GATE en A y/o B
+- [x] Pre-check FILE GATE en A y/o B
 - [ ] Tolerancia numérica (`abs(diff) <= epsilon`)
 - [ ] Baseline / archivo maestro fijo versionado
 - [ ] 1:N controlado (con bucket explícito)
@@ -428,6 +457,15 @@ Validar A y B en gate → solo si ambos `passed` habilitar “Conciliar” en FI
 | **Flujo** | Ajustar perfil A o B / reglas en borrador → publicar v2 |
 | **Resultado** | Conciliaciones nuevas usan v2; históricas conservan v1 |
 
+### FM-05 — Autorizar miembros del proyecto
+
+| | |
+|---|---|
+| **Actor** | Admin de proyecto (`PA`) |
+| **Flujo** | Hub del proyecto → Miembros → asignar/cambiar rol (PA/ED/GE/CO) o revocar |
+| **Resultado** | Solo usuarios autorizados de la compañía ven/ejecutan según matriz §12 |
+| **Referencia UI** | Mismo patrón que Worksheets [`/app/proyectos/<slug>/miembros/`](http://127.0.0.1:8000/app/proyectos/reglas-sonarq/miembros/) y Reverse Studio |
+
 ---
 
 ## 10. Modelo conceptual
@@ -435,6 +473,8 @@ Validar A y B en gate → solo si ambos `passed` habilitar “Conciliar” en FI
 ```mermaid
 erDiagram
     Company ||--o{ Project : proyectos
+    Project ||--o{ ProjectMembership : autoriza
+    User ||--o{ ProjectMembership : miembro_de
     Project ||--o| FileMatchConfig : config
     Project ||--o{ MatchProfileVersion : versiona
     MatchProfileVersion ||--|| SourceA : perfil_a
@@ -448,6 +488,7 @@ erDiagram
 | Entidad | Descripción | Reuso |
 |---------|-------------|-------|
 | `Project` | `project_kind = file_match` | `apps.projects` |
+| `ProjectMembership` | Autorización por rol (PA/ED/GE/CO) | `apps.projects` (misma tabla que Worksheets) |
 | `FileMatchConfig` | Versión activa, flags (exigir GATE), umbrales | Nuevo mínimo o análogo a `DmsProjectConfig` |
 | `MatchProfileVersion` | Snapshot draft/published (A + B + rules) | Nuevo o especialización de versión DMS |
 | Source A / B | Contratos de lectura | `DmsSourceProfile` (×2) |
@@ -515,28 +556,37 @@ erDiagram
     }
   },
   "gate_policy": {
-    "require_file_gate_a": false,
-    "require_file_gate_b": false,
-    "file_gate_project_a_id": null,
-    "file_gate_project_b_id": null
+    "enabled": false,
+    "file_gate_project_id": null,
+    "require_a": false,
+    "require_b": false,
+    "accept": "passed_with_warnings",
+    "max_age_days": 7
   }
 }
 ```
 
-> Forma exacta se alineará a persistencia real en `definition_app_FILE_MATCH/`; este JSON es lineamiento de producto.
+> Persistencia real: [`definition_app_FILE_MATCH/fm_integration.md`](definition_app_FILE_MATCH/fm_integration.md). Este JSON es lineamiento de producto.
 
 ---
 
 ## 12. Roles y permisos
+
+Mapa a roles existentes de proyecto ([`definition_app/projects.md`](definition_app/projects.md) · chasis DynamicWorkspace):
 
 | Acción FILE MATCH | PA | ED | GE | CO |
 |-------------------|----|----|----|-----|
 | Ver proyecto / historial | Sí | Sí | Sí | Sí |
 | Editar perfiles A/B / reglas / publicar | Sí | Sí | No | No |
 | Ejecutar conciliación / descargar informe | Sí | Sí | Sí | No* |
-| Gestionar miembros | Sí | No | No | No |
+| Gestionar miembros (asignar / cambiar rol / revocar) | Sí | No | No | No |
 
 \*CO: metadatos del historial sí; descarga de informe con datos de filas: **denegar** en MVP (u ofuscar si se decide en `definition_app`).
+
+> **UI miembros (MVP obligatorio):** reutilizar el chasis `ProjectMembership` + `project_service` (mismo patrón Worksheets y FilePipe/Reverse).  
+> Ruta prevista: `/app/file-match/proyectos/<slug>/miembros/` (+ ayuda).  
+> Referencia operativa actual (Worksheets): `/app/proyectos/<slug>/miembros/` (ej. `…/proyectos/reglas-sonarq/miembros/`).  
+> El creador del proyecto queda como **PA**. Sin membresía adecuada no se editan perfiles/reglas ni se ejecuta.
 
 ---
 
@@ -640,13 +690,15 @@ API, webhooks, tres lados, fuzzy, certificado de conciliación.
 > Trabajo previsto en rama **`feature/file-match`**. Sin deploy a Railway desde esa rama hasta merge a `main`.
 
 1. Congelar kind (`file_match`) y copy de producto (hub, sidebar: “Conciliador”).
-2. Crear `docs/definition_app_FILE_MATCH/README.md` + checklist de módulos.
-3. Prototipos `prototype/file_match/` (hub + perfiles + reglas + informe).
+2. Crear `docs/definition_app_FILE_MATCH/README.md` + checklist de módulos (incl. **miembros** como parte del ciclo de proyecto).  
+   → **Hecho (esqueleto):** [`definition_app_FILE_MATCH/README.md`](definition_app_FILE_MATCH/README.md).
+3. Prototipos `prototype/file_match/` (hub + **miembros** + perfiles + reglas + informe).
 4. Spike técnico: doble parse + comparador 1:1 + límites de filas / sort-merge.
-5. **Módulo 1** — perfil A (spec → prototipo → «Desarrolla el módulo»).
-6. Módulos 2–7 en orden; Módulo 8 (bridge GATE) en Fase 2.
-7. Extender `UI_MESSAGES.md`.
-8. PR a `main` con MVP revisado.
+5. **Ciclo proyecto** — alta + hub + miembros/autorizaciones (reuso chasis) antes o en paralelo al Módulo 1.
+6. **Módulo 1** — perfil A → **spec + prototipos** (`profile_a.md` · `prototype/file_match/profile_a/`). Pendiente revisión / «Desarrolla el módulo».
+7. Módulos 2–7 en orden; Módulo 8 (bridge GATE) en Fase 2.
+8. Extender `UI_MESSAGES.md`.
+9. PR a `main` con MVP revisado.
 
 **Regla de avance (igual FILE GATE / Reverse):** no pasar al siguiente módulo sin cerrar el actual (spec + prototipo + implementación acordada).
 
@@ -664,6 +716,7 @@ API, webhooks, tres lados, fuzzy, certificado de conciliación.
 | **Definición publicada** | Snapshot inmutable A + B + reglas |
 | **Match Run** | Job que produce el informe de conciliación |
 | **Informe de diferencias** | Entregable (no es archivo de negocio transformado) |
+| **Miembros / autorización** | Asignación de usuarios de la compañía al proyecto con rol PA/ED/GE/CO vía `ProjectMembership` |
 
 ---
 
@@ -677,6 +730,10 @@ API, webhooks, tres lados, fuzzy, certificado de conciliación.
 | [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) | Emisor; frontera de producto |
 | [`DataMappingStudio.md`](DataMappingStudio.md) | Visión FilePipe / motor ETL |
 | [`DynamicWorkspace.md`](DynamicWorkspace.md) | Chasis multi-tenant |
+| [`definition_app/projects.md`](definition_app/projects.md) | Proyectos, membresías y roles PA/ED/GE/CO |
+| [`definition_app_FILE_MATCH/`](definition_app_FILE_MATCH/) | Specs por módulo (mapa en README) |
+| [`definition_app_FILE_MATCH/fm_integration.md`](definition_app_FILE_MATCH/fm_integration.md) | Kind, URLs, roles, reuso DMS (as-built) |
+| [`definition_app_FILE_MATCH/project_lifecycle.md`](definition_app_FILE_MATCH/project_lifecycle.md) | Alta, hub, miembros (as-built) |
 | [`definition_app_DMS/source_definition.md`](definition_app_DMS/source_definition.md) | Base perfiles A/B |
 | [`definition_app_DMS/file_intake.md`](definition_app_DMS/file_intake.md) | Upload |
 | [`definition_app_FILE_GATE/`](definition_app_FILE_GATE/) | Patrón de módulos / informe / historial / bridge |

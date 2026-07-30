@@ -575,8 +575,9 @@ def save_source(
 ) -> OperationResult:
     is_file_gate = project.project_kind == Project.KIND_FILE_GATE
     is_reverse = project.project_kind == Project.KIND_REVERSE
+    is_file_match = project.project_kind == Project.KIND_FILE_MATCH
     if not user_can_edit_source(user, project):
-        if is_file_gate or is_reverse:
+        if is_file_gate or is_reverse or is_file_match:
             forbidden_msg = "No tiene permiso para editar el contrato de este proyecto."
         else:
             forbidden_msg = "No tiene permiso para editar la definición de origen."
@@ -596,6 +597,18 @@ def save_source(
         if whitelist_error is not None:
             return whitelist_error
 
+    if is_file_match:
+        from apps.file_match.profile_a.services.profile_a_whitelist import (
+            reject_non_whitelist_file_type as reject_match_file_type,
+        )
+
+        whitelist_error = reject_match_file_type(merged.get("file_type_code"))
+        if whitelist_error is not None:
+            return whitelist_error
+        config = dict(merged.get("config") or {})
+        config["match_side"] = "A"
+        merged["config"] = config
+
     new_type = (merged.get("file_type_code") or "").strip()
     old_type = (current.get("file_type_code") or "").strip()
     if new_type and new_type != old_type:
@@ -610,6 +623,8 @@ def save_source(
             value = preserved_config.get(key) or merged.get(key) or current.get(key)
             if value:
                 preserved_config[key] = value
+        if is_file_match:
+            preserved_config["match_side"] = "A"
         merged["config"] = default_config_for_type(new_type, preserved_config)
 
     from apps.dms.source_profile.services.field_normalization_service import normalize_fields_list
@@ -625,6 +640,8 @@ def save_source(
             validation_msg = "Revise los datos del contrato de validación."
         elif is_reverse:
             validation_msg = "Revise los datos del contrato de entrada."
+        elif is_file_match:
+            validation_msg = "Revise los datos del perfil A."
         else:
             validation_msg = "Revise los datos del perfil de origen."
         return OperationResult.failure(
@@ -650,6 +667,8 @@ def save_source(
         success_msg = "Contrato de validación guardado correctamente."
     elif is_reverse:
         success_msg = "Contrato de entrada guardado correctamente."
+    elif is_file_match:
+        success_msg = "Perfil A guardado correctamente."
     else:
         success_msg = "Perfil de origen guardado correctamente."
 

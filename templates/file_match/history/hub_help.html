@@ -1,0 +1,42 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda historial — {{ project.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:history_hub' project_slug=project.slug %}">← Historial</a>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Ayuda · Módulo 7</p>
+        <h2>Ayuda — Historial de conciliaciones</h2>
+        <p>Qué se audita y quién puede ver qué.</p>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <table class="help-table">
+            <thead><tr><th>Tema</th><th>Detalle</th></tr></thead>
+            <tbody>
+                <tr><td>Roles</td><td>PA/ED/GE/CO ven el listado. CO no descarga filas ni ve detalle de diferencias.</td></tr>
+                <tr><td>TTL</td><td>Badge Expirado tras {{ ttl_days }} días; metadatos siguen; descargas bloqueadas.</td></tr>
+                <tr><td>Filtros</td><td>Veredicto, fechas, usuario, archivos A/B, hash, versión, TTL.</td></tr>
+                <tr><td>Acciones</td><td>Resultado · Informe · Certificado.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

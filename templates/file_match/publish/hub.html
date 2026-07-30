@@ -1,0 +1,130 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Publicar — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Publicar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    {% if membership %}
+    <span class="hint">·</span>
+    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    {% endif %}
+    <span class="hint">· kind <code>file_match</code></span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Módulo 4 · <span class="role-badge">Publish</span></p>
+        <h2>Publicar definición</h2>
+        <p>Congela Perfil A + Perfil B + Reglas de cruce. Ejecutar la conciliación es el Módulo 5.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_match:publish_hub_help' project_slug=project.slug as pub_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=pub_help_url %}
+        <a href="{% url 'file_match:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        {% if can_edit_definition %}
+        <button type="button"
+                class="btn btn-primary"
+                data-action="publish-version"
+                data-draft-label="borrador v{{ publish_hub.draft_version_number }}"
+                data-next="{% url 'file_match:publish_hub' project_slug=project.slug %}"
+                data-status-target="hub-publish-status"
+                {% if not publish_hub.can_publish %}disabled title="Complete Perfil A, Perfil B y Reglas antes de publicar"{% endif %}>
+            Publicar v{{ publish_hub.draft_version_number }}
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<p id="hub-publish-status" class="step-save-status" aria-live="polite"></p>
+
+<div id="dms-source-publish-config"
+     data-publish-url="{{ publish_url }}"
+     data-csrf-token="{{ csrf_token }}"
+     hidden></div>
+
+<div class="version-strip">
+    <strong>Borrador:</strong> v{{ publish_hub.draft_version_number }}
+    ·
+    <strong>Versión activa:</strong> {{ publish_hub.published_version_label }}
+</div>
+
+{% if publish_hub.blocking_reasons %}
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <div class="note-box">
+            <strong>Pendiente:</strong>
+            {% for reason in publish_hub.blocking_reasons %}{{ reason }}{% if not forloop.last %} · {% endif %}{% endfor %}.
+            Complete los ítems del checklist para habilitar publicar.
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Checklist antes de publicar</h3>
+        <div class="step-summary-list">
+            {% for item in publish_hub.checklist %}
+            <a href="{% url item.url_name project_slug=project.slug %}" class="step-summary-card{% if item.ready %} is-done{% endif %}">
+                <div>
+                    <h4>{{ item.label }}</h4>
+                    <p>{{ item.detail }}</p>
+                </div>
+                <span class="flow-card-status flow-card-status--{% if item.ready %}done{% else %}empty{% endif %}">
+                    {% if item.ready %}Listo{% else %}Pendiente{% endif %}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Después de publicar</h3>
+        <p class="hint">
+            Se crea un nuevo borrador editable (copia de A, B y reglas). Los jobs usarán solo la versión activa.
+            {% if publish_hub.has_published_version %}
+            Activa ahora: <strong>{{ publish_hub.published_version_label }}</strong>.
+            {% endif %}
+        </p>
+        <p style="margin-top:12px">
+            {% if publish_hub.has_published_version %}
+            <a href="{% url 'file_match:run_hub' project_slug=project.slug %}" class="btn btn-primary">Continuar a ejecutar</a>
+            {% else %}
+            <span class="btn btn-primary" aria-disabled="true" title="Publique primero la definición">Continuar a ejecutar</span>
+            {% endif %}
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/source_profile-publish.js' %}"></script>
+{% endblock %}

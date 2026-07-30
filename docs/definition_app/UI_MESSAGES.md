@@ -37,6 +37,7 @@ flowchart LR
 | Mensaje específico de app | `UI_MESSAGES.md` §3.5+ y doc de la app |
 | DMS SourceProfile / TargetProfile / FieldMapping / TransformRules | `UI_MESSAGES.md` §3.8 · [`source_definition.md`](../definition_app_DMS/source_definition.md) · [`target_definition.md`](../definition_app_DMS/target_definition.md) · [`field_mapping.md`](../definition_app_DMS/field_mapping.md) · [`transform_rules.md`](../definition_app_DMS/transform_rules.md) |
 | FILE GATE (contrato, políticas, validar, informe, historial, bridge) | `UI_MESSAGES.md` §3.9 · [`../FILE_GATE.md`](../FILE_GATE.md) · [`../definition_app_FILE_GATE/`](../definition_app_FILE_GATE/) |
+| FILE MATCH (perfil A, …) | `UI_MESSAGES.md` §3.11 · [`../FILE_MATCH.md`](../FILE_MATCH.md) · [`../definition_app_FILE_MATCH/`](../definition_app_FILE_MATCH/) |
 
 ---
 
@@ -478,6 +479,143 @@ Código: `apps/reverse_studio/` · kind `Project.KIND_REVERSE = "reverse"`.
 | Config inválida | `error` / JSON 409 | La integración FILE GATE está mal configurada. Revise el proyecto vinculado. |
 
 > Motor: `dms_bridge_service` (kind DMS + Reverse) vía `apps/reverse_studio/bridge/`. Pre-check enganchado en `run_full_job` (M5).
+
+### 3.11 Mensajes específicos — `apps.file_match` (FILE MATCH)
+
+Mensajes de usuario para el Conciliador. Alineados a [`../FILE_MATCH.md`](../FILE_MATCH.md) y [`../definition_app_FILE_MATCH/`](../definition_app_FILE_MATCH/).
+
+#### Proyectos / miembros
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin acceso al proyecto | `error` | No tiene acceso a este proyecto FILE MATCH. |
+| Solo UF crea proyectos | `error` | Solo usuarios UF pueden crear proyectos FILE MATCH. |
+| Proyecto creado | `success` | Proyecto FILE MATCH creado correctamente. |
+| Solo PA gestiona miembros | `error` | Solo el administrador del proyecto (PA) puede gestionar miembros. |
+
+> La UI de miembros reutiliza `invite_member` / `update_member_role` / `set_member_active` de `apps.projects`.
+
+#### Módulo 1 — Perfil A
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Perfil A guardado (borrador) | `success` | Perfil A guardado correctamente. |
+| Sin permiso editar | `error` | No tiene permiso para editar el contrato de este proyecto. |
+| Validación formulario | `error` + inline | Revise los datos del perfil A. |
+| JSON inválido | `error` / JSON | JSON de perfil A inválido. |
+| Tipo fuera de whitelist (A3) | `error` + inline | El tipo de archivo no está permitido en FILE MATCH (perfil A). Use CSV, Excel, TXT delimitado, TXT posicional, JSON o XML. |
+| Tipo no editable en paso 4 | `warning` | Elija un tipo de archivo permitido (CSV, Excel, TXT delimitado, TXT posicional, JSON o XML) en el paso 1. |
+
+> Guardar el perfil A reutiliza `source_persistence_service.save_source` cuando `project_kind = file_match`. Slot actual: `DmsSourceProfile` de la versión con `config.match_side = "A"`. No hay publish solo-A (Módulo 4).
+
+#### Módulo 2 — Perfil B
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Perfil B guardado (borrador) | `success` | Perfil B guardado correctamente. |
+| Sin permiso editar | `error` | No tiene permiso para editar el contrato de este proyecto. |
+| Validación formulario | `error` + inline | Revise los datos del perfil B. |
+| JSON inválido | `error` / JSON | JSON de perfil B inválido. |
+| Tipo fuera de whitelist (B3) | `error` + inline | El tipo de archivo no está permitido en FILE MATCH (perfil B). Use CSV, Excel, TXT delimitado, TXT posicional, JSON o XML. |
+| Tipo no editable en paso 4 | `warning` | Elija un tipo de archivo permitido (CSV, Excel, TXT delimitado, TXT posicional, JSON o XML) en el paso 1. |
+| Kind incorrecto | `error` | Este proyecto no es de tipo FILE MATCH. |
+| A incompleto (aviso hub) | hint UI | Recomendado: complete el perfil A antes de definir el B. |
+
+> Slot B: modelo `FileMatchSourceB` (`version.match_source_b`) con `config.match_side = "B"`. Persistencia: `profile_b_persistence_service.save_source_b`. No hay publish solo-B (Módulo 4).
+
+#### Módulo 3 — Reglas de cruce
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Reglas guardadas | `success` | Reglas de cruce guardadas correctamente. |
+| Sin permiso editar | `error` | No tiene permiso para editar el contrato de este proyecto. |
+| Validación formulario | `error` + inline | Revise los datos de las reglas de cruce. |
+| JSON inválido | `error` / JSON | JSON de reglas de cruce inválido. |
+| Sin clave (strict) | `error` + inline | Defina al menos un par de clave A↔B. |
+| Par incompleto | `error` + inline | El par de clave/compare #N debe tener campo A y campo B. |
+| Campo inexistente | `error`/`warning` + inline | El campo A/B «…» no existe en el perfil A/B. |
+| Kind incorrecto | `error` | Este proyecto no es de tipo FILE MATCH. |
+
+> Persistencia: `FileMatchRules` (`version.match_rules`) vía `match_rules_persistence_service.save_rules`. No hay publish solo-reglas (Módulo 4).
+
+#### Módulo 4 — Publicar definición
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Publicada OK | `success` / JSON | Definición v{n} publicada correctamente. Nuevo borrador v{m} listo para edición. |
+| Checklist incompleto | UX / CTA off | Complete Perfil A, Perfil B y Reglas antes de publicar. |
+| Validación A/B/reglas | `error` / JSON | Complete y corrija el perfil A/B / las reglas de cruce antes de publicar. |
+| Sin permiso | `error` / JSON | No tiene permiso para publicar la definición de este proyecto. |
+| Sin borrador | `error` / JSON | No hay borrador disponible para publicar. |
+| Kind incorrecto | `error` | Este proyecto no es de tipo FILE MATCH. |
+| Sin acceso | `error` | No tiene acceso a este proyecto FILE MATCH. |
+| Inesperado | `error` / JSON | Ocurrió un error al publicar. Si persiste, contacte al administrador. |
+
+> Motor: `publish_service.publish_match_definition` — congela `DmsSourceProfile` (A) + `FileMatchSourceB` + `FileMatchRules`, apunta `current_version` y clona a nuevo borrador. No usa `publish_draft_version` (FilePipe).
+
+#### Módulo 5 — Ejecutar conciliación
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Job OK | `success` | Conciliación completada: {veredicto}. |
+| Sin versión publicada | `error` / UX | Publique una definición antes de conciliar. |
+| Falta archivo A/B | `error` + inline | Seleccione el archivo A / el archivo B. |
+| Extensión inválida | `error` + inline | La extensión del archivo A/B no coincide con el perfil publicado. |
+| Archivo vacío / tamaño | `error` + inline | El archivo está vacío / supera el límite. |
+| Sin permiso ejecutar | `error` | No tiene permiso para ejecutar conciliaciones en este proyecto. |
+| Sin permiso descarga | `error` | No tiene permiso para descargar el informe de este proyecto. |
+| Parse fatal | `error` | No se pudo leer el archivo A/B. Revise el perfil publicado. |
+| Job no encontrado | `error` | No se encontró la conciliación solicitada. |
+| Descarga ausente | `error` | El archivo de descarga no está disponible. |
+| Kind incorrecto | `error` | Este proyecto no es de tipo FILE MATCH. |
+| Inesperado | `error` | Ocurrió un error al conciliar. Si persiste, contacte al administrador. |
+
+> Motor: `match_run_service.match_and_run` + `match_engine.run_match`. Persistencia: `FileMatchJob`. Parsers DMS ×2. Descargas MVP: JSON + CSV diferencias.
+
+#### Módulo 6 — Informe y evidencia
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Evidencia expirada | `error` / warning UX | La evidencia de descarga expiró. Los metadatos del job siguen disponibles. |
+| Sin permiso evidencia | `error` | No tiene permiso para ver la evidencia. |
+| Sin permiso certificado | `error` | No tiene permiso para ver el certificado. |
+| Sin permiso descarga | `error` | No tiene permiso para descargar el informe de este proyecto. |
+| Job no finalizado | `warning` | La conciliación aún no finalizó. |
+| Job no encontrado | `error` | No se encontró la conciliación solicitada. |
+| Descarga ausente | `error` | El archivo de descarga no está disponible. |
+
+> Motor: `match_report_service` — evidencia filtrable, ofuscación, certificado ligero, TTL 7 días. Reusa `FileMatchJob` + archivos M5.
+
+#### Módulo 7 — Historial y auditoría
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin permiso | `error` | No tiene permiso para ver el historial de este proyecto. |
+| Fechas invertidas | inline (`date_to`) | «Hasta» no puede ser anterior a «Desde». |
+| Versión inválida | inline (`version`) | La versión debe ser un número. |
+| Sin conciliaciones | UX vacío | Sin conciliaciones registradas + CTA Ejecutar. |
+| Filtro sin resultados | UX | Sin resultados para estos filtros + limpiar filtros. |
+| Sin acceso al proyecto | `error` | No tiene acceso a este proyecto FILE MATCH. |
+
+> Motor: `match_history_service` — filtros, paginación 25, badges TTL vía `match_report_service`. Reusa `FileMatchJob` (sin migración). Enlaces a resultado (M5), informe y certificado (M6).
+
+#### Módulo 8 — Bridge FILE GATE
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin permiso configurar | `error` | No tiene permiso para configurar la integración FILE GATE. |
+| Enabled sin GATE | inline (`file_gate_project_id`) | Elija un proyecto FILE GATE. |
+| Enabled sin lados | inline (`file_gate_require_sides`) | Marque al menos «Exigir en A» o «Exigir en B». |
+| Guardado OK | `success` | Integración FILE GATE guardada. |
+| Desactivado | `success` | Integración FILE GATE desactivada. Conciliar funcionará sin pre-check. |
+| Bloqueo sin job (lado) | `error` | Valide el archivo A/B en FILE GATE antes de conciliar. … |
+| Estado no aceptado | `error` | La última validación FILE GATE del archivo A/B no está aceptada. … |
+| Frescura vencida | `error` | La validación FILE GATE del archivo A/B expiró por frescura. … |
+| Gate no publicado | `error` | El proyecto FILE GATE no tiene un contrato publicado. Publique el esquema antes de conciliar. |
+| Config inválida | `error` | La integración FILE GATE está mal configurada. Revise el proyecto vinculado. |
+
+> Motor: `match_bridge_service` + `dms_bridge_service.precheck_match_sides`. Config: `DmsProjectConfig.file_gate_*` + `file_gate_require_a` / `_b`. Sello en `FileMatchJob.metrics["file_gate_check"]`.
+
 ---
 
 ## 4. Qué no mostrar al usuario

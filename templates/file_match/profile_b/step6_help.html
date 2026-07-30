@@ -1,0 +1,46 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Informe de lectura — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}">Perfil B</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_b_step6' project_slug=project.slug %}">Paso 6</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_match/profile_b/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Ayuda · Paso 6</p>
+        <h2>Informe de lectura del lado B</h2>
+        <p>Configura qué se registra al parsear el archivo B en una conciliación.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:profile_b_step6' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <ul class="hint" style="margin:0; padding-left:1.2rem">
+            <li>No es el informe de diferencias del match (Módulo 6).</li>
+            <li>No publica la definición; eso es el Módulo 4 (A + B + reglas).</li>
+            <li>CTA de cierre: volver al hub del Perfil B. Siguiente módulo: Perfil B.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

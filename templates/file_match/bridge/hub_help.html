@@ -1,0 +1,42 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda bridge — {{ project.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:bridge_hub' project_slug=project.slug %}">← Integración FILE GATE</a>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Ayuda · Módulo 8</p>
+        <h2>Ayuda — Integración FILE GATE</h2>
+        <p>Pre-check opcional de A y/o B antes de conciliar.</p>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <table class="help-table">
+            <thead><tr><th>Tema</th><th>Detalle</th></tr></thead>
+            <tbody>
+                <tr><td>Propósito</td><td>Exige corrida FILE GATE aceptada (mismo hash) antes de conciliar. Un GATE; checkboxes A/B.</td></tr>
+                <tr><td>Roles</td><td>PA/ED configuran. PA/ED/GE concilian si el pre-check pasa. Nadie salta el check.</td></tr>
+                <tr><td>Matching</td><td><code>file_a_hash</code> / <code>file_b_hash</code> vs job GATE. Frescura default 7 días.</td></tr>
+                <tr><td>Qué no hace</td><td>No valida dentro de Match. No fusiona perfiles con el esquema FG. No es obligatorio (flag OFF = M5).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
