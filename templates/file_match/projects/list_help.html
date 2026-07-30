@@ -1,0 +1,22 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Listado — FILE MATCH{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Proyectos FILE MATCH</h2>
+        <p>Listado de conciliadores A vs B de su compañía.</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'file_match:project_list' %}">← Volver</a></div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>Cada proyecto tiene kind <code>file_match</code> (aislado de FilePipe, FILE GATE y Reverse).</li>
+    <li>El PA gestiona miembros y roles (PA/ED/GE/CO) en la pantalla Miembros.</li>
+    <li>Empiece por el <strong>Perfil A</strong>, luego Perfil B, reglas, publicar y conciliar.</li>
+    <li>Los proyectos públicos de su compañía aparecen aunque no sea miembro (solo consulta).</li>
+</ul>
+</div></div>
+{% endblock %}

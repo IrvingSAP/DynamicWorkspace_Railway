@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "apps.dms",
     "apps.file_gate",
     "apps.reverse_studio",
+    "apps.file_match",
 ]
 
 MIDDLEWARE = [

@@ -63,6 +63,9 @@ class DmsProjectConfig(models.Model):
         blank=True,
         related_name="dms_file_gate_links",
     )
+    # FILE MATCH bridge (Módulo 8) — qué lado(s) exigir ante el mismo GATE.
+    file_gate_require_a = models.BooleanField(default=False)
+    file_gate_require_b = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

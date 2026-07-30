@@ -1,0 +1,267 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Historial — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<style>
+.history-filters{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));
+  gap:10px; margin-bottom:14px;
+}
+.history-filters label{
+  display:block; font-size:11px; text-transform:uppercase; letter-spacing:.04em;
+  color:#a8a29e; margin-bottom:4px; font-weight:600;
+}
+.history-filters input,.history-filters select{
+  width:100%; padding:7px 9px; border:1px solid rgba(28,25,23,.1);
+  border-radius:6px; font:inherit; background:#fff;
+}
+.history-filters .has-error input,.history-filters .has-error select{ border-color:#b91c1c; }
+.field-error{ margin:4px 0 0; font-size:12px; color:#b91c1c; }
+.hist-table{ width:100%; border-collapse:collapse; font-size:13px; }
+.hist-table th,.hist-table td{
+  padding:9px 10px; border-bottom:1px solid rgba(28,25,23,.08); text-align:left; vertical-align:top;
+}
+.hist-table th{
+  font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:#a8a29e; background:#f6f4f0;
+}
+.tone-failed{ color:#b91c1c; font-weight:600; }
+.tone-passed{ color:#15803d; font-weight:600; }
+.tone-partial{ color:#b45309; font-weight:600; }
+.ttl-ok{
+  font-size:11px; font-weight:600; padding:2px 7px; border-radius:999px;
+  background:rgba(21,128,61,.12); color:#15803d;
+}
+.ttl-exp{
+  font-size:11px; font-weight:600; padding:2px 7px; border-radius:999px;
+  background:rgba(180,83,9,.12); color:#b45309;
+}
+.row-actions{ display:flex; flex-wrap:wrap; gap:8px; }
+.row-actions a{ font-size:12px; font-weight:600; }
+.empty-history{
+  padding:28px 20px; text-align:center; background:#fdfcfa;
+  border:1px solid rgba(28,25,23,.08); border-radius:10px;
+}
+.empty-history h3{ margin:0 0 8px; }
+.pager{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px; }
+</style>
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Historial</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Alcance">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    {% if membership %}
+    <span class="hint">·</span>
+    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    {% endif %}
+    <span class="hint">· TTL descargas {{ history.ttl_days }} días</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Módulo 7 · <span class="role-badge">History</span></p>
+        <h2>Historial de conciliaciones</h2>
+        <p>Auditoría filtrable de jobs. Los metadatos permanecen tras el TTL; las descargas siguen las reglas del informe.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_match:history_hub_help' project_slug=project.slug as history_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=history_help_url %}
+        <a href="{% url 'file_match:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url 'file_match:run_hub' project_slug=project.slug %}" class="btn btn-primary">Ejecutar</a>
+    </div>
+</div>
+
+{% if not history.has_any_job and not history.has_active_filters %}
+<div class="empty-history">
+    <h3>Sin conciliaciones registradas</h3>
+    <p>Publique la definición y ejecute una conciliación A+B para empezar la auditoría.</p>
+    {% if history.can_execute %}
+    <a href="{% url 'file_match:run_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a Ejecutar</a>
+    {% else %}
+    <p class="hint">Su rol no permite ejecutar conciliaciones en este proyecto.</p>
+    {% endif %}
+</div>
+{% else %}
+
+<div class="stats-strip" aria-label="Resumen">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Total</p>
+        <p class="stat-value">{{ history.stats.total }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Passed</p>
+        <p class="stat-value">{{ history.stats.passed }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Failed</p>
+        <p class="stat-value">{{ history.stats.failed }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">TTL expirado</p>
+        <p class="stat-value">{{ history.stats.expired }}</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Filtros</h3>
+        <form method="get" class="history-filters" aria-label="Filtros">
+            <div>
+                <label for="f-verdict">Veredicto</label>
+                <select id="f-verdict" name="verdict">
+                    <option value="all">Todos</option>
+                    {% for opt in history.verdict_options %}
+                    <option value="{{ opt.value }}" {% if history.filters.verdict == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div{% if history.errors.date_from %} class="has-error"{% endif %}>
+                <label for="f-from">Desde</label>
+                <input id="f-from" type="date" name="date_from" value="{% if history.filters.date_from %}{{ history.filters.date_from|date:'Y-m-d' }}{% endif %}">
+                {% if history.errors.date_from %}<p class="field-error">{{ history.errors.date_from.0 }}</p>{% endif %}
+            </div>
+            <div{% if history.errors.date_to %} class="has-error"{% endif %}>
+                <label for="f-to">Hasta</label>
+                <input id="f-to" type="date" name="date_to" value="{% if history.filters.date_to %}{{ history.filters.date_to|date:'Y-m-d' }}{% endif %}">
+                {% if history.errors.date_to %}<p class="field-error">{{ history.errors.date_to.0 }}</p>{% endif %}
+            </div>
+            <div>
+                <label for="f-user">Usuario</label>
+                <select id="f-user" name="executed_by">
+                    <option value="">Todos</option>
+                    {% for opt in history.executed_by_options %}
+                    <option value="{{ opt.value }}" {% if history.filters.executed_by == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="f-a">Archivo A</label>
+                <input id="f-a" type="search" name="file_a" value="{{ history.filters.file_a }}" placeholder="contiene…">
+            </div>
+            <div>
+                <label for="f-b">Archivo B</label>
+                <input id="f-b" type="search" name="file_b" value="{{ history.filters.file_b }}" placeholder="contiene…">
+            </div>
+            <div>
+                <label for="f-hash">Hash</label>
+                <input id="f-hash" type="search" name="hash" value="{{ history.filters.hash }}" placeholder="prefijo…">
+            </div>
+            <div{% if history.errors.version %} class="has-error"{% endif %}>
+                <label for="f-version">Versión</label>
+                <select id="f-version" name="version">
+                    <option value="">Todas</option>
+                    {% for number in history.version_options %}
+                    <option value="{{ number }}" {% if history.filters.version == number %}selected{% endif %}>v{{ number }}</option>
+                    {% endfor %}
+                </select>
+                {% if history.errors.version %}<p class="field-error">{{ history.errors.version.0 }}</p>{% endif %}
+            </div>
+            <div>
+                <label for="f-ttl">TTL</label>
+                <select id="f-ttl" name="ttl">
+                    <option value="all">Todos</option>
+                    <option value="active" {% if history.filters.ttl == 'active' %}selected{% endif %}>Vigente</option>
+                    <option value="expired" {% if history.filters.ttl == 'expired' %}selected{% endif %}>Expirado</option>
+                </select>
+            </div>
+            <div style="align-self:end; display:flex; gap:8px; flex-wrap:wrap">
+                <button type="submit" class="btn btn-primary">Aplicar</button>
+                {% if history.has_active_filters %}
+                <a href="{% url 'file_match:history_hub' project_slug=project.slug %}" class="btn btn-secondary">Limpiar</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Corridas</h3>
+        {% if history.rows %}
+        <table class="hist-table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Veredicto</th>
+                    <th>A / B</th>
+                    <th>v</th>
+                    <th>%</th>
+                    <th>Usuario</th>
+                    <th>TTL</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in history.rows %}
+                <tr>
+                    <td>{{ row.finished_at|date:"d/m H:i"|default:"—" }}</td>
+                    <td class="tone-{{ row.verdict_tone }}">{{ row.verdict_label }}</td>
+                    <td>
+                        <code>{{ row.file_a_name|truncatechars:28 }}</code><br>
+                        <code>{{ row.file_b_name|truncatechars:28 }}</code>
+                    </td>
+                    <td>v{{ row.version }}</td>
+                    <td>{% if row.match_pct != None %}{{ row.match_pct }}%{% else %}—{% endif %}</td>
+                    <td>{{ row.executed_by|default:"—" }}</td>
+                    <td>
+                        {% if row.is_expired %}
+                        <span class="ttl-exp">Expirado</span>
+                        {% else %}
+                        <span class="ttl-ok">Vigente</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="row-actions">
+                            <a href="{{ row.result_url }}">Resultado</a>
+                            <a href="{{ row.report_url }}">Informe</a>
+                            <a href="{{ row.certificate_url }}">Certificado</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="pager">
+            <span class="hint">
+                {{ history.showing_from }}–{{ history.showing_to }} de {{ history.stats.total }}
+                · página {{ history.page }} / {{ history.total_pages }}
+            </span>
+            {% if history.prev_query %}
+            <a class="btn btn-secondary" href="?{{ history.prev_query }}">← Anterior</a>
+            {% endif %}
+            {% if history.next_query %}
+            <a class="btn btn-secondary" href="?{{ history.next_query }}">Siguiente →</a>
+            {% endif %}
+        </div>
+        {% if history.scan_truncated %}
+        <p class="hint">Consulta limitada a las {{ history.max_scan }} corridas más recientes.</p>
+        {% endif %}
+        {% else %}
+        <p class="hint">Sin resultados para estos filtros.
+            <a href="{% url 'file_match:history_hub' project_slug=project.slug %}">Limpiar filtros</a>
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

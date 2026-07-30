@@ -1,0 +1,227 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ project.name }} — FILE MATCH{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Conciliador</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ project.slug }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">
+            <span class="cell-badge">{{ project.slug }}</span>
+            {% if hub.visibility == 'company' %}
+            <span class="visibility-badge visibility-badge--public">{{ hub.visibility_label }}</span>
+            {% else %}
+            <span class="visibility-badge visibility-badge--private">{{ hub.visibility_label }}</span>
+            {% endif %}
+            {% if hub.is_pa %}
+            <span class="perm-badge perm-badge--admin">{{ hub.role_label }}</span>
+            {% else %}
+            <span class="perm-badge">{{ hub.role_label }}</span>
+            {% endif %}
+        </p>
+        <h2>{{ project.name }}</h2>
+        {% if project.description %}
+        <p>{{ project.description }}</p>
+        {% else %}
+        <p>Proyecto FILE MATCH: conciliación archivo A vs archivo B.</p>
+        {% endif %}
+    </div>
+    <div class="page-actions">
+        {% url 'file_match:project_hub_help' project_slug=project.slug as fm_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=fm_help_url %}
+        {% if hub.can_manage_members %}
+        <a href="{% url 'file_match:project_members' project_slug=project.slug %}" class="btn btn-secondary">Miembros</a>
+        {% endif %}
+        <a href="{% url 'file_match:project_list' %}" class="btn btn-secondary">← Proyectos</a>
+    </div>
+</div>
+
+<div class="version-strip">
+    <strong>Versión:</strong> {{ hub.version_label }}
+    · <strong>Activa:</strong> {{ hub.published_version_label }}
+    · <strong>Miembros:</strong> {{ hub.member_count }}
+</div>
+
+<div class="lifecycle-stepper" aria-label="Ciclo del proyecto">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Módulos 1–4</p>
+        <ol class="lifecycle-steps">
+            <li>
+                <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.profile_a_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.profile_a_complete %}✓{% else %}1{% endif %}</span> Perfil A
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.profile_b_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.profile_b_complete %}✓{% else %}2{% endif %}</span> Perfil B
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'file_match:rules_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.rules_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.rules_complete %}✓{% else %}3{% endif %}</span> Reglas
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'file_match:publish_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.publish_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.has_published_version %}✓{% else %}4{% endif %}</span> Publicar
+                </a>
+            </li>
+        </ol>
+    </div>
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Módulos 5–6</p>
+        <ol class="lifecycle-steps">
+            <li>
+                <a href="{% url 'file_match:run_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.run_step_class }}">
+                    <span class="lifecycle-step-num">5</span> Conciliar
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'file_match:history_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.history_step_class }}">
+                    <span class="lifecycle-step-num">6</span> Historial
+                </a>
+            </li>
+        </ol>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Progreso">
+    <div class="stat-card{% if hub.profile_a_complete %} is-done{% else %} is-accent{% endif %}">
+        <p class="stat-label">Perfil A</p>
+        <p class="stat-value">{{ hub.profile_a_steps_complete }} / {{ hub.profile_a_steps_total }}</p>
+    </div>
+    <div class="stat-card{% if hub.profile_b_complete %} is-done{% elif hub.profile_a_complete %} is-accent{% endif %}">
+        <p class="stat-label">Perfil B</p>
+        <p class="stat-value">{{ hub.profile_b_steps_complete }} / {{ hub.profile_b_steps_total }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Tipo A / B</p>
+        <p class="stat-value" style="font-size:14px">{{ hub.file_type_label }} / {{ hub.file_type_b_label }}</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Perfil A — origen de referencia</h3>
+        <p class="hint">
+            {% if hub.profile_a_complete %}
+            Perfil A completo en borrador.
+            {% else %}
+            Complete los 6 pasos del asistente del perfil A.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-secondary">Ver resumen del perfil A</a>
+            <a href="{% url hub.continue_profile_a_url_name project_slug=project.slug %}" class="btn btn-primary">Continuar perfil A</a>
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Perfil B — contraparte</h3>
+        <p class="hint">
+            Describe cómo leer el archivo B. El tipo puede diferir del A.
+            {% if hub.profile_b_complete %}
+            Perfil B completo en borrador — siguiente: Reglas.
+            {% elif not hub.profile_a_complete %}
+            Recomendado: complete el perfil A primero; puede editar B igualmente.
+            {% else %}
+            Complete los 6 pasos del asistente del perfil B.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}" class="btn btn-secondary">Ver resumen del perfil B</a>
+            <a href="{% url hub.continue_profile_b_url_name project_slug=project.slug %}" class="btn btn-primary">Continuar perfil B</a>
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Reglas de cruce</h3>
+        <p class="hint">
+            Clave A↔B, campos a comparar y normalización.
+            {% if hub.rules_complete %}
+            Reglas con {{ hub.rules_key_count }} clave(s) y {{ hub.rules_compare_count }} compare — siguiente: Publicar.
+            {% elif not hub.profile_b_complete %}
+            Recomendado: complete el perfil B primero; puede editar reglas igualmente.
+            {% else %}
+            Defina al menos un par de clave.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'file_match:rules_hub' project_slug=project.slug %}" class="btn btn-secondary">Ver resumen de reglas</a>
+            <a href="{% url hub.continue_rules_url_name project_slug=project.slug %}" class="btn btn-primary">Continuar reglas</a>
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Publicar definición</h3>
+        <p class="hint">
+            Congela A + B + reglas en una versión activa.
+            {% if hub.has_published_version %}
+            Activa: <strong>{{ hub.published_version_label }}</strong>. Puede republicar desde el borrador.
+            {% elif hub.rules_complete %}
+            Checklist listo en borrador — siguiente: publicar.
+            {% else %}
+            Complete Perfil A, Perfil B y Reglas antes de publicar.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'file_match:publish_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a Publicar</a>
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Ejecutar conciliación</h3>
+        <p class="hint">
+            {% if hub.has_published_version %}
+            Versión activa {{ hub.published_version_label }} — suba A + B y concilie.
+            {% else %}
+            Publique la definición antes de ejecutar.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'file_match:run_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a Ejecutar</a>
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Auditoría e integración</h3>
+        <p class="hint">Historial de conciliaciones y pre-check opcional FILE GATE.</p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'file_match:history_hub' project_slug=project.slug %}" class="btn btn-secondary">Ir a Historial</a>
+            <a href="{% url 'file_match:bridge_hub' project_slug=project.slug %}" class="btn btn-secondary">Integración FILE GATE</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

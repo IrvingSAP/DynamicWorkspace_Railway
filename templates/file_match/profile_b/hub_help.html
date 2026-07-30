@@ -1,0 +1,47 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Perfil B — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}">Perfil B</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_match/profile_b/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Ayuda · Módulo 2</p>
+        <h2>Cómo usar el perfil B</h2>
+        <p>Describe cómo debe leerse el archivo B (contraparte / lado derecho). No redefine el archivo A ni publica la definición.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al hub</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <ul class="hint" style="margin:0; padding-left:1.2rem">
+            <li>Seis pasos: tipo, inicio/fin de captura, campos, reglas e informe de lectura.</li>
+            <li><strong>B3</strong> — whitelist: CSV, Excel, TXT delimitado, TXT posicional, JSON, XML.</li>
+            <li><strong>B8</strong> — el tipo de B puede diferir del tipo de A.</li>
+            <li>Los <code>name</code> de campo son propios de B; el enlace A↔B se declara en el Módulo 3.</li>
+            <li>Completar M2 no basta para conciliar: faltan reglas y publicar (B7).</li>
+            <li>No hay «Publicar solo B»; publicar es el Módulo 4.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

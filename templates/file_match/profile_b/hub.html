@@ -1,0 +1,101 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Perfil B — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Perfil B</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_match/profile_b/_project_scope.html" %}
+{% include "file_match/profile_b/_source_persistence.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Módulo 2 · <span class="role-badge">SourceProfile B</span></p>
+        <h2>Perfil B (archivo B / contraparte)</h2>
+        <p>Defina cómo debe leerse el archivo B (contraparte). El tipo puede diferir del archivo A.
+            No publica solo este lado: la definición completa (A + B + reglas) se publica en el Módulo 4.
+            Versión: <strong>{{ wizard.version_label }}</strong>.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_match:profile_b_hub_help' project_slug=project.slug as source_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+        <a href="{% url 'file_match:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url wizard.continue_step_url_name project_slug=project.slug %}" class="btn btn-primary">Continuar edición</a>
+    </div>
+</div>
+
+{% if not wizard.profile_a_complete %}
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Recomendación</h3>
+        <p class="hint">Complete el <strong>perfil A</strong> antes de definir el B. Puede editar B igualmente.</p>
+        <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-ghost">Ver perfil A</a>
+    </div>
+</div>
+{% endif %}
+
+<div class="stats-strip" aria-label="Progreso">
+    <div class="stat-card{% if wizard.steps_complete == wizard.steps_total %} is-done{% else %} is-accent{% endif %}">
+        <p class="stat-label">Pasos completos</p>
+        <p class="stat-value">{{ wizard.steps_complete }} / {{ wizard.steps_total }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Tipo archivo B</p>
+        <p class="stat-value" style="font-size:16px">{{ wizard.file_type_label }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Campos definidos</p>
+        <p class="stat-value">{{ wizard.fields_count }}</p>
+    </div>
+</div>
+
+{% if wizard.steps_complete >= wizard.steps_total %}
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Siguiente módulo</h3>
+        <p class="hint">El perfil B está completo en borrador. Continúe con las <strong>reglas de cruce</strong> (Módulo 3).
+            Publicar la definición completa es el Módulo 4 (A + B + reglas).</p>
+        <a href="{% url 'file_match:rules_hub' project_slug=project.slug %}" class="btn btn-primary">Continuar a Reglas →</a>
+    </div>
+</div>
+{% endif %}
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Pasos del asistente</h3>
+        <div class="step-summary-list">
+            {% for step in wizard.steps %}
+            <a href="{% url step.url_name project_slug=project.slug %}" class="step-summary-card{% if step.status == 'done' %} is-done{% elif step.status == 'draft' %} is-draft{% endif %}">
+                <div>
+                    <h4>{{ step.title }}</h4>
+                    <p>{{ step.summary }}</p>
+                </div>
+                <span class="flow-card-status flow-card-status--{% if step.status == 'done' %}done{% elif step.status == 'draft' %}draft{% else %}empty{% endif %}">
+                    {% if step.status == 'done' %}Completo{% elif step.status == 'draft' %}En edición{% else %}Pendiente{% endif %}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

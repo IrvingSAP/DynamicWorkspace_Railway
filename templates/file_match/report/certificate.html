@@ -1,0 +1,96 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Certificado — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<style>
+.cert{
+  max-width:40rem; margin:0 auto; padding:28px 32px; background:#fdfcfa;
+  border:1px solid rgba(28,25,23,.1); border-radius:10px;
+}
+.cert h1{ margin:0 0 4px; font-size:1.25rem; }
+.cert .eyebrow{
+  margin:0 0 18px; font-size:11px; text-transform:uppercase;
+  letter-spacing:.08em; color:#a8a29e; font-weight:600;
+}
+.cert dl{ margin:0; display:grid; gap:10px; }
+.cert dt{ font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:#a8a29e; margin:0; }
+.cert dd{ margin:2px 0 0; font-family:ui-monospace,monospace; font-size:13px; }
+.cert-footer{
+  margin-top:22px; padding-top:14px; border-top:1px solid rgba(28,25,23,.08);
+  font-size:12px; color:#78716c;
+}
+@media print{
+  .page-actions, .breadcrumb, .no-print, .sidebar, .app-topbar { display:none !important; }
+  .cert{ border:none; }
+}
+</style>
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb no-print" aria-label="Ruta">
+    <a href="{{ report_url }}">← Informe</a>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header no-print">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Módulo 6</p>
+        <h2>Certificado de conciliación</h2>
+        <p>Evidencia operativa (no es firma criptográfica).</p>
+    </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn-secondary" onclick="window.print()">Imprimir</button>
+        <a href="{{ certificate_download_url }}" class="btn btn-primary">Descargar JSON</a>
+        <a href="{{ report_url }}" class="btn btn-secondary">← Informe</a>
+    </div>
+</div>
+
+<div class="cert" aria-label="Certificado">
+    <p class="eyebrow">FILE MATCH · Conciliador de archivos</p>
+    <h1>Certificado ligero</h1>
+    <p class="hint" style="margin:0 0 18px">
+        Proyecto <strong>{{ cert.project_slug }}</strong>
+        {% if cert.company %} · {{ cert.company }}{% endif %}
+    </p>
+    <dl>
+        <div><dt>Job</dt><dd>{{ cert.job_id }}</dd></div>
+        <div><dt>Definición</dt><dd>v{{ cert.published_version }} publicada</dd></div>
+        <div>
+            <dt>Archivo A</dt>
+            <dd>{{ cert.file_a_name }} · {{ cert.file_a_size_label }}
+                {% if cert.file_a_hash %} · sha256:{{ cert.file_a_hash }}{% endif %}
+            </dd>
+        </div>
+        <div>
+            <dt>Archivo B</dt>
+            <dd>{{ cert.file_b_name }} · {{ cert.file_b_size_label }}
+                {% if cert.file_b_hash %} · sha256:{{ cert.file_b_hash }}{% endif %}
+            </dd>
+        </div>
+        <div>
+            <dt>Veredicto</dt>
+            <dd>{{ cert.verdict_label }} ({{ cert.verdict }})
+                · matched {{ cert.metrics.matched|default:0 }}
+                · mismatch {{ cert.metrics.value_mismatch|default:0 }}
+                · only_a {{ cert.metrics.only_a|default:0 }}
+                · only_b {{ cert.metrics.only_b|default:0 }}
+                · {{ cert.metrics.match_pct|default:"—" }}%
+            </dd>
+        </div>
+        <div><dt>Ejecutor</dt><dd>{{ cert.executed_by|default:"—" }}</dd></div>
+        <div><dt>Finalizado</dt><dd>{{ cert.finished_at|date:"c"|default:"—" }}</dd></div>
+    </dl>
+    <p class="cert-footer">
+        Documento de evidencia operativa. Reproducible con job id + hashes A/B + versión de definición.
+        No constituye sello notarial ni firma digital.
+    </p>
+</div>
+{% endblock %}

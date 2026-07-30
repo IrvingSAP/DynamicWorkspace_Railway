@@ -1,0 +1,43 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda informe — {{ project.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:report_detail' project_slug=project.slug job_id=job_id %}">← Informe</a>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Ayuda · Módulo 6</p>
+        <h2>Ayuda — Informe y evidencia</h2>
+        <p>Roles, ofuscación y retención de descargas.</p>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <table class="help-table">
+            <thead><tr><th>Tema</th><th>Detalle</th></tr></thead>
+            <tbody>
+                <tr><td>Roles</td><td>PA/ED/GE descargan. CO: metadatos + certificado sin celdas. Solo PA/ED revelan valores.</td></tr>
+                <tr><td>Ofuscación</td><td>UI ofuscada por defecto (p. ej. primeros 2 + ***).</td></tr>
+                <tr><td>Certificado</td><td>Hashes A y B + versión + veredicto + usuario + timestamps.</td></tr>
+                <tr><td>TTL</td><td>Descargas 7 días; metadatos del job permanecen.</td></tr>
+                <tr><td>Historial</td><td>Listado filtrable = Módulo 7.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

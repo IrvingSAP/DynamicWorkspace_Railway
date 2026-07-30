@@ -1,0 +1,34 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Proyecto — {{ project.name }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb">
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span><span>Ayuda</span>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Hub del proyecto</h2>
+        <p>Punto de entrada del Conciliador. Stepper: Perfil A → B → Reglas → Publicar → Conciliar → Historial.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_match:project_hub' project_slug=project.slug %}">← Volver</a>
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li><strong>Miembros:</strong> solo PA invita UF y asigna roles.</li>
+    <li><strong>Perfil A / B / Reglas:</strong> se editan en borrador hasta publicar.</li>
+    <li><strong>Publicar:</strong> congela A + B + reglas en una versión activa.</li>
+    <li><strong>Conciliar:</strong> suba archivos A y B contra la versión publicada (Módulo 5).</li>
+    <li><strong>Historial / Bridge:</strong> auditoría de jobs e integración opcional FILE GATE.</li>
+</ul>
+</div></div>
+{% endblock %}

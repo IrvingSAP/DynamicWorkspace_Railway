@@ -1,4 +1,4 @@
-{# Navegación lateral UF — Worksheets + FilePipe + FILE GATE + Reverse Studio #}
+{# Navegación lateral UF — Worksheets + FilePipe + FILE GATE + Reverse Studio + FILE MATCH #}
 <a href="{% url 'dashboard:home' %}" class="sidebar-link{% if app_nav_active == 'home' %} is-active{% endif %}" title="Inicio">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 6.5L8 2l6 4.5V13a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"/></svg>
     <span class="sidebar-link-label">Inicio</span>
@@ -50,5 +50,17 @@
     <div class="sidebar-nav-submenu" id="reverse-studio-submenu">
         <a href="{% url 'reverse_studio:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'reverse_studio' %} is-active{% endif %}">Emisor</a>
         <a href="{% url 'reverse_studio:reverse_studio_guide' %}" class="sidebar-sublink{% if app_nav_active == 'reverse_studio_guide' %} is-active{% endif %}">Ayuda</a>
+    </div>
+</div>
+
+<div class="sidebar-nav-group{% if file_match_nav_open or app_nav_active == 'file_match' or app_nav_active == 'file_match_guide' %} is-open{% endif %}{% if app_nav_active == 'file_match' or app_nav_active == 'file_match_guide' %} is-active{% endif %}" data-nav-group="file-match">
+    <button type="button" class="sidebar-nav-group-toggle" title="FILE MATCH" aria-expanded="{% if file_match_nav_open or app_nav_active == 'file_match' or app_nav_active == 'file_match_guide' %}true{% else %}false{% endif %}" aria-controls="file-match-submenu">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 4h4v8H3V4zM9 4h4v8H9V4z"/><path d="M5 8h6"/></svg>
+        <span class="sidebar-link-label">FILE MATCH</span>
+        <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="sidebar-nav-submenu" id="file-match-submenu">
+        <a href="{% url 'file_match:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_match' %} is-active{% endif %}">Conciliador</a>
+        <a href="{% url 'file_match:file_match_guide' %}" class="sidebar-sublink{% if app_nav_active == 'file_match_guide' %} is-active{% endif %}">Ayuda</a>
     </div>
 </div>

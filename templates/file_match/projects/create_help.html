@@ -1,0 +1,22 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Nuevo proyecto — FILE MATCH{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Crear proyecto</h2>
+        <p>Nombre, código (slug) y visibilidad del conciliador.</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'file_match:project_create' %}">← Volver</a></div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>El slug es único por compañía (compartido entre apps).</li>
+    <li>Quien crea queda como <strong>PA</strong> del proyecto.</li>
+    <li><strong>Privado:</strong> solo miembros. <strong>Público:</strong> la compañía puede verlo; editar/ejecutar exige rol.</li>
+    <li>Tras crear: gestione miembros si hace falta y configure el <strong>Perfil A</strong> (6 pasos).</li>
+</ul>
+</div></div>
+{% endblock %}

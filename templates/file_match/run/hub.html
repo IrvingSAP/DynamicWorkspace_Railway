@@ -1,0 +1,166 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ejecutar — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<style>
+.upload-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:720px){ .upload-grid{ grid-template-columns:1fr; } }
+.upload-card{ padding:14px; border:1px dashed rgba(28,25,23,.2); border-radius:8px; background:#f6f4f0; }
+.upload-card h4{ margin:0 0 6px; font-size:14px; }
+.upload-card p{ margin:0 0 10px; font-size:12px; color:#78716c; }
+.verdict-tone--passed{ color:#15803d; font-weight:600; }
+.verdict-tone--failed{ color:#b91c1c; font-weight:600; }
+.verdict-tone--partial{ color:#b45309; font-weight:600; }
+</style>
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ejecutar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    {% if membership %}
+    <span class="hint">·</span>
+    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    {% endif %}
+    {% if run.has_published_version %}
+    <span class="hint">· activa v{{ run.published_version_number }}</span>
+    {% else %}
+    <span class="hint">· sin versión activa</span>
+    {% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Módulo 5 · <span class="role-badge">MatchRun</span></p>
+        <h2>Ejecutar conciliación</h2>
+        <p>Suba el archivo A y el archivo B. El cruce usa solo la definición publicada.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_match:run_hub_help' project_slug=project.slug as run_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=run_help_url %}
+        <a href="{% url 'file_match:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        {% if run.has_published_version %}
+        <a href="{% url 'file_match:publish_hub' project_slug=project.slug %}" class="btn btn-secondary">Ver publicar</a>
+        {% else %}
+        <a href="{% url 'file_match:publish_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a Publicar</a>
+        {% endif %}
+        <a href="{% url 'file_match:bridge_hub' project_slug=project.slug %}" class="btn btn-secondary">FILE GATE</a>
+    </div>
+</div>
+
+{% if run.bridge.enabled %}
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <p class="hint" style="margin:0">
+            <strong>Bridge FILE GATE activo</strong>
+            · exige {{ run.bridge.sides_label }}
+            · <code>{{ run.bridge.gate_project_slug }}</code>
+            · frescura {{ run.bridge.max_age_days }} días
+            · <a href="{{ run.bridge.settings_url }}">Ajustes</a>
+        </p>
+    </div>
+</div>
+{% endif %}
+
+{% if not run.has_published_version %}
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <div class="note-box">
+            <strong>Publique una definición antes de conciliar.</strong>
+            Complete Perfil A, Perfil B y Reglas, luego publique.
+        </div>
+    </div>
+</div>
+{% elif not run.can_execute %}
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <div class="note-box">No tiene permiso para ejecutar conciliaciones en este proyecto.</div>
+    </div>
+</div>
+{% else %}
+
+<div class="stats-strip" aria-label="Definición activa">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Versión activa</p>
+        <p class="stat-value" style="font-size:16px">v{{ run.published_version_number }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Tipo A / B</p>
+        <p class="stat-value" style="font-size:14px">{{ run.file_type_a_label }} / {{ run.file_type_b_label }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Clave</p>
+        <p class="stat-value" style="font-size:12px">{{ run.key_summary }}</p>
+    </div>
+</div>
+
+<form method="post" action="{% url 'file_match:run_execute' project_slug=project.slug %}" enctype="multipart/form-data" class="panel" style="margin-top:16px">
+    {% csrf_token %}
+    <div class="panel-body">
+        <h3 class="form-section-title">Archivos de esta corrida</h3>
+        <p class="hint">Máximo {{ run.max_size_label }} por archivo. Extensiones según perfiles publicados.</p>
+        <div class="upload-grid">
+            <div class="upload-card">
+                <h4>Lado A · {{ run.file_type_a_label }}</h4>
+                <p>Permitidas: {{ run.allowed_extensions_a_label }}</p>
+                <input type="file" name="file_a" required accept="{{ run.allowed_extensions_a|join:',' }}">
+            </div>
+            <div class="upload-card">
+                <h4>Lado B · {{ run.file_type_b_label }}</h4>
+                <p>Permitidas: {{ run.allowed_extensions_b_label }}</p>
+                <input type="file" name="file_b" required accept="{{ run.allowed_extensions_b|join:',' }}">
+            </div>
+        </div>
+        <div class="form-actions" style="margin-top:16px">
+            <div></div>
+            <button type="submit" class="btn btn-primary">Ejecutar conciliación</button>
+        </div>
+    </div>
+</form>
+{% endif %}
+
+{% if run.recent_jobs %}
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Corridas recientes</h3>
+        <div class="step-summary-list">
+            {% for item in run.recent_jobs %}
+            <a href="{% url 'file_match:run_result' project_slug=project.slug job_id=item.id %}" class="step-summary-card">
+                <div>
+                    <h4 class="verdict-tone--{{ item.verdict_tone }}">{{ item.verdict_label }}</h4>
+                    <p>{{ item.file_a_name }} · {{ item.file_b_name }} · v{{ item.published_version_number }}
+                        {% if item.match_pct != None %} · {{ item.match_pct }}%{% endif %}
+                    </p>
+                </div>
+                <span class="flow-card-status flow-card-status--draft">{{ item.created_at|date:"d/m H:i" }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        <p class="hint" style="margin-top:10px">
+            <a href="{% url 'file_match:history_hub' project_slug=project.slug %}">Ver historial completo →</a>
+        </p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

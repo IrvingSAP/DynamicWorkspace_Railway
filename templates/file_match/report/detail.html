@@ -1,0 +1,223 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Informe — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<style>
+.verdict-banner{
+  display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+  padding:14px 16px; border-radius:10px; margin-bottom:14px;
+  border:1px solid rgba(28,25,23,.1); background:#f6f4f0;
+}
+.verdict-banner.is-passed{ background:rgba(21,128,61,.08); border-color:rgba(21,128,61,.25); }
+.verdict-banner.is-failed{ background:rgba(185,28,28,.08); border-color:rgba(185,28,28,.2); }
+.verdict-banner.is-partial{ background:rgba(180,83,9,.1); border-color:rgba(180,83,9,.25); }
+.verdict-banner h3{ margin:0; font-size:1.1rem; }
+.verdict-banner p{ margin:4px 0 0; font-size:13px; color:#44403c; }
+.filter-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+.filter-chip{
+  display:inline-flex; padding:4px 10px; border-radius:999px; border:1px solid rgba(28,25,23,.1);
+  font-size:12px; font-weight:600; background:#fdfcfa; text-decoration:none; color:inherit;
+}
+.filter-chip.is-active{ background:rgba(15,92,76,.08); border-color:rgba(15,92,76,.35); color:#0f5c4c; }
+.bucket-table{ width:100%; border-collapse:collapse; font-size:13px; }
+.bucket-table th,.bucket-table td{ padding:8px 10px; border-bottom:1px solid rgba(28,25,23,.08); text-align:left; vertical-align:top; }
+.bucket-table th{ font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:#a8a29e; background:#f6f4f0; }
+.masked{ font-family:ui-monospace,monospace; color:#78716c; }
+.meta-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(12rem,1fr)); gap:10px; font-size:13px; }
+.meta-grid dt{ font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:#a8a29e; margin:0; }
+.meta-grid dd{ margin:2px 0 0; font-family:ui-monospace,monospace; font-size:12px; }
+.expired-banner{
+  margin-bottom:14px; padding:10px 12px; border-radius:8px;
+  background:rgba(180,83,9,.1); color:#9a3412; font-size:13px;
+}
+</style>
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:run_hub' project_slug=project.slug %}">Ejecutar</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{{ result_url }}">Resultado</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Informe</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Job">
+    <span class="label">Job</span>
+    <span class="cell-badge">{{ view.id|slice:":8" }}…</span>
+    <span class="hint">· definición v{{ view.published_version_number }}</span>
+    <span class="hint">· TTL {{ view.ttl_label }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Módulo 6 · <span class="role-badge">Report</span></p>
+        <h2>Informe de conciliación</h2>
+        <p>Evidencia del job: resumen, diferencias y descargas.
+            {% if view.executed_by %}Ejecutado por <code>{{ view.executed_by }}</code>.{% endif %}
+        </p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_match:report_detail_help' project_slug=project.slug job_id=view.id as report_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=report_help_url %}
+        <a href="{{ result_url }}" class="btn btn-secondary">← Resultado</a>
+        {% if view.can_certificate %}
+        <a href="{{ view.certificate_url }}" class="btn btn-primary">Certificado</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if view.is_expired %}
+<div class="expired-banner">
+    <strong>Evidencia expirada.</strong>
+    La evidencia de descarga expiró. Los metadatos del job siguen disponibles; JSON y CSV ya no se sirven.
+</div>
+{% endif %}
+
+<div class="verdict-banner {% if view.is_success %}is-passed{% elif view.is_partial %}is-partial{% else %}is-failed{% endif %}">
+    <div>
+        <h3>Veredicto: {{ view.verdict_label }} <code>({{ view.verdict }})</code></h3>
+        <p>
+            Filas A/B {{ view.metrics.rows_a|default:0 }} / {{ view.metrics.rows_b|default:0 }}
+            · matched {{ view.metrics.matched|default:0 }}
+            · mismatch {{ view.metrics.value_mismatch|default:0 }}
+            · {{ view.metrics.match_pct|default:"—" }}%
+            {% if view.duration_ms %} · {{ view.duration_ms }} ms{% endif %}
+        </p>
+    </div>
+    {% if view.can_reveal_values %}
+    <form method="get" style="margin:0">
+        {% if view.bucket_filter %}<input type="hidden" name="bucket" value="{{ view.bucket_filter }}">{% endif %}
+        <label class="check-row" style="margin:0">
+            <input type="checkbox" name="reveal" value="1" {% if view.reveal %}checked{% endif %}
+                   onchange="this.form.submit()">
+            Mostrar valores
+        </label>
+    </form>
+    {% endif %}
+</div>
+
+<div class="stats-strip" aria-label="Métricas">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Matched</p>
+        <p class="stat-value">{{ view.metrics.matched|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Mismatch</p>
+        <p class="stat-value">{{ view.metrics.value_mismatch|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Only A / B</p>
+        <p class="stat-value" style="font-size:16px">{{ view.metrics.only_a|default:0 }} / {{ view.metrics.only_b|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Duplicados</p>
+        <p class="stat-value">{{ view.metrics.duplicate_key|default:0 }}</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Metadatos</h3>
+        <dl class="meta-grid">
+            <div><dt>Archivo A</dt><dd>{{ view.file_a_name }} ({{ view.file_a_size_label }})</dd></div>
+            <div><dt>Hash A</dt><dd>{{ view.file_a_hash|default:"—"|slice:":12" }}{% if view.file_a_hash %}…{% endif %}</dd></div>
+            <div><dt>Archivo B</dt><dd>{{ view.file_b_name }} ({{ view.file_b_size_label }})</dd></div>
+            <div><dt>Hash B</dt><dd>{{ view.file_b_hash|default:"—"|slice:":12" }}{% if view.file_b_hash %}…{% endif %}</dd></div>
+            <div><dt>Ejecutor</dt><dd>{{ view.executed_by|default:"—" }}</dd></div>
+            <div><dt>Finalizado</dt><dd>{{ view.finished_at|date:"Y-m-d H:i"|default:"—" }}</dd></div>
+        </dl>
+    </div>
+</div>
+
+{% if view.can_view_detail %}
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Diferencias</h3>
+        <div class="filter-row" role="group" aria-label="Filtro bucket">
+            <a class="filter-chip{% if not view.bucket_filter %} is-active{% endif %}"
+               href="?{% if view.reveal %}reveal=1{% endif %}">Todos</a>
+            <a class="filter-chip{% if view.bucket_filter == 'value_mismatch' %} is-active{% endif %}"
+               href="?bucket=value_mismatch{% if view.reveal %}&reveal=1{% endif %}">value_mismatch</a>
+            <a class="filter-chip{% if view.bucket_filter == 'only_a' %} is-active{% endif %}"
+               href="?bucket=only_a{% if view.reveal %}&reveal=1{% endif %}">only_a</a>
+            <a class="filter-chip{% if view.bucket_filter == 'only_b' %} is-active{% endif %}"
+               href="?bucket=only_b{% if view.reveal %}&reveal=1{% endif %}">only_b</a>
+            <a class="filter-chip{% if view.bucket_filter == 'duplicate_key' %} is-active{% endif %}"
+               href="?bucket=duplicate_key{% if view.reveal %}&reveal=1{% endif %}">duplicate_key</a>
+        </div>
+        {% if view.detail_rows %}
+        <table class="bucket-table">
+            <thead><tr><th>Bucket</th><th>Clave</th><th>Diff / nota</th></tr></thead>
+            <tbody>
+                {% for item in view.detail_rows %}
+                <tr>
+                    <td><code>{{ item.bucket }}</code></td>
+                    <td>{{ item.key }}</td>
+                    <td>
+                        {% if item.diffs %}
+                            {% for d in item.diffs %}
+                                {{ d.a }}=<span class="masked">{{ d.value_a_display }}</span>
+                                ≠ {{ d.b }}=<span class="masked">{{ d.value_b_display }}</span>{% if not forloop.last %}; {% endif %}
+                            {% endfor %}
+                        {% elif item.bucket == "duplicate_key" %}
+                            A×{{ item.count_a }} · B×{{ item.count_b }}
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if view.detail_total_available > view.detail_count %}
+        <p class="hint">Vista previa limitada a {{ view.detail_count }} filas. Descargue CSV/JSON para el detalle completo.</p>
+        {% endif %}
+        {% else %}
+        <p class="hint">Sin filas para este filtro.</p>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="panel">
+    <div class="panel-body">
+        <div class="note-box">Su rol solo puede ver metadatos y el certificado (sin detalle de filas).</div>
+    </div>
+</div>
+{% endif %}
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Descargas</h3>
+        <div class="page-actions">
+            {% if view.can_download and view.downloads.report %}
+            <a href="{{ view.downloads.report }}" class="btn btn-secondary">Informe JSON</a>
+            {% endif %}
+            {% if view.can_download and view.downloads.diff %}
+            <a href="{{ view.downloads.diff }}" class="btn btn-secondary">Diferencias CSV</a>
+            {% endif %}
+            {% if view.can_certificate %}
+            <a href="{{ view.certificate_url }}" class="btn btn-secondary">Certificado</a>
+            {% endif %}
+            <a href="{% url 'file_match:history_hub' project_slug=project.slug %}" class="btn btn-secondary">Historial</a>
+        </div>
+        {% if not view.can_download and not view.is_expired %}
+        <p class="hint" style="margin-top:8px">No tiene permiso de descarga o no hay archivos de informe.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

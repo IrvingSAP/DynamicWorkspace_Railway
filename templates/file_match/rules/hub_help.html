@@ -1,0 +1,47 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Reglas — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:rules_hub' project_slug=project.slug %}">Reglas</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_match/rules/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Ayuda · Módulo 3</p>
+        <h2>Cómo usar las reglas de cruce</h2>
+        <p>Definen cómo se emparejan filas de A y B y qué valores se contrastan.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:rules_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al hub</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <ul class="hint" style="margin:0; padding-left:1.2rem">
+            <li><strong>Clave</strong> — uno o más pares A↔B (compuesta = varios pares en orden).</li>
+            <li><strong>Comparar</strong> — cero o más pares; vacío = solo presencia.</li>
+            <li><strong>Normalización MVP</strong> — trim y case-fold en la clave.</li>
+            <li>Cardinalidad fija <strong>1:1</strong>.</li>
+            <li>Los selects usan los <code>name</code> de los perfiles A y B.</li>
+            <li>Publicar (M4) congela A + B + estas reglas.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

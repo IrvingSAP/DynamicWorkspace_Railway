@@ -1,0 +1,258 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — FILE MATCH{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Guía de trabajo · <span class="role-badge">UF</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>Cómo funciona FILE MATCH</h2>
+        <p>
+            <strong>FILE MATCH</strong> (Conciliador) cruza un archivo <strong>A</strong> con un archivo <strong>B</strong>
+            por clave (1:1) y entrega un <strong>informe de diferencias</strong> — sin generar un tercer archivo de negocio.
+        </p>
+        <p>
+            Esta página describe el <strong>flujo completo</strong>. En cada pantalla también hay ayuda contextual
+            (botón <span class="mono">?</span> / Ayuda) con el detalle de esa vista.
+        </p>
+    </div>
+    <aside class="guide-hero-aside" aria-label="Ruta rápida">
+        <h3>Ruta rápida</h3>
+        <ol class="guide-quick-path">
+            <li>Cree un proyecto y defina Perfil A y Perfil B.</li>
+            <li>Configure reglas de cruce, publique la versión.</li>
+            <li>Suba A + B, concilie y revise informe / historial.</li>
+        </ol>
+    </aside>
+</div>
+
+<div class="guide-role-strip" aria-label="Roles en proyectos FILE MATCH">
+    <span class="label">Roles</span>
+    <span class="guide-role-item"><span class="role-code role-code--pa">PA</span><span>Admin — define, publica, miembros, bridge</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--ed">ED</span><span>Editor — ajusta perfiles/reglas y concilia</span></span>
+    <span class="guide-role-item"><span class="role-code">GE</span><span>Ejecutar — concilia y descarga informe</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--co">CO</span><span>Consulta — historial/metadatos; sin filas</span></span>
+</div>
+
+<div class="guide-layout">
+    <nav class="guide-spine" aria-label="Índice de la guía">
+        <h3>Secciones</h3>
+        <nav>
+            <a href="#que-es">Qué es</a>
+            <a href="#funcion">Función</a>
+            <a href="#no-es">Qué no es</a>
+            <a href="#flujo">Flujo de trabajo</a>
+            <a href="#modulos">Módulos</a>
+            <a href="#fronteras">Frente a otras apps</a>
+            <a href="#casos">Casos típicos</a>
+        </nav>
+    </nav>
+
+    <div class="guide-flows">
+        <article class="flow-card" id="que-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">1</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué es FILE MATCH</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    Es el aplicativo de DynamicWorkspace para equipos de
+                    <strong>tesorería, control, operaciones e integradores</strong>
+                    que necesitan <strong>cuadrar</strong> dos extractos o listados
+                    (banco vs ERP, nómina vs pagos) con evidencia auditable.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>En una frase</h4>
+                        <p>
+                            Un <strong>conciliador de archivos</strong>: dos orígenes, cero destino de negocio,
+                            informe de matched / only_a / only_b / mismatch.
+                        </p>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Resultado que entrega</h4>
+                        <ul>
+                            <li>Veredicto: cuadra / no cuadra / parcial.</li>
+                            <li>Informe y descarga JSON/CSV de diferencias (roles con permiso).</li>
+                            <li>Certificado ligero e historial filtrable.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="funcion">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">2</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Cuál es la función de esta app</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>Función principal:</strong> leer A y B con los parsers DMS → cruzar por clave 1:1 →
+                    comparar campos seleccionados → emitir informe contra la definición <strong>publicada</strong>.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Problema que resuelve</h4>
+                        <ul>
+                            <li>Cuadres en Excel / VLOOKUP frágiles y poco auditables.</li>
+                            <li>Falta de versión de reglas y de quién concilió qué.</li>
+                            <li>Necesidad de evidencia (hashes, veredicto, TTL de descargas).</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Qué ganas</h4>
+                        <ul>
+                            <li>Misma definición reutilizable cada ciclo.</li>
+                            <li>Roles claros (diseñar vs ejecutar vs consultar).</li>
+                            <li>Opcional: exigir FILE GATE en A y/o B antes de conciliar.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="no-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">3</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué no es (y qué sí usar en su lugar)</h3>
+                </header>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>FILE MATCH no…</h4>
+                        <ul>
+                            <li>No genera un tercer archivo “ya conciliado”.</li>
+                            <li>No es un validador de un solo archivo (solo gate).</li>
+                            <li>No emite layout de banco ni hace fuzzy match / IA en el MVP.</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Usa otra app si…</h4>
+                        <ul>
+                            <li><strong>FILE GATE</strong> — validar que un archivo cumple un contrato.</li>
+                            <li><strong>Reverse Studio</strong> — emitir layout rígido desde planilla.</li>
+                            <li><strong>FilePipe</strong> — ETL genérico origen → destino.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="flujo">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">4</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Flujo de trabajo</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    Camino fijo del producto: <strong>definir A y B → publicar → conciliar → auditar</strong>.
+                </p>
+                <ol>
+                    <li>Crear proyecto Conciliador y (si aplica) asignar miembros.</li>
+                    <li>Completar Perfil A y Perfil B (tipo, captura, campos, reglas de contenido).</li>
+                    <li>Definir claves de cruce y campos a comparar; publicar.</li>
+                    <li>(Opcional) Activar integración FILE GATE para A y/o B.</li>
+                    <li>Subir A + B, ejecutar, revisar informe e historial.</li>
+                </ol>
+                <p class="hint" style="margin-top:12px">
+                    <a href="{% url 'file_match:project_list' %}">Ir a proyectos Conciliador →</a>
+                </p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="modulos">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">5</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Módulos del producto</h3>
+                </header>
+                <table class="help-table">
+                    <thead><tr><th>#</th><th>Módulo</th><th>Qué hace</th></tr></thead>
+                    <tbody>
+                        <tr><td>1</td><td>Perfil A</td><td>Origen de referencia (SourceProfile)</td></tr>
+                        <tr><td>2</td><td>Perfil B</td><td>Contraparte (FileMatchSourceB)</td></tr>
+                        <tr><td>3</td><td>Reglas</td><td>Clave 1:1, compare, normalización</td></tr>
+                        <tr><td>4</td><td>Publicar</td><td>Congela A + B + reglas</td></tr>
+                        <tr><td>5</td><td>Ejecutar</td><td>Upload A+B y job de conciliación</td></tr>
+                        <tr><td>6</td><td>Informe</td><td>Evidencia, ofuscación CO, certificado, TTL</td></tr>
+                        <tr><td>7</td><td>Historial</td><td>Listado filtrable de conciliaciones</td></tr>
+                        <tr><td>8</td><td>Bridge GATE</td><td>Pre-check opcional por hash A/B</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="flow-card" id="fronteras">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">6</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Frente a otras apps</h3>
+                </header>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Comparte con FilePipe</h4>
+                        <p>Parsers, intake, catálogos y versionado — usados dos veces (A y B).</p>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Complementa FILE GATE</h4>
+                        <p>Valide A y/o B en GATE; Match solo cruza si el bridge lo exige y hay <code>passed</code>.</p>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="casos">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">7</span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Casos típicos</h3>
+                </header>
+                <ul>
+                    <li>Extracto bancario (A) vs movimientos ERP (B).</li>
+                    <li>Nómina pagada (A) vs listado del banco (B).</li>
+                    <li>Inventario proveedor (A) vs stock interno (B).</li>
+                </ul>
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}

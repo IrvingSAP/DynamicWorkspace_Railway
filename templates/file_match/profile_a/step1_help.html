@@ -1,0 +1,75 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Paso 1 — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_step1' project_slug=project.slug %}">Paso 1</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Módulo 1 · paso 1 · ayuda</p>
+        <h2>tipo de archivo A</h2>
+        <p>Fija el formato, la codificación y el fin de línea con los que FILE MATCH interpretará cada archivo a validar.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:profile_a_step1' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 1</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué decide este paso</h3>
+        <p class="hint">Sin tipo de archivo no se puede publicar el contrato. La elección condiciona la pantalla de campos (paso 4): posiciones fijas, columnas delimitadas, hoja Excel, JSON o XML.</p>
+        <table class="help-table">
+            <thead><tr><th>Elemento</th><th>Efecto en la validación</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Tipo de archivo</td>
+                    <td>Formato esperado (<code>txt_fixed</code>, <code>csv</code>, <code>txt_delimited</code>, <code>xlsx</code>, …). Las extensiones permitidas al conciliar salen de este tipo.</td>
+                </tr>
+                <tr>
+                    <td>Encoding</td>
+                    <td>Cómo se leen los bytes del archivo. Un encoding incorrecto suele producir caracteres inválidos o rechazos de contenido.</td>
+                </tr>
+                <tr>
+                    <td>Fin de línea</td>
+                    <td>Cómo se parten las líneas (<code>LF</code>, <code>CRLF</code> o auto). Debe coincidir con el archivo real del proveedor.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Buenas prácticas</h3>
+        <ul class="hint">
+            <li>Elija el tipo que usa el proveedor; no “el más flexible”.</li>
+            <li>Si ya hay campos definidos y cambia el tipo, revise el paso 4: la estructura anterior puede quedar inválida.</li>
+            <li>Solo <code>PA</code> y <code>ED</code> pueden guardar. El resto ve el paso en solo lectura.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,6 @@
+{# Contexto: current_section (keys|compare|normalize), project #}
+<nav class="wizard-stepper" aria-label="Secciones de reglas">
+    <a href="{% url 'file_match:rules_keys' project_slug=project.slug %}" class="wizard-step{% if current_section == 'keys' %} is-active{% elif current_section == 'compare' or current_section == 'normalize' %} is-done{% endif %}"><span class="wizard-step-num">{% if current_section == 'compare' or current_section == 'normalize' %}✓{% else %}1{% endif %}</span> Claves</a>
+    <a href="{% url 'file_match:rules_compare' project_slug=project.slug %}" class="wizard-step{% if current_section == 'compare' %} is-active{% elif current_section == 'normalize' %} is-done{% endif %}"><span class="wizard-step-num">{% if current_section == 'normalize' %}✓{% else %}2{% endif %}</span> Comparar</a>
+    <a href="{% url 'file_match:rules_normalize' project_slug=project.slug %}" class="wizard-step{% if current_section == 'normalize' %} is-active{% endif %}"><span class="wizard-step-num">3</span> Normalize</a>
+</nav>

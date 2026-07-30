@@ -1,0 +1,75 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Normalización — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:rules_hub' project_slug=project.slug %}">Reglas</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Normalización</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_match/rules/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Reglas · Sección 3</p>
+        <h2>Normalización</h2>
+        <p>Se aplica antes del match 1:1. Sin tolerancia numérica ni fuzzy en MVP.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:rules_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
+    </div>
+</div>
+
+{% include "file_match/rules/_section_nav.html" %}
+
+<div class="panel"><div class="panel-body">
+    <form method="post" action="{{ rules_save_url }}" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="normalize_present" value="1">
+        <input type="hidden" name="next" value="{% url 'file_match:rules_hub' project_slug=project.slug %}">
+        <h3 class="form-section-title">Opciones MVP</h3>
+        <label class="check-row">
+            <input type="checkbox" name="trim" value="1"{% if rules.normalize.trim %} checked{% endif %}{% if not can_edit_source %} disabled{% endif %}>
+            Recortar espacios (<code>trim</code>) en valores de clave
+        </label>
+        <label class="check-row">
+            <input type="checkbox" name="case_fold_keys" value="1"{% if rules.normalize.case_fold_keys %} checked{% endif %}{% if not can_edit_source %} disabled{% endif %}>
+            Ignorar mayúsculas/minúsculas en clave (<code>case_fold_keys</code>)
+        </label>
+
+        <h3 class="form-section-title" style="margin-top:20px">Duplicados</h3>
+        <div class="field" style="max-width:28rem">
+            <label for="on_duplicate_key">Si la clave se repite en un lado</label>
+            <select id="on_duplicate_key" name="on_duplicate_key"{% if not can_edit_source %} disabled{% endif %}>
+                <option value="bucket"{% if rules.on_duplicate_key == 'bucket' %} selected{% endif %}>Marcar bucket duplicate_key</option>
+                <option value="fail"{% if rules.on_duplicate_key == 'fail' %} selected{% endif %}>Fallar el job (failed)</option>
+            </select>
+        </div>
+        <p class="hint">No se inventa un match arbitrario entre duplicados.</p>
+
+        <div class="form-actions">
+            <a href="{% url 'file_match:rules_compare' project_slug=project.slug %}" class="btn btn-secondary">Atrás</a>
+            <div class="form-actions-right">
+                {% if can_edit_source %}
+                <button type="submit" class="btn btn-ghost" name="next" value="{% url 'file_match:rules_normalize' project_slug=project.slug %}">Guardar borrador</button>
+                <button type="submit" class="btn btn-primary">Finalizar → Hub</button>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+</div></div>
+{% endblock %}
