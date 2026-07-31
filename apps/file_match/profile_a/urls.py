@@ -5,6 +5,47 @@ from apps.file_match.profile_a import views
 urlpatterns = [
     path("", views.hub, name="profile_a_hub"),
     path("ayuda/", views.hub_help, name="profile_a_hub_help"),
+    path("importar/", views.profile_a_seed_hub, name="profile_a_seed_hub"),
+    path(
+        "importar/ayuda/",
+        views.profile_a_seed_hub_help,
+        name="profile_a_seed_hub_help",
+    ),
+    path(
+        "importar/origen/",
+        views.profile_a_seed_picker,
+        name="profile_a_seed_picker",
+    ),
+    path(
+        "importar/origen/ayuda/",
+        views.profile_a_seed_picker_help,
+        name="profile_a_seed_picker_help",
+    ),
+    path(
+        "importar/confirmar/",
+        views.profile_a_seed_apply,
+        name="profile_a_seed_apply",
+    ),
+    path(
+        "importar/confirmar/ayuda/",
+        views.profile_a_seed_apply_help,
+        name="profile_a_seed_apply_help",
+    ),
+    path(
+        "importar/historial/",
+        views.profile_a_seed_history,
+        name="profile_a_seed_history",
+    ),
+    path(
+        "importar/historial/ayuda/",
+        views.profile_a_seed_history_help,
+        name="profile_a_seed_history_help",
+    ),
+    path(
+        "importar/historial/<uuid:event_id>/",
+        views.profile_a_seed_history_detail,
+        name="profile_a_seed_history_detail",
+    ),
     path("guardar/", views.profile_a_save, name="profile_a_save"),
     path("paso/1/ayuda/", views.step1_help, name="profile_a_step1_help"),
     path("paso/1/", views.step1_file_type, name="profile_a_step1"),

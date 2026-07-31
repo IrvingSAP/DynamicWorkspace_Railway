@@ -1,0 +1,38 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Elegir origen — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Elegir origen</h2>
+        <p>Qué es el Módulo 2 del Sembrador de perfiles (PROFILE SEED).</p>
+    </div>
+    <div class="page-actions">
+        {% if can_seed_import %}
+        <a class="btn btn-secondary" href="{% url 'file_match:profile_a_seed_picker' project_slug=project.slug %}">← Volver</a>
+        {% else %}
+        <a class="btn btn-secondary" href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">← Perfil A</a>
+        {% endif %}
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>Aquí elige un <strong>origen publicado</strong> (P0: FILE GATE con esquema publicado) de su compañía.</li>
+    <li>Solo se listan proyectos que puede <em>ver</em> y que tienen versión publicada — no borradores.</li>
+    <li>No publica nada. No es el bridge FILE GATE (hash) ni STRUCTURE SCOUT (muestra).</li>
+    <li>Roles: PA / ED del <strong>destino</strong> Match abren el flujo; en el origen basta visibilidad.</li>
+    <li>El siguiente paso (Módulo 3) mostrará preview y sembrará el borrador Perfil A.</li>
+</ul>
+</div></div>
+{% endblock %}

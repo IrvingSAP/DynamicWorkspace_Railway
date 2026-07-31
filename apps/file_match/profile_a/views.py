@@ -14,6 +14,11 @@ from apps.dms.source_profile.services import (
 )
 from apps.file_match.profile_a.services import profile_a_wizard_service
 from apps.file_match.projects.services import match_project_service
+from apps.profile_seed.services import (
+    apply_seed_service,
+    profile_seed_service,
+    seed_history_service,
+)
 from apps.projects.services import project_service
 
 STEP4_TEMPLATES = {
@@ -41,6 +46,7 @@ def _base_context(request, project, current_step: int | None = None) -> dict:
     membership = project_service.get_membership(request.user, project)
     wizard = profile_a_wizard_service.get_wizard_context(project, membership)
     source = source_persistence_service.get_source_dict(project)
+    seed_ctx = profile_seed_service.get_profile_a_seed_context(request.user, project)
     return {
         "project": project,
         "wizard": wizard,
@@ -50,10 +56,13 @@ def _base_context(request, project, current_step: int | None = None) -> dict:
         "file_match_nav_open": True,
         "source": source,
         "source_json": source_profile_service.source_context(project)["source_json"],
-        "can_edit_source": source_persistence_service.user_can_edit_source(request.user, project),
+        "can_edit_source": source_persistence_service.user_can_edit_source(
+            request.user, project
+        ),
         "source_save_url": reverse(
             "file_match:profile_a_save", kwargs={"project_slug": project.slug}
         ),
+        **seed_ctx,
     }
 
 
@@ -74,6 +83,187 @@ def hub(request, project_slug: str):
 @_profile_a_view
 def hub_help(request, project_slug: str):
     return _render(request, project_slug, "file_match/profile_a/hub_help.html")
+
+
+@_profile_a_view
+def profile_a_seed_hub(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_match:project_list")
+    if not profile_seed_service.user_can_import(request.user, project):
+        messages.error(request, profile_seed_service.MSG_NO_IMPORT)
+        return redirect("file_match:profile_a_hub", project_slug=project_slug)
+    return _render(request, project_slug, "profile_seed/seed_entry.html")
+
+
+@_profile_a_view
+def profile_a_seed_hub_help(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_match:project_list")
+    return _render(request, project_slug, "profile_seed/seed_entry_help.html")
+
+
+@_profile_a_view
+def profile_a_seed_picker(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_match:project_list")
+    if not profile_seed_service.user_can_import(request.user, project):
+        messages.error(request, profile_seed_service.MSG_NO_IMPORT)
+        return redirect("file_match:profile_a_hub", project_slug=project_slug)
+
+    source_kind = (request.GET.get("kind") or "").strip() or None
+    source_id_raw = (request.GET.get("source_id") or "").strip()
+    source_id = None
+    if source_id_raw:
+        try:
+            source_id = int(source_id_raw)
+        except ValueError:
+            source_id = -1
+
+    picker = profile_seed_service.get_source_picker_context(
+        request.user,
+        project,
+        source_kind=source_kind,
+        source_id=source_id,
+    )
+    if picker.get("invalid_source"):
+        messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
+    if not picker.get("source_kind_supported"):
+        messages.warning(request, profile_seed_service.MSG_KIND_UNSUPPORTED)
+
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/source_picker.html",
+        **picker,
+    )
+
+
+@_profile_a_view
+def profile_a_seed_picker_help(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_match:project_list")
+    return _render(request, project_slug, "profile_seed/source_picker_help.html")
+
+
+def _parse_source_id(raw: str | None) -> int | None:
+    value = (raw or "").strip()
+    if not value:
+        return None
+    try:
+        return int(value)
+    except ValueError:
+        return -1
+
+
+@_profile_a_view
+@require_http_methods(["GET", "POST"])
+def profile_a_seed_apply(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_match:project_list")
+    if not profile_seed_service.user_can_import(request.user, project):
+        messages.error(request, profile_seed_service.MSG_NO_IMPORT)
+        return redirect("file_match:profile_a_hub", project_slug=project_slug)
+
+    if request.method == "POST":
+        source_id = _parse_source_id(request.POST.get("source_id"))
+        action = (request.POST.get("action") or "").strip()
+        if action != "apply":
+            messages.error(request, apply_seed_service.MSG_APPLY_FAIL)
+            return redirect(
+                "file_match:profile_a_seed_picker", project_slug=project_slug
+            )
+        result = apply_seed_service.apply_seed_to_profile_a(
+            request.user, project, source_id=source_id
+        )
+        if result.ok:
+            messages.success(request, result.user_message)
+            return redirect("file_match:profile_a_hub", project_slug=project_slug)
+        messages.error(request, result.user_message)
+        if source_id and source_id > 0:
+            return redirect(
+                reverse(
+                    "file_match:profile_a_seed_apply",
+                    kwargs={"project_slug": project_slug},
+                )
+                + f"?source_id={source_id}"
+            )
+        return redirect("file_match:profile_a_seed_picker", project_slug=project_slug)
+
+    source_id = _parse_source_id(request.GET.get("source_id"))
+    if source_id is None or source_id < 0:
+        messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
+        return redirect("file_match:profile_a_seed_picker", project_slug=project_slug)
+
+    preview = apply_seed_service.get_apply_preview(request.user, project, source_id)
+    if preview is None:
+        messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
+        return redirect("file_match:profile_a_seed_picker", project_slug=project_slug)
+
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/apply_confirm.html",
+        **preview,
+    )
+
+
+@_profile_a_view
+def profile_a_seed_apply_help(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_match:project_list")
+    return _render(request, project_slug, "profile_seed/apply_confirm_help.html")
+
+
+@_profile_a_view
+def profile_a_seed_history(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_match:project_list")
+    status = (request.GET.get("status") or "").strip()
+    history = seed_history_service.get_history_hub_context(
+        request.user, project, status=status
+    )
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/history_hub.html",
+        **history,
+    )
+
+
+@_profile_a_view
+def profile_a_seed_history_detail(request, project_slug: str, event_id):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_match:project_list")
+    detail = seed_history_service.get_history_detail_context(
+        request.user, project, event_id
+    )
+    if detail is None:
+        messages.error(request, seed_history_service.MSG_EVENT_NOT_FOUND)
+        return redirect(
+            "file_match:profile_a_seed_history", project_slug=project_slug
+        )
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/history_detail.html",
+        **detail,
+    )
+
+
+@_profile_a_view
+def profile_a_seed_history_help(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_match:project_list")
+    return _render(request, project_slug, "profile_seed/history_help.html")
 
 
 @_profile_a_view

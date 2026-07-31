@@ -1,0 +1,34 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Historial de importaciones — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Historial de importaciones</h2>
+        <p>Qué es el Módulo 4 del Sembrador de perfiles (PROFILE SEED).</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_match:profile_a_seed_history' project_slug=project.slug %}">← Volver</a>
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>Cada importación (ok o fallida) deja un <strong>evento de auditoría</strong>: fecha, origen, versión, estado y mensaje.</li>
+    <li>PA / ED / GE / CO pueden <strong>consultar</strong> el historial del proyecto Match.</li>
+    <li>Solo PA / ED pueden <strong>importar de nuevo</strong>.</li>
+    <li>No es el historial de publicaciones Match, ni STRUCTURE SCOUT, ni el bridge FILE GATE.</li>
+    <li>No deshace un overwrite; el borrador actual se edita en Perfil A.</li>
+</ul>
+</div></div>
+{% endblock %}

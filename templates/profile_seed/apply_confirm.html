@@ -1,0 +1,147 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Confirmar importación — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}">Importar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Confirmar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_match/profile_a/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">PROFILE SEED · Confirmar</p>
+        <h2>Confirmar importación</h2>
+        <p>Se clonará la estructura publicada al <strong>borrador</strong> del Perfil A. No publica la definición Match.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_match:profile_a_seed_apply_help' project_slug=project.slug as seed_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=seed_help_url %}
+        <a href="{% url 'file_match:profile_a_seed_picker' project_slug=project.slug %}?source_id={{ source.id }}" class="btn btn-secondary">← Origen</a>
+    </div>
+</div>
+
+<div class="lifecycle-stepper" aria-label="Pasos del seed" style="margin-bottom:16px">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Importar estructura</p>
+        <ol class="lifecycle-steps">
+            <li><span class="lifecycle-step is-done"><span class="lifecycle-step-num">✓</span> Entrada</span></li>
+            <li><span class="lifecycle-step is-done"><span class="lifecycle-step-num">✓</span> Origen</span></li>
+            <li><span class="lifecycle-step is-active"><span class="lifecycle-step-num">3</span> Confirmar</span></li>
+        </ol>
+    </div>
+</div>
+
+{% if whitelist_error %}
+<div class="alert alert-warning" style="margin-bottom:16px">
+    {{ whitelist_error }}
+    <span class="hint" style="display:block;margin-top:6px">No se escribió el borrador.</span>
+</div>
+{% elif overwrite %}
+<div class="alert alert-warning" style="margin-bottom:16px">
+    El borrador del Perfil A ya tiene <strong>{{ target.field_count }}</strong> campos;
+    se sobrescribirán con <strong>{{ source.fields_count }}</strong> del origen.
+    No se publica la definición Match.
+</div>
+{% else %}
+<div class="alert alert-info" style="margin-bottom:16px">
+    Se llenará el borrador del Perfil A con <strong>{{ source.fields_count }}</strong> campos.
+    El borrador actual está vacío.
+</div>
+{% endif %}
+
+<div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="panel">
+        <div class="panel-body">
+            <h3 class="form-section-title">Origen (publicado)</h3>
+            <dl style="display:grid;grid-template-columns:110px 1fr;gap:6px 12px;font-size:14px;margin:0">
+                <dt class="hint">App</dt>
+                <dd style="margin:0">{{ source.kind_label }} · {{ source.slot_label }}</dd>
+                <dt class="hint">Proyecto</dt>
+                <dd style="margin:0"><span class="cell-badge">{{ source.slug }}</span> — {{ source.name }}</dd>
+                <dt class="hint">Versión</dt>
+                <dd style="margin:0">{{ source.version_label }}{% if source.published_at %} · {{ source.published_at|date:"d M Y" }}{% endif %}</dd>
+                <dt class="hint">Tipo</dt>
+                <dd style="margin:0">{{ source.file_type_code }}</dd>
+                <dt class="hint">Encoding</dt>
+                <dd style="margin:0">
+                    {% if source.encoding_code %}{{ source.encoding_code }}{% else %}—{% endif %}
+                    {% if source.delimiter %} · delim <code>{{ source.delimiter }}</code>{% endif %}
+                </dd>
+            </dl>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-body">
+            <h3 class="form-section-title">Destino (borrador)</h3>
+            <dl style="display:grid;grid-template-columns:110px 1fr;gap:6px 12px;font-size:14px;margin:0">
+                <dt class="hint">App</dt>
+                <dd style="margin:0">{{ target_kind_label }} · {{ target.slot_label }}</dd>
+                <dt class="hint">Proyecto</dt>
+                <dd style="margin:0"><span class="cell-badge">{{ target.slug }}</span> — {{ target.name }}</dd>
+                <dt class="hint">Campos hoy</dt>
+                <dd style="margin:0">{{ target.field_count }}</dd>
+                <dt class="hint">Efecto</dt>
+                <dd style="margin:0">Solo borrador — publicar Match es otro módulo</dd>
+            </dl>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Campos a importar (muestra)</h3>
+        <p class="hint">{{ source.fields_count }} campos en total</p>
+        {% if source.field_names_sample %}
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+            {% for name in source.field_names_sample %}
+            <span class="cell-badge">{{ name }}</span>
+            {% endfor %}
+            {% if source.fields_count > source.field_names_sample|length %}
+            <span class="hint">…</span>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="page-actions" style="margin-top:16px">
+            {% if can_apply %}
+            <form method="post" style="display:inline">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="apply">
+                <input type="hidden" name="source_id" value="{{ source.id }}">
+                <button type="submit" class="btn btn-primary">Sembrar borrador</button>
+            </form>
+            {% else %}
+            <span class="btn btn-primary" aria-disabled="true" title="No se puede importar este origen">Sembrar borrador</span>
+            {% endif %}
+            <a href="{% url 'file_match:profile_a_seed_picker' project_slug=project.slug %}?kind=file_gate&source_id={{ source.id }}" class="btn btn-secondary">← Cambiar origen</a>
+            <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+        <p class="hint" style="margin-top:10px">Se registra un evento de auditoría. No publica la definición Match.</p>
+    </div>
+</div>
+{% endblock %}

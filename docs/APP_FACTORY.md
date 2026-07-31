@@ -98,8 +98,8 @@ Cada aplicativo nuevo ≈ un nuevo `project_kind` (o un módulo sobre un kind ex
 | — | **Validador de archivos** | **Hecho** — [`FILE_GATE.md`](FILE_GATE.md) |
 | — | **Reverse Studio** | **Hecho** — [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) |
 | — | **Conciliador de archivos** | **Hecho** — [`FILE_MATCH.md`](FILE_MATCH.md) |
-| — | **Explorador de estructura** | **MVP en rama** — [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) (`feature/structure-scout`) |
-| **1 (siguiente)** | **Sembrador de perfiles** | Propuesta — [`PROFILE_SEED.md`](PROFILE_SEED.md) |
+| — | **Explorador de estructura** | **Hecho** — [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) |
+| **1 (en curso)** | **Sembrador de perfiles** | MVP P0 M1–M4 · `feature/profile-seed` — [`PROFILE_SEED.md`](PROFILE_SEED.md) · [`ps_integration.md`](definition_app_PROFILE_SEED/ps_integration.md) |
 | 2 | **Catálogos / maestros** | Propuesta — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §5 |
 | 3 | **Formularios de captura** | Abre el producto a usuarios que no manejan archivos |
 | 4 | **Scheduling / API** | Roadmap DMS Fase 3 |
@@ -139,8 +139,8 @@ Si la respuesta es “sí” a 1–4, conviene un doc hermano al estilo `DataMap
 | Validador de archivos | **Hecho (MVP M1–M6)** — [`FILE_GATE.md`](FILE_GATE.md) · `apps/file_gate/` · `main` |
 | Reverse Studio | **Hecho (MVP M1–M7 + bridge)** — [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) · `apps/reverse_studio/` · `main` |
 | Conciliador de archivos | **Hecho (MVP M1–M8 + bridge)** — [`FILE_MATCH.md`](FILE_MATCH.md) · `apps/file_match/` · `main` |
-| Explorador de estructura | **MVP en rama (M1–M7)** — [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) · `apps/structure_scout/` · `feature/structure-scout` |
-| Sembrador de perfiles | **Propuesta / siguiente** — [`PROFILE_SEED.md`](PROFILE_SEED.md) · [`definition_app_PROFILE_SEED/`](definition_app_PROFILE_SEED/) · resumen [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §7 |
+| Explorador de estructura | **Hecho (MVP M1–M7)** — [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) · `apps/structure_scout/` · `main` |
+| Sembrador de perfiles | **MVP P0 en código** — [`PROFILE_SEED.md`](PROFILE_SEED.md) · [`ps_integration.md`](definition_app_PROFILE_SEED/ps_integration.md) · rama `feature/profile-seed` |
 | Catálogos / maestros | **Propuesta detallada** — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §5 (`MASTER_CATALOG`) |
 | Formularios de captura | Propuesta |
 | Checklists / inspecciones | Propuesta |

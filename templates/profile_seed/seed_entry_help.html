@@ -1,0 +1,38 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Importar estructura — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Importar estructura</h2>
+        <p>Qué es el Módulo 1 del Sembrador de perfiles (PROFILE SEED).</p>
+    </div>
+    <div class="page-actions">
+        {% if can_seed_import %}
+        <a class="btn btn-secondary" href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}">← Volver</a>
+        {% else %}
+        <a class="btn btn-secondary" href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">← Perfil A</a>
+        {% endif %}
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li><strong>Importar estructura</strong> copia un perfil o contrato <em>ya publicado</em> de otro proyecto al borrador de este Perfil A.</li>
+    <li>No publica la definición Match. No es el bridge FILE GATE (eso valida por hash). No es STRUCTURE SCOUT (eso parte de una muestra).</li>
+    <li>Roles: solo <strong>PA / ED</strong> del proyecto Match ven el CTA y entran al flujo.</li>
+    <li>Este paso solo confirma el <strong>destino</strong> (Match · Perfil A). Elegir origen es el siguiente módulo.</li>
+    <li>Prioridad P0 del producto: origen FILE GATE → este Perfil A.</li>
+</ul>
+</div></div>
+{% endblock %}

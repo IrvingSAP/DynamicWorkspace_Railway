@@ -1,0 +1,119 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Historial de importaciones — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Historial</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_match/profile_a/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">PROFILE SEED · Historial</p>
+        <h2>Historial de importaciones</h2>
+        <p>Semillas aplicadas a este proyecto (borrador Perfil A). Solo lectura.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_match:profile_a_seed_history_help' project_slug=project.slug as seed_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=seed_help_url %}
+        {% if can_seed_import %}
+        <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}" class="btn btn-primary">Importar estructura</a>
+        {% endif %}
+        <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-secondary">← Perfil A</a>
+    </div>
+</div>
+
+<form method="get" class="panel" style="margin-bottom:16px">
+    <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:12px;align-items:end">
+        <div class="field">
+            <label for="status">Estado</label>
+            <select id="status" name="status">
+                {% for value, label in status_filter_choices %}
+                <option value="{{ value }}"{% if status_filter == value %} selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-secondary">Filtrar</button>
+    </div>
+</form>
+
+{% if not has_any_history %}
+<div class="empty-state" style="margin-top:8px">
+    <h3>Sin importaciones aún</h3>
+    <p>{{ msg_no_events }}</p>
+    {% if can_seed_import %}
+    <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}" class="btn btn-primary">Importar estructura</a>
+    {% endif %}
+    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-secondary">← Perfil A</a>
+</div>
+{% elif not has_events %}
+<div class="empty-state" style="margin-top:8px">
+    <h3>Sin resultados</h3>
+    <p class="hint">No hay importaciones con el filtro seleccionado.</p>
+    <a href="{% url 'file_match:profile_a_seed_history' project_slug=project.slug %}" class="btn btn-secondary">Ver todas</a>
+</div>
+{% else %}
+<div class="panel" style="padding:0;overflow:hidden">
+    <div class="table-wrap" style="overflow-x:auto">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Origen</th>
+                    <th>Slot</th>
+                    <th>Estado</th>
+                    <th>Usuario</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in events %}
+                <tr>
+                    <td>{{ item.created_at|date:"d M Y · H:i" }}</td>
+                    <td>
+                        <span class="cell-badge">{{ item.source_slug }}</span>
+                        · {{ item.source_kind_label }}
+                        · {{ item.source_version_label }}
+                    </td>
+                    <td>{{ item.target_slot_label }}</td>
+                    <td>
+                        {% if item.status == "ok" %}
+                        <strong style="color:#1f6b4a">{{ item.status_label }}</strong>
+                        {% else %}
+                        <strong style="color:#8b2e2e">{{ item.status_label }}</strong>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.created_by_label }}</td>
+                    <td>
+                        <a href="{% url 'file_match:profile_a_seed_history_detail' project_slug=project.slug event_id=item.id %}">Ver</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
