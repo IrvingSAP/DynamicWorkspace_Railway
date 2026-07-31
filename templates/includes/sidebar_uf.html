@@ -1,4 +1,4 @@
-{# Navegación lateral UF — Worksheets + FilePipe + FILE GATE + Reverse Studio + FILE MATCH #}
+{# Navegación lateral UF — Worksheets + FilePipe + FILE GATE + Reverse Studio + FILE MATCH + STRUCTURE SCOUT #}
 <a href="{% url 'dashboard:home' %}" class="sidebar-link{% if app_nav_active == 'home' %} is-active{% endif %}" title="Inicio">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 6.5L8 2l6 4.5V13a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"/></svg>
     <span class="sidebar-link-label">Inicio</span>
@@ -62,5 +62,17 @@
     <div class="sidebar-nav-submenu" id="file-match-submenu">
         <a href="{% url 'file_match:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_match' %} is-active{% endif %}">Conciliador</a>
         <a href="{% url 'file_match:file_match_guide' %}" class="sidebar-sublink{% if app_nav_active == 'file_match_guide' %} is-active{% endif %}">Ayuda</a>
+    </div>
+</div>
+
+<div class="sidebar-nav-group{% if structure_scout_nav_open or app_nav_active == 'structure_scout' or app_nav_active == 'structure_scout_guide' %} is-open{% endif %}{% if app_nav_active == 'structure_scout' or app_nav_active == 'structure_scout_guide' %} is-active{% endif %}" data-nav-group="structure-scout">
+    <button type="button" class="sidebar-nav-group-toggle" title="STRUCTURE SCOUT" aria-expanded="{% if structure_scout_nav_open or app_nav_active == 'structure_scout' or app_nav_active == 'structure_scout_guide' %}true{% else %}false{% endif %}" aria-controls="structure-scout-submenu">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/><path d="M5.5 6.5h3M7 5v3"/></svg>
+        <span class="sidebar-link-label">STRUCTURE SCOUT</span>
+        <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="sidebar-nav-submenu" id="structure-scout-submenu">
+        <a href="{% url 'structure_scout:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'structure_scout' %} is-active{% endif %}">Explorador</a>
+        <a href="{% url 'structure_scout:structure_scout_guide' %}" class="sidebar-sublink{% if app_nav_active == 'structure_scout_guide' %} is-active{% endif %}">Ayuda</a>
     </div>
 </div>

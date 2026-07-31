@@ -1,0 +1,106 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Apply — Historial{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:history_hub' project_slug=project.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Apply</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    {% if membership %}
+    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    {% endif %}
+    <span class="cell-badge">{% if apply.status == 'ok' %}OK{% else %}Fallido{% endif %}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">STRUCTURE SCOUT · Historial</p>
+        <h2>Aplicación a destino</h2>
+        <p>Registro de siembra de borrador. No deshace ni re-aplica desde aquí.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'structure_scout:history_hub' project_slug=project.slug %}" class="btn btn-secondary">← Historial</a>
+    </div>
+</div>
+
+<div class="stats-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:16px 0">
+    <div class="panel"><div class="panel-body">
+        <p class="hint" style="margin:0;text-transform:uppercase;font-size:12px">Estado</p>
+        <p style="margin:4px 0 0;font-weight:600">{{ status_label }}</p>
+    </div></div>
+    <div class="panel"><div class="panel-body">
+        <p class="hint" style="margin:0;text-transform:uppercase;font-size:12px">Destino</p>
+        <p style="margin:4px 0 0;font-weight:600">{{ target_slug }}</p>
+    </div></div>
+    <div class="panel"><div class="panel-body">
+        <p class="hint" style="margin:0;text-transform:uppercase;font-size:12px">Kind</p>
+        <p style="margin:4px 0 0;font-weight:600">{{ kind_label }}</p>
+    </div></div>
+    <div class="panel"><div class="panel-body">
+        <p class="hint" style="margin:0;text-transform:uppercase;font-size:12px">Draft</p>
+        <p style="margin:4px 0 0;font-weight:600">v{{ apply.draft_version }}</p>
+    </div></div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Detalle</h3>
+        <dl style="display:grid;grid-template-columns:160px 1fr;gap:8px 12px;font-size:14px">
+            <dt class="hint">Fecha</dt>
+            <dd class="mono" style="margin:0">{{ apply.created_at|date:"d/m/Y H:i" }}</dd>
+            <dt class="hint">Usuario</dt>
+            <dd style="margin:0">{{ user_label }}</dd>
+            <dt class="hint">Proyecto destino</dt>
+            <dd class="mono" style="margin:0">
+                {{ target_slug }}{% if target_name %} — {{ target_name }}{% endif %}
+                {% if not target_active and target_slug != "—" %}
+                <span class="hint">(archivado o no disponible)</span>
+                {% endif %}
+            </dd>
+            <dt class="hint">Kind</dt>
+            <dd style="margin:0">{{ kind_label }}</dd>
+            <dt class="hint">Borrador Scout</dt>
+            <dd style="margin:0">
+                v{{ apply.draft_version }}{% if draft_status_label %} ({{ draft_status_label }}){% endif %}
+            </dd>
+            <dt class="hint">Mensaje</dt>
+            <dd style="margin:0">{{ apply.message|default:"—" }}</dd>
+        </dl>
+        <div class="page-actions" style="margin-top:14px">
+            {% if deep_link %}
+            <a href="{{ deep_link }}" class="btn btn-primary">Abrir destino</a>
+            {% endif %}
+            {% if draft %}
+            <a href="{% url 'structure_scout:history_draft' project_slug=project.slug draft_id=draft.id %}" class="btn btn-secondary">Ver borrador v{{ apply.draft_version }}</a>
+            {% endif %}
+            {% if hub.has_draft %}
+            <a href="{% url 'structure_scout:apply_hub' project_slug=project.slug %}" class="btn btn-secondary">Aplicar de nuevo</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

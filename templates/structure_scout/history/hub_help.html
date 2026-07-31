@@ -1,0 +1,28 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Historial — STRUCTURE SCOUT{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Historial</h2>
+        <p>Qué se lista en el Módulo 7 del Explorador.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'structure_scout:history_hub' project_slug=project.slug %}">← Volver</a>
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>Une <strong>versiones de borrador</strong> y <strong>aplicaciones</strong> en una sola timeline.</li>
+    <li>Filtro MVP: Todos / Borradores / Applies. Sin rango de fechas.</li>
+    <li>No crea exploraciones aparte ni re-aplica desde el historial.</li>
+    <li>Detalle draft: resumen + export JSON (misma regla M5) + enlace al hub borrador.</li>
+    <li>Detalle apply: destino, status, mensaje y deep-link si el destino sigue activo.</li>
+    <li>Roles: PA / ED / GE / CO ven el listado. CO no ve examples en el detalle draft.</li>
+</ul>
+</div></div>
+{% endblock %}

@@ -24,6 +24,7 @@ urlpatterns = [
     path("app/file-gate/", include("apps.file_gate.urls")),
     path("app/reverse-studio/", include("apps.reverse_studio.urls")),
     path("app/file-match/", include("apps.file_match.urls")),
+    path("app/structure-scout/", include("apps.structure_scout.urls")),
     path("app/ayuda/", include(("apps.help.urls", "help"))),
 ]
 

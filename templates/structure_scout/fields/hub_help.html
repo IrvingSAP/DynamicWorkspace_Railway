@@ -1,0 +1,28 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Campos — STRUCTURE SCOUT{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Campos y tipos</h2>
+        <p>Qué se propone en el Módulo 4 del Explorador.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'structure_scout:fields_hub' project_slug=project.slug %}">← Volver</a>
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>Parte del <strong>patrón confirmado</strong> (M3) y la <strong>muestra activa</strong> (M2).</li>
+    <li>Infiere columnas: nombre, <code>content_type</code>, ejemplos y confianza.</li>
+    <li>Tipos = catálogo DMS/GATE (<code>FieldContentType</code>).</li>
+    <li>No guarda borrador versionado (M5) ni aplica a destinos (M6).</li>
+    <li>Roles: PA / ED editan; PA / ED / GE confirman; CO sin ejemplos de celdas.</li>
+    <li>Re-inferir recalcula desde la muestra y resetea overrides.</li>
+</ul>
+</div></div>
+{% endblock %}

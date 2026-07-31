@@ -1,0 +1,224 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Aplicar — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Aplicar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    {% if membership %}
+    <span class="hint">·</span>
+    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    {% endif %}
+    {% if draft %}
+    <span class="hint">·</span>
+    <span class="cell-badge">Draft {{ version_label }}</span>
+    {% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">STRUCTURE SCOUT · Aplicar</p>
+        <h2>Aplicar a destino</h2>
+        <p>Siembra el borrador Scout en un proyecto de la misma compañía. No publica.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'structure_scout:apply_hub_help' project_slug=project.slug as ss_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=ss_help_url %}
+        <a href="{% url 'structure_scout:draft_hub' project_slug=project.slug %}" class="btn btn-secondary">Borrador</a>
+        <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+    </div>
+</div>
+
+<div class="lifecycle-stepper" aria-label="Ciclo del proyecto">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Exploración</p>
+        <ol class="lifecycle-steps">
+            <li><span class="lifecycle-step {{ hub.sample_step_class }}"><span class="lifecycle-step-num">{% if hub.has_sample %}✓{% else %}1{% endif %}</span> Muestra</span></li>
+            <li><span class="lifecycle-step {{ hub.detect_step_class }}"><span class="lifecycle-step-num">{% if hub.has_detection %}✓{% else %}2{% endif %}</span> Detectar</span></li>
+            <li><span class="lifecycle-step {{ hub.fields_step_class }}"><span class="lifecycle-step-num">{% if hub.has_fields %}✓{% else %}3{% endif %}</span> Campos</span></li>
+            <li><span class="lifecycle-step {{ hub.draft_step_class }}"><span class="lifecycle-step-num">{% if hub.has_draft %}✓{% else %}4{% endif %}</span> Borrador</span></li>
+        </ol>
+    </div>
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Aplicación</p>
+        <ol class="lifecycle-steps">
+            <li><span class="lifecycle-step {{ hub.apply_step_class }}"><span class="lifecycle-step-num">{% if hub.has_apply %}✓{% else %}5{% endif %}</span> Aplicar</span></li>
+            <li><span class="lifecycle-step {{ hub.history_step_class }}"><span class="lifecycle-step-num">{% if hub.has_history %}✓{% else %}6{% endif %}</span> Historial</span></li>
+        </ol>
+    </div>
+</div>
+
+{% if post_apply_deep_link %}
+<div class="alert alert-info" style="margin-top:16px">
+    Destino listo:
+    <strong>{{ post_apply_target_label }}</strong>.
+    <a href="{{ post_apply_deep_link }}" class="btn btn-secondary btn-sm" style="margin-left:8px">Abrir destino</a>
+</div>
+{% endif %}
+
+{% if not has_draft %}
+<div class="alert alert-warning" style="margin-top:16px">
+    Guarde un borrador de estructura antes de aplicar a un destino.
+    <a href="{% url 'structure_scout:draft_hub' project_slug=project.slug %}">Ir a borrador</a>
+</div>
+<div class="empty-state" style="margin-top:16px">
+    <h3>Sin borrador</h3>
+    <p>Congelé patrón y campos en M5 para poder sembrar un destino.</p>
+    <a href="{% url 'structure_scout:draft_hub' project_slug=project.slug %}" class="btn btn-primary">Guardar borrador</a>
+</div>
+{% else %}
+
+{% if status == 'needs_review' %}
+<div class="alert alert-warning" style="margin-top:16px">
+    El draft Scout está en revisión pendiente. Puede aplicar; revise el destino antes de publicar allí.
+</div>
+{% endif %}
+
+<div class="stats-strip" aria-label="Draft" style="margin-top:16px">
+    <div class="stat-card is-done">
+        <p class="stat-label">Draft</p>
+        <p class="stat-value" style="font-size:15px">{{ version_label }}</p>
+    </div>
+    <div class="stat-card{% if status == 'needs_review' %} is-accent{% endif %}">
+        <p class="stat-label">Estado</p>
+        <p class="stat-value" style="font-size:15px">{{ status_label }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Confianza</p>
+        <p class="stat-value" style="font-size:15px">{{ confidence_label }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Campos</p>
+        <p class="stat-value">{{ fields_count }}</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Destino</h3>
+        <p class="hint">MVP: FILE GATE y Reverse Studio. Misma compañía · rol PA/ED en el destino.</p>
+
+        <form method="get" class="form-grid" style="margin-top:12px">
+            <div class="form-row two-cols">
+                <div class="field">
+                    <label for="kind">Tipo de proyecto</label>
+                    <select id="kind" name="kind" onchange="this.form.submit()">
+                        {% for code, label in kind_choices %}
+                        <option value="{{ code }}"{% if selected_kind == code %} selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="target_id">Proyecto destino</label>
+                    <select id="target_id" name="target_id" onchange="this.form.submit()">
+                        <option value="">— Seleccione —</option>
+                        {% for item in targets %}
+                        <option value="{{ item.id }}"{% if selected_target_id == item.id %} selected{% endif %}>
+                            {{ item.slug }} — {{ item.name }}{% if item.field_count %} ({{ item.field_count }} campos){% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </form>
+
+        {% if not targets %}
+        <p class="hint" style="margin-top:12px">No hay destinos elegibles de este tipo (compañía + rol PA/ED).</p>
+        {% endif %}
+
+        {% if overwrite %}
+        <div class="alert {% if overwrite.target_field_count %}alert-warning{% else %}alert-info{% endif %}" style="margin-top:14px">
+            {% if overwrite.target_field_count %}
+            El borrador de <strong>{{ overwrite.target_slug }}</strong> ya tiene
+            <strong>{{ overwrite.target_field_count }}</strong> campos.
+            Se sobrescribirán con los <strong>{{ overwrite.scout_field_count }}</strong> del draft Scout {{ version_label }}.
+            No se publica ninguna versión.
+            {% else %}
+            Se llenará el borrador de <strong>{{ overwrite.target_slug }}</strong> con
+            <strong>{{ overwrite.scout_field_count }}</strong> campos del draft Scout {{ version_label }}.
+            No se publica ninguna versión.
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if can_apply %}
+        <form method="post" style="margin-top:14px">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="apply">
+            <input type="hidden" name="target_id" value="{{ selected_target_id }}">
+            <div class="page-actions">
+                <button type="submit" class="btn btn-primary"{% if not selected_target_id %} disabled{% endif %}>Aplicar borrador al destino</button>
+                <a href="{% url 'structure_scout:draft_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver a borrador</a>
+                <a href="{% url 'structure_scout:history_hub' project_slug=project.slug %}" class="btn btn-secondary">Historial</a>
+            </div>
+        </form>
+        {% else %}
+        <p class="hint" style="margin-top:14px">Solo PA / ED pueden aplicar a un destino.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if recent_applies %}
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Applies recientes</h3>
+        <p class="hint">Auditoría corta. El historial completo está en Historial.</p>
+        <div class="table-wrap" style="overflow-x:auto;margin-top:12px">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Draft</th>
+                        <th>Destino</th>
+                        <th>Estado</th>
+                        <th>Usuario</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in recent_applies %}
+                    <tr>
+                        <td>{{ item.created_at|date:"d/m/Y H:i" }}</td>
+                        <td class="mono">v{{ item.draft_version }}</td>
+                        <td>{% if item.target_project %}{{ item.target_project.slug }}{% else %}—{% endif %}</td>
+                        <td>{% if item.status == 'ok' %}OK{% else %}Fallido{% endif %}</td>
+                        <td>{% if item.created_by %}{{ item.created_by }}{% else %}—{% endif %}</td>
+                        <td><a class="btn btn-secondary btn-sm" href="{% url 'structure_scout:history_apply' project_slug=project.slug apply_id=item.id %}">Ver</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'structure_scout:history_hub' project_slug=project.slug %}" class="btn btn-secondary">Ver historial completo</a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

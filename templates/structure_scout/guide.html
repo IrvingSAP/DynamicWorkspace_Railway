@@ -1,0 +1,60 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — STRUCTURE SCOUT{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Guía de trabajo · <span class="role-badge">UF</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>Cómo funciona STRUCTURE SCOUT</h2>
+        <p>
+            El <strong>Explorador de estructura</strong> analiza una <strong>muestra</strong> de archivo y propone un
+            <strong>borrador de estructura</strong> (campos y tipos) editable, para sembrarlo en FILE GATE, Reverse,
+            Match o FilePipe — sin armar el wizard desde cero.
+        </p>
+        <p>
+            <strong>Propone</strong>; usted confirma. No valida producción, no emite layouts y no concilia.
+            Si ya tiene una definición publicada, use PROFILE_SEED en su lugar.
+        </p>
+    </div>
+    <aside class="guide-hero-aside" aria-label="Ruta rápida">
+        <h3>Ruta rápida</h3>
+        <ol class="guide-quick-path">
+            <li>Cree un proyecto Explorador.</li>
+            <li>(Opcional) Asigne miembros (PA).</li>
+            <li>Cargue una muestra y revise la detección.</li>
+            <li>Confirme campos/tipos y guarde el borrador.</li>
+            <li>Aplíquelo a un destino (solo borrador).</li>
+        </ol>
+        <p><a href="{% url 'structure_scout:project_list' %}" class="btn btn-primary">Ir a proyectos</a></p>
+    </aside>
+</div>
+
+<div class="panel" style="margin-top:20px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Estado del producto</h3>
+        <p class="hint">
+            El ciclo de acceso (listado, alta, hub, miembros) ya está disponible.
+            Los módulos de muestra, detección, campos, borrador, apply e historial se irán habilitando en esta rama.
+        </p>
+    </div>
+</div>
+{% endblock %}

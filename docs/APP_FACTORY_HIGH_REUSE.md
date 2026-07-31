@@ -12,7 +12,7 @@
 
 ### Qué es
 
-Este archivo es la **propuesta de producto** de la familia «reutilización alta» de APP_FACTORY. No es código ni un manual de usuario: es el lugar donde se decide **qué apps conviene construir después de FILE GATE**, reaprovechando FilePipe (DMS) y DynamicWorkspace.
+Este archivo es el **paraguas de producto** de la familia «reutilización alta» de APP_FACTORY. No es código ni un manual de usuario: fija **qué apps de la familia existen**, su estado (hecho / en rama / propuesta) y **cuál conviene construir después**, reaprovechando FilePipe (DMS) y DynamicWorkspace.
 
 ### Qué función cumple
 
@@ -20,7 +20,7 @@ Este archivo es la **propuesta de producto** de la familia «reutilización alta
 |---------|-------------|
 | **Aclarar ideas** | Explicar en lenguaje de negocio qué hace cada aplicativo y qué problema resuelve |
 | **Delimitar alcance** | Separar qué entra en el MVP, qué queda fuera y qué no debe confundirse con FilePipe |
-| **Priorizar** | Ordenar Reverse → Match → Profile Seed / Scout → Catálogos tras el validador ya entregado |
+| **Priorizar** | Registrar qué verticales §2 ya están hechos y cuál sigue (hoy: **Profile Seed** / Catálogos) |
 | **Preparar implementación** | Dejar módulos, kind, fronteras y próximos pasos listos para un doc hijo + rama Git |
 
 ### Alcance de *este* documento (sí / no)
@@ -96,11 +96,11 @@ Aplicativo vendible sin reescribir el ETL
 
 | Aplicativo | Nemotécnico | Estado | Dónde está el detalle |
 |------------|-------------|--------|------------------------|
-| **Validador de archivos** | `FILE_GATE` | **Hecho** (M1–M6 + bridge) | [`FILE_GATE.md`](FILE_GATE.md) |
-| **Reverse Studio** | `REVERSE_STUDIO` | **En definición / implementación** | [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) · resumen §3 |
-| **Conciliador de archivos** | `FILE_MATCH` | **MVP en rama** (`feature/file-match`) | [`FILE_MATCH.md`](FILE_MATCH.md) · resumen §4 |
-| **Sembrador de perfiles** | `PROFILE_SEED` | **Propuesta** | [`PROFILE_SEED.md`](PROFILE_SEED.md) · resumen §7 |
-| **Explorador de estructura** | `STRUCTURE_SCOUT` | Propuesta | §6 de este archivo |
+| **Validador de archivos** | `FILE_GATE` | **Hecho** (M1–M6 + bridge) · en `main` | [`FILE_GATE.md`](FILE_GATE.md) |
+| **Reverse Studio** | `REVERSE_STUDIO` | **Hecho** (M1–M7 + bridge) · en `main` | [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) · resumen §3 |
+| **Conciliador de archivos** | `FILE_MATCH` | **Hecho** (M1–M8 + bridge) · en `main` | [`FILE_MATCH.md`](FILE_MATCH.md) · resumen §4 |
+| **Explorador de estructura** | `STRUCTURE_SCOUT` | **MVP en rama** (M1–M7 + integración) · `feature/structure-scout` | [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) · §6 · [`ss_integration.md`](definition_app_STRUCTURE_SCOUT/ss_integration.md) |
+| **Sembrador de perfiles** | `PROFILE_SEED` | **Propuesta / partida** (siguiente prioridad) | [`PROFILE_SEED.md`](PROFILE_SEED.md) · resumen §7 |
 | **Catálogos / maestros** | `MASTER_CATALOG` | Propuesta | §5 de este archivo |
 
 ### Por qué existen (problema → solución)
@@ -131,7 +131,8 @@ Aplicativo vendible sin reescribir el ETL
 
 1. **Aprovechar lo ya pagado** — el costo fijo del motor DMS/workspace ya está; estas apps son ensamble + UX.
 2. **Hablar el idioma del cliente** — “validar el archivo del proveedor”, “generar el TXT del banco”, “cuadrar banco vs ERP”, “descubrir la estructura del archivo”, “mantener el maestro de códigos”.
-3. **Orden natural** — calidad (GATE) → emisión (Reverse) → cruce (Match) → **siembra de perfiles (Profile Seed)** / **descubrimiento (Scout)** → gobernanza de códigos (Catalog).
+3. **Orden natural** — calidad (GATE) → emisión (Reverse) → cruce (Match) → **descubrimiento (Scout)** → **siembra de perfiles (Profile Seed)** → gobernanza de códigos (Catalog).  
+   *Hechos en código:* GATE, Reverse, Match (en `main`); Scout MVP en rama. *Siguiente:* Profile Seed.
 4. **Bajo riesgo técnico** — el riesgo es de producto (claridad), no de inventar parsers (Scout añade heurísticas; Seed clona snapshots).
 5. **Se refuerzan entre sí** — Scout/Seed siembran wizards; un catálogo mejora lookups; GATE puede ser pre-check de Reverse/Match.
 
@@ -140,8 +141,9 @@ Aplicativo vendible sin reescribir el ETL
 ## 3. REVERSE STUDIO — CSV/Excel → posicional / JSON / XML
 
 > **Documento canónico de producto:** [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md)  
-> **Nemotécnico:** `REVERSE_STUDIO` · **Kind propuesto:** `reverse`  
-> Lo que sigue es el **resumen** dentro de la familia §2; los lineamientos de desarrollo viven en el doc hijo.
+> **Nemotécnico:** `REVERSE_STUDIO` · **Kind:** `reverse` (`Project.KIND_REVERSE`)  
+> **Estado:** MVP **hecho** (M1–M7 + bridge GATE) · mergeado a `main` · `apps/reverse_studio/`  
+> Lo que sigue es el **resumen** dentro de la familia §2; el detalle vive en el doc hijo.
 
 ### 3.0 Qué es, qué hace y para qué sirve
 
@@ -260,22 +262,23 @@ Preferencia: **reutilizar modelos DMS** (`project_kind=reverse` + mismos `Dms*` 
 | MVP acotado | Sí |
 | Diferenciador vs FilePipe | Sí — empaquetado “entrada fácil → salida legacy” |
 
-### 3.11 Próximos pasos (cuando se priorice)
+### 3.11 Estado / siguientes pasos
 
-Seguir [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) §18. Resumen:
+MVP Reverse **cerrado** en `main` (`apps/reverse_studio/`). Ver [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md).
 
-1. Rama `feature/reverse-studio` desde `main`.
-2. `definition_app_REVERSE/` + prototipos.
-3. App delgada + servicios DMS; módulos en orden 1→6.
-4. Merge a `main` con MVP revisado (sin deploy desde la feature).
+Pendiente de producto (no bloquea el MVP):
+
+1. PR/revisión operativa en producción según política de merge.  
+2. Fase 2 del doc hijo (plantillas, scheduling, etc.) cuando se priorice.  
+3. Consumir siembras desde Structure Scout / Profile Seed.
 
 ---
 
 ## 4. FILE MATCH — Conciliador de archivos
 
-> **Nemotécnico:** `FILE_MATCH` · **Kind propuesto:** `file_match`  
-> **Documento de producto:** [`FILE_MATCH.md`](FILE_MATCH.md) (lineamientos completos; este §4 es el resumen en el paraguas §2).  
-> **Rama Git:** `feature/file-match` (no desplegar a producción hasta merge a `main`).
+> **Nemotécnico:** `FILE_MATCH` · **Kind:** `file_match` (`Project.KIND_FILE_MATCH`)  
+> **Documento de producto:** [`FILE_MATCH.md`](FILE_MATCH.md) (lineamientos; este §4 es el resumen §2).  
+> **Estado:** MVP **hecho** (M1–M8 + bridge GATE) · mergeado a `main` · `apps/file_match/`
 
 ### 4.0 Qué es, qué hace y para qué sirve
 
@@ -427,13 +430,15 @@ Implementación preferida: dos `DmsSourceProfile` (o snapshots) + JSON `match_ru
 | MVP acotado | Sí |
 | Diferenciador | Sí — **dos orígenes, cero destino de negocio** |
 
-### 4.13 Próximos pasos
+### 4.13 Estado / siguientes pasos
 
-1. Seguir el plan en [`FILE_MATCH.md`](FILE_MATCH.md) §18 (rama `feature/file-match`).
-2. Prototipo de reglas de cruce + informe de diferencias.
-3. Spike de rendimiento (archivos medianos en memoria vs sort-merge).
-4. `definition_app_FILE_MATCH/` con módulos 1–7 (+ bridge Fase 2).
-5. PR a `main` cuando el MVP esté revisado (no desplegar desde la feature).
+MVP Match **cerrado** en `main` (`apps/file_match/`, M1–M8 + bridge). Ver [`FILE_MATCH.md`](FILE_MATCH.md).
+
+Pendiente de producto (Fase 2+):
+
+1. Tolerancia decimal / 1:N / baseline maestro.  
+2. Consumir siembras Scout / Profile Seed en perfiles A/B.  
+3. Umbral de fallos configurable (si aún no está en el doc hijo).
 
 ---
 
@@ -588,8 +593,10 @@ MVP puede serializar el snapshot como JSON en `CatalogVersion.payload` para no c
 
 ## 6. STRUCTURE SCOUT — Explorador de estructura
 
-> **Nemotécnico:** `STRUCTURE_SCOUT` · **Kind propuesto:** `structure_scout`  
-> Alias: *Explorador de estructura* · *Detector de patrones* · *Schema Scout*
+> **Nemotécnico:** `STRUCTURE_SCOUT` · **Kind:** `structure_scout` (`Project.KIND_STRUCTURE_SCOUT`)  
+> Alias: *Explorador de estructura* · *Detector de patrones* · *Schema Scout*  
+> **Producto:** [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) · specs [`definition_app_STRUCTURE_SCOUT/`](definition_app_STRUCTURE_SCOUT/) · integración [`ss_integration.md`](definition_app_STRUCTURE_SCOUT/ss_integration.md)  
+> **Estado:** MVP **en rama** (M1–M7 + integración documentada) · `feature/structure-scout` · `apps/structure_scout/` · **sin deploy** hasta merge a `main`
 
 ### 6.0 Qué es, qué hace y para qué sirve
 
@@ -664,17 +671,20 @@ Parsers DMS ─────────┘
 | **Master Catalog** | No se solapa; Catalog es códigos de negocio, Scout es forma del archivo |
 | **Detección DMS existente** | Scout **empaqueta y productiza** `detection_service` / sample preview; no inventa otro parser |
 
-### 6.5 Módulos sugeridos
+### 6.5 Módulos (as-built MVP)
 
-| Módulo | Contenido |
-|--------|-----------|
-| 1 · Proyecto / hub Scout | Alta, miembros, historial de exploraciones |
-| 2 · Cargar muestra | Upload + límites + preview crudo (reuso intake) |
-| 3 · Detectar patrón | Encoding, tipo, delimitador/posiciones, captura |
-| 4 · Proponer campos y tipos | Tabla editable + confianza + ejemplos de valor |
-| 5 · Publicar / guardar borrador | Snapshot del `StructureDraft` versionable |
-| 6 · Aplicar a destino | Wizard: elegir proyecto GATE/Reverse/Match/DMS y mapear draft → SourceProfile |
-| 7 · Historial | Auditoría de exploraciones y aplicaciones |
+| Módulo | Contenido | Estado |
+|--------|-----------|--------|
+| 1 · Proyecto / hub | Alta, listado, hub, miembros | **Implementado** |
+| 2 · Cargar muestra | Upload + preview (`DmsSampleFile`) | **Implementado** |
+| 3 · Detectar patrón | Encoding, tipo, delimitador/captura | **Implementado** |
+| 4 · Proponer campos | Tabla editable + confianza + examples | **Implementado** |
+| 5 · Guardar borrador | `StructureDraft` versionado + export JSON | **Implementado** |
+| 6 · Aplicar a destino | GATE + Reverse (solo borrador vía `save_source`) | **Implementado** |
+| 7 · Historial | Timeline drafts + applies (sin `ScoutExploration`) | **Implementado** |
+| Transversal | [`ss_integration.md`](definition_app_STRUCTURE_SCOUT/ss_integration.md) | **Documentado** |
+
+Fase 2: Match/FilePipe como destino, CTA embebido en wizards, LLM opcional.
 
 ### 6.6 Reglas de negocio (borrador)
 
@@ -743,15 +753,16 @@ erDiagram
 
 `StructureDraft` debería alinearse a la forma JSON de `source` / contrato GATE para poder aplicar sin traducción creativa.
 
-### 6.11 Decisiones abiertas
+### 6.11 Decisiones (congeladas en MVP)
 
-| # | Tema | Recomendación |
-|---|------|---------------|
-| 1 | ¿App con kind propio o solo servicio embebido en wizards? | **Kind + hub** si se vende/usa solo; además API interna para wizards |
-| 2 | ¿IA/LLM en MVP? | **No** obligatorio; heurísticas + detección DMS. LLM opcional Fase 2+ |
-| 3 | ¿Posicional en MVP? | Básico o Fase 2 si la heurística aún es débil |
-| 4 | Nombre UI | **Explorador de estructura** (nemotécnico `STRUCTURE_SCOUT`) |
-| 5 | ¿Aplicar sobrescribe draft destino? | Merge asistido + diff; nunca publicar automático |
+| # | Tema | Decisión |
+|---|------|----------|
+| 1 | ¿App con kind propio o solo servicio embebido? | **Kind + hub** (`structure_scout`); CTA en wizards = Fase 2 |
+| 2 | ¿IA/LLM en MVP? | **No**; heurísticas + detección DMS |
+| 3 | ¿Posicional en MVP? | Básico / débil → Fase 2 si hace falta |
+| 4 | Nombre UI | **Explorador de estructura** |
+| 5 | ¿Aplicar sobrescribe draft destino? | Sí con warning; **nunca** publica |
+| 6 | ¿Tabla `ScoutExploration`? | **No** en MVP; auditoría = drafts + applies |
 
 ### 6.12 Criterio APP_FACTORY
 
@@ -763,13 +774,14 @@ erDiagram
 | MVP acotado | Sí (tipos amigables + confirmación humana) |
 | Diferenciador | Sí — **propone estructura**; no valida, no emite, no concilia |
 
-### 6.13 Próximos pasos
+### 6.13 Estado / siguientes pasos
 
-1. Inventariar `detection_service` / sample preview DMS y brechas (tipos, posicional).
-2. Prototipo: upload muestra → tabla campos/tipos → JSON draft.
-3. Spike “Aplicar a” FILE GATE / Reverse (mismo tenant).
-4. Extraer `docs/STRUCTURE_SCOUT.md` + `definition_app_STRUCTURE_SCOUT/` al priorizar.
-5. Rama `feature/structure-scout`.
+> MVP Scout **implementado** en `feature/structure-scout` (M1–M7 + `ss_integration.md`). Ver [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md).
+
+1. Revisar UX / QA en la rama; PR `feature/structure-scout` → `main` cuando esté listo.  
+2. **No desplegar** a Railway desde la feature.  
+3. Fase 2: destinos Match/FilePipe, CTA embebido, posicional robusto.  
+4. Coordinar capa “Aplicar a” con Profile Seed (ambos usan `save_source`).
 
 ---
 
@@ -874,10 +886,12 @@ Scout y Seed se refuerzan: Scout **descubre**; Seed **reutiliza lo ya gobernado*
 
 ### 7.7 Próximos pasos
 
-1. Congelar decisiones en [`PROFILE_SEED.md`](PROFILE_SEED.md).
-2. Abrir `definition_app_PROFILE_SEED/` (README + primer módulo) al priorizar.
-3. Spike: clone GATE published schema → Match `DmsSourceProfile` draft (lado A).
-4. Rama `feature/profile-seed` cuando toque implementación.
+> **Siguiente prioridad** de la familia §2 tras cerrar Scout en `main`.
+
+1. Congelar decisiones en [`PROFILE_SEED.md`](PROFILE_SEED.md).  
+2. Abrir `definition_app_PROFILE_SEED/` (README + primer módulo) al priorizar.  
+3. Spike: clone GATE published schema → Match `DmsSourceProfile` draft (lado A); reusar `save_source` / patrón apply Scout.  
+4. Rama `feature/profile-seed` cuando toque implementación.  
 5. No mezclar con el bridge de pre-check (siguen siendo productos distintos).
 
 ---
@@ -895,7 +909,7 @@ FILE GATE **no se redefine aquí**. Tiene documento y código propios.
 | **Código** | `apps/file_gate/` |
 | **Rol en §2** | Primer vertical de reutilización alta **ya construido** (M1–M6 + bridge) |
 
-**Lecciones para Reverse / Match / Seed / Scout / Catalog:** kind propio + servicios compartidos; publicar congela contrato; ayudas y `UI_MESSAGES` desde el inicio; bridge cuando el core ya funciona; **seed** cuando la estructura ya existe en un hermano.
+**Lecciones para Seed / Catalog (y Fase 2 Scout):** kind propio + servicios compartidos; publicar congela contrato; ayudas y `UI_MESSAGES` desde el inicio; bridge cuando el core ya funciona; **seed** cuando la estructura ya existe en un hermano; Scout cuando solo hay muestra.
 
 ---
 
@@ -962,15 +976,15 @@ docs/
 ├── REVERSE_STUDIO.md
 ├── FILE_MATCH.md
 ├── PROFILE_SEED.md             ← partida Profile Seed
-├── STRUCTURE_SCOUT.md          ← opcional: extraer §6 al priorizar
+├── STRUCTURE_SCOUT.md          ← Explorador (MVP en feature/structure-scout)
 └── MASTER_CATALOG.md           ← opcional: extraer §5
 
 apps/
-├── file_gate/                  ← existe
-├── reverse_studio/             ← existe
-├── file_match/                 ← existe (rama feature)
+├── file_gate/                  ← existe (main)
+├── reverse_studio/             ← existe (main)
+├── file_match/                 ← existe (main)
+├── structure_scout/            ← existe (rama feature/structure-scout)
 ├── profile_seed/               ← futuro (o servicios en cada app + hub delgado)
-├── structure_scout/            ← futuro
 └── master_catalog/             ← futuro (o plantilla workspace)
 ```
 
@@ -979,17 +993,28 @@ apps/
 ## 11. MVP por vertical (checklist condensado)
 
 ### Reverse Studio
-- [ ] Kind + hub + copy de emisión
-- [ ] Forzar Source CSV/XLSX + Target fixed/json/xml
-- [ ] Reusar publish / execute / download output
-- [ ] Ayuda + UI_MESSAGES
+- [x] Kind + hub + copy de emisión
+- [x] Forzar Source CSV/XLSX + Target fixed/json/xml
+- [x] Reusar publish / execute / download output
+- [x] Historial + bridge FILE GATE
+- [x] Ayuda + UI_MESSAGES
 
 ### File Match
 - [x] Dos perfiles Source + reglas de clave
 - [x] Job A+B + buckets matched / only_* / mismatch
 - [x] Informe CSV/JSON + historial
-- [ ] Umbral de fallos configurable
+- [x] Bridge FILE GATE
 - [x] Miembros / autorizaciones (chasis)
+- [ ] Umbral de fallos configurable (Fase 2 si aplica)
+
+### Structure Scout
+- [x] Kind + hub + upload de muestra
+- [x] Detección (tipo, encoding, delimitador/captura) + tabla campos/tipos
+- [x] Borrador versionado + export JSON
+- [x] Aplicar a GATE y Reverse (borrador destino)
+- [x] Historial unificado (drafts + applies)
+- [x] Integración documentada (`ss_integration.md`)
+- [ ] Merge a `main` + destinos Match/FilePipe (Fase 2)
 
 ### Profile Seed
 - [ ] Selector origen (kind + proyecto + versión publicada + slot)
@@ -997,13 +1022,6 @@ apps/
 - [ ] Preview / validación de tipo + mensajes
 - [ ] Historial de semillas + auditoría
 - [ ] CTA “Importar estructura” en wizards destino
-
-### Structure Scout
-- [ ] Kind + hub + upload de muestra
-- [ ] Detección (tipo, encoding, delimitador/captura) + tabla campos/tipos
-- [ ] Borrador editable + confianza
-- [ ] Aplicar a GATE o Reverse (borrador destino)
-- [ ] Historial de exploraciones
 
 ### Master Catalog
 - [ ] Esquema code/label (+ attrs)
@@ -1029,19 +1047,20 @@ apps/
 
 ---
 
-## 13. Prioridad sugerida (post FILE GATE)
+## 13. Prioridad sugerida (familia §2)
 
-| Orden | Vertical | Por qué |
-|-------|----------|---------|
-| 1 | **Reverse Studio** | Máximo reuso del motor completo; demanda “Excel → banco” |
-| 2 | **File Match** | Valor alto en finanzas; obra nueva acotada (comparador) |
-| 3 | **Profile Seed** | ROI inmediato tras Match/GATE: elimina re-wizard; suite integral |
-| 4 | **Structure Scout** | Acelerador cuando **no** hay definición previa (muestra cruda) |
-| 5 | **Master Catalog** | Multiplica calidad de DMS/GATE; depende de diseñar bien el binding |
+| Orden | Vertical | Estado | Nota |
+|-------|----------|--------|------|
+| — | **FILE GATE** | **Hecho** (`main`) | Referencia de la familia |
+| — | **Reverse Studio** | **Hecho** (`main`) | Emisión CSV/Excel → layout |
+| — | **File Match** | **Hecho** (`main`) | Conciliación A vs B |
+| — | **Structure Scout** | **MVP en rama** | Cerrar PR → `main`; Fase 2 destinos Match |
+| **1 (siguiente)** | **Profile Seed** | Propuesta | ROI: elimina re-wizard GATE↔Match/Reverse |
+| **2** | **Master Catalog** | Propuesta | Lookups / gobernanza de códigos |
 
-Alineado a [`APP_FACTORY.md`](APP_FACTORY.md) §5 (FILE GATE era #1 y ya está entregado).
+Alineado a [`APP_FACTORY.md`](APP_FACTORY.md) §5 / §8.
 
-> Profile Seed y Structure Scout pueden **compartir** capa de “Aplicar a destino”; diferencian el origen (definición vs muestra). Seed puede adelantarse si el dolor es repetición GATE↔Match.
+> Profile Seed y Structure Scout pueden **compartir** capa de “Aplicar a destino” (`save_source`); diferencian el origen (definición vs muestra).
 
 ---
 
@@ -1059,10 +1078,11 @@ Antes de abrir rama de implementación para cualquiera de estos verticales:
 
 ## 15. Próximos pasos de diseño (documento)
 
-1. Mantener este archivo como **paraguas §2** mientras las ideas estén en propuesta.
-2. Al priorizar un vertical: extraer su sección a `docs/<NEMOTECNICO>.md` + `definition_app_<…>/` (como FILE GATE / PROFILE_SEED).
-3. Actualizar [`APP_FACTORY.md`](APP_FACTORY.md) §8 (estado) y §2 (enlace a este doc).
-4. No implementar varios verticales nuevos en paralelo: uno a la vez (hoy: File Match en `feature/file-match`; Profile Seed a continuación o en paralelo de diseño).
+1. Mantener este archivo como **paraguas §2** (inventario + fronteras + prioridad).  
+2. **Cerrar Scout:** PR `feature/structure-scout` → `main` cuando la revisión esté OK.  
+3. **Siguiente vertical:** abrir / avanzar [`PROFILE_SEED.md`](PROFILE_SEED.md) + `definition_app_PROFILE_SEED/` (un vertical a la vez).  
+4. Actualizar [`APP_FACTORY.md`](APP_FACTORY.md) §8 al mergear Scout o al abrir Seed.  
+5. Extraer §5 a `MASTER_CATALOG.md` solo al priorizar catálogos.
 
 ---
 
@@ -1088,10 +1108,12 @@ Antes de abrir rama de implementación para cualquiera de estos verticales:
 | Documento | Relación |
 |-----------|----------|
 | [`APP_FACTORY.md`](APP_FACTORY.md) | Visión y prioridad; §2 origen de este doc |
-| [`FILE_GATE.md`](FILE_GATE.md) | Primer vertical §2 implementado |
-| [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) | Segundo vertical §2 (emisor) |
-| [`FILE_MATCH.md`](FILE_MATCH.md) | Tercer vertical §2 (conciliador) |
-| [`PROFILE_SEED.md`](PROFILE_SEED.md) | Sembrador de perfiles (partida de desarrollo) |
+| [`FILE_GATE.md`](FILE_GATE.md) | Primer vertical §2 — **hecho** |
+| [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) | Emisor — **hecho** |
+| [`FILE_MATCH.md`](FILE_MATCH.md) | Conciliador — **hecho** |
+| [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) | Explorador — **MVP en rama** |
+| [`definition_app_STRUCTURE_SCOUT/`](definition_app_STRUCTURE_SCOUT/) | Specs Scout M1–M7 + integración |
+| [`PROFILE_SEED.md`](PROFILE_SEED.md) | Sembrador — **siguiente prioridad** |
 | [`DataMappingStudio.md`](DataMappingStudio.md) | Visión FilePipe / motor ETL |
 | [`DynamicWorkspace.md`](DynamicWorkspace.md) | Motor de esquema / records |
 | [`definition_app_PROFILE_SEED/`](definition_app_PROFILE_SEED/) | Specs al abrir desarrollo Seed |

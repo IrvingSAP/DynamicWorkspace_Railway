@@ -63,7 +63,7 @@ Cada aplicativo nuevo ≈ un nuevo `project_kind` (o un módulo sobre un kind ex
 | **Validador de archivos** (sin transformar) | `SourceProfile` + reglas + reporte de rechazos | Subir → validar esquema → informe OK/errores (bancos, gobierno, intercambio) — ver [`FILE_GATE.md`](FILE_GATE.md) |
 | **Conciliador de archivos** | 2 `SourceProfile` + comparación por clave | Cruzar banco vs ERP (u orígenes similares) y reportar diferencias — ver [`FILE_MATCH.md`](FILE_MATCH.md) |
 | **Sembrador de perfiles** | Snapshots de SourceProfile / contrato entre apps | Importar estructura ya definida (GATE→Match, etc.) sin re-wizard — ver [`PROFILE_SEED.md`](PROFILE_SEED.md) |
-| **Explorador de estructura** | Sample intake + `detection_service` + inferencia de campos/tipos | Proponer patrón/estructura del archivo y sembrar wizards GATE/Reverse/Match — ver [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §6 |
+| **Explorador de estructura** | Sample intake + `detection_service` + inferencia de campos/tipos | Proponer patrón/estructura del archivo y sembrar wizards GATE/Reverse/Match — [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) · [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §6 |
 | **Catálogos / maestros gestionados** | DynamicWorkspace + `replace_map` / `lookup` | Tablas de referencia que alimentan reglas DMS |
 
 ---
@@ -93,17 +93,18 @@ Cada aplicativo nuevo ≈ un nuevo `project_kind` (o un módulo sobre un kind ex
 
 ## 5. Prioridad sugerida (esfuerzo / valor)
 
-| Orden | Aplicativo | Por qué |
-|-------|------------|---------|
-| 1 | **Validador de archivos** | **Hecho** — [`FILE_GATE.md`](FILE_GATE.md) |
-| 2 | **Reverse Studio** | Reutiliza serializadores/parsers del DMS — [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) |
-| 3 | **Conciliador de archivos** | Doble parse + comparador — [`FILE_MATCH.md`](FILE_MATCH.md) |
-| 4 | **Sembrador de perfiles** | Reuso de estructuras entre apps — [`PROFILE_SEED.md`](PROFILE_SEED.md) (`PROFILE_SEED`) |
-| 5 | **Explorador de estructura** | Acelerador desde muestra — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §6 (`STRUCTURE_SCOUT`) |
-| 6 | **Formularios de captura** | Abre el producto a usuarios que no manejan archivos |
-| 7 | **Scheduling / API** | Ya en roadmap DMS Fase 3; multiplica valor de proyectos existentes |
+| Orden | Aplicativo | Estado / nota |
+|-------|------------|---------------|
+| — | **Validador de archivos** | **Hecho** — [`FILE_GATE.md`](FILE_GATE.md) |
+| — | **Reverse Studio** | **Hecho** — [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) |
+| — | **Conciliador de archivos** | **Hecho** — [`FILE_MATCH.md`](FILE_MATCH.md) |
+| — | **Explorador de estructura** | **MVP en rama** — [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) (`feature/structure-scout`) |
+| **1 (siguiente)** | **Sembrador de perfiles** | Propuesta — [`PROFILE_SEED.md`](PROFILE_SEED.md) |
+| 2 | **Catálogos / maestros** | Propuesta — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §5 |
+| 3 | **Formularios de captura** | Abre el producto a usuarios que no manejan archivos |
+| 4 | **Scheduling / API** | Roadmap DMS Fase 3 |
 
-> Catálogos y Scout/Seed: orden fino en [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §13.
+> Detalle de estados y orden fino: [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §1 / §13.
 
 ---
 
@@ -135,11 +136,11 @@ Si la respuesta es “sí” a 1–4, conviene un doc hermano al estilo `DataMap
 
 | Idea | Estado |
 |------|--------|
-| Validador de archivos | **Hecho (MVP M1–M6)** — [`FILE_GATE.md`](FILE_GATE.md) · `apps/file_gate/` |
-| Reverse Studio | **En definición / implementación** — [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) · `apps/reverse_studio/` · rama `feature/reverse-studio` |
-| Conciliador de archivos | **MVP en rama** — [`FILE_MATCH.md`](FILE_MATCH.md) · `apps/file_match/` · rama `feature/file-match` |
-| Sembrador de perfiles | **Propuesta / partida** — [`PROFILE_SEED.md`](PROFILE_SEED.md) · [`definition_app_PROFILE_SEED/`](definition_app_PROFILE_SEED/) · resumen [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §7 |
-| Explorador de estructura | **Propuesta** — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §6 (`STRUCTURE_SCOUT`) |
+| Validador de archivos | **Hecho (MVP M1–M6)** — [`FILE_GATE.md`](FILE_GATE.md) · `apps/file_gate/` · `main` |
+| Reverse Studio | **Hecho (MVP M1–M7 + bridge)** — [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) · `apps/reverse_studio/` · `main` |
+| Conciliador de archivos | **Hecho (MVP M1–M8 + bridge)** — [`FILE_MATCH.md`](FILE_MATCH.md) · `apps/file_match/` · `main` |
+| Explorador de estructura | **MVP en rama (M1–M7)** — [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) · `apps/structure_scout/` · `feature/structure-scout` |
+| Sembrador de perfiles | **Propuesta / siguiente** — [`PROFILE_SEED.md`](PROFILE_SEED.md) · [`definition_app_PROFILE_SEED/`](definition_app_PROFILE_SEED/) · resumen [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §7 |
 | Catálogos / maestros | **Propuesta detallada** — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §5 (`MASTER_CATALOG`) |
 | Formularios de captura | Propuesta |
 | Checklists / inspecciones | Propuesta |

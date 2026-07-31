@@ -12,12 +12,14 @@ class Project(models.Model):
     KIND_FILE_GATE = "file_gate"
     KIND_REVERSE = "reverse"
     KIND_FILE_MATCH = "file_match"
+    KIND_STRUCTURE_SCOUT = "structure_scout"
     KIND_CHOICES = [
         (KIND_WORKSPACE, "Workspace (tabla)"),
         (KIND_DMS, "DMS (FilePipe)"),
         (KIND_FILE_GATE, "FILE GATE (Validador)"),
         (KIND_REVERSE, "Reverse Studio (Emisor)"),
         (KIND_FILE_MATCH, "FILE MATCH (Conciliador)"),
+        (KIND_STRUCTURE_SCOUT, "STRUCTURE SCOUT (Explorador)"),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

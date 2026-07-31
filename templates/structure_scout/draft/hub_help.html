@@ -1,0 +1,27 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Borrador — STRUCTURE SCOUT{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Borrador de estructura</h2>
+        <p>Qué se congela en el Módulo 5 del Explorador.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'structure_scout:draft_hub' project_slug=project.slug %}">← Volver</a>
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>Requiere <strong>campos confirmados</strong> (M4). No edita la tabla aquí.</li>
+    <li>Cada «Guardar» crea una <strong>versión nueva</strong>; no pisa en silencio.</li>
+    <li>El JSON incluye producto §11 y bloque <code>source</code> alineado a SourceProfile / GATE.</li>
+    <li>Exportar descarga la versión actual (CO: sin ejemplos de celdas).</li>
+    <li>Roles: PA / ED guardan; GE / CO ven y exportan. Nadie aplica destinos aquí (M6).</li>
+</ul>
+</div></div>
+{% endblock %}

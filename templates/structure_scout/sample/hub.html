@@ -1,0 +1,197 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Cargar muestra — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/file_intake.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Muestra</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    {% if membership %}
+    <span class="hint">·</span>
+    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    {% endif %}
+</div>
+
+<div id="dms-file-intake-config"
+     data-sample-upload-url="{{ sample_upload_url }}"
+     data-production-upload-url=""
+     data-csrf-token="{{ csrf_token }}"
+     data-accept="{{ accept_attr }}"
+     data-sample-max-bytes="{{ sample_max_bytes }}"
+     data-production-max-bytes="0"
+     data-can-sample="{% if can_upload_sample %}1{% else %}0{% endif %}"
+     data-can-production="0"
+     data-has-published="0"
+     hidden></div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">STRUCTURE SCOUT · Muestra</p>
+        <h2>Cargar muestra</h2>
+        <p>Archivo de ejemplo para proponer la estructura. <strong>No</strong> es validación ni producción. Extensiones: <strong>{{ accept_attr }}</strong></p>
+    </div>
+    <div class="page-actions">
+        {% url 'structure_scout:sample_hub_help' project_slug=project.slug as ss_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=ss_help_url %}
+        <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+    </div>
+</div>
+
+<div class="lifecycle-stepper" aria-label="Progreso exploración">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Exploración</p>
+        <ol class="lifecycle-steps">
+            <li><span class="lifecycle-step {{ hub.sample_step_class }}"><span class="lifecycle-step-num">{% if hub.has_sample %}✓{% else %}1{% endif %}</span> Muestra</span></li>
+            <li><span class="lifecycle-step {{ hub.detect_step_class }}"><span class="lifecycle-step-num">{% if hub.has_detection %}✓{% else %}2{% endif %}</span> Detectar</span></li>
+            <li><span class="lifecycle-step {{ hub.fields_step_class }}"><span class="lifecycle-step-num">{% if hub.has_fields %}✓{% else %}3{% endif %}</span> Campos</span></li>
+            <li><span class="lifecycle-step {{ hub.draft_step_class }}"><span class="lifecycle-step-num">{% if hub.has_draft %}✓{% else %}4{% endif %}</span> Borrador</span></li>
+        </ol>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Estado">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Muestras</p>
+        <p class="stat-value">{{ samples_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Límite</p>
+        <p class="stat-value" style="font-size:16px">{{ sample_max_label }}</p>
+    </div>
+    <div class="stat-card{% if active_sample %} is-done{% endif %}">
+        <p class="stat-label">Activa</p>
+        <p class="stat-value" style="font-size:14px">
+            {% if active_sample %}{{ active_sample.original_filename }}{% else %}—{% endif %}
+        </p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Subir archivo muestra</h3>
+        <p class="hint">Límite {{ sample_max_label }}. Roles PA / ED / GE.</p>
+
+        {% if can_upload_sample %}
+        <div class="fi-dropzone" data-context="sample" tabindex="0">
+            <input type="file" id="fi-sample-input" accept="{{ accept_attr }}" hidden>
+            <p class="fi-drop-title">Arrastre un archivo o</p>
+            <button type="button" class="btn btn-secondary" data-action="browse" data-context="sample">Seleccionar archivo</button>
+            <p class="fi-file-meta" data-role="file-meta" data-context="sample">Ningún archivo seleccionado</p>
+            <div class="fi-actions">
+                <button type="button" class="btn btn-secondary btn-sm" data-action="clear" data-context="sample" disabled>Quitar</button>
+                <button type="button" class="btn btn-primary" data-action="upload" data-context="sample" disabled>Subir muestra</button>
+            </div>
+            <div class="fi-progress" data-role="progress" data-context="sample" hidden>
+                <div class="fi-progress-bar" data-role="progress-bar"></div>
+            </div>
+        </div>
+        {% else %}
+        <p class="hint">No tiene permiso para subir muestras.</p>
+        {% endif %}
+
+        <div class="form-errors" id="fi-sample-errors" hidden></div>
+        <div id="fi-sample-result" class="fi-result" hidden></div>
+    </div>
+</div>
+
+{% if active_sample %}
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Muestra activa</h3>
+        <p class="hint">
+            <strong>{{ active_sample.original_filename }}</strong>
+            · {{ active_sample.size_label }}
+            {% if active_sample.content_hash_short %} · hash {{ active_sample.content_hash_short }}…{% endif %}
+            · {{ active_sample.created_at|date:"d/m/Y H:i" }}
+            · {{ active_sample.uploaded_by }}
+        </p>
+        {% if active_sample.suggestions %}
+        <p class="hint" style="margin-top:8px">
+            Sugerencias:
+            {{ active_sample.suggestions.file_type_code|default:"—" }}
+            / {{ active_sample.suggestions.encoding_code|default:"—" }}
+            / {{ active_sample.suggestions.line_ending_code|default:"—" }}
+            {% if active_sample.suggestions.delimiter %} · delim {{ active_sample.suggestions.delimiter }}{% endif %}
+        </p>
+        {% endif %}
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'structure_scout:detect_hub' project_slug=project.slug %}" class="btn btn-primary">Continuar a detectar</a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Muestras del proyecto</h3>
+        <p class="hint">MVP: la exploración usa la <strong>última</strong> subida.</p>
+        {% if samples %}
+        <ul class="fi-list" id="fi-sample-list">
+            {% for item in samples %}
+            <li class="fi-list-item" data-sample-id="{{ item.id }}">
+                <div>
+                    <strong>{{ item.original_filename }}</strong>
+                    <span class="hint"> · {{ item.size_label }}
+                        {% if item.is_active %} · activa{% endif %}
+                        {% if item.suggestions.file_type_code %} · {{ item.suggestions.file_type_code }}{% endif %}
+                        · {{ item.created_at|date:"d/m/Y H:i" }}
+                    </span>
+                </div>
+                <div class="fi-list-actions">
+                    {% if can_view_preview %}
+                    <button type="button" class="btn btn-secondary btn-sm" data-action="preview-sample" data-id="{{ item.id }}">Preview</button>
+                    {% endif %}
+                    {% if can_upload_sample %}
+                    <button type="button" class="btn btn-secondary btn-sm" data-action="delete-sample" data-id="{{ item.id }}">Eliminar</button>
+                    {% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state">
+            <h3>Sin muestras</h3>
+            <p>Suba un archivo de ejemplo para obtener preview y sugerencias.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<dialog class="fi-dialog" id="fi-preview-dialog">
+    <div class="fi-dialog-body">
+        <div class="fi-dialog-head">
+            <h3 id="fi-preview-title">Preview</h3>
+            <button type="button" class="btn btn-secondary btn-sm" id="fi-preview-close">Cerrar</button>
+        </div>
+        <pre class="fi-preview-pre" id="fi-preview-body"></pre>
+    </div>
+</dialog>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/file_intake.js' %}"></script>
+{% endblock %}
