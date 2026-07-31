@@ -1,0 +1,29 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Detectar — STRUCTURE SCOUT{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Detectar patrón</h2>
+        <p>Qué se confirma en el Módulo 3 del Explorador.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'structure_scout:detect_hub' project_slug=project.slug %}">← Volver</a>
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>Parte de la <strong>muestra activa</strong> (M2). No vuelve a subir el archivo aquí.</li>
+    <li>Confirma o ajusta: tipo, encoding, fin de línea, delimitador y fila de encabezado.</li>
+    <li>La confianza y el estado (<code>listo</code> / <code>revisión pendiente</code>) se calculan al confirmar.</li>
+    <li><code>txt_fixed</code> (posicional) queda en revisión pendiente en el MVP.</li>
+    <li>Roles: PA / ED editan el formulario; PA / ED / GE pueden confirmar. CO ve metadatos sin preview de filas.</li>
+    <li>Re-detectar recalcula sugerencias DMS y resetea el formulario (sin publicar destinos).</li>
+    <li>Siguiente paso: <strong>Campos y tipos</strong> (M4).</li>
+</ul>
+</div></div>
+{% endblock %}

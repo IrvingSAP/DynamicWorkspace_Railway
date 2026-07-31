@@ -1,0 +1,223 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ project.name }} — STRUCTURE SCOUT{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Explorador</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ project.slug }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">
+            <span class="cell-badge">{{ project.slug }}</span>
+            {% if hub.visibility == 'company' %}
+            <span class="visibility-badge visibility-badge--public">{{ hub.visibility_label }}</span>
+            {% else %}
+            <span class="visibility-badge visibility-badge--private">{{ hub.visibility_label }}</span>
+            {% endif %}
+            {% if hub.is_pa %}
+            <span class="perm-badge perm-badge--admin">{{ hub.role_label }}</span>
+            {% else %}
+            <span class="perm-badge">{{ hub.role_label }}</span>
+            {% endif %}
+        </p>
+        <h2>{{ project.name }}</h2>
+        {% if project.description %}
+        <p>{{ project.description }}</p>
+        {% else %}
+        <p>Proyecto STRUCTURE SCOUT: exploración de muestra → borrador de estructura.</p>
+        {% endif %}
+    </div>
+    <div class="page-actions">
+        {% url 'structure_scout:project_hub_help' project_slug=project.slug as ss_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=ss_help_url %}
+        {% if hub.can_manage_members %}
+        <a href="{% url 'structure_scout:project_members' project_slug=project.slug %}" class="btn btn-secondary">Miembros</a>
+        {% endif %}
+        <a href="{% url 'structure_scout:project_list' %}" class="btn btn-secondary">← Proyectos</a>
+    </div>
+</div>
+
+<div class="version-strip">
+    <strong>Draft:</strong> {{ hub.draft_status_label }}
+    · <strong>Última exploración:</strong> {{ hub.exploration_label }}
+    · <strong>Miembros:</strong> {{ hub.member_count }}
+</div>
+
+<div class="lifecycle-stepper" aria-label="Ciclo del proyecto">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Exploración · pasos 1–4</p>
+        <ol class="lifecycle-steps">
+            <li><span class="lifecycle-step {{ hub.sample_step_class }}"><span class="lifecycle-step-num">{% if hub.has_sample %}✓{% else %}1{% endif %}</span> Muestra</span></li>
+            <li><span class="lifecycle-step {{ hub.detect_step_class }}"><span class="lifecycle-step-num">{% if hub.has_detection %}✓{% else %}2{% endif %}</span> Detectar</span></li>
+            <li><span class="lifecycle-step {{ hub.fields_step_class }}"><span class="lifecycle-step-num">{% if hub.has_fields %}✓{% else %}3{% endif %}</span> Campos</span></li>
+            <li><span class="lifecycle-step {{ hub.draft_step_class }}"><span class="lifecycle-step-num">{% if hub.has_draft %}✓{% else %}4{% endif %}</span> Borrador</span></li>
+        </ol>
+    </div>
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Aplicación · pasos 5–6</p>
+        <ol class="lifecycle-steps">
+            <li><span class="lifecycle-step {{ hub.apply_step_class }}"><span class="lifecycle-step-num">{% if hub.has_apply %}✓{% else %}5{% endif %}</span> Aplicar</span></li>
+            <li><span class="lifecycle-step {{ hub.history_step_class }}"><span class="lifecycle-step-num">{% if hub.has_history %}✓{% else %}6{% endif %}</span> Historial</span></li>
+        </ol>
+    </div>
+</div>
+
+{% if hub.modules_pending_note %}
+<div class="alert alert-info">
+    {{ hub.modules_pending_note }}
+</div>
+{% endif %}
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Nueva exploración — muestra</h3>
+        <p class="hint">
+            {% if hub.has_sample %}
+            Muestra activa: <strong>{{ hub.exploration_label }}</strong>. Puede cambiarla o continuar a detectar el patrón.
+            {% else %}
+            Suba una muestra (CSV, Excel o delimitado). La muestra no es archivo de producción.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'structure_scout:sample_hub' project_slug=project.slug %}" class="btn btn-primary">
+                {% if hub.has_sample %}Ver / cambiar muestra{% else %}Cargar muestra{% endif %}
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Detectar patrón</h3>
+        <p class="hint">
+            {% if hub.has_detection %}
+            Patrón confirmado. Puede reabrirlo para ajustar o re-detectar.
+            {% elif hub.has_sample %}
+            Encoding, tipo, delimitador y encabezado sugeridos (reuso detection DMS).
+            {% else %}
+            Disponible cuando haya una muestra activa.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            {% if hub.has_sample %}
+            <a href="{% url 'structure_scout:detect_hub' project_slug=project.slug %}" class="btn {% if hub.has_detection %}btn-secondary{% else %}btn-primary{% endif %}">
+                {% if hub.has_detection %}Ver / ajustar patrón{% else %}Detectar patrón{% endif %}
+            </a>
+            {% else %}
+            <span class="btn btn-secondary" aria-disabled="true">Detectar patrón</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Campos y tipos</h3>
+        <p class="hint">
+            {% if hub.has_fields %}
+            Campos confirmados. Puede reabrirlos para ajustar o re-inferir.
+            {% elif hub.has_detection %}
+            Tabla editable de campos propuestos con confianza y ejemplos.
+            {% else %}
+            Disponible cuando el patrón de detección esté confirmado.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            {% if hub.has_detection %}
+            <a href="{% url 'structure_scout:fields_hub' project_slug=project.slug %}" class="btn {% if hub.has_fields %}btn-secondary{% else %}btn-primary{% endif %}">
+                {% if hub.has_fields %}Ver / ajustar campos{% else %}Proponer campos{% endif %}
+            </a>
+            {% else %}
+            <span class="btn btn-secondary" aria-disabled="true">Proponer campos</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Borrador de estructura</h3>
+        <p class="hint">
+            {% if hub.has_draft %}
+            {{ hub.draft_status_label }}. Puede guardar una nueva versión o exportar JSON.
+            {% elif hub.has_fields %}
+            Congela patrón y campos en una versión exportable. No publica destinos.
+            {% else %}
+            Disponible cuando los campos estén confirmados.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            {% if hub.has_fields %}
+            <a href="{% url 'structure_scout:draft_hub' project_slug=project.slug %}" class="btn {% if hub.has_draft %}btn-secondary{% else %}btn-primary{% endif %}">
+                {% if hub.has_draft %}Ver / guardar borrador{% else %}Guardar borrador{% endif %}
+            </a>
+            {% else %}
+            <span class="btn btn-secondary" aria-disabled="true">Guardar borrador</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Aplicar a destino</h3>
+        <p class="hint">
+            {% if hub.has_apply %}
+            Ya hay aplicaciones registradas. Puede sembrar otro destino (GATE / Reverse).
+            {% elif hub.has_draft %}
+            Siembra solo <strong>borrador</strong> en FILE GATE o Reverse (misma compañía). No publica.
+            {% else %}
+            Disponible cuando exista un borrador de estructura.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            {% if hub.has_draft %}
+            <a href="{% url 'structure_scout:apply_hub' project_slug=project.slug %}" class="btn {% if hub.has_apply %}btn-secondary{% else %}btn-primary{% endif %}">
+                {% if hub.has_apply %}Ver / aplicar de nuevo{% else %}Aplicar a destino{% endif %}
+            </a>
+            {% else %}
+            <span class="btn btn-secondary" aria-disabled="true">Aplicar a destino</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Historial</h3>
+        <p class="hint">
+            {% if hub.has_history %}
+            Versiones de borrador y aplicaciones a destino de este proyecto.
+            {% else %}
+            Disponible cuando guarde un borrador o aplique a un destino.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'structure_scout:history_hub' project_slug=project.slug %}" class="btn {% if hub.has_history %}btn-secondary{% else %}btn-primary{% endif %}">
+                {% if hub.has_history %}Ver historial{% else %}Abrir historial{% endif %}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

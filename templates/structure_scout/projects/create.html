@@ -1,0 +1,110 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Nuevo proyecto — STRUCTURE SCOUT{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Explorador</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Nuevo</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip" aria-label="Alcance de compañía">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">STRUCTURE SCOUT · Acceso</p>
+        <h2>Nuevo proyecto</h2>
+        <p>Quedarás como <strong>administrador del proyecto</strong> automáticamente. Luego cargarás una muestra para explorar.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'structure_scout:project_create_help' as ss_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=ss_help_url %}
+        <a href="{% url 'structure_scout:project_list' %}" class="btn btn-secondary">← Listado</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="form-section">
+                <h3 class="form-section-title">Identidad</h3>
+                <div class="form-grid">
+                    <div class="form-row two-cols">
+                        <div class="field{% if errors.slug %} has-error{% endif %}">
+                            <label for="slug">Nombre corto (código) <span class="req">*</span></label>
+                            <input type="text" id="slug" name="slug" class="mono" maxlength="220" placeholder="scout-csv-proveedor" value="{{ posted.slug }}" required>
+                            <p class="hint">Único en la organización · compartido con Worksheets y FilePipe</p>
+                            {% for msg in errors.slug %}
+                            <p class="field-error">{{ msg }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="field{% if errors.name %} has-error{% endif %}">
+                            <label for="name">Nombre visible <span class="req">*</span></label>
+                            <input type="text" id="name" name="name" maxlength="200" placeholder="CSV proveedor nómina" value="{{ posted.name }}" required>
+                            {% for msg in errors.name %}
+                            <p class="field-error">{{ msg }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="field{% if errors.description %} has-error{% endif %}">
+                        <label for="description">Descripción</label>
+                        <textarea id="description" name="description" rows="3" placeholder="Proyecto STRUCTURE SCOUT: exploración de muestra → borrador de estructura.">{{ posted.description }}</textarea>
+                        {% for msg in errors.description %}
+                        <p class="field-error">{{ msg }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="form-section-title">Visibilidad</h3>
+                <div class="radio-cards{% if errors.visibility %} has-error{% endif %}">
+                    <label class="radio-card">
+                        <input type="radio" name="visibility" value="members_only"{% if posted.visibility == 'members_only' or not posted.visibility %} checked{% endif %}>
+                        <strong>Privado</strong>
+                        <span>Solo usuarios que agregues explícitamente.</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="visibility" value="company"{% if posted.visibility == 'company' %} checked{% endif %}>
+                        <strong>Público</strong>
+                        <span>Todos los usuarios UF de tu compañía pueden ver el proyecto.</span>
+                    </label>
+                </div>
+                {% for msg in errors.visibility %}
+                <p class="field-error">{{ msg }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="alert alert-info">
+                Tras crear, podrás <strong>agregar miembros</strong> (si el proyecto es privado) y lanzar una
+                <strong>nueva exploración</strong> cuando el módulo de muestra esté disponible.
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Crear y continuar</button>
+                <a href="{% url 'structure_scout:project_list' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

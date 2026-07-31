@@ -1,0 +1,147 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Historial — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Historial</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    {% if membership %}
+    <span class="hint">·</span>
+    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    {% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">STRUCTURE SCOUT · Historial</p>
+        <h2>Historial</h2>
+        <p>Versiones de borrador y aplicaciones a destino de este proyecto.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'structure_scout:history_hub_help' project_slug=project.slug as ss_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=ss_help_url %}
+        {% if hub.has_draft %}
+        <a href="{% url 'structure_scout:apply_hub' project_slug=project.slug %}" class="btn btn-secondary">Aplicar</a>
+        {% endif %}
+        <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+    </div>
+</div>
+
+<div class="lifecycle-stepper" aria-label="Ciclo del proyecto">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Aplicación</p>
+        <ol class="lifecycle-steps">
+            <li><span class="lifecycle-step {{ hub.apply_step_class }}"><span class="lifecycle-step-num">{% if hub.has_apply %}✓{% else %}5{% endif %}</span> Aplicar</span></li>
+            <li><span class="lifecycle-step {{ hub.history_step_class }}"><span class="lifecycle-step-num">{% if hub.has_history %}✓{% else %}6{% endif %}</span> Historial</span></li>
+        </ol>
+    </div>
+</div>
+
+<form method="get" class="panel" style="margin-top:16px">
+    <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:12px;align-items:end">
+        <div>
+            <label for="tipo">Tipo</label>
+            <select id="tipo" name="tipo">
+                {% for value, label in tipo_choices %}
+                <option value="{{ value }}"{% if tipo == value %} selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-secondary">Filtrar</button>
+    </div>
+</form>
+
+{% if not has_any_history %}
+<div class="empty-state" style="margin-top:16px">
+    <h3>Sin eventos aún</h3>
+    <p>Guarde un borrador o aplique a un destino para ver el historial.</p>
+    <div class="page-actions" style="margin-top:12px">
+        <a href="{% url 'structure_scout:sample_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a muestra</a>
+        {% if hub.has_fields %}
+        <a href="{% url 'structure_scout:draft_hub' project_slug=project.slug %}" class="btn btn-secondary">Ir a borrador</a>
+        {% endif %}
+    </div>
+</div>
+{% elif is_empty %}
+<div class="alert alert-info" style="margin-top:16px">
+    No hay eventos de este tipo. Pruebe otro filtro.
+</div>
+{% else %}
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <div class="table-wrap" style="overflow-x:auto">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Resumen</th>
+                        <th>Usuario</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ev in events %}
+                    <tr>
+                        <td class="mono">{{ ev.created_at|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if ev.event_type == 'draft' %}
+                            <span class="cell-badge">Borrador</span>
+                            {% else %}
+                            <span class="cell-badge">Apply</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ev.event_type == 'draft' %}
+                            {{ ev.summary }}
+                            {% if ev.is_current %}<span class="cell-badge" style="margin-left:6px">current</span>{% endif %}
+                            <span class="hint" style="display:block">{{ ev.sample_filename }}</span>
+                            {% else %}
+                            {% if ev.status == 'ok' %}OK{% else %}Fallido{% endif %}
+                            · {{ ev.summary }}
+                            {% if ev.message_short %}
+                            <span class="hint" style="display:block">{{ ev.message_short }}</span>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>{{ ev.user_label }}</td>
+                        <td>
+                            {% if ev.event_type == 'draft' %}
+                            <a class="btn btn-secondary btn-sm" href="{% url 'structure_scout:history_draft' project_slug=project.slug draft_id=ev.draft.id %}">Ver</a>
+                            {% else %}
+                            <a class="btn btn-secondary btn-sm" href="{% url 'structure_scout:history_apply' project_slug=project.slug apply_id=ev.apply.id %}">Ver</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

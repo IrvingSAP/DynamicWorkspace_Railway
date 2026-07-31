@@ -38,6 +38,7 @@ flowchart LR
 | DMS SourceProfile / TargetProfile / FieldMapping / TransformRules | `UI_MESSAGES.md` §3.8 · [`source_definition.md`](../definition_app_DMS/source_definition.md) · [`target_definition.md`](../definition_app_DMS/target_definition.md) · [`field_mapping.md`](../definition_app_DMS/field_mapping.md) · [`transform_rules.md`](../definition_app_DMS/transform_rules.md) |
 | FILE GATE (contrato, políticas, validar, informe, historial, bridge) | `UI_MESSAGES.md` §3.9 · [`../FILE_GATE.md`](../FILE_GATE.md) · [`../definition_app_FILE_GATE/`](../definition_app_FILE_GATE/) |
 | FILE MATCH (perfil A, …) | `UI_MESSAGES.md` §3.11 · [`../FILE_MATCH.md`](../FILE_MATCH.md) · [`../definition_app_FILE_MATCH/`](../definition_app_FILE_MATCH/) |
+| STRUCTURE SCOUT (ciclo proyecto, …) | `UI_MESSAGES.md` §3.12 · [`../STRUCTURE_SCOUT.md`](../STRUCTURE_SCOUT.md) · [`../definition_app_STRUCTURE_SCOUT/`](../definition_app_STRUCTURE_SCOUT/) |
 
 ---
 
@@ -615,6 +616,118 @@ Mensajes de usuario para el Conciliador. Alineados a [`../FILE_MATCH.md`](../FIL
 | Config inválida | `error` | La integración FILE GATE está mal configurada. Revise el proyecto vinculado. |
 
 > Motor: `match_bridge_service` + `dms_bridge_service.precheck_match_sides`. Config: `DmsProjectConfig.file_gate_*` + `file_gate_require_a` / `_b`. Sello en `FileMatchJob.metrics["file_gate_check"]`.
+
+### 3.12 Mensajes específicos — `apps.structure_scout` (STRUCTURE SCOUT)
+
+Mensajes de usuario para el Explorador de estructura. Alineados a [`../STRUCTURE_SCOUT.md`](../STRUCTURE_SCOUT.md) y [`../definition_app_STRUCTURE_SCOUT/`](../definition_app_STRUCTURE_SCOUT/).
+
+#### Proyectos / miembros (Módulo 1 — lifecycle)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin acceso al proyecto | `error` | No tiene acceso a este proyecto Explorador. |
+| Solo UF crea proyectos | `error` | Solo usuarios UF pueden crear proyectos del Explorador de estructura. |
+| Proyecto creado | `success` | Proyecto Explorador de estructura creado correctamente. |
+| Solo PA gestiona miembros | `error` | Solo el administrador del proyecto (PA) puede gestionar miembros. |
+
+> La UI de miembros reutiliza `invite_member` / `update_member_role` / `set_member_active` de `apps.projects`. Visibilidad vía `DmsProjectConfig`.
+
+#### Módulo 2 — Cargar muestra
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Muestra subida | `success` / JSON | Muestra subida correctamente. |
+| Muestra eliminada | `success` / JSON | Muestra eliminada. |
+| Sin permiso subir | `error` / JSON 403 | No tiene permiso para subir muestras en este proyecto. |
+| Sin permiso eliminar | `error` / JSON 403 | No tiene permiso para eliminar muestras en este proyecto. |
+| Sin permiso preview (CO) | `error` / JSON 403 | No tiene permiso para ver el preview de la muestra. |
+| Tipo no permitido | `error` + inline / JSON | Tipo de archivo no permitido. Use CSV, Excel o TXT. |
+| Archivo vacío | `error` + inline / JSON | El archivo está vacío. |
+| Tamaño &gt; 10 MB | `error` + inline / JSON | El archivo supera el límite de 10 MB para muestras. |
+| Muestra no encontrada | `error` / JSON 404 | Archivo muestra no encontrado. |
+| Error inesperado | `error` + log | Ocurrió un error al subir la muestra. Si persiste, contacte al administrador. |
+
+> Motor: `sample_upload_service` + `storage_service` / `detection_service` DMS. Persistencia: `DmsSampleFile` (`version=None`). JS: reuso `file_intake.js`.
+
+#### Módulo 3 — Detectar patrón
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin muestra | `error` / empty UI | Suba una muestra antes de detectar el patrón. |
+| Confirmación OK (`draft_ready`) | `success` | Patrón detectado y confirmado. |
+| Confirmación OK (`needs_review`) | `warning` | Patrón guardado con revisión pendiente. Revise antes de aplicar a un destino. |
+| Re-detectar OK | `success` | Sugerencias actualizadas desde la muestra. |
+| Tipo vacío | `error` + inline | Seleccione un tipo de archivo. |
+| Delimitado sin delimitador | `error` + inline | Indique el delimitador o cambie el tipo. |
+| Header row &lt; 1 | `error` + inline | La fila de encabezado debe ser ≥ 1. |
+| Fallo lectura | `error` + log | No se pudo analizar la muestra. Vuelva a subir el archivo. |
+| Sin permiso editar | `error` | No tiene permiso para editar el patrón de detección. |
+| Sin permiso confirmar | `error` | No tiene permiso para confirmar el patrón de detección. |
+| Validación formulario | `error` + inline | Revise los datos del patrón de detección. |
+| Sin acceso | `error` | No tiene acceso a este proyecto Explorador. |
+
+> Motor: `detect_pattern_service` + `detection_service` DMS. Persistencia: `ScoutDetectionState`. Roles: PA/ED editan; PA/ED/GE confirman. CO sin preview de filas.
+
+#### Módulo 4 — Campos y tipos
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin detección | `error` / empty UI | Confirme el patrón de detección antes de proponer campos. |
+| Sin muestra | `error` / empty UI | Suba una muestra antes de proponer campos. |
+| Confirmación OK (`draft_ready`) | `success` | Campos propuestos y confirmados. |
+| Confirmación OK (`needs_review`) | `warning` | Campos guardados con revisión pendiente. Revise tipos antes de guardar el borrador. |
+| Re-inferir OK | `success` | Campos vueltos a inferir desde la muestra. |
+| Lista vacía | `error` + inline | Agregue al menos un campo. |
+| Nombre vacío | `error` + inline | Indique el nombre del campo. |
+| Nombre duplicado | `error` + inline | El nombre del campo debe ser único. |
+| Tipo inválido | `error` + inline | Seleccione un tipo de contenido válido. |
+| Fallo inferencia | `error` + log | No se pudieron inferir campos desde la muestra. Revise el patrón o la muestra. |
+| Sin permiso editar | `error` | No tiene permiso para editar los campos propuestos. |
+| Sin permiso confirmar | `error` | No tiene permiso para confirmar los campos. |
+| Validación formulario | `error` + inline | Revise los datos de los campos propuestos. |
+| Sin acceso | `error` | No tiene acceso a este proyecto Explorador. |
+
+> Motor: `propose_fields_service` + catálogo `FieldContentType` + patrones `source_field_validation_service`. Persistencia: `ScoutFieldsState`. Roles: PA/ED editan; PA/ED/GE confirman. CO sin ejemplos.
+
+#### Módulo 5 — Borrador de estructura
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin campos confirmados | `error` / empty UI | Confirme los campos propuestos antes de guardar el borrador. |
+| Snapshot inconsistente | `error` | No se pudo armar el snapshot. Revise detección y campos. |
+| Guardado OK | `success` | Borrador de estructura guardado (versión N). |
+| Sin permiso guardar | `error` | No tiene permiso para guardar el borrador de estructura. |
+| Sin draft al exportar | `error` | No hay borrador para exportar. Guarde una versión primero. |
+| Sin permiso exportar | `error` | No tiene permiso para exportar el borrador. |
+| Sin acceso | `error` | No tiene acceso a este proyecto Explorador. |
+
+> Motor: `save_draft_service`. Persistencia: `StructureDraft` (versionado, `is_current`). Payload dual producto + `source`. Roles: PA/ED guardan; GE/CO exportan (CO sin examples).
+
+#### Módulo 6 — Aplicar a destino
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin draft | `error` / empty UI | Guarde un borrador de estructura antes de aplicar a un destino. |
+| Destino no seleccionado | `error` | Seleccione un proyecto destino. |
+| Destino no elegible | `error` | No puede aplicar a este destino. Verifique compañía y rol (PA/ED). |
+| Apply OK | `success` | Borrador sembrado en el destino. Abra el proyecto para revisar y publicar allí. |
+| Apply fail | `error` + log | No se pudo aplicar el borrador al destino. Si persiste, contacte al administrador. |
+| Sin permiso aplicar | `error` | No tiene permiso para aplicar el borrador a un destino. |
+| Sin acceso | `error` | No tiene acceso a este proyecto Explorador. |
+
+> Motor: `apply_target_service` → `source_persistence_service.save_source` (2 pasos: meta + fields). Auditoría: `ScoutApply`. Destinos MVP: GATE + Reverse. Nunca publica.
+
+#### Módulo 7 — Historial
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin acceso | `error` | No tiene acceso a este proyecto Explorador. |
+| Draft no encontrado | `error` | Versión de borrador no encontrada. |
+| Apply no encontrado | `error` | Registro de aplicación no encontrado. |
+| Sin permiso exportar | `error` | No tiene permiso para exportar el borrador. |
+| Sin eventos | empty UI | Guarde un borrador o aplique a un destino para ver el historial. |
+
+> Motor: `history_service` (solo lectura). Fuentes: `StructureDraft` + `ScoutApply`. Timeline filtrable por tipo. Export por versión: `history_draft_export` → `export_draft_json`.
 
 ---
 

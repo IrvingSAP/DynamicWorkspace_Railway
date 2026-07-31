@@ -1,0 +1,109 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Borrador v{{ draft.version }} — Historial{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:history_hub' project_slug=project.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>v{{ draft.version }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    {% if membership %}
+    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    {% endif %}
+    {% if draft.is_current %}
+    <span class="cell-badge">current</span>
+    {% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">STRUCTURE SCOUT · Historial</p>
+        <h2>Versión de borrador v{{ draft.version }}</h2>
+        <p>Snapshot congelado al guardar. Solo lectura desde historial.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'structure_scout:history_hub' project_slug=project.slug %}" class="btn btn-secondary">← Historial</a>
+    </div>
+</div>
+
+<div class="stats-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:16px 0">
+    <div class="panel"><div class="panel-body">
+        <p class="hint" style="margin:0;text-transform:uppercase;font-size:12px">Versión</p>
+        <p style="margin:4px 0 0;font-weight:600">v{{ draft.version }}</p>
+    </div></div>
+    <div class="panel"><div class="panel-body">
+        <p class="hint" style="margin:0;text-transform:uppercase;font-size:12px">Estado</p>
+        <p style="margin:4px 0 0;font-weight:600">{{ status_label }}</p>
+    </div></div>
+    <div class="panel"><div class="panel-body">
+        <p class="hint" style="margin:0;text-transform:uppercase;font-size:12px">Confianza</p>
+        <p style="margin:4px 0 0;font-weight:600">{{ confidence_label }}</p>
+    </div></div>
+    <div class="panel"><div class="panel-body">
+        <p class="hint" style="margin:0;text-transform:uppercase;font-size:12px">Campos</p>
+        <p style="margin:4px 0 0;font-weight:600">{{ fields_count }}</p>
+    </div></div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Metadatos</h3>
+        <dl class="detail-list" style="display:grid;grid-template-columns:140px 1fr;gap:8px 12px;font-size:14px">
+            <dt class="hint">Fecha</dt>
+            <dd class="mono" style="margin:0">{{ draft.created_at|date:"d/m/Y H:i" }}</dd>
+            <dt class="hint">Usuario</dt>
+            <dd style="margin:0">{{ user_label }}</dd>
+            <dt class="hint">Muestra</dt>
+            <dd style="margin:0">{{ draft.sample_filename|default:"—" }}</dd>
+            <dt class="hint">Hash</dt>
+            <dd class="mono" style="margin:0">{{ draft.sample_hash_short|default:"—" }}</dd>
+            <dt class="hint">Current</dt>
+            <dd style="margin:0">{% if draft.is_current %}Sí{% else %}No{% endif %}</dd>
+            <dt class="hint">Notas</dt>
+            <dd style="margin:0">{{ draft.notes|default:"—" }}</dd>
+        </dl>
+        {% if pattern_chips %}
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
+            {% for chip in pattern_chips %}
+            <span class="cell-badge">{{ chip }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if not can_view_examples %}
+        <p class="hint" style="margin-top:14px">Su rol no incluye ejemplos de celdas en el payload.</p>
+        {% endif %}
+        <div class="page-actions" style="margin-top:14px">
+            {% if can_export %}
+            <a href="{% url 'structure_scout:history_draft_export' project_slug=project.slug draft_id=draft.id %}" class="btn btn-primary">Exportar JSON</a>
+            {% endif %}
+            <a href="{% url 'structure_scout:draft_hub' project_slug=project.slug %}" class="btn btn-secondary">Ir al hub borrador</a>
+            {% if hub.has_draft %}
+            <a href="{% url 'structure_scout:apply_hub' project_slug=project.slug %}" class="btn btn-secondary">Aplicar a destino</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

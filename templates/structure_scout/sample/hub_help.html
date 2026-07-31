@@ -1,0 +1,28 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Muestra — STRUCTURE SCOUT{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Cargar muestra</h2>
+        <p>Qué es una muestra, límites y roles en el Explorador.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'structure_scout:sample_hub' project_slug=project.slug %}">← Volver</a>
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>La <strong>muestra</strong> es un archivo de ejemplo para proponer la estructura. No valida ni transforma producción.</li>
+    <li>Límite: <strong>10 MB</strong>. Extensiones MVP: CSV, Excel, TXT/TSV.</li>
+    <li>Tras subir verá preview crudo y sugerencias (tipo, encoding, delimitador).</li>
+    <li>Roles: PA / ED / GE pueden subir. CO no ve filas de preview en el MVP.</li>
+    <li>Siguiente paso: <strong>Detectar patrón</strong> (M3) y luego confirmar campos (M4).</li>
+    <li>Reuso técnico: storage + <code>detection_service</code> DMS — sin parser nuevo.</li>
+</ul>
+</div></div>
+{% endblock %}

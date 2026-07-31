@@ -1,0 +1,28 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Aplicar — STRUCTURE SCOUT{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Aplicar a destino</h2>
+        <p>Qué se siembra en el Módulo 6 del Explorador.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'structure_scout:apply_hub' project_slug=project.slug %}">← Volver</a>
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>Requiere un <strong>borrador Scout</strong> guardado (M5).</li>
+    <li>Destinos MVP: FILE GATE y Reverse Studio (misma compañía).</li>
+    <li>Solo escribe el <strong>borrador</strong> del destino — nunca publica.</li>
+    <li>Si el destino ya tiene campos, verá un aviso de sobrescritura.</li>
+    <li>Roles: PA / ED en Scout y en el destino.</li>
+    <li>Tras aplicar, abra el destino para revisar y publicar allí.</li>
+</ul>
+</div></div>
+{% endblock %}

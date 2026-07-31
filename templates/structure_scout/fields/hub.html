@@ -1,0 +1,333 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Campos y tipos — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Campos</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    {% if membership %}
+    <span class="hint">·</span>
+    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    {% endif %}
+    {% if sample %}
+    <span class="hint">·</span>
+    <span class="hint">Muestra: <strong>{{ sample.original_filename }}</strong></span>
+    {% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">STRUCTURE SCOUT · Campos</p>
+        <h2>Campos y tipos</h2>
+        <p>Revise nombres y tipos propuestos a partir de la muestra y el patrón confirmado.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'structure_scout:fields_hub_help' project_slug=project.slug as ss_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=ss_help_url %}
+        <a href="{% url 'structure_scout:detect_hub' project_slug=project.slug %}" class="btn btn-secondary">Detectar</a>
+        <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+    </div>
+</div>
+
+<div class="lifecycle-stepper" aria-label="Progreso exploración">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Exploración</p>
+        <ol class="lifecycle-steps">
+            <li><span class="lifecycle-step {{ hub.sample_step_class }}"><span class="lifecycle-step-num">{% if hub.has_sample %}✓{% else %}1{% endif %}</span> Muestra</span></li>
+            <li><span class="lifecycle-step {{ hub.detect_step_class }}"><span class="lifecycle-step-num">{% if hub.has_detection %}✓{% else %}2{% endif %}</span> Detectar</span></li>
+            <li><span class="lifecycle-step {{ hub.fields_step_class }}"><span class="lifecycle-step-num">{% if hub.has_fields %}✓{% else %}3{% endif %}</span> Campos</span></li>
+            <li><span class="lifecycle-step {{ hub.draft_step_class }}"><span class="lifecycle-step-num">{% if hub.has_draft %}✓{% else %}4{% endif %}</span> Borrador</span></li>
+        </ol>
+    </div>
+</div>
+
+{% if not has_sample %}
+<div class="alert alert-warning" style="margin-top:16px">
+    Suba una muestra antes de proponer campos.
+    <a href="{% url 'structure_scout:sample_hub' project_slug=project.slug %}">Ir a cargar muestra</a>
+</div>
+{% elif not has_detection %}
+<div class="alert alert-warning" style="margin-top:16px">
+    Confirme el patrón de detección antes de proponer campos.
+    <a href="{% url 'structure_scout:detect_hub' project_slug=project.slug %}">Ir a detectar</a>
+</div>
+<div class="empty-state" style="margin-top:16px">
+    <h3>Sin patrón confirmado</h3>
+    <p>La inferencia de campos usa el delimitador y el encabezado del Módulo 3.</p>
+    <a href="{% url 'structure_scout:detect_hub' project_slug=project.slug %}" class="btn btn-primary">Detectar patrón</a>
+</div>
+{% else %}
+
+<div class="stats-strip" aria-label="Estado campos" style="margin-top:16px">
+    <div class="stat-card{% if status == 'draft_ready' %} is-done{% elif status == 'needs_review' %} is-accent{% endif %}">
+        <p class="stat-label">Estado</p>
+        <p class="stat-value" style="font-size:15px">{{ status_label }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Confianza</p>
+        <p class="stat-value" style="font-size:15px">{{ confidence_label }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Campos</p>
+        <p class="stat-value">{{ field_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Patrón</p>
+        <p class="stat-value" style="font-size:13px">
+            {{ detection.file_type_code|default:"—" }}
+            {% if detection.delimiter %} · {{ detection.delimiter }}{% endif %}
+            {% if detection.has_header %} · header {{ detection.header_row }}{% endif %}
+        </p>
+    </div>
+</div>
+
+{% if status == 'needs_review' or global_notes %}
+<div class="alert alert-warning" style="margin-top:16px">
+    {% if status == 'needs_review' %}
+    Campos con revisión pendiente (cobertura, tipos mixtos o patrón dudoso).
+    {% endif %}
+    {% if global_notes %}<span class="hint">{{ global_notes }}</span>{% endif %}
+</div>
+{% endif %}
+
+{% if detection.file_type_code == 'txt_fixed' or detection.file_type_code == 'xlsx' %}
+<div class="alert alert-info" style="margin-top:16px">
+    {% if detection.file_type_code == 'txt_fixed' %}
+    TXT posicional: en el MVP las columnas son tentativas; revise a mano.
+    {% else %}
+    Excel: preview limitado en MVP; confirme tipos con cuidado.
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Origen</h3>
+        <p class="hint">
+            Muestra <strong>{{ sample.original_filename }}</strong>
+            · <a href="{% url 'structure_scout:detect_hub' project_slug=project.slug %}">Ajustar en Detectar</a>
+        </p>
+        {% if can_reinfer %}
+        <form method="post" style="margin-top:12px">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reinfer">
+            <button type="submit" class="btn btn-secondary">Re-inferir desde muestra</button>
+        </form>
+        <p class="hint" style="margin-top:8px">Recalcula columnas y resetea overrides (sin confirmar).</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if infer_note and not fields %}
+<div class="alert alert-warning" style="margin-top:16px">{{ infer_note }}</div>
+{% endif %}
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Tabla de campos</h3>
+        {% if not can_edit %}
+        <p class="hint">Solo PA / ED pueden editar. {% if can_confirm %}Puede confirmar la propuesta actual.{% endif %}</p>
+        {% endif %}
+        {% if errors.__all__ %}
+        <div class="form-errors">
+            {% for msg in errors.__all__ %}
+            <p class="field-error">{{ msg }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" novalidate id="ss-fields-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="confirm">
+            <input type="hidden" name="field_count" id="field_count" value="{{ field_count }}">
+
+            {% if fields %}
+            <div class="table-wrap" style="overflow-x:auto;margin-top:12px">
+                <table class="data-table" id="ss-fields-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nombre</th>
+                            <th>Tipo</th>
+                            <th>Req.</th>
+                            <th>Confianza</th>
+                            {% if can_preview %}<th>Ejemplos</th>{% endif %}
+                            <th>Notas</th>
+                            {% if can_edit %}<th></th>{% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for field in fields %}
+                        <tr data-row-index="{{ forloop.counter0 }}">
+                            <td class="mono">{{ forloop.counter }}</td>
+                            <td>
+                                <div class="field{% if field.errors.name %} has-error{% endif %}">
+                                    <input type="text" name="name_{{ forloop.counter0 }}" value="{{ field.name }}" maxlength="80"{% if not can_edit %} disabled{% endif %} required>
+                                    {% for msg in field.errors.name %}
+                                    <p class="field-error">{{ msg }}</p>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="field{% if field.errors.content_type %} has-error{% endif %}">
+                                    <select name="content_type_{{ forloop.counter0 }}"{% if not can_edit %} disabled{% endif %}>
+                                        {% for ct in content_types %}
+                                        <option value="{{ ct.code }}"{% if field.content_type == ct.code %} selected{% endif %}>{{ ct.code }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    {% for msg in field.errors.content_type %}
+                                    <p class="field-error">{{ msg }}</p>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td>
+                                <input type="checkbox" name="required_{{ forloop.counter0 }}" value="1"{% if field.required %} checked{% endif %}{% if not can_edit %} disabled{% endif %}>
+                            </td>
+                            <td>
+                                <input type="hidden" name="confidence_{{ forloop.counter0 }}" value="{{ field.confidence }}">
+                                {% if field.confidence == 'high' %}Alta
+                                {% elif field.confidence == 'medium' %}Media
+                                {% elif field.confidence == 'low' %}Baja
+                                {% else %}—{% endif %}
+                            </td>
+                            {% if can_preview %}
+                            <td class="mono hint">
+                                <input type="hidden" name="examples_{{ forloop.counter0 }}" value="{% for ex in field.examples %}{{ ex }}{% if not forloop.last %} · {% endif %}{% endfor %}">
+                                {% for ex in field.examples %}{{ ex }}{% if not forloop.last %} · {% endif %}{% empty %}—{% endfor %}
+                            </td>
+                            {% endif %}
+                            <td>
+                                <input type="text" name="notes_{{ forloop.counter0 }}" value="{{ field.notes }}"{% if not can_edit %} disabled{% endif %}>
+                            </td>
+                            {% if can_edit %}
+                            <td>
+                                <button type="button" class="btn btn-secondary btn-sm" data-action="remove-field">Quitar</button>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state" style="margin-top:12px">
+                <h3>Sin campos</h3>
+                <p>No se inferieron columnas. Revise el patrón o re-infiera.</p>
+            </div>
+            {% endif %}
+
+            <div class="page-actions" style="margin-top:16px">
+                {% if can_edit %}
+                <button type="button" class="btn btn-secondary" id="ss-add-field">+ Agregar campo</button>
+                {% endif %}
+                {% if can_confirm %}
+                <button type="submit" class="btn btn-primary">Confirmar campos</button>
+                {% if hub.has_fields %}
+                <a href="{% url 'structure_scout:draft_hub' project_slug=project.slug %}" class="btn btn-secondary">Continuar a borrador</a>
+                {% endif %}
+                {% elif not can_edit %}
+                <p class="hint">No tiene permiso para confirmar los campos.</p>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if not can_preview %}
+<div class="alert alert-info" style="margin-top:16px">
+    Su rol no permite ver ejemplos de celdas (CO). Puede ver nombres y tipos.
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if has_detection and can_edit %}
+<script>
+(function () {
+  var table = document.getElementById("ss-fields-table");
+  var countInput = document.getElementById("field_count");
+  var addBtn = document.getElementById("ss-add-field");
+  if (!table || !countInput) return;
+
+  var contentTypes = [
+    {% for ct in content_types %}"{{ ct.code }}"{% if not forloop.last %}, {% endif %}{% endfor %}
+  ];
+  var showExamples = {% if can_preview %}true{% else %}false{% endif %};
+
+  function reindex() {
+    var rows = table.querySelectorAll("tbody tr");
+    rows.forEach(function (row, idx) {
+      row.setAttribute("data-row-index", String(idx));
+      var num = row.querySelector("td.mono");
+      if (num) num.textContent = String(idx + 1);
+      row.querySelectorAll("[name]").forEach(function (el) {
+        var name = el.getAttribute("name");
+        if (!name) return;
+        el.setAttribute("name", name.replace(/_\d+$/, "_" + idx));
+      });
+    });
+    countInput.value = String(rows.length);
+  }
+
+  table.addEventListener("click", function (ev) {
+    var btn = ev.target.closest("[data-action='remove-field']");
+    if (!btn) return;
+    var row = btn.closest("tr");
+    if (row) row.remove();
+    reindex();
+  });
+
+  if (addBtn) {
+    addBtn.addEventListener("click", function () {
+      var tbody = table.querySelector("tbody");
+      var idx = tbody.querySelectorAll("tr").length;
+      var opts = contentTypes.map(function (code) {
+        return '<option value="' + code + '"' + (code === "free_text" ? " selected" : "") + ">" + code + "</option>";
+      }).join("");
+      var examplesCell = showExamples
+        ? '<td class="mono hint"><input type="hidden" name="examples_' + idx + '" value="">—</td>'
+        : "";
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        '<td class="mono">' + (idx + 1) + "</td>" +
+        '<td><div class="field"><input type="text" name="name_' + idx + '" value="col_' + (idx + 1) + '" maxlength="80" required></div></td>' +
+        '<td><div class="field"><select name="content_type_' + idx + '">' + opts + "</select></div></td>" +
+        '<td><input type="checkbox" name="required_' + idx + '" value="1"></td>' +
+        '<td><input type="hidden" name="confidence_' + idx + '" value="low">Baja</td>' +
+        examplesCell +
+        '<td><input type="text" name="notes_' + idx + '" value=""></td>' +
+        '<td><button type="button" class="btn btn-secondary btn-sm" data-action="remove-field">Quitar</button></td>';
+      tbody.appendChild(tr);
+      reindex();
+    });
+  }
+})();
+</script>
+{% endif %}
+{% endblock %}

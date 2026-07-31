@@ -1,0 +1,33 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Proyecto — {{ project.name }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb">
+    <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span><span>Ayuda</span>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Hub del proyecto</h2>
+        <p>Punto de entrada del Explorador. Stepper: Muestra → Detectar → Campos → Borrador → Aplicar → Historial.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">← Volver</a>
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li><strong>Miembros:</strong> solo PA invita UF y asigna roles.</li>
+    <li><strong>Muestra / Detectar / Campos:</strong> proponen un borrador; usted confirma.</li>
+    <li><strong>Aplicar:</strong> siembra solo borrador en GATE / Reverse / Match / FilePipe (nunca auto-publica).</li>
+    <li><strong>Historial:</strong> auditoría de exploraciones y aplicaciones.</li>
+</ul>
+</div></div>
+{% endblock %}

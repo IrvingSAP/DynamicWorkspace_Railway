@@ -1,0 +1,22 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Nuevo proyecto — STRUCTURE SCOUT{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Crear proyecto</h2>
+        <p>Nombre, código (slug) y visibilidad del Explorador.</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'structure_scout:project_create' %}">← Volver</a></div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>El slug es único por compañía (compartido entre apps).</li>
+    <li>Quien crea queda como <strong>PA</strong> del proyecto.</li>
+    <li><strong>Privado:</strong> solo miembros. <strong>Público:</strong> la compañía puede verlo; explorar/aplicar exige rol.</li>
+    <li>Tras crear: gestione miembros si hace falta y prepare la primera exploración (módulo Muestra).</li>
+</ul>
+</div></div>
+{% endblock %}

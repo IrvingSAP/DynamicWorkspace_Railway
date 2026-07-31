@@ -1,0 +1,206 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Borrador — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Borrador</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    {% if membership %}
+    <span class="hint">·</span>
+    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    {% endif %}
+    {% if sample %}
+    <span class="hint">·</span>
+    <span class="hint">Muestra: <strong>{{ sample.original_filename }}</strong></span>
+    {% endif %}
+    {% if current %}
+    <span class="hint">·</span>
+    <span class="cell-badge">current {{ version_label }}</span>
+    {% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">STRUCTURE SCOUT · Borrador</p>
+        <h2>Borrador de estructura</h2>
+        <p>Congela patrón y campos en una versión exportable. No publica destinos.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'structure_scout:draft_hub_help' project_slug=project.slug as ss_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=ss_help_url %}
+        <a href="{% url 'structure_scout:fields_hub' project_slug=project.slug %}" class="btn btn-secondary">Campos</a>
+        <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+    </div>
+</div>
+
+<div class="lifecycle-stepper" aria-label="Progreso exploración">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Exploración</p>
+        <ol class="lifecycle-steps">
+            <li><span class="lifecycle-step {{ hub.sample_step_class }}"><span class="lifecycle-step-num">{% if hub.has_sample %}✓{% else %}1{% endif %}</span> Muestra</span></li>
+            <li><span class="lifecycle-step {{ hub.detect_step_class }}"><span class="lifecycle-step-num">{% if hub.has_detection %}✓{% else %}2{% endif %}</span> Detectar</span></li>
+            <li><span class="lifecycle-step {{ hub.fields_step_class }}"><span class="lifecycle-step-num">{% if hub.has_fields %}✓{% else %}3{% endif %}</span> Campos</span></li>
+            <li><span class="lifecycle-step {{ hub.draft_step_class }}"><span class="lifecycle-step-num">{% if hub.has_draft %}✓{% else %}4{% endif %}</span> Borrador</span></li>
+        </ol>
+    </div>
+</div>
+
+{% if not has_fields %}
+<div class="alert alert-warning" style="margin-top:16px">
+    Confirme los campos propuestos antes de guardar el borrador.
+    <a href="{% url 'structure_scout:fields_hub' project_slug=project.slug %}">Ir a campos</a>
+</div>
+<div class="empty-state" style="margin-top:16px">
+    <h3>Sin campos confirmados</h3>
+    <p>El borrador congela el patrón (M3) y los campos (M4) en una versión.</p>
+    <a href="{% url 'structure_scout:fields_hub' project_slug=project.slug %}" class="btn btn-primary">Proponer campos</a>
+</div>
+{% else %}
+
+<div class="stats-strip" aria-label="Estado borrador" style="margin-top:16px">
+    <div class="stat-card{% if current %} is-done{% endif %}">
+        <p class="stat-label">Versión actual</p>
+        <p class="stat-value" style="font-size:15px">{{ version_label }}</p>
+    </div>
+    <div class="stat-card{% if status == 'draft_ready' %} is-done{% elif status == 'needs_review' %} is-accent{% endif %}">
+        <p class="stat-label">Estado</p>
+        <p class="stat-value" style="font-size:15px">{{ status_label }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Confianza</p>
+        <p class="stat-value" style="font-size:15px">{{ confidence_label }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Campos</p>
+        <p class="stat-value">{{ fields_count }}</p>
+    </div>
+</div>
+
+{% if status == 'needs_review' %}
+<div class="alert alert-warning" style="margin-top:16px">
+    El borrador hereda revisión pendiente de Campos. Revise antes de aplicar a un destino (M6).
+</div>
+{% endif %}
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">{% if current %}Snapshot (versión actual){% else %}Se guardará{% endif %}</h3>
+        <p class="hint">
+            {% if current %}
+            Congelado al guardar. Guardar de nuevo crea una versión nueva (no pisa la actual).
+            {% else %}
+            Tomará detección + campos confirmados en este momento.
+            {% endif %}
+        </p>
+        {% if detection %}
+        <p class="hint" style="margin-top:8px">
+            <span class="cell-badge">{{ detection.file_type_code|default:"—" }}</span>
+            {% if detection.encoding_code %}<span class="cell-badge">{{ detection.encoding_code }}</span>{% endif %}
+            {% if detection.delimiter %}<span class="cell-badge">delim {{ detection.delimiter }}</span>{% endif %}
+            {% if detection.has_header %}<span class="cell-badge">header {{ detection.header_row }}</span>{% endif %}
+            {% if current and current.sample_hash_short %}<span class="cell-badge">hash {{ current.sample_hash_short }}…</span>{% endif %}
+        </p>
+        {% endif %}
+
+        {% if can_save %}
+        <form method="post" style="margin-top:14px">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="save">
+            <div class="field" style="max-width:420px;margin-bottom:12px">
+                <label for="notes">Notas (opcional)</label>
+                <input type="text" id="notes" name="notes" maxlength="500" placeholder="Motivo de esta versión">
+            </div>
+            <div class="page-actions">
+                <button type="submit" class="btn btn-primary">Guardar nueva versión</button>
+                {% if current and can_export %}
+                <a href="{% url 'structure_scout:draft_export' project_slug=project.slug %}" class="btn btn-secondary">Exportar JSON</a>
+                {% endif %}
+                {% if hub.has_draft %}
+                <a href="{% url 'structure_scout:apply_hub' project_slug=project.slug %}" class="btn btn-secondary">Continuar a aplicar</a>
+                {% endif %}
+            </div>
+        </form>
+        {% else %}
+        <div class="page-actions" style="margin-top:14px">
+            {% if current and can_export %}
+            <a href="{% url 'structure_scout:draft_export' project_slug=project.slug %}" class="btn btn-secondary">Exportar JSON</a>
+            {% endif %}
+            <p class="hint">Solo PA / ED pueden guardar una nueva versión.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Versiones del proyecto</h3>
+        <p class="hint">Historial corto de versiones. El timeline completo (borradores + applies) está en Historial.</p>
+        {% if versions %}
+        <div class="table-wrap" style="overflow-x:auto;margin-top:12px">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Versión</th>
+                        <th>Fecha</th>
+                        <th>Usuario</th>
+                        <th>Estado</th>
+                        <th>Campos</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in versions %}
+                    <tr>
+                        <td class="mono">v{{ item.version }}</td>
+                        <td>{{ item.created_at|date:"d/m/Y H:i" }}</td>
+                        <td>{% if item.created_by %}{{ item.created_by }}{% else %}—{% endif %}</td>
+                        <td>
+                            {% if item.status == 'draft_ready' %}Listo
+                            {% elif item.status == 'needs_review' %}Revisión pendiente
+                            {% else %}{{ item.status }}{% endif %}
+                        </td>
+                        <td>{{ item.payload.draft.fields|length }}</td>
+                        <td>
+                            <a class="btn btn-secondary btn-sm" href="{% url 'structure_scout:history_draft' project_slug=project.slug draft_id=item.id %}">Ver</a>
+                            {% if item.is_current %}<span class="cell-badge">actual</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state" style="margin-top:12px">
+            <h3>Sin versiones</h3>
+            <p>Guarde el primer borrador para crear v1.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}
