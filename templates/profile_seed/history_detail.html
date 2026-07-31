@@ -1,0 +1,113 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Detalle importación — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_seed_history' project_slug=project.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Detalle</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_match/profile_a/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">PROFILE SEED · Historial</p>
+        <h2>Detalle de importación</h2>
+        <p>
+            {% if event.status == "ok" %}
+            <span class="cell-badge" style="background:#e4f0eb;border-color:#b7d4c8;color:#1f6b4a">{{ event.status_label }}</span>
+            {% else %}
+            <span class="cell-badge" style="background:#f8e8e8;border-color:#e0b4b4;color:#8b2e2e">{{ event.status_label }}</span>
+            {% endif %}
+        </p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:profile_a_seed_history' project_slug=project.slug %}" class="btn btn-secondary">← Historial</a>
+    </div>
+</div>
+
+{% if event.status != "ok" and event.message %}
+<div class="alert alert-warning" style="margin-bottom:16px">
+    {{ event.message }}
+</div>
+{% endif %}
+
+{% if source_gone_hint %}
+<p class="hint" style="margin-bottom:16px">{{ source_gone_hint }}</p>
+{% endif %}
+
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Origen</h3>
+        <dl style="display:grid;grid-template-columns:130px 1fr;gap:6px 12px;font-size:14px;margin:0">
+            <dt class="hint">App / slot</dt>
+            <dd style="margin:0">{{ event.source_kind_label }} · {{ event.source_slot_label }}</dd>
+            <dt class="hint">Proyecto</dt>
+            <dd style="margin:0"><span class="cell-badge">{{ event.source_slug }}</span></dd>
+            <dt class="hint">Versión</dt>
+            <dd style="margin:0">{{ event.source_version_label }}</dd>
+            <dt class="hint">Enlace</dt>
+            <dd style="margin:0">
+                {% if event.source_url %}
+                <a href="{{ event.source_url }}">Abrir esquema GATE</a>
+                {% else %}
+                —
+                {% endif %}
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Destino</h3>
+        <dl style="display:grid;grid-template-columns:130px 1fr;gap:6px 12px;font-size:14px;margin:0">
+            <dt class="hint">Slot</dt>
+            <dd style="margin:0">{{ event.target_slot_label }}</dd>
+            <dt class="hint">Proyecto</dt>
+            <dd style="margin:0"><span class="cell-badge">{{ project.slug }}</span> — {{ project.name }}</dd>
+            <dt class="hint">Modo</dt>
+            <dd style="margin:0"><code>{{ event.mode }}</code></dd>
+            {% if event.status == "ok" and event.message %}
+            <dt class="hint">Mensaje</dt>
+            <dd style="margin:0">{{ event.message }}</dd>
+            {% endif %}
+            <dt class="hint">Usuario</dt>
+            <dd style="margin:0">{{ event.created_by_label }} · {{ event.created_at|date:"d M Y · H:i" }}</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="page-actions">
+    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-primary">Abrir Perfil A</a>
+    {% if can_seed_import %}
+    <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}" class="btn btn-secondary">Importar de nuevo</a>
+    {% if event.status != "ok" %}
+    <a href="{% url 'file_match:profile_a_seed_picker' project_slug=project.slug %}" class="btn btn-secondary">Elegir otro origen</a>
+    {% endif %}
+    {% endif %}
+    <a href="{% url 'file_match:profile_a_seed_history' project_slug=project.slug %}" class="btn btn-secondary">← Historial</a>
+</div>
+{% endblock %}

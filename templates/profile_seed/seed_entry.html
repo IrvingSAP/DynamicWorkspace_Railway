@@ -1,0 +1,88 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Importar estructura — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Importar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_match/profile_a/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">PROFILE SEED · Importar estructura</p>
+        <h2>Importar estructura</h2>
+        <p>Copiar un perfil o contrato <strong>publicado</strong> de otro proyecto a este borrador Perfil A. No publica.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_match:profile_a_seed_hub_help' project_slug=project.slug as seed_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=seed_help_url %}
+        <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-secondary">← Perfil A</a>
+    </div>
+</div>
+
+<div class="lifecycle-stepper" aria-label="Pasos del seed" style="margin-bottom:16px">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Importar estructura</p>
+        <ol class="lifecycle-steps">
+            <li><span class="lifecycle-step is-active"><span class="lifecycle-step-num">1</span> Entrada</span></li>
+            <li><span class="lifecycle-step is-pending"><span class="lifecycle-step-num">2</span> Origen</span></li>
+            <li><span class="lifecycle-step is-pending"><span class="lifecycle-step-num">3</span> Confirmar</span></li>
+        </ol>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Contexto destino (P0)</h3>
+        <dl style="display:grid;grid-template-columns:160px 1fr;gap:8px 12px;font-size:14px;margin:0">
+            <dt class="hint">App</dt>
+            <dd style="margin:0">{{ target_kind_label }}</dd>
+            <dt class="hint">Proyecto</dt>
+            <dd style="margin:0"><span class="cell-badge">{{ project.slug }}</span> — {{ project.name }}</dd>
+            <dt class="hint">Slot</dt>
+            <dd style="margin:0">{{ target_slot_label }}</dd>
+            <dt class="hint">Efecto</dt>
+            <dd style="margin:0">Solo <strong>borrador</strong> del Perfil A — la publicación Match sigue siendo el Módulo 4</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué hará a continuación</h3>
+        <ul>
+            <li>Elegirá un origen <strong>publicado</strong> (p. ej. FILE GATE esquema) — Módulo 2.</li>
+            <li>Verá un preview y confirmará — Módulo 3.</li>
+            <li>Se sembrará el borrador A (overwrite con aviso si ya hay campos).</li>
+        </ul>
+        <p class="hint">Esto no es STRUCTURE SCOUT (muestra) ni el bridge FILE GATE (hash de job).</p>
+        <div class="page-actions" style="margin-top:14px">
+            <a href="{% url 'file_match:profile_a_seed_picker' project_slug=project.slug %}" class="btn btn-primary">Continuar a elegir origen</a>
+            <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -39,6 +39,7 @@ flowchart LR
 | FILE GATE (contrato, políticas, validar, informe, historial, bridge) | `UI_MESSAGES.md` §3.9 · [`../FILE_GATE.md`](../FILE_GATE.md) · [`../definition_app_FILE_GATE/`](../definition_app_FILE_GATE/) |
 | FILE MATCH (perfil A, …) | `UI_MESSAGES.md` §3.11 · [`../FILE_MATCH.md`](../FILE_MATCH.md) · [`../definition_app_FILE_MATCH/`](../definition_app_FILE_MATCH/) |
 | STRUCTURE SCOUT (ciclo proyecto, …) | `UI_MESSAGES.md` §3.12 · [`../STRUCTURE_SCOUT.md`](../STRUCTURE_SCOUT.md) · [`../definition_app_STRUCTURE_SCOUT/`](../definition_app_STRUCTURE_SCOUT/) |
+| PROFILE_SEED (Importar estructura, …) | `UI_MESSAGES.md` §3.13 · [`../PROFILE_SEED.md`](../PROFILE_SEED.md) · [`../definition_app_PROFILE_SEED/`](../definition_app_PROFILE_SEED/) |
 
 ---
 
@@ -728,6 +729,51 @@ Mensajes de usuario para el Explorador de estructura. Alineados a [`../STRUCTURE
 | Sin eventos | empty UI | Guarde un borrador o aplique a un destino para ver el historial. |
 
 > Motor: `history_service` (solo lectura). Fuentes: `StructureDraft` + `ScoutApply`. Timeline filtrable por tipo. Export por versión: `history_draft_export` → `export_draft_json`.
+
+### 3.13 Mensajes específicos — `apps.profile_seed` (PROFILE_SEED)
+
+Mensajes de usuario para el Sembrador de perfiles. Alineados a [`../PROFILE_SEED.md`](../PROFILE_SEED.md) y [`../definition_app_PROFILE_SEED/`](../definition_app_PROFILE_SEED/).
+
+#### Acceso / Módulo 1 — Hub Importar estructura
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin acceso al proyecto Match | `error` | No tiene acceso a este proyecto FILE MATCH. |
+| Sin permiso importar (no PA/ED, archivado, kind incorrecto) | `error` | No tiene permiso para importar estructuras en este proyecto. |
+
+> Motor M1: `profile_seed_service.user_can_import` / `get_profile_a_seed_context`. URLs host: `file_match:profile_a_seed_hub` / `profile_a_seed_hub_help`. CTA solo si `can_seed_import`.
+
+#### Módulo 2 — Selector de origen
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin orígenes elegibles | empty UI | No hay orígenes publicados visibles. Publique un esquema en FILE GATE o pida acceso a un proyecto GATE. |
+| Origen no elegible / no encontrado | `error` | El origen seleccionado no está disponible o no tiene versión publicada. |
+| Kind no soportado | `warning` / empty | Este tipo de origen aún no está disponible para importar. |
+
+> Motor M2: `list_eligible_sources` / `get_source_picker_context`. Lectura: `get_published_version` + `profile_to_dict` (metadata). Visibilidad GATE: `visible_projects_qs`. URLs: `profile_a_seed_picker` / `profile_a_seed_picker_help`.
+
+#### Módulo 3 — Preview y aplicar borrador
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Tipo no permitido (whitelist Perfil A) | `error` / warning UI | El tipo de archivo no está permitido en FILE MATCH (perfil A). Use CSV, Excel, TXT delimitado, TXT posicional, JSON o XML. |
+| Overwrite (aviso) | warning UI | El borrador del Perfil A ya tiene M campos; se sobrescribirán con N del origen. No se publica la definición Match. |
+| Apply OK | `success` | Estructura importada al borrador del Perfil A. Revise y publique la definición Match cuando corresponda. |
+| Apply fail | `error` + log | No se pudo importar la estructura. Si persiste, contacte al administrador. |
+| Sin origen seleccionado | `error` | Seleccione un origen publicado antes de confirmar. |
+
+> Motor M3: `apply_seed_service.get_apply_preview` / `apply_seed_to_profile_a` → `save_source` (2 pasos) + `ProfileSeedEvent`. Strip `gate_policy`. URLs: `profile_a_seed_apply` / `profile_a_seed_apply_help`.
+
+#### Módulo 4 — Historial de importaciones
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin eventos | empty UI | Aún no hay importaciones de estructura en este proyecto. |
+| Evento no encontrado | `error` | Registro de importación no encontrado. |
+| Origen ya no disponible | hint UI | El proyecto origen ya no está disponible; se muestra el slug guardado. |
+
+> Motor M4: `seed_history_service` (solo lectura). URLs: `profile_a_seed_history` / `_detail` / `_help`. Enlace en hub Perfil A.
 
 ---
 

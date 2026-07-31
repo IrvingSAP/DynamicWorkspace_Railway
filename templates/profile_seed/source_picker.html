@@ -1,0 +1,171 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Elegir origen — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}">Importar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Origen</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_match/profile_a/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">PROFILE SEED · Elegir origen</p>
+        <h2>Elegir origen publicado</h2>
+        <p>Seleccione un contrato o perfil <strong>publicado</strong> de la misma compañía. No publica el destino.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_match:profile_a_seed_picker_help' project_slug=project.slug as seed_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=seed_help_url %}
+        <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}" class="btn btn-secondary">← Entrada</a>
+    </div>
+</div>
+
+<div class="lifecycle-stepper" aria-label="Pasos del seed" style="margin-bottom:16px">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Importar estructura</p>
+        <ol class="lifecycle-steps">
+            <li><span class="lifecycle-step is-done"><span class="lifecycle-step-num">✓</span> Entrada</span></li>
+            <li><span class="lifecycle-step is-active"><span class="lifecycle-step-num">2</span> Origen</span></li>
+            <li><span class="lifecycle-step is-pending"><span class="lifecycle-step-num">3</span> Confirmar</span></li>
+        </ol>
+    </div>
+</div>
+
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Destino</h3>
+        <p class="hint" style="margin:0">
+            <span class="cell-badge">{{ target_kind_label }}</span>
+            <span class="cell-badge">{{ project.slug }}</span>
+            — {{ target_slot_label }}
+        </p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Origen</h3>
+        <p class="hint">P0: FILE GATE con esquema publicado. Misma compañía · proyectos visibles para usted.</p>
+
+        <form method="get" class="form-grid" style="margin-top:12px">
+            <div class="field" style="max-width:280px">
+                <label for="kind">Tipo de origen</label>
+                <select id="kind" name="kind" onchange="this.form.submit()">
+                    {% for code, label in source_kind_choices %}
+                    <option value="{{ code }}"{% if source_kind == code %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if selected_source_id %}
+            <input type="hidden" name="source_id" value="{{ selected_source_id }}">
+            {% endif %}
+        </form>
+
+        {% if not source_kind_supported %}
+        <p class="hint" style="margin-top:12px">{{ msg_kind_unsupported }}</p>
+        {% elif not has_sources %}
+        <div class="empty-state" style="margin-top:16px">
+            <h3>Sin orígenes publicados</h3>
+            <p>{{ msg_no_sources }}</p>
+            <a href="{% url 'file_gate:project_list' %}" class="btn btn-primary">Ir a FILE GATE</a>
+            <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver</a>
+        </div>
+        {% else %}
+        <form method="get" style="margin-top:12px">
+            <input type="hidden" name="kind" value="{{ source_kind }}">
+            <div class="table-wrap" style="overflow-x:auto;margin-top:12px">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width:40px"></th>
+                            <th>Proyecto</th>
+                            <th>Versión</th>
+                            <th>Tipo</th>
+                            <th>Campos</th>
+                            <th>Publicado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in sources %}
+                        <tr{% if selected_source_id == item.id %} style="background:#e4f0eb"{% endif %}>
+                            <td>
+                                <input
+                                    type="radio"
+                                    name="source_id"
+                                    value="{{ item.id }}"
+                                    id="source-{{ item.id }}"
+                                    {% if selected_source_id == item.id %}checked{% endif %}
+                                    onchange="this.form.submit()"
+                                >
+                            </td>
+                            <td>
+                                <label for="source-{{ item.id }}" style="cursor:pointer">
+                                    <span class="cell-badge">{{ item.slug }}</span>
+                                    <span class="hint" style="display:block">{{ item.name }}</span>
+                                </label>
+                            </td>
+                            <td>{{ item.version_label }}</td>
+                            <td>{{ item.file_type_code }}</td>
+                            <td>{{ item.fields_count }}</td>
+                            <td>{% if item.published_at %}{{ item.published_at|date:"d M Y" }}{% else %}—{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+
+        {% if selected_source %}
+        <div class="alert alert-info" style="margin-top:14px">
+            Seleccionado:
+            <strong>{{ selected_source.slug }}</strong>
+            · {{ selected_source.version_label }}
+            · {{ selected_source.file_type_code }}
+            · {{ selected_source.fields_count }} campos
+            · slot {{ selected_source.slot_label }}.
+            En el siguiente paso verá el preview y confirmará el borrador Perfil A.
+        </div>
+        {% endif %}
+
+        <div class="page-actions" style="margin-top:14px">
+            {% if selected_source %}
+            <a
+                href="{% url 'file_match:profile_a_seed_apply' project_slug=project.slug %}?source_id={{ selected_source.id }}"
+                class="btn btn-primary"
+            >Continuar a confirmar</a>
+            {% else %}
+            <span class="btn btn-primary" aria-disabled="true" title="Seleccione un origen">Continuar a confirmar</span>
+            {% endif %}
+            <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver</a>
+            <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+        <p class="hint" style="margin-top:10px">M2 solo elige el origen. La escritura del borrador es el Módulo 3.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

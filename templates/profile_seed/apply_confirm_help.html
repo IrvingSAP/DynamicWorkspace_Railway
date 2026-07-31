@@ -1,0 +1,38 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Confirmar importación — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Confirmar importación</h2>
+        <p>Qué es el Módulo 3 del Sembrador de perfiles (PROFILE SEED).</p>
+    </div>
+    <div class="page-actions">
+        {% if can_seed_import %}
+        <a class="btn btn-secondary" href="{% url 'file_match:profile_a_seed_picker' project_slug=project.slug %}">← Volver</a>
+        {% else %}
+        <a class="btn btn-secondary" href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">← Perfil A</a>
+        {% endif %}
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li><strong>Sembrar borrador</strong> copia la forma del origen publicado (tipo + campos) al borrador del Perfil A.</li>
+    <li>No publica la definición Match ni el GATE. No clona políticas GATE ni reglas de cruce.</li>
+    <li>Si el Perfil A ya tiene campos en borrador, se sobrescriben tras confirmar (la versión publicada Match no se toca).</li>
+    <li>No es STRUCTURE SCOUT (muestra) ni el bridge FILE GATE (hash de job).</li>
+    <li>Cada importación (ok o fallida) queda auditada para el historial (Módulo 4).</li>
+</ul>
+</div></div>
+{% endblock %}

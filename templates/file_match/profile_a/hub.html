@@ -59,6 +59,34 @@
     </div>
 </div>
 
+{% if can_seed_import %}
+<div class="panel" style="margin-bottom:16px;border-color:#b7d4c8;background:#e4f0eb">
+    <div class="panel-body">
+        <h3 class="form-section-title">Importar estructura</h3>
+        <p class="hint">
+            ¿Ya modeló este layout en <strong>FILE GATE</strong> u otro Match?
+            Importe un perfil <strong>publicado</strong> a este borrador Perfil A.
+            No publica la definición Match ni abre el bridge.
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}" class="btn btn-primary">Importar estructura</a>
+            <a href="{% url 'file_match:profile_a_seed_hub_help' project_slug=project.slug %}" class="btn btn-secondary">¿Qué es esto?</a>
+            <a href="{% url 'file_match:profile_a_seed_history' project_slug=project.slug %}" class="btn btn-secondary">Historial de importaciones</a>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Importaciones</h3>
+        <p class="hint">Consulte el historial de estructuras importadas a este Perfil A (solo lectura).</p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'file_match:profile_a_seed_history' project_slug=project.slug %}" class="btn btn-secondary">Historial de importaciones</a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {% if wizard.steps_complete >= wizard.steps_total %}
 <div class="panel" style="margin-bottom:16px">
     <div class="panel-body">
