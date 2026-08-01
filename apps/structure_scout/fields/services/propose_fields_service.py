@@ -44,9 +44,14 @@ MSG_INFER_FAIL = (
     "No se pudieron inferir campos desde la muestra. Revise el patrón o la muestra."
 )
 MSG_VALIDATION = "Revise los datos de los campos propuestos."
+MSG_BOUNDS_REQUIRED = "Indique inicio/fin o longitud de cada campo posicional."
+MSG_BOUNDS_ORDER = "El fin debe ser ≥ al inicio."
+MSG_BOUNDS_LENGTH = "La longitud debe ser ≥ 1."
+MSG_BOUNDS_OVERLAP = "Hay campos posicionales que se solapan; ajuste inicio/fin."
 
 _NAME_SAFE = re.compile(r"[^A-Za-z0-9_]+")
 _DECIMAL_COMMA = re.compile(r"^[0-9]+(,[0-9]+)?$")
+_SPACE_GAP = re.compile(r" {2,}")
 
 # Prefer specific types when match rates tie.
 _TYPE_PRIORITY = (
@@ -113,6 +118,217 @@ def _sanitize_name(raw: str, index: int) -> str:
     if text[0].isdigit():
         text = f"f_{text}"
     return text[:80]
+
+
+def _to_int(value) -> int | None:
+    if value in (None, ""):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _resolve_bounds(start, end, length) -> tuple[int | None, int | None, int | None]:
+    """Sincroniza start/end/length (1-based inclusive), alineado a resolve_txt_fixed_bounds."""
+    start_i = _to_int(start)
+    end_i = _to_int(end)
+    length_i = _to_int(length)
+    if start_i is not None and length_i is not None and length_i >= 1:
+        end_i = start_i + length_i - 1
+    elif start_i is not None and end_i is not None and end_i >= start_i:
+        length_i = end_i - start_i + 1
+    elif start_i is not None and end_i is None and length_i is None:
+        end_i = start_i
+        length_i = 1
+    return start_i, end_i, length_i
+
+
+def _segments_by_spaces(line: str) -> list[tuple[str, int, int]]:
+    """Parte una línea por huecos de 2+ espacios → (texto, start_1based, end_1based)."""
+    text_line = (line or "").rstrip("\n\r")
+    if not text_line.strip():
+        return []
+    parts: list[tuple[str, int, int]] = []
+    pos = 0
+    for gap in _SPACE_GAP.finditer(text_line):
+        chunk = text_line[pos : gap.start()]
+        if chunk.strip():
+            leading = len(chunk) - len(chunk.lstrip(" "))
+            value = chunk.strip()
+            start = pos + leading + 1
+            end = start + len(value) - 1
+            parts.append((value, start, end))
+        pos = gap.end()
+    chunk = text_line[pos:]
+    if chunk.strip():
+        leading = len(chunk) - len(chunk.lstrip(" "))
+        value = chunk.strip()
+        start = pos + leading + 1
+        end = start + len(value) - 1
+        parts.append((value, start, end))
+    return parts
+
+
+def _apply_h2_bounds(fields: list[dict]) -> None:
+    cursor = 1
+    for item in fields:
+        examples = item.get("examples") or []
+        max_len = max((len(str(ex)) for ex in examples), default=1)
+        max_len = max(1, max_len)
+        item["start"] = cursor
+        item["end"] = cursor + max_len - 1
+        item["length"] = max_len
+        item["length_confidence"] = ScoutFieldsState.CONFIDENCE_LOW
+        notes = (item.get("notes") or "").strip()
+        if "heuristic_max_len" not in notes:
+            item["notes"] = (
+                f"{notes}; heuristic_max_len".strip("; ").strip()
+                if notes
+                else "heuristic_max_len"
+            )
+        cursor = item["end"] + 1
+
+
+def _apply_h3_bounds(fields: list[dict]) -> None:
+    for index, item in enumerate(fields):
+        start = index + 1
+        item["start"] = start
+        item["end"] = start
+        item["length"] = 1
+        item["length_confidence"] = ScoutFieldsState.CONFIDENCE_LOW
+        notes = (item.get("notes") or "").strip()
+        if "fallback_unit" not in notes:
+            item["notes"] = (
+                f"{notes}; fallback_unit".strip("; ").strip()
+                if notes
+                else "fallback_unit"
+            )
+
+
+def _try_h1_bounds_from_lines(raw_lines: list[str]) -> list[dict] | None:
+    """
+    H1: cortes estables por espacios múltiples en ≥3 filas con el mismo N≥2 columnas.
+    Devuelve lista de {start, end, length, length_confidence, values}.
+    """
+    parsed: list[list[tuple[str, int, int]]] = []
+    for line in raw_lines:
+        segs = _segments_by_spaces(line)
+        if segs:
+            parsed.append(segs)
+    if len(parsed) < 3:
+        return None
+    width = len(parsed[0])
+    if width < 2:
+        return None
+    same = sum(1 for row in parsed if len(row) == width)
+    if same < max(3, (len(parsed) + 1) // 2):
+        return None
+
+    columns: list[dict] = []
+    for col_i in range(width):
+        starts = [row[col_i][1] for row in parsed if len(row) == width]
+        ends = [row[col_i][2] for row in parsed if len(row) == width]
+        values = [row[col_i][0] for row in parsed if len(row) == width]
+        start = min(starts)
+        end = max(ends)
+        if end < start:
+            end = start
+        length = end - start + 1
+        columns.append(
+            {
+                "start": start,
+                "end": end,
+                "length": length,
+                "length_confidence": ScoutFieldsState.CONFIDENCE_MEDIUM,
+                "values": values,
+            }
+        )
+    # Evitar solapes: si se solapan, compactar en secuencia por max length
+    for i in range(1, len(columns)):
+        prev = columns[i - 1]
+        cur = columns[i]
+        if cur["start"] <= prev["end"]:
+            return None
+    return columns
+
+
+def _attach_txt_fixed_bounds(
+    fields: list[dict],
+    raw_lines: list[str],
+) -> None:
+    """Adjunta start/end/length a fields ya inferidos (H1→H2→H3)."""
+    if not fields:
+        return
+    h1 = _try_h1_bounds_from_lines(raw_lines)
+    if h1 is not None and len(h1) == len(fields):
+        for item, bounds in zip(fields, h1):
+            item["start"] = bounds["start"]
+            item["end"] = bounds["end"]
+            item["length"] = bounds["length"]
+            item["length_confidence"] = bounds["length_confidence"]
+            notes = (item.get("notes") or "").strip()
+            if "heuristic_spaces" not in notes:
+                item["notes"] = (
+                    f"{notes}; heuristic_spaces".strip("; ").strip()
+                    if notes
+                    else "heuristic_spaces"
+                )
+        return
+    if any(item.get("examples") for item in fields):
+        _apply_h2_bounds(fields)
+        return
+    _apply_h3_bounds(fields)
+
+
+def _infer_txt_fixed_via_h1(
+    preview: list[dict],
+    detection: ScoutDetectionState,
+) -> list[dict] | None:
+    raw_lines = [(item.get("raw") or "") for item in preview]
+    non_empty = [line for line in raw_lines if (line or "").strip()]
+    h1 = _try_h1_bounds_from_lines(non_empty)
+    if h1 is None:
+        return None
+
+    has_header = bool(detection.has_header)
+    names: list[str] = []
+    # values are per-column lists aligned; take first row values as header if needed
+    first_values = [col["values"][0] if col.get("values") else "" for col in h1]
+    data_offset = 0
+    if has_header:
+        used: set[str] = set()
+        for i, cell in enumerate(first_values, start=1):
+            base = _sanitize_name(cell, i)
+            name = base
+            n = 2
+            while name.lower() in used:
+                name = f"{base}_{n}"
+                n += 1
+            used.add(name.lower())
+            names.append(name)
+        data_offset = 1
+    else:
+        names = [f"col_{i}" for i in range(1, len(h1) + 1)]
+
+    fields: list[dict] = []
+    for col_i, name in enumerate(names):
+        col = h1[col_i]
+        values = list(col.get("values") or [])[data_offset:]
+        item = _infer_column(values, name=name, force_low=True)
+        item["start"] = col["start"]
+        item["end"] = col["end"]
+        item["length"] = col["length"]
+        item["length_confidence"] = col["length_confidence"]
+        notes = (item.get("notes") or "").strip()
+        if "heuristic_spaces" not in notes:
+            item["notes"] = (
+                f"{notes}; heuristic_spaces".strip("; ").strip()
+                if notes
+                else "heuristic_spaces"
+            )
+        fields.append(item)
+    return fields or None
 
 
 def _split_line(raw: str, delimiter: str) -> list[str]:
@@ -252,6 +468,16 @@ def _global_status_and_confidence(
         force_review = True
         notes_parts.append("low_row_coverage")
 
+    if detection and (detection.file_type_code or "") == "txt_fixed":
+        force_review = True
+        length_confs = [
+            f.get("length_confidence") or ScoutFieldsState.CONFIDENCE_LOW for f in fields
+        ]
+        if any(c == ScoutFieldsState.CONFIDENCE_LOW for c in length_confs):
+            notes_parts.append("length_estimate_low")
+        elif any(c == ScoutFieldsState.CONFIDENCE_MEDIUM for c in length_confs):
+            notes_parts.append("length_estimate_medium")
+
     status = (
         ScoutFieldsState.STATUS_NEEDS_REVIEW
         if force_review
@@ -278,9 +504,13 @@ def infer_fields_from_sample(
     delimiter = detection.delimiter or ""
     file_type = detection.file_type_code or ""
     force_low = file_type in {"txt_fixed", "xlsx"}
+    raw_lines = [(item.get("raw") or "") for item in preview]
 
     if file_type == "txt_fixed" and not delimiter:
-        # Single weak column per line
+        h1_fields = _infer_txt_fixed_via_h1(preview, detection)
+        if h1_fields:
+            return h1_fields, ""
+        # Single weak column per line + H3 bounds
         rows = [[(item.get("raw") or "").rstrip("\n\r")] for item in preview]
     else:
         rows = [
@@ -328,6 +558,11 @@ def infer_fields_from_sample(
 
     if not fields:
         return [], MSG_INFER_FAIL
+
+    if file_type == "txt_fixed":
+        data_raw = raw_lines[data_start:] if data_start else raw_lines
+        _attach_txt_fixed_bounds(fields, data_raw or raw_lines)
+
     return fields, ""
 
 
@@ -359,6 +594,22 @@ def get_hub_context(user, project: Project) -> dict:
             confidence = state.confidence
             status = state.status
             global_notes = state.notes or ""
+            if (detection.file_type_code or "") == "txt_fixed" and any(
+                item.get("start") in (None, "") for item in fields
+            ):
+                try:
+                    preview = detection_service.preview_rows(
+                        sample.stored_path,
+                        filename=sample.original_filename,
+                        limit=PREVIEW_LINE_LIMIT,
+                    )
+                    raw_lines = [(item.get("raw") or "") for item in preview]
+                    _attach_txt_fixed_bounds(fields, raw_lines)
+                except Exception:
+                    logger.exception(
+                        "backfill txt_fixed bounds project=%s", project.slug
+                    )
+                    _apply_h3_bounds(fields)
         else:
             fields, infer_note = infer_fields_from_sample(sample, detection)
             if fields:
@@ -409,6 +660,9 @@ def get_hub_context(user, project: Project) -> dict:
         "has_sample": sample is not None,
         "has_detection": has_detection,
         "content_types": content_types,
+        "show_bounds": bool(
+            detection and (detection.file_type_code or "") == "txt_fixed"
+        ),
         "errors": {},
         "field_errors": {},
     }
@@ -451,12 +705,19 @@ def fields_from_request(post) -> list[dict]:
                 "confidence": confidence or ScoutFieldsState.CONFIDENCE_MEDIUM,
                 "examples": examples,
                 "notes": notes,
+                "start": _to_int(post.get(f"start_{i}")),
+                "end": _to_int(post.get(f"end_{i}")),
+                "length": _to_int(post.get(f"length_{i}")),
+                "length_confidence": (
+                    post.get(f"length_confidence_{i}") or ""
+                ).strip()
+                or ScoutFieldsState.CONFIDENCE_LOW,
             }
         )
     return fields
 
 
-def validate_fields(fields: list[dict]) -> dict:
+def validate_fields(fields: list[dict], *, file_type_code: str = "") -> dict:
     errors: dict = {}
     if not fields:
         errors["form"] = [MSG_EMPTY]
@@ -465,6 +726,8 @@ def validate_fields(fields: list[dict]) -> dict:
     valid_types = _valid_content_types()
     seen: set[str] = set()
     field_errors: dict[str, dict] = {}
+    positional: list[tuple[int, int, str, int]] = []
+    is_fixed = (file_type_code or "").strip() == "txt_fixed"
 
     for i, item in enumerate(fields):
         row_err: dict[str, list[str]] = {}
@@ -481,8 +744,37 @@ def validate_fields(fields: list[dict]) -> dict:
         if ctype not in valid_types:
             row_err["content_type"] = [MSG_TYPE_INVALID]
 
+        if is_fixed:
+            start, end, length = _resolve_bounds(
+                item.get("start"), item.get("end"), item.get("length")
+            )
+            item["start"] = start
+            item["end"] = end
+            item["length"] = length
+            if start is None or end is None or length is None:
+                row_err["bounds"] = [MSG_BOUNDS_REQUIRED]
+            elif length < 1:
+                row_err["bounds"] = [MSG_BOUNDS_LENGTH]
+            elif end < start:
+                row_err["bounds"] = [MSG_BOUNDS_ORDER]
+            else:
+                positional.append((start, end, name or f"#{i + 1}", i))
+
         if row_err:
             field_errors[str(i)] = row_err
+
+    if is_fixed and positional:
+        positional.sort()
+        for index in range(1, len(positional)):
+            prev_start, prev_end, prev_name, prev_i = positional[index - 1]
+            start, end, name, cur_i = positional[index]
+            if start <= prev_end:
+                msg = (
+                    f"{MSG_BOUNDS_OVERLAP} "
+                    f"«{prev_name}» ({prev_start}-{prev_end}) y «{name}» ({start}-{end})."
+                )
+                for key in (str(prev_i), str(cur_i)):
+                    field_errors.setdefault(key, {}).setdefault("bounds", []).append(msg)
 
     if field_errors:
         errors["fields"] = field_errors
@@ -607,8 +899,24 @@ def confirm_fields(user, project: Project, fields: list[dict]) -> OperationResul
                 item["confidence"] = prev_fields[i].get("confidence") or (
                     ScoutFieldsState.CONFIDENCE_MEDIUM
                 )
+            if not item.get("length_confidence") and i < len(prev_fields):
+                item["length_confidence"] = prev_fields[i].get(
+                    "length_confidence"
+                ) or ScoutFieldsState.CONFIDENCE_LOW
 
-    errors = validate_fields(posted)
+    file_type = detection.file_type_code or ""
+    if file_type == "txt_fixed":
+        for item in posted:
+            start, end, length = _resolve_bounds(
+                item.get("start"), item.get("end"), item.get("length")
+            )
+            item["start"] = start
+            item["end"] = end
+            item["length"] = length
+            if not item.get("length_confidence"):
+                item["length_confidence"] = ScoutFieldsState.CONFIDENCE_LOW
+
+    errors = validate_fields(posted, file_type_code=file_type)
     if errors:
         return OperationResult.failure(
             "validation_form",

@@ -157,12 +157,35 @@ def map_scout_source_to_partials(source: dict) -> tuple[dict, dict]:
         elif file_type == "xlsx":
             item["column"] = _excel_column(i)
         elif file_type == "txt_fixed":
-            # Scout no define longitudes; placeholders 1-columna no solapados.
-            # El usuario afina start/end/length en el destino tras aplicar.
-            start = i + 1
-            item["start"] = start
-            item["end"] = start
-            item["length"] = 1
+            start = raw.get("start")
+            end = raw.get("end")
+            length = raw.get("length")
+            try:
+                start_i = int(start) if start not in (None, "") else None
+            except (TypeError, ValueError):
+                start_i = None
+            try:
+                end_i = int(end) if end not in (None, "") else None
+            except (TypeError, ValueError):
+                end_i = None
+            try:
+                length_i = int(length) if length not in (None, "") else None
+            except (TypeError, ValueError):
+                length_i = None
+            if start_i is not None and length_i is not None and length_i >= 1:
+                end_i = start_i + length_i - 1
+            elif start_i is not None and end_i is not None and end_i >= start_i:
+                length_i = end_i - start_i + 1
+            if start_i is not None and end_i is not None and length_i is not None and length_i >= 1:
+                item["start"] = start_i
+                item["end"] = end_i
+                item["length"] = length_i
+            else:
+                # Fallback H3: placeholders no solapados si el draft no trae bounds.
+                start = i + 1
+                item["start"] = start
+                item["end"] = start
+                item["length"] = 1
         fields.append(item)
 
     return meta, {"fields": fields}

@@ -167,17 +167,18 @@ dialog_id, y para apply_overwrite: overwrite + version_label.
             <h4>Qué hacer ahora (Campos)</h4>
             <ol>
                 <li>Revise nombre y <strong>tipo</strong> de cada campo; corríjalos si hace falta.</li>
+                <li>Si el patrón es <code>txt_fixed</code>, revise también <strong>Inicio / Fin / Long.</strong> (estimados) y evite solapes.</li>
                 <li>Si la tabla se ve bien → confirme / <strong>Continuar a borrador</strong>.</li>
-                <li>Tras <strong>Aplicar</strong>, afine en el destino (p. ej. longitudes si es posicional) y publique allí.</li>
+                <li>Tras <strong>Aplicar</strong>, puede seguir afinando en el destino y publicar allí.</li>
             </ol>
             <h4>Por qué suele salir este aviso</h4>
             <ul>
                 <li>El patrón en Detectar también estaba en revisión (se hereda).</li>
-                <li>Tipo <code>xlsx</code> o <code>txt_fixed</code>.</li>
+                <li>Tipo <code>xlsx</code> o <code>txt_fixed</code> (longitudes estimadas).</li>
                 <li>Algún campo con confianza media/baja (valores mixtos, fechas dudosas).</li>
                 <li>Pocas filas de ejemplo (cobertura baja).</li>
             </ul>
-            <p class="hint">En Campos <strong>no</strong> se edita longitud ni posición fija; eso se completa en el destino después de Aplicar.</p>
+            <p class="hint">En CSV/Excel no se editan longitudes posicionales. En <code>txt_fixed</code> sí, ya en Campos.</p>
             {% endif %}
 
             <p class="ss-needs-review-dialog__footer-note"><strong>Resumen:</strong> adelante con cuidado — no hace falta el estado «listo» para continuar.</p>

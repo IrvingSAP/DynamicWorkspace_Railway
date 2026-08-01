@@ -45,7 +45,7 @@
             <li>Revise nombres y tipos de campos → confirmar.</li>
             <li>Guarde el borrador Scout.</li>
             <li>Aplíquelo a GATE o Reverse (solo borrador).</li>
-            <li>En el destino, afine captura / longitudes y publique allí.</li>
+            <li>En el destino, afine captura u otros detalles del contrato y publique allí.</li>
         </ol>
         <p><a href="{% url 'structure_scout:project_list' %}" class="btn btn-primary">Ir a proyectos</a></p>
     </aside>
@@ -57,7 +57,7 @@
         <ol>
             <li><strong>Muestra</strong> — Archivo de ejemplo (&le; 10 MB). No es un job de producción.</li>
             <li><strong>Detectar</strong> — Encoding, tipo (csv / delimitado / Excel / posicional), delimitador, fila de encabezado. Confirme o ajuste.</li>
-            <li><strong>Campos</strong> — Lista de columnas: nombre, tipo de contenido, obligatorio, ejemplos. <strong>Aquí no se edita longitud ni posición fija</strong> (start / end / length).</li>
+            <li><strong>Campos</strong> — Lista de columnas: nombre, tipo, obligatorio, ejemplos. Con <code>txt_fixed</code> también <strong>Inicio / Fin / Long.</strong> estimados (editables).</li>
             <li><strong>Borrador</strong> — Congela una versión del snapshot Scout (exportable).</li>
             <li><strong>Aplicar</strong> — Copia el borrador al proyecto destino (GATE / Reverse). Nunca publica el destino.</li>
             <li><strong>Historial</strong> — Versiones de borrador y aplicaciones realizadas.</li>
@@ -68,11 +68,12 @@
 <div class="panel" style="margin-top:16px">
     <div class="panel-body">
         <h3 class="form-section-title">Qué edita en Campos (y qué no)</h3>
-        <p class="hint" style="margin-top:0">En el paso Campos el MVP está pensado sobre todo para archivos <strong>delimitados / CSV / Excel</strong>.</p>
+        <p class="hint" style="margin-top:0">Delimitados / CSV / Excel: nombre y tipos. Posicional (<code>txt_fixed</code>): además longitudes estimadas.</p>
         <ul>
-            <li><strong>Sí:</strong> nombre de campo, tipo (<code>content_type</code>), obligatorio, notas.</li>
-            <li><strong>No (en Scout):</strong> longitud en caracteres, start/end posicional, políticas GATE, reglas Match.</li>
-            <li>Si el patrón es <strong>TXT posicional</strong>, las columnas son tentativas: confirme lo posible y termine longitudes en el wizard del destino tras Aplicar.</li>
+            <li><strong>Sí:</strong> nombre, tipo (<code>content_type</code>), obligatorio, notas.</li>
+            <li><strong>Sí (si <code>txt_fixed</code>):</strong> Inicio / Fin / Longitud estimados; revise solapes antes de confirmar.</li>
+            <li><strong>No (en Scout):</strong> políticas GATE, reglas Match, publicación del destino.</li>
+            <li>Las longitudes en Scout son <strong>estimación</strong>; el contrato definitivo se publica en el destino tras Aplicar.</li>
         </ul>
     </div>
 </div>

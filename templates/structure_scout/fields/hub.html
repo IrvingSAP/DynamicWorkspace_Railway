@@ -118,7 +118,7 @@
 {% if detection.file_type_code == 'txt_fixed' or detection.file_type_code == 'xlsx' %}
 <div class="alert alert-info" style="margin-top:16px">
     {% if detection.file_type_code == 'txt_fixed' %}
-    TXT posicional: en el MVP las columnas son tentativas; revise a mano.
+    TXT posicional: edite <strong>Inicio / Fin / Long.</strong> estimados. Revise solapes antes de confirmar; el destino publica el contrato.
     {% else %}
     Excel: preview limitado en MVP; confirme tipos con cuidado.
     {% endif %}
@@ -138,7 +138,7 @@
             <input type="hidden" name="action" value="reinfer">
             <button type="submit" class="btn btn-secondary">Re-inferir desde muestra</button>
         </form>
-        <p class="hint" style="margin-top:8px">Recalcula columnas y resetea overrides (sin confirmar).</p>
+        <p class="hint" style="margin-top:8px">Recalcula columnas y longitudes; resetea overrides (sin confirmar).</p>
         {% endif %}
     </div>
 </div>
@@ -151,8 +151,11 @@
     <div class="panel-body">
         <h3 class="form-section-title">Tabla de campos</h3>
         <p class="hint">
-            Edite nombre, tipo y obligatorio. En este paso <strong>no</strong> se define longitud ni posición fija;
-            eso se afina en el destino tras Aplicar.
+            {% if show_bounds %}
+            Edite nombre, tipo, obligatorio e <strong>Inicio / Fin / Long.</strong> (estimados para <code>txt_fixed</code>).
+            {% else %}
+            Edite nombre, tipo y obligatorio. Longitud posicional solo aplica a <code>txt_fixed</code>.
+            {% endif %}
             <a href="{% url 'structure_scout:fields_hub_help' project_slug=project.slug %}">Más ayuda</a>
         </p>
         {% if not can_edit %}
@@ -180,6 +183,11 @@
                             <th>Nombre</th>
                             <th>Tipo</th>
                             <th>Req.</th>
+                            {% if show_bounds %}
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                            <th>Long.</th>
+                            {% endif %}
                             <th>Confianza</th>
                             {% if can_preview %}<th>Ejemplos</th>{% endif %}
                             <th>Notas</th>
@@ -213,6 +221,30 @@
                             <td>
                                 <input type="checkbox" name="required_{{ forloop.counter0 }}" value="1"{% if field.required %} checked{% endif %}{% if not can_edit %} disabled{% endif %}>
                             </td>
+                            {% if show_bounds %}
+                            <td>
+                                <div class="field{% if field.errors.bounds %} has-error{% endif %}">
+                                    <input type="number" class="js-ss-start" name="start_{{ forloop.counter0 }}" min="1" value="{{ field.start|default:'' }}"{% if not can_edit %} disabled{% endif %} required style="width:4.5rem">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="field{% if field.errors.bounds %} has-error{% endif %}">
+                                    <input type="number" class="js-ss-end" name="end_{{ forloop.counter0 }}" min="1" value="{{ field.end|default:'' }}"{% if not can_edit %} disabled{% endif %} required style="width:4.5rem">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="field{% if field.errors.bounds %} has-error{% endif %}">
+                                    <input type="number" class="js-ss-length" name="length_{{ forloop.counter0 }}" min="1" value="{{ field.length|default:'' }}"{% if not can_edit %} disabled{% endif %} required style="width:4.5rem">
+                                    <input type="hidden" name="length_confidence_{{ forloop.counter0 }}" value="{{ field.length_confidence|default:'low' }}">
+                                    {% if field.length_confidence == 'low' or field.length_confidence == 'medium' %}
+                                    <span class="hint">estimado</span>
+                                    {% endif %}
+                                    {% for msg in field.errors.bounds %}
+                                    <p class="field-error">{{ msg }}</p>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            {% endif %}
                             <td>
                                 <input type="hidden" name="confidence_{{ forloop.counter0 }}" value="{{ field.confidence }}">
                                 {% if field.confidence == 'high' %}Alta
@@ -286,6 +318,32 @@
     {% for ct in content_types %}"{{ ct.code }}"{% if not forloop.last %}, {% endif %}{% endfor %}
   ];
   var showExamples = {% if can_preview %}true{% else %}false{% endif %};
+  var showBounds = {% if show_bounds %}true{% else %}false{% endif %};
+
+  function toInt(el) {
+    if (!el) return null;
+    var n = parseInt(el.value, 10);
+    return isNaN(n) ? null : n;
+  }
+
+  function syncBounds(row, source) {
+    if (!showBounds || !row) return;
+    var startEl = row.querySelector(".js-ss-start");
+    var endEl = row.querySelector(".js-ss-end");
+    var lenEl = row.querySelector(".js-ss-length");
+    var start = toInt(startEl);
+    var end = toInt(endEl);
+    var length = toInt(lenEl);
+    if (source === "start" || source === "length") {
+      if (start != null && length != null && length >= 1 && endEl) {
+        endEl.value = String(start + length - 1);
+      }
+    } else if (source === "end") {
+      if (start != null && end != null && end >= start && lenEl) {
+        lenEl.value = String(end - start + 1);
+      }
+    }
+  }
 
   function reindex() {
     var rows = table.querySelectorAll("tbody tr");
@@ -310,6 +368,16 @@
     reindex();
   });
 
+  table.addEventListener("input", function (ev) {
+    var t = ev.target;
+    if (!t.classList.contains("js-ss-start") && !t.classList.contains("js-ss-end") && !t.classList.contains("js-ss-length")) {
+      return;
+    }
+    var source = t.classList.contains("js-ss-start") ? "start"
+      : t.classList.contains("js-ss-length") ? "length" : "end";
+    syncBounds(t.closest("tr"), source);
+  });
+
   if (addBtn) {
     addBtn.addEventListener("click", function () {
       var tbody = table.querySelector("tbody");
@@ -320,12 +388,20 @@
       var examplesCell = showExamples
         ? '<td class="mono hint"><input type="hidden" name="examples_' + idx + '" value="">—</td>'
         : "";
+      var startVal = idx + 1;
+      var boundsCells = showBounds
+        ? '<td><div class="field"><input type="number" class="js-ss-start" name="start_' + idx + '" min="1" value="' + startVal + '" required style="width:4.5rem"></div></td>' +
+          '<td><div class="field"><input type="number" class="js-ss-end" name="end_' + idx + '" min="1" value="' + startVal + '" required style="width:4.5rem"></div></td>' +
+          '<td><div class="field"><input type="number" class="js-ss-length" name="length_' + idx + '" min="1" value="1" required style="width:4.5rem">' +
+          '<input type="hidden" name="length_confidence_' + idx + '" value="low"><span class="hint">estimado</span></div></td>'
+        : "";
       var tr = document.createElement("tr");
       tr.innerHTML =
         '<td class="mono">' + (idx + 1) + "</td>" +
         '<td><div class="field"><input type="text" name="name_' + idx + '" value="col_' + (idx + 1) + '" maxlength="80" required></div></td>' +
         '<td><div class="field"><select name="content_type_' + idx + '">' + opts + "</select></div></td>" +
         '<td><input type="checkbox" name="required_' + idx + '" value="1"></td>' +
+        boundsCells +
         '<td><input type="hidden" name="confidence_' + idx + '" value="low">Baja</td>' +
         examplesCell +
         '<td><input type="text" name="notes_' + idx + '" value=""></td>' +

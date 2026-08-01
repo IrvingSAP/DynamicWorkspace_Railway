@@ -2,12 +2,13 @@
 
 Proceso y especificación de **mejora de definición de campos** en el Explorador: proponer y permitir editar **`start` / `end` / `length`** (y, si aplica, marcador `char`) ya en Scout — sobre todo para `txt_fixed` — antes de guardar el borrador y aplicar a destino.
 
-> Estado: **especificación (documentación)**. Sin implementación de código hasta OK explícito («Desarrolla…»).  
+> Estado: **implementado** (rama `feature/scout-mejoras-campos`).  
 > Producto: [`../STRUCTURE_SCOUT.md`](../STRUCTURE_SCOUT.md) §7.3 / S7.  
 > Rama: `feature/scout-mejoras-campos`.  
 > Extiende: [`propose_fields.md`](propose_fields.md) (M4), [`save_draft.md`](save_draft.md) (M5), [`apply_target.md`](apply_target.md) (M6), [`detect_pattern.md`](detect_pattern.md) (M3).  
 > Base técnica: `resolve_txt_fixed_bounds` / `normalize_fields_list` (`apps.dms.source_profile`), muestra M2 + patrón M3.  
-> App objetivo (cuando se implemente): `apps/structure_scout/fields/` · Templates: `templates/structure_scout/fields/`.
+> App: `apps/structure_scout/fields/` · Templates: `templates/structure_scout/fields/`.  
+> Prototipo: [`../../prototype/structure_scout/fields/hub_lengths.html`](../../prototype/structure_scout/fields/hub_lengths.html).
 
 ---
 
