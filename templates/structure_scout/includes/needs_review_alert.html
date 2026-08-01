@@ -125,11 +125,11 @@ dialog_id, y para apply_overwrite: overwrite + version_label.
             <ol>
                 <li>Mire el <strong>preview</strong> (columna parseada): ¿las columnas se parten bien?</li>
                 <li>Si el tipo, delimitador o encabezado están mal → ajústelos y pulse otra vez <strong>Confirmar detección</strong>.</li>
-                <li>Si se ve razonable → <strong>Continuar a campos</strong>.</li>
+                <li>Si se ve razonable → <strong>Continuar a campos</strong> (allí afinará tipos y, si es posicional, longitudes).</li>
             </ol>
             <h4>Por qué suele salir este aviso</h4>
             <ul>
-                <li><code>txt_fixed</code> (posicional): el MVP siempre pide revisión.</li>
+                <li><code>txt_fixed</code> (posicional): el flujo pide revisión; las longitudes se estiman y editan en <strong>Campos</strong>.</li>
                 <li><code>xlsx</code>: preview Excel limitado.</li>
                 <li>Pocas filas en el preview (&lt; 3).</li>
                 <li>CSV/delimitado con distinto número de columnas entre filas.</li>
@@ -148,19 +148,19 @@ dialog_id, y para apply_overwrite: overwrite + version_label.
                 <li>No es un fallo al congelar la versión; es una marca de confianza para que revise antes de sembrar.</li>
                 <li>Aplicar (M6) no bloquea por este aviso, pero es la última alerta útil antes de escribir en otro proyecto.</li>
             </ul>
-            <p class="hint">El borrador Scout <strong>no publica</strong> destinos. Tras Aplicar, afine y publique en GATE o Reverse.</p>
+            <p class="hint">El borrador Scout <strong>no publica</strong> destinos. Si era posicional, las longitudes ya vienen del paso Campos; publique en GATE o Reverse.</p>
             {% elif kind == "apply" %}
             <h4>Qué hacer ahora (Aplicar)</h4>
             <ol>
                 <li>Puede aplicar igualmente: el aviso <strong>no bloquea</strong> el botón.</li>
-                <li>Si duda del patrón/tipos → vuelva a <strong>Campos</strong> / <strong>Borrador</strong>, corrija y guarde una versión nueva antes de aplicar.</li>
+                <li>Si duda del patrón/tipos/longitudes → vuelva a <strong>Campos</strong> / <strong>Borrador</strong>, corrija y guarde una versión nueva antes de aplicar.</li>
                 <li>Tras aplicar, abra el destino y revise el borrador sembrado <strong>antes de publicar</strong> allí.</li>
             </ol>
             <h4>Por qué suele salir este aviso</h4>
             <ul>
                 <li>El draft Scout current heredó <code>needs_review</code> desde Campos.</li>
                 <li>Es la misma marca de confianza de pasos anteriores, no un fallo de Aplicar.</li>
-                <li>Scout propone estructura; la publicación y el afine fino ocurren en el destino.</li>
+                <li>Scout propone estructura (incl. bounds estimados); la publicación ocurre en el destino.</li>
             </ul>
             <p class="hint">Aplicar solo escribe borrador en el destino. Nunca publica desde Scout.</p>
             {% else %}
