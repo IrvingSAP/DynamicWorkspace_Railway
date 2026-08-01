@@ -185,7 +185,7 @@ Al implementar, adaptar a la forma que espera `merge_source_dict` / `apply_dict_
 | `encoding_code` / `line_ending_code` | Campos top-level y/o `config` según `source_persistence_service` |
 | `delimiter` | `config.delimiter` (y top-level si aplica) |
 | `header_row` / `has_header` | Según convención SourceProfile / layout |
-| `fields[]` | `fields` (name, label, content_type, required) |
+| `fields[]` | `fields` (name, label, content_type, required; **Fase 2:** + start/end/length si `txt_fixed` — [`propose_field_lengths.md`](propose_field_lengths.md)) |
 
 Reglas:
 

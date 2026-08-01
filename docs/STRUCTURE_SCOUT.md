@@ -334,6 +334,7 @@ flowchart LR
 ### 7.3 Funcionalidades Fase 2
 
 - [ ] Posicional con heurística robusta (o explícitamente fuera si sigue débil)
+- [ ] **Longitudes/posiciones estimadas editables en Scout (M4→M5→M6)** — spec: [`definition_app_STRUCTURE_SCOUT/propose_field_lengths.md`](definition_app_STRUCTURE_SCOUT/propose_field_lengths.md) (rama `feature/scout-mejoras-campos`)
 - [ ] JSON/XML plano (alineado a parsers DMS)
 - [ ] LLM opcional para nombrar campos / sugerir máscaras (no obligatorio)
 - [ ] Diff campo a campo avanzado al aplicar sobre draft existente

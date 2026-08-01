@@ -89,7 +89,7 @@ flowchart LR
 | Inferir / editar lista de campos | Versionar `StructureDraft` (M5) |
 | Catálogo `content_type` DMS/GATE | Apply a destino (M6) |
 | Confirmar → `draft_ready` / `needs_review` | LLM para nombrar campos |
-| Re-inferir (resetea a heurística) | JSON/XML / posicional robusto (Fase 2) |
+| Re-inferir (resetea a heurística) | JSON/XML; posicional con longitudes editables → [`propose_field_lengths.md`](propose_field_lengths.md) (Fase 2) |
 | Preview de ejemplos por columna | Cross-compañía |
 | Permisos PA/ED editan; GE acepta | Upload muestra (M2) |
 
@@ -100,7 +100,7 @@ flowchart LR
 | Sin encabezado | Nombres `col_1` … `col_N`; usuario puede renombrar |
 | Pocas filas (&lt; 3 datos) | Confianza baja / `needs_review` (S4) |
 | Tipos mixtos en columna | `content_type` más general (`free_text` / `alphanumeric`) + `needs_review` |
-| `txt_fixed` | Advertencia; campos tentativos; status mínimo `needs_review` |
+| `txt_fixed` | Advertencia; campos tentativos; status mínimo `needs_review`. **Longitudes editables en Scout:** Fase 2 — [`propose_field_lengths.md`](propose_field_lengths.md) |
 | `xlsx` | Stub: columnas limitadas o mensaje; status `needs_review` si preview incompleto |
 | Columna vacía | `free_text`, confidence `low`, required false |
 

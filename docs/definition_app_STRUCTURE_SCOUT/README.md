@@ -44,6 +44,7 @@ flowchart LR
 | [`sample_upload.md`](sample_upload.md) | **2** | Cargar muestra + preview | **Implementado** |
 | [`detect_pattern.md`](detect_pattern.md) | **3** | Encoding, tipo, delimitador, captura | **Implementado** |
 | [`propose_fields.md`](propose_fields.md) | **4** | Tabla campos/tipos + confianza | **Implementado** |
+| [`propose_field_lengths.md`](propose_field_lengths.md) | **Fase 2** | Longitudes/posiciones estimadas editables (`txt_fixed`) | **Especificado (doc)** |
 | [`save_draft.md`](save_draft.md) | **5** | Persistir / versionar `StructureDraft` | **Implementado** |
 | [`apply_target.md`](apply_target.md) | **6** | Aplicar borrador a GATE/Reverse/Match/DMS | **Implementado** |
 | [`history.md`](history.md) | **7** | Historial unificado drafts + applies | **Implementado** |
@@ -109,4 +110,5 @@ docs/
 
 1. Ciclo MVP M1–M7 **cerrado**.  
 2. Integración transversal: [`ss_integration.md`](ss_integration.md) **documentada**.  
-3. Siguiente producto según prioridad de fábrica (p. ej. PROFILE_SEED) o Fase 2 Scout.
+3. **En curso (rama `feature/scout-mejoras-campos`):** Fase 2 longitudes estimadas — [`propose_field_lengths.md`](propose_field_lengths.md) (doc; prototipo → código con OK).  
+4. Otros ítems Fase 2 según [`../STRUCTURE_SCOUT.md`](../STRUCTURE_SCOUT.md) §7.3.
