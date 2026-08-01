@@ -9,20 +9,39 @@
 <div class="page-header">
     <div>
         <h2>Ayuda — Campos y tipos</h2>
-        <p>Qué se propone en el Módulo 4 del Explorador.</p>
+        <p>Qué se propone en este paso y qué se afina después en el destino.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-secondary" href="{% url 'structure_scout:fields_hub' project_slug=project.slug %}">← Volver</a>
     </div>
 </div>
 <div class="panel"><div class="panel-body">
+<h3 class="form-section-title">Qué es este paso</h3>
 <ul>
-    <li>Parte del <strong>patrón confirmado</strong> (M3) y la <strong>muestra activa</strong> (M2).</li>
-    <li>Infiere columnas: nombre, <code>content_type</code>, ejemplos y confianza.</li>
-    <li>Tipos = catálogo DMS/GATE (<code>FieldContentType</code>).</li>
-    <li>No guarda borrador versionado (M5) ni aplica a destinos (M6).</li>
+    <li>Parte del <strong>patrón confirmado</strong> (Detectar) y la <strong>muestra</strong> subida.</li>
+    <li>Infiere columnas: nombre, tipo de contenido, ejemplos y confianza.</li>
+    <li>Usted revisa y <strong>confirma</strong>. No valida producción ni publica nada.</li>
+</ul>
+
+<h3 class="form-section-title">Qué puede editar aquí</h3>
+<ul>
+    <li><strong>Nombre</strong> del campo.</li>
+    <li><strong>Tipo</strong> (<code>content_type</code> del catálogo DMS).</li>
+    <li><strong>Obligatorio</strong> y notas.</li>
+    <li>Agregar / quitar filas si hace falta; <strong>Re-inferir</strong> vuelve a calcular desde la muestra.</li>
+</ul>
+
+<h3 class="form-section-title">Qué no se define aquí</h3>
+<ul>
+    <li><strong>Longitud</strong>, start / end ni layout posicional fino.</li>
+    <li>Políticas GATE, reglas Match ni target Reverse.</li>
+    <li>Si su archivo es <strong>TXT posicional</strong>, trate este paso como borrador de nombres/tipos; las longitudes se completan en FILE GATE (u otro destino) <em>después</em> de Aplicar.</li>
+</ul>
+
+<h3 class="form-section-title">Siguiente</h3>
+<ul>
+    <li>Confirmar campos → <strong>Borrador</strong> → <strong>Aplicar</strong> a GATE/Reverse → afinar y publicar en el destino.</li>
     <li>Roles: PA / ED editan; PA / ED / GE confirman; CO sin ejemplos de celdas.</li>
-    <li>Re-inferir recalcula desde la muestra y resetea overrides.</li>
 </ul>
 </div></div>
 {% endblock %}

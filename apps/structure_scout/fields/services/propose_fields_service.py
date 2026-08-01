@@ -459,7 +459,7 @@ def fields_from_request(post) -> list[dict]:
 def validate_fields(fields: list[dict]) -> dict:
     errors: dict = {}
     if not fields:
-        errors["__all__"] = [MSG_EMPTY]
+        errors["form"] = [MSG_EMPTY]
         return errors
 
     valid_types = _valid_content_types()

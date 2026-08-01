@@ -93,9 +93,7 @@
 {% else %}
 
 {% if status == 'needs_review' %}
-<div class="alert alert-warning" style="margin-top:16px">
-    El draft Scout está en revisión pendiente. Puede aplicar; revise el destino antes de publicar allí.
-</div>
+{% include "structure_scout/includes/needs_review_alert.html" with kind="apply" dialog_id="ss-apply-needs-review-help" summary="El draft Scout está en revisión pendiente. Puede aplicar; revise el destino antes de publicar allí." %}
 {% endif %}
 
 <div class="stats-strip" aria-label="Draft" style="margin-top:16px">
@@ -151,18 +149,7 @@
         {% endif %}
 
         {% if overwrite %}
-        <div class="alert {% if overwrite.target_field_count %}alert-warning{% else %}alert-info{% endif %}" style="margin-top:14px">
-            {% if overwrite.target_field_count %}
-            El borrador de <strong>{{ overwrite.target_slug }}</strong> ya tiene
-            <strong>{{ overwrite.target_field_count }}</strong> campos.
-            Se sobrescribirán con los <strong>{{ overwrite.scout_field_count }}</strong> del draft Scout {{ version_label }}.
-            No se publica ninguna versión.
-            {% else %}
-            Se llenará el borrador de <strong>{{ overwrite.target_slug }}</strong> con
-            <strong>{{ overwrite.scout_field_count }}</strong> campos del draft Scout {{ version_label }}.
-            No se publica ninguna versión.
-            {% endif %}
-        </div>
+        {% include "structure_scout/includes/needs_review_alert.html" with kind="apply_overwrite" dialog_id="ss-apply-overwrite-help" overwrite=overwrite version_label=version_label %}
         {% endif %}
 
         {% if can_apply %}
@@ -221,4 +208,8 @@
 {% endif %}
 
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/ss_needs_review_help.js' %}"></script>
 {% endblock %}

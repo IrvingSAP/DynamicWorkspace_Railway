@@ -28,6 +28,9 @@ MSG_APPLY_OK = (
 MSG_APPLY_FAIL = (
     "No se pudo aplicar el borrador al destino. Si persiste, contacte al administrador."
 )
+MSG_APPLY_VALIDATION = (
+    "No se pudo sembrar el borrador en el destino. Revise el detalle e intente de nuevo."
+)
 
 MVP_KINDS = (
     (ScoutApply.KIND_FILE_GATE, "FILE GATE"),
@@ -154,8 +157,11 @@ def map_scout_source_to_partials(source: dict) -> tuple[dict, dict]:
         elif file_type == "xlsx":
             item["column"] = _excel_column(i)
         elif file_type == "txt_fixed":
-            item["start"] = 1
-            item["end"] = 1
+            # Scout no define longitudes; placeholders 1-columna no solapados.
+            # El usuario afina start/end/length en el destino tras aplicar.
+            start = i + 1
+            item["start"] = start
+            item["end"] = start
             item["length"] = 1
         fields.append(item)
 
@@ -252,6 +258,13 @@ def _resolve_target(user, scout_project: Project, target_id: str) -> Project | N
     return target
 
 
+def _apply_failure_message(result: OperationResult) -> str:
+    """Evita copy de GATE/Reverse («contrato de validación») en el hub Scout."""
+    if (result.error_code or "") == "validation_form":
+        return MSG_APPLY_VALIDATION
+    return result.user_message or MSG_APPLY_FAIL
+
+
 @transaction.atomic
 def apply_to_target(
     user,
@@ -288,6 +301,7 @@ def apply_to_target(
             user, target, meta, strict=False
         )
         if not result_meta.ok:
+            fail_msg = _apply_failure_message(result_meta)
             ScoutApply.objects.create(
                 project=scout_project,
                 draft=draft,
@@ -295,12 +309,12 @@ def apply_to_target(
                 target_project=target,
                 target_kind=target.project_kind,
                 status=ScoutApply.STATUS_FAILED,
-                message=result_meta.user_message or MSG_APPLY_FAIL,
+                message=fail_msg,
                 created_by=user,
             )
             return OperationResult.failure(
                 result_meta.error_code or "unexpected",
-                result_meta.user_message or MSG_APPLY_FAIL,
+                fail_msg,
                 errors=result_meta.errors,
             )
 
@@ -308,6 +322,7 @@ def apply_to_target(
             user, target, fields_partial, strict=False
         )
         if not result_fields.ok:
+            fail_msg = _apply_failure_message(result_fields)
             ScoutApply.objects.create(
                 project=scout_project,
                 draft=draft,
@@ -315,12 +330,12 @@ def apply_to_target(
                 target_project=target,
                 target_kind=target.project_kind,
                 status=ScoutApply.STATUS_FAILED,
-                message=result_fields.user_message or MSG_APPLY_FAIL,
+                message=fail_msg,
                 created_by=user,
             )
             return OperationResult.failure(
                 result_fields.error_code or "unexpected",
-                result_fields.user_message or MSG_APPLY_FAIL,
+                fail_msg,
                 errors=result_fields.errors,
             )
     except Exception:

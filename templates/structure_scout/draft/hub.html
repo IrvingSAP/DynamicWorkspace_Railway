@@ -101,9 +101,7 @@
 </div>
 
 {% if status == 'needs_review' %}
-<div class="alert alert-warning" style="margin-top:16px">
-    El borrador hereda revisión pendiente de Campos. Revise antes de aplicar a un destino (M6).
-</div>
+{% include "structure_scout/includes/needs_review_alert.html" with kind="draft" dialog_id="ss-draft-needs-review-help" summary="El borrador hereda revisión pendiente de Campos. Revise antes de aplicar a un destino (M6)." %}
 {% endif %}
 
 <div class="panel" style="margin-top:16px">
@@ -203,4 +201,8 @@
 </div>
 
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/ss_needs_review_help.js' %}"></script>
 {% endblock %}

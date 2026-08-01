@@ -106,12 +106,13 @@
 </div>
 
 {% if status == 'needs_review' or global_notes %}
+{% if status == 'needs_review' %}
+{% include "structure_scout/includes/needs_review_alert.html" with kind="fields" dialog_id="ss-fields-needs-review-help" summary="Campos con revisión pendiente (cobertura, tipos mixtos o patrón dudoso)." notes=global_notes %}
+{% else %}
 <div class="alert alert-warning" style="margin-top:16px">
-    {% if status == 'needs_review' %}
-    Campos con revisión pendiente (cobertura, tipos mixtos o patrón dudoso).
-    {% endif %}
-    {% if global_notes %}<span class="hint">{{ global_notes }}</span>{% endif %}
+    <span class="hint">Detalle técnico: <code>{{ global_notes }}</code></span>
 </div>
+{% endif %}
 {% endif %}
 
 {% if detection.file_type_code == 'txt_fixed' or detection.file_type_code == 'xlsx' %}
@@ -149,12 +150,17 @@
 <div class="panel" style="margin-top:16px">
     <div class="panel-body">
         <h3 class="form-section-title">Tabla de campos</h3>
+        <p class="hint">
+            Edite nombre, tipo y obligatorio. En este paso <strong>no</strong> se define longitud ni posición fija;
+            eso se afina en el destino tras Aplicar.
+            <a href="{% url 'structure_scout:fields_hub_help' project_slug=project.slug %}">Más ayuda</a>
+        </p>
         {% if not can_edit %}
         <p class="hint">Solo PA / ED pueden editar. {% if can_confirm %}Puede confirmar la propuesta actual.{% endif %}</p>
         {% endif %}
-        {% if errors.__all__ %}
+        {% if errors.form %}
         <div class="form-errors">
-            {% for msg in errors.__all__ %}
+            {% for msg in errors.form %}
             <p class="field-error">{{ msg }}</p>
             {% endfor %}
         </div>
@@ -267,6 +273,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/ss_needs_review_help.js' %}"></script>
 {% if has_detection and can_edit %}
 <script>
 (function () {

@@ -3,6 +3,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
 from apps.core.decorators import security_complete_required, user_type_required
+from apps.dms.source_profile.services import source_persistence_service
 from apps.projects.services import project_service
 from apps.structure_scout.apply.services import apply_target_service
 from apps.structure_scout.projects.services import scout_project_service
@@ -47,6 +48,10 @@ def apply_hub(request, project_slug: str):
                     )
             else:
                 messages.error(request, result.user_message)
+                for detail in source_persistence_service.flatten_validation_messages(
+                    result.errors
+                ):
+                    messages.warning(request, detail)
             return redirect("structure_scout:apply_hub", project_slug=project_slug)
 
         # Refresh target list for selected kind (GET-like via POST redirect)

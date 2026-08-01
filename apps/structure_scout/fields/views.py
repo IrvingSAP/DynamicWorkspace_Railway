@@ -53,6 +53,8 @@ def fields_hub(request, project_slug: str):
         if flashed:
             posted_fields = flashed.get("posted", {}).get("fields")
             errors = flashed.get("errors", {}) or {}
+            if "__all__" in errors and "form" not in errors:
+                errors["form"] = errors.pop("__all__")
             field_errors = errors.get("fields") or {}
             if posted_fields is not None:
                 ctx_fields["fields"] = _annotate_field_errors(posted_fields, field_errors)

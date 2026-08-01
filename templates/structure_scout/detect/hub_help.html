@@ -9,7 +9,7 @@
 <div class="page-header">
     <div>
         <h2>Ayuda — Detectar patrón</h2>
-        <p>Qué se confirma en el Módulo 3 del Explorador.</p>
+        <p>Cómo leer el archivo: tipo, encoding y delimitador — no es una validación de negocio.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-secondary" href="{% url 'structure_scout:detect_hub' project_slug=project.slug %}">← Volver</a>
@@ -17,13 +17,13 @@
 </div>
 <div class="panel"><div class="panel-body">
 <ul>
-    <li>Parte de la <strong>muestra activa</strong> (M2). No vuelve a subir el archivo aquí.</li>
-    <li>Confirma o ajusta: tipo, encoding, fin de línea, delimitador y fila de encabezado.</li>
-    <li>La confianza y el estado (<code>listo</code> / <code>revisión pendiente</code>) se calculan al confirmar.</li>
-    <li><code>txt_fixed</code> (posicional) queda en revisión pendiente en el MVP.</li>
-    <li>Roles: PA / ED editan el formulario; PA / ED / GE pueden confirmar. CO ve metadatos sin preview de filas.</li>
-    <li>Re-detectar recalcula sugerencias DMS y resetea el formulario (sin publicar destinos).</li>
-    <li>Siguiente paso: <strong>Campos y tipos</strong> (M4).</li>
+    <li>Usa la <strong>muestra ya subida</strong>. Aquí no se vuelve a cargar el archivo.</li>
+    <li>Confirme o ajuste: <strong>tipo</strong>, encoding, fin de línea, <strong>delimitador</strong> y fila de encabezado.</li>
+    <li>Esto define <em>cómo partir columnas</em>, no si el archivo “pasa” reglas de negocio (eso es FILE GATE).</li>
+    <li><code>txt_fixed</code> (posicional) queda en <strong>revisión pendiente</strong> en el MVP: las longitudes exactas se afinan en el destino tras Aplicar.</li>
+    <li>CSV / TXT delimitado / Excel: el flujo principal del MVP.</li>
+    <li>Tras confirmar → paso <strong>Campos</strong> (nombres y tipos, no longitudes).</li>
+    <li>Roles: PA / ED editan; PA / ED / GE confirman; CO ve metadatos sin preview de filas.</li>
 </ul>
 </div></div>
 {% endblock %}

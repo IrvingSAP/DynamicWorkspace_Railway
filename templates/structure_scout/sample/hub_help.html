@@ -9,7 +9,7 @@
 <div class="page-header">
     <div>
         <h2>Ayuda — Cargar muestra</h2>
-        <p>Qué es una muestra, límites y roles en el Explorador.</p>
+        <p>El archivo de ejemplo con el que el Explorador propone la estructura.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-secondary" href="{% url 'structure_scout:sample_hub' project_slug=project.slug %}">← Volver</a>
@@ -17,12 +17,11 @@
 </div>
 <div class="panel"><div class="panel-body">
 <ul>
-    <li>La <strong>muestra</strong> es un archivo de ejemplo para proponer la estructura. No valida ni transforma producción.</li>
+    <li>La <strong>muestra</strong> es un ejemplo para descubrir columnas. <strong>No</strong> valida ni transforma producción.</li>
     <li>Límite: <strong>10 MB</strong>. Extensiones MVP: CSV, Excel, TXT/TSV.</li>
-    <li>Tras subir verá preview crudo y sugerencias (tipo, encoding, delimitador).</li>
+    <li>Tras subir verá un preview y sugerencias (tipo, encoding, delimitador).</li>
+    <li>Siguiente: <strong>Detectar patrón</strong> (confirmar cómo se lee) → <strong>Campos</strong> (nombres/tipos, no longitudes).</li>
     <li>Roles: PA / ED / GE pueden subir. CO no ve filas de preview en el MVP.</li>
-    <li>Siguiente paso: <strong>Detectar patrón</strong> (M3) y luego confirmar campos (M4).</li>
-    <li>Reuso técnico: storage + <code>detection_service</code> DMS — sin parser nuevo.</li>
 </ul>
 </div></div>
 {% endblock %}
