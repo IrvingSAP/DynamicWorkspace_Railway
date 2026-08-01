@@ -258,14 +258,14 @@ No usar Django Forms; HTML plano + JS de reindex (como hoy).
 | D1 | ¿Editar solo `length` + `start`, o también `end` libre? | Los tres, con sincronización `resolve_txt_fixed_bounds` |
 | D2 | ¿Re-inferir pisa longitudes siempre? | Sí, con confirmación/warning (como tipos hoy) |
 | D3 | ¿Bounds en delimitado alguna vez? | No en esta Fase |
-| D4 | ¿Prototipo HTML obligatorio antes de código? | **Sí** (método definition_app): `prototype/structure_scout/fields/` |
+| D4 | ¿Prototipo HTML obligatorio antes de código? | **Sí** — listo: [`../../prototype/structure_scout/fields/hub_lengths.html`](../../prototype/structure_scout/fields/hub_lengths.html) (+ ayuda `hub_lengths_help.html`) |
 
 ---
 
 ## Próximos pasos (ritual)
 
 1. Revisar este doc (chat / OK del usuario).  
-2. Prototipo HTML de la tabla con columnas de longitud.  
+2. ~~Prototipo HTML de la tabla con columnas de longitud.~~ → `prototype/structure_scout/fields/hub_lengths.html`  
 3. Usuario: **«Desarrolla…»** → implementación en `feature/scout-mejoras-campos`.  
 4. Actualizar `UI_MESSAGES.md` + ayudas en el mismo PR de código.
 
