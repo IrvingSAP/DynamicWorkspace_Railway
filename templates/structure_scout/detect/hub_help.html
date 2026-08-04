@@ -5,25 +5,92 @@
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 {% endblock %}
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:detect_hub' project_slug=project.slug %}">Detectar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
 {% block content %}
 <div class="page-header">
     <div>
+        <p class="page-eyebrow">STRUCTURE SCOUT · Detectar · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Detectar patrón</h2>
-        <p>Cómo leer el archivo: tipo, encoding y delimitador — no es una validación de negocio.</p>
+        <p>Confirme <em>cómo se lee</em> la muestra (tipo, encoding, delimitador). No es validación de negocio ni lista de campos.</p>
     </div>
     <div class="page-actions">
-        <a class="btn btn-secondary" href="{% url 'structure_scout:detect_hub' project_slug=project.slug %}">← Volver</a>
+        <a class="btn btn-secondary" href="{% url 'structure_scout:detect_hub' project_slug=project.slug %}">← Volver a Detectar</a>
     </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li>Usa la <strong>muestra ya subida</strong>. Aquí no se vuelve a cargar el archivo.</li>
-    <li>Confirme o ajuste: <strong>tipo</strong>, encoding, fin de línea, <strong>delimitador</strong> y fila de encabezado.</li>
-    <li>Esto define <em>cómo partir columnas</em>, no si el archivo “pasa” reglas de negocio (eso es FILE GATE).</li>
-    <li><code>txt_fixed</code> (posicional) queda en <strong>revisión pendiente</strong>: las longitudes <strong>estimadas</strong> se proponen y editan en el paso <strong>Campos</strong> (Inicio / Fin / Long.).</li>
-    <li>CSV / TXT delimitado / Excel: flujo habitual sin columnas de longitud en Campos.</li>
-    <li>Tras confirmar → paso <strong>Campos</strong> (nombres, tipos y, si es posicional, longitudes estimadas).</li>
-    <li>Roles: PA / ED editan; PA / ED / GE confirman; CO ve metadatos sin preview de filas.</li>
-</ul>
-</div></div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es este paso</h3>
+        <ul>
+            <li>Parte de la <strong>muestra activa</strong> ya subida (paso Muestra). Aquí <strong>no</strong> se vuelve a cargar el archivo.</li>
+            <li>Scout <strong>propone</strong> un patrón heurístico; usted lo revisa, ajusta y <strong>confirma</strong>.</li>
+            <li>El patrón confirmado alimenta <strong>Campos</strong> (cómo partir columnas), el <strong>borrador</strong> y luego <strong>Aplicar</strong> al destino.</li>
+            <li>Copy correcto: “detectar / confirmar patrón”. <strong>No</strong> es “contrato”, “validar producción” ni “mapear”.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué puede editar</h3>
+        <ul>
+            <li><strong>Tipo de archivo</strong> — p. ej. <code>csv</code>, <code>txt_delimited</code>, <code>xlsx</code>, <code>txt_fixed</code>.</li>
+            <li><strong>Encoding</strong> y <strong>fin de línea</strong> (p. ej. utf-8, lf/crlf).</li>
+            <li><strong>Delimitador</strong> — obligatorio en CSV / delimitado; vacío o irrelevante en posicional / Excel según el caso.</li>
+            <li><strong>Encabezado</strong> — si la primera fila útil tiene nombres de columna, y en qué fila está.</li>
+            <li><strong>Re-detectar</strong> — vuelve a calcular sugerencias desde la muestra (pisa el formulario con la heurística fresca).</li>
+        </ul>
+
+        <h3 class="form-section-title">Tipos de archivo (qué esperar)</h3>
+        <ul>
+            <li><strong>CSV / TXT delimitado</strong> — flujo habitual: el delimitador y el encabezado definen cómo se parten las columnas en Campos. No hay Inicio/Fin/Long. en Campos.</li>
+            <li><strong>Excel (<code>xlsx</code>)</strong> — preview limitado en MVP; confirme el tipo con cuidado y revise Campos con atención.</li>
+            <li><strong>TXT posicional (<code>txt_fixed</code>)</strong> — el patrón suele quedar en <strong>revisión pendiente</strong>. Las longitudes <strong>estimadas</strong> (Inicio / Fin / Long.) se proponen y editan en el paso <strong>Campos</strong>, no aquí.</li>
+        </ul>
+
+        <h3 class="form-section-title">Estados y confianza</h3>
+        <ul>
+            <li><strong>Listo</strong> — patrón con confianza usable; puede continuar a Campos.</li>
+            <li><strong>Revisión pendiente</strong> — no es un error ni bloquea el flujo. Significa: revise el preview, ajuste tipo/delimitador si hace falta, confirme y continúe con cuidado (sobre todo antes de Aplicar a un destino).</li>
+            <li>Use el botón <strong>¿Qué significa?</strong> en el aviso amarillo del hub si aparece.</li>
+            <li><strong>Fallido</strong> — no se pudo leer o interpretar la muestra; revise el archivo en Muestra o re-detecte.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace este paso</h3>
+        <ul>
+            <li>No propone nombres ni tipos de campo (eso es <strong>Campos</strong>).</li>
+            <li>No guarda un borrador versionado (eso es <strong>Borrador</strong>).</li>
+            <li>No escribe en GATE / Reverse ni publica nada.</li>
+            <li>No configura captura avanzada de inicio/fin de archivo (eso se afina en el destino si hace falta).</li>
+        </ul>
+
+        <h3 class="form-section-title">Cómo trabajarlo (orden sugerido)</h3>
+        <ol>
+            <li>Mire el <strong>preview</strong>: ¿las columnas se parten bien con el delimitador / tipo elegido?</li>
+            <li>Si el tipo o el delimitador están mal → ajústelos y pulse otra vez <strong>Confirmar detección</strong>.</li>
+            <li>Si el patrón es <code>txt_fixed</code> → espere revisión pendiente; las longitudes se afinan en Campos.</li>
+            <li>Cuando se vea razonable → <strong>Continuar a campos</strong>.</li>
+        </ol>
+
+        <h3 class="form-section-title">Siguiente en el ciclo</h3>
+        <ul>
+            <li><strong>Campos</strong> — nombres, tipos; si es posicional, también longitudes estimadas.</li>
+            <li><strong>Borrador</strong> — congela el snapshot.</li>
+            <li><strong>Aplicar</strong> — siembra solo borrador en GATE / Reverse; la publicación es en el destino.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles</h3>
+        <ul>
+            <li><strong>PA / ED</strong> — editan el formulario y confirman.</li>
+            <li><strong>PA / ED / GE</strong> — pueden confirmar según la matriz del hub.</li>
+            <li><strong>CO</strong> — ve metadatos; sin preview de filas de la muestra.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

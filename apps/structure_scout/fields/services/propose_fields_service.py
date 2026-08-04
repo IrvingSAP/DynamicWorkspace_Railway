@@ -144,6 +144,34 @@ def _resolve_bounds(start, end, length) -> tuple[int | None, int | None, int | N
     return start_i, end_i, length_i
 
 
+def _slice_fixed_field(sample_line: str, start, end, length) -> str:
+    """Extrae el valor de un campo posicional (1-based) desde el registro de prueba."""
+    sample = (sample_line or "").rstrip("\n\r")
+    start_i, end_i, length_i = _resolve_bounds(start, end, length)
+    if start_i is None:
+        return ""
+    if length_i is None or length_i < 1:
+        length_i = 1
+    from_idx = max(0, start_i - 1)
+    chunk = sample[from_idx : from_idx + length_i]
+    return chunk.rstrip()
+
+
+def apply_txt_fixed_preview_examples(fields: list[dict], sample_line: str) -> None:
+    """
+    Ejemplos = un solo valor del registro de prueba (misma fila que Origen),
+    según Inicio / Long. de cada campo — no mezcla varias filas de la muestra.
+    """
+    sample = (sample_line or "").rstrip("\n\r")
+    for item in fields or []:
+        if item.get("start") in (None, ""):
+            continue
+        value = _slice_fixed_field(
+            sample, item.get("start"), item.get("end"), item.get("length")
+        )
+        item["examples"] = [value] if value else []
+
+
 def _segments_by_spaces(line: str) -> list[tuple[str, int, int]]:
     """Parte una línea por huecos de 2+ espacios → (texto, start_1based, end_1based)."""
     text_line = (line or "").rstrip("\n\r")
@@ -509,6 +537,8 @@ def infer_fields_from_sample(
     if file_type == "txt_fixed" and not delimiter:
         h1_fields = _infer_txt_fixed_via_h1(preview, detection)
         if h1_fields:
+            preview_line = _first_data_line(raw_lines, detection)
+            apply_txt_fixed_preview_examples(h1_fields, preview_line)
             return h1_fields, ""
         # Single weak column per line + H3 bounds
         rows = [[(item.get("raw") or "").rstrip("\n\r")] for item in preview]
@@ -562,8 +592,71 @@ def infer_fields_from_sample(
     if file_type == "txt_fixed":
         data_raw = raw_lines[data_start:] if data_start else raw_lines
         _attach_txt_fixed_bounds(fields, data_raw or raw_lines)
+        preview_line = _first_data_line(raw_lines, detection)
+        apply_txt_fixed_preview_examples(fields, preview_line)
 
     return fields, ""
+
+
+def _digit_ruler(width: int) -> str:
+    if width < 1:
+        return ""
+    return "".join(str((i % 10)) for i in range(1, width + 1))
+
+
+def build_positional_layout(
+    fields: list[dict],
+    sample_line: str,
+) -> dict | None:
+    """
+    Vista Origen / Construcción (prototipo hub_lengths):
+    - Origen: regla de dígitos + registro crudo de la muestra
+    - Construcción: misma regla + trozos del registro según Inicio/Long. en secuencia
+    """
+    sample = (sample_line or "").rstrip("\n\r")
+    max_end = 0
+    parts: list[str] = []
+    for item in fields or []:
+        start, end, length = _resolve_bounds(
+            item.get("start"), item.get("end"), item.get("length")
+        )
+        if start is None:
+            continue
+        if length is None or length < 1:
+            if end is not None and end >= start:
+                length = end - start + 1
+            else:
+                length = 1
+        end = start + length - 1
+        max_end = max(max_end, end)
+        from_idx = start - 1
+        chunk = sample[from_idx : from_idx + length]
+        if len(chunk) < length:
+            chunk = chunk.ljust(length)
+        parts.append(chunk)
+    if not parts and not sample:
+        return None
+    built = "".join(parts)
+    width = max(len(sample), max_end, len(built), 40)
+    return {
+        "ruler": _digit_ruler(width),
+        "sample_line": sample,
+        "values_line": sample.ljust(width)[:width],
+        "built_line": built,
+        "width": width,
+    }
+
+
+def _first_data_line(
+    raw_lines: list[str],
+    detection: ScoutDetectionState | None,
+) -> str:
+    lines = [(line or "").rstrip("\n\r") for line in raw_lines if (line or "").strip()]
+    if not lines:
+        return ""
+    if detection and detection.has_header and len(lines) > 1:
+        return lines[1]
+    return lines[0]
 
 
 def get_hub_context(user, project: Project) -> dict:
@@ -628,7 +721,7 @@ def get_hub_context(user, project: Project) -> dict:
         confidence = state.confidence
         global_notes = state.notes or global_notes
 
-    # Strip examples for CO
+    # Strip examples for CO; para txt_fixed recalcular desde el registro de prueba
     display_fields = []
     for item in fields:
         row = dict(item)
@@ -637,6 +730,25 @@ def get_hub_context(user, project: Project) -> dict:
         display_fields.append(row)
 
     content_types = get_content_type_choices()
+    show_bounds = bool(
+        detection and (detection.file_type_code or "") == "txt_fixed"
+    )
+
+    layout_preview = None
+    if show_bounds and can_preview and sample is not None and display_fields:
+        try:
+            preview = detection_service.preview_rows(
+                sample.stored_path,
+                filename=sample.original_filename,
+                limit=PREVIEW_LINE_LIMIT,
+            )
+            raw_lines = [(item.get("raw") or "") for item in preview]
+            data_line = _first_data_line(raw_lines, detection)
+            apply_txt_fixed_preview_examples(display_fields, data_line)
+            layout_preview = build_positional_layout(display_fields, data_line)
+        except Exception:
+            logger.exception("layout preview project=%s", project.slug)
+            layout_preview = None
 
     return {
         "membership": membership,
@@ -660,9 +772,8 @@ def get_hub_context(user, project: Project) -> dict:
         "has_sample": sample is not None,
         "has_detection": has_detection,
         "content_types": content_types,
-        "show_bounds": bool(
-            detection and (detection.file_type_code or "") == "txt_fixed"
-        ),
+        "show_bounds": show_bounds,
+        "layout_preview": layout_preview,
         "errors": {},
         "field_errors": {},
     }
@@ -915,6 +1026,20 @@ def confirm_fields(user, project: Project, fields: list[dict]) -> OperationResul
             item["length"] = length
             if not item.get("length_confidence"):
                 item["length_confidence"] = ScoutFieldsState.CONFIDENCE_LOW
+        try:
+            preview = detection_service.preview_rows(
+                sample.stored_path,
+                filename=sample.original_filename,
+                limit=PREVIEW_LINE_LIMIT,
+            )
+            raw_lines = [(item.get("raw") or "") for item in preview]
+            apply_txt_fixed_preview_examples(
+                posted, _first_data_line(raw_lines, detection)
+            )
+        except Exception:
+            logger.exception(
+                "confirm txt_fixed examples project=%s", project.slug
+            )
 
     errors = validate_fields(posted, file_type_code=file_type)
     if errors:

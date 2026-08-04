@@ -402,3 +402,108 @@
     padding: 12px 16px 16px;
     border-top: 1px solid var(--rule, #d5dce4);
 }
+
+/* —— STRUCTURE SCOUT: Origen / Construcción (Campos / txt_fixed) —— */
+.ss-layout-dual {
+    display: grid;
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.ss-layout-block {
+    border: 1px solid var(--rule, #d5dce4);
+    border-radius: var(--radius-md, 6px);
+    background: var(--surface-inset, #eeebe6);
+    overflow: hidden;
+}
+
+.ss-layout-block--origen {
+    border-color: color-mix(in srgb, var(--accent, #1f5c4a) 28%, var(--rule, #d5dce4));
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--accent-subtle, #e4f0eb) 80%, #fff) 0%,
+        var(--surface-inset, #f7f4ee) 48%
+    );
+}
+
+.ss-layout-block--construccion {
+    border-color: var(--rule-strong, rgba(28, 25, 23, 0.14));
+    background: linear-gradient(180deg, #fbf8f1 0%, var(--surface-inset, #f3f0ea) 55%);
+}
+
+.ss-layout-block__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px 8px;
+    border-bottom: 1px solid var(--rule, #d5dce4);
+}
+
+.ss-layout-block__title {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--ink, #1c1b19);
+}
+
+.ss-layout-block--origen .ss-layout-block__title {
+    color: var(--accent, #1f5c4a);
+}
+
+.ss-layout-block__tag {
+    font-size: 11px;
+    color: var(--ink-tertiary, #78716c);
+    font-family: var(--font-mono, ui-monospace, monospace);
+}
+
+.ss-layout-block__body {
+    padding: 10px 14px 12px;
+    overflow-x: auto;
+}
+
+.ss-layout-block__caption {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink, #1c1b19);
+}
+
+.ss-layout-block__pre {
+    margin: 0;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre;
+    color: var(--ink, #1c1b19);
+}
+
+.ss-layout-block__pre + .ss-layout-block__pre {
+    margin-top: 2px;
+}
+
+.ss-layout-block__pre--ruler {
+    color: var(--ink-tertiary, #78716c);
+}
+
+.ss-layout-block__pre--data {
+    color: var(--ink-secondary, #44403c);
+    font-weight: 500;
+}
+
+.ss-layout-block__pre--built {
+    color: var(--accent-hover, #163f34);
+    background: color-mix(in srgb, var(--accent, #1f5c4a) 6%, transparent);
+    border-radius: 3px;
+    padding: 2px 0;
+}
+
+.ss-layout-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    align-items: center;
+}

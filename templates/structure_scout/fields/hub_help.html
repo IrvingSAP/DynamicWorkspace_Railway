@@ -30,7 +30,15 @@
     <li><strong>Tipo</strong> (<code>content_type</code> del catálogo DMS).</li>
     <li><strong>Obligatorio</strong> y notas.</li>
     <li>Con <code>txt_fixed</code>: <strong>Inicio</strong>, <strong>Fin</strong> y <strong>Longitud</strong> (se sincronizan entre sí).</li>
+    <li>Con <code>txt_fixed</code>: la columna <strong>Ejemplos</strong> muestra un solo valor del registro de prueba (misma fila que Origen), según Inicio / Long.</li>
     <li>Agregar / quitar filas si hace falta; <strong>Re-inferir</strong> vuelve a calcular tipos y longitudes desde la muestra.</li>
+</ul>
+
+<h3 class="form-section-title">Vista posicional (txt_fixed)</h3>
+<ul>
+    <li><strong>Origen</strong> — dígitos de posición y un registro crudo de la muestra.</li>
+    <li><strong>Construcción</strong> — misma regla; arma la línea leyendo cada campo (Inicio / Long.) y colocando los trozos en secuencia.</li>
+    <li>«Actualizar vista posicional» refresca Construcción tras editar la tabla (no guarda hasta Confirmar).</li>
 </ul>
 
 <h3 class="form-section-title">Longitudes estimadas</h3>
