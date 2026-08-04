@@ -30,6 +30,8 @@
         <p>Se aplica antes del match 1:1. Sin tolerancia numérica ni fuzzy en MVP.</p>
     </div>
     <div class="page-actions">
+        {% url 'file_match:rules_normalize_help' project_slug=project.slug as rules_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=rules_help_url %}
         <a href="{% url 'file_match:rules_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
     </div>
 </div>

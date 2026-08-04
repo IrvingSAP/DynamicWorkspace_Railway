@@ -14,30 +14,119 @@
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
-    <a href="{% url 'file_match:report_detail' project_slug=project.slug job_id=job_id %}">← Informe</a>
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:report_detail' project_slug=project.slug job_id=job_id %}">Informe</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
 </nav>
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Ayuda · Módulo 6</p>
+        <p class="page-eyebrow">Referencia · FILE MATCH · Módulo 6 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Informe y evidencia</h2>
-        <p>Roles, ofuscación y retención de descargas.</p>
+        <p>Cómo leer el veredicto, las diferencias, el check «Mostrar valores», las descargas y el certificado.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:report_detail' project_slug=project.slug job_id=job_id %}" class="btn btn-secondary">← Volver al informe</a>
     </div>
 </div>
+
 <div class="panel help-panel">
     <div class="panel-body">
+        <h3 class="form-section-title">Qué es esta pantalla</h3>
+        <p class="help-intro">
+            Es la <strong>evidencia</strong> de una conciliación ya ejecutada (Módulo 6).
+            No vuelve a cruzar archivos: muestra el resumen del job, las diferencias por bucket,
+            descargas y un certificado ligero. El resultado inmediato del Módulo 5 es más corto;
+            aquí se profundiza.
+        </p>
+
+        <h3 class="form-section-title">Veredicto y métricas</h3>
+        <ul>
+            <li><strong>Cuadra / No cuadra / Parcial</strong> — según las reglas publicadas y el resultado del job.</li>
+            <li>Las tarjetas (matched, mismatch, only A/B, duplicados) resumen conteos; <strong>no</strong> cambian con «Mostrar valores».</li>
+        </ul>
+
+        <h3 class="form-section-title">Check «Mostrar valores»</h3>
+        <p class="help-intro">
+            Solo visible para <span class="mono">PA</span> / <span class="mono">ED</span>.
+            Controla si en la tabla <strong>Diferencias</strong> se ven los valores reales o enmascarados.
+        </p>
         <table class="help-table">
-            <thead><tr><th>Tema</th><th>Detalle</th></tr></thead>
+            <thead>
+                <tr><th>Estado</th><th>Qué ve en «Diff / nota»</th></tr>
+            </thead>
             <tbody>
-                <tr><td>Roles</td><td>PA/ED/GE descargan. CO: metadatos + certificado sin celdas. Solo PA/ED revelan valores.</td></tr>
-                <tr><td>Ofuscación</td><td>UI ofuscada por defecto (p. ej. primeros 2 + ***).</td></tr>
-                <tr><td>Certificado</td><td>Hashes A y B + versión + veredicto + usuario + timestamps.</td></tr>
-                <tr><td>TTL</td><td>Descargas 7 días; metadatos del job permanecen.</td></tr>
-                <tr><td>Historial</td><td>Listado filtrable = Módulo 7.</td></tr>
+                <tr>
+                    <td>Desmarcado (default)</td>
+                    <td>Valores ofuscados: primeros 2 caracteres + <code>***</code> (p. ej. <code>Ab***</code>).</td>
+                </tr>
+                <tr>
+                    <td>Marcado</td>
+                    <td>Valores completos de A y B en cada par comparado.</td>
+                </tr>
             </tbody>
         </table>
+        <ul>
+            <li>El efecto se nota sobre todo en filas <code>value_mismatch</code> (tienen diffs A≠B).</li>
+            <li>En <code>only_a</code>, <code>only_b</code> o <code>duplicate_key</code> casi no hay valores que ofuscar: el check puede parecer que «no hace nada».</li>
+            <li>Para probarlo: filtre el chip <strong>value_mismatch</strong> y active el check.</li>
+            <li>Metadatos, hashes, métricas y descargas <strong>no</strong> dependen de este control.</li>
+        </ul>
+
+        <h3 class="form-section-title">Filtros de diferencias (chips)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Bucket</th><th>Significado</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>value_mismatch</code></td><td>Misma clave; al menos un campo comparado difiere.</td></tr>
+                <tr><td><code>only_a</code></td><td>Clave presente solo en el archivo A.</td></tr>
+                <tr><td><code>only_b</code></td><td>Clave presente solo en el archivo B.</td></tr>
+                <tr><td><code>duplicate_key</code></td><td>Clave repetida en un lado (según política del perfil de reglas).</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            «Todos» muestra la vista previa mezclada. Si hay muchas filas, la tabla está limitada;
+            use las descargas para el detalle completo.
+        </p>
+
+        <h3 class="form-section-title">Descargas y TTL</h3>
+        <ul>
+            <li><strong>Informe JSON</strong> / <strong>Diferencias CSV</strong> — evidencia del cruce (PA/ED/GE).</li>
+            <li>Retención típica: <strong>7 días</strong> desde el fin del job. Luego las descargas dejan de servirse; los metadatos del job siguen.</li>
+            <li>Si aparece el aviso «Evidencia expirada», ya no podrá bajar JSON/CSV.</li>
+        </ul>
+
+        <h3 class="form-section-title">Certificado</h3>
+        <p class="help-intro">
+            Resumen auditable: hashes de A y B, versión publicada, veredicto, usuario y marcas de tiempo.
+            No sustituye el CSV de diferencias ni revela todas las celdas.
+        </p>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>En el informe</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">PA / ED</td><td>Detalle de filas, «Mostrar valores», descargas, certificado.</td></tr>
+                <tr><td class="mono">GE</td><td>Detalle y descargas; sin revelar valores ofuscados en UI (sin el check).</td></tr>
+                <tr><td class="mono">CO</td><td>Metadatos y certificado; sin celdas de negocio ni descargas de datos.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no hace esta pantalla</h3>
+        <ul>
+            <li>No ejecuta ni re-ejecuta la conciliación (eso es <strong>Ejecutar</strong>).</li>
+            <li>No es el listado filtrable de jobs (eso es <strong>Historial</strong>, Módulo 7).</li>
+            <li>No muestra el informe de <em>lectura</em> (rechazos content_type al parsear): eso está en el <strong>resultado</strong> del job (M5), si hubo issues.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

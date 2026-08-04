@@ -23,7 +23,7 @@
     <div>
         <p class="page-eyebrow">Ayuda · Módulo 7</p>
         <h2>Ayuda — Historial de conciliaciones</h2>
-        <p>Qué se audita y quién puede ver qué.</p>
+        <p>Qué se audita, quién ve qué y cómo limpiar corridas propias.</p>
     </div>
 </div>
 <div class="panel help-panel">
@@ -32,9 +32,11 @@
             <thead><tr><th>Tema</th><th>Detalle</th></tr></thead>
             <tbody>
                 <tr><td>Roles</td><td>PA/ED/GE/CO ven el listado. CO no descarga filas ni ve detalle de diferencias.</td></tr>
+                <tr><td>Alcance</td><td>Por defecto muestra <strong>todas</strong> las corridas del proyecto. Use el filtro Usuario para acotar.</td></tr>
                 <tr><td>TTL</td><td>Badge Expirado tras {{ ttl_days }} días; metadatos siguen; descargas bloqueadas.</td></tr>
                 <tr><td>Filtros</td><td>Veredicto, fechas, usuario, archivos A/B, hash, versión, TTL.</td></tr>
-                <tr><td>Acciones</td><td>Resultado · Informe · Certificado.</td></tr>
+                <tr><td>Acciones</td><td>Resultado · Informe · Certificado. <strong>Eliminar</strong> solo en corridas que usted ejecutó.</td></tr>
+                <tr><td>Eliminar mis corridas</td><td>Borra de una vez todas sus ejecuciones del proyecto (registro + evidencia). No afecta las de otros usuarios.</td></tr>
             </tbody>
         </table>
     </div>

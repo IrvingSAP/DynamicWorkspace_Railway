@@ -196,7 +196,15 @@
 
 <div class="panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Corridas</h3>
+        <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px">
+            <h3 class="form-section-title" style="margin:0">Corridas</h3>
+            {% if history.can_delete_own_any %}
+            <form method="post" action="{% url 'file_match:history_delete_own' project_slug=project.slug %}" class="js-history-delete-form" data-confirm="¿Eliminar todas sus corridas de este proyecto? Se borrarán el registro y la evidencia. No afecta ejecuciones de otros usuarios.">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-secondary">Eliminar mis corridas</button>
+            </form>
+            {% endif %}
+        </div>
         {% if history.rows %}
         <table class="hist-table">
             <thead>
@@ -235,6 +243,12 @@
                             <a href="{{ row.result_url }}">Resultado</a>
                             <a href="{{ row.report_url }}">Informe</a>
                             <a href="{{ row.certificate_url }}">Certificado</a>
+                            {% if row.can_delete %}
+                            <form method="post" action="{% url 'file_match:history_delete_job' project_slug=project.slug job_id=row.id %}" class="js-history-delete-form" data-confirm="¿Eliminar esta corrida? Se borrarán el registro y la evidencia." style="display:inline; margin:0">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-link-danger" style="background:none;border:none;padding:0;font:inherit;font-size:12px;font-weight:600;color:#b91c1c;cursor:pointer">Eliminar</button>
+                            </form>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -264,4 +278,23 @@
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("form.js-history-delete-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            if (typeof dwConfirmWarning !== "function") {
+                return;
+            }
+            e.preventDefault();
+            var message = form.getAttribute("data-confirm") || "¿Eliminar?";
+            dwConfirmWarning(message, function () {
+                HTMLFormElement.prototype.submit.call(form);
+            });
+        });
+    });
+});
+</script>
 {% endblock %}

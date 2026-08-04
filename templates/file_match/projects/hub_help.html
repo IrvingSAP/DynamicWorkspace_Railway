@@ -4,31 +4,164 @@
 {% block title %}Ayuda · Proyecto — {{ project.name }}{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 {% block breadcrumb %}
-<nav class="breadcrumb">
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
     <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
-    <span class="breadcrumb-sep">/</span><span>Ayuda</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
 </nav>
 {% endblock %}
 {% block content %}
 <div class="page-header">
     <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span> · Conciliador</p>
         <h2>Ayuda — Hub del proyecto</h2>
-        <p>Punto de entrada del Conciliador. Stepper: Perfil A → B → Reglas → Publicar → Conciliar → Historial.</p>
+        <p>Tablero del ciclo: definición (A → B → reglas → publicar) y ejecución (conciliar → historial).</p>
     </div>
     <div class="page-actions">
-        <a class="btn btn-secondary" href="{% url 'file_match:project_hub' project_slug=project.slug %}">← Volver</a>
+        <a class="btn btn-secondary" href="{% url 'file_match:project_hub' project_slug=project.slug %}">← Volver al hub</a>
     </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li><strong>Miembros:</strong> solo PA invita UF y asigna roles.</li>
-    <li><strong>Perfil A / B / Reglas:</strong> se editan en borrador hasta publicar.</li>
-    <li><strong>Publicar:</strong> congela A + B + reglas en una versión activa.</li>
-    <li><strong>Conciliar:</strong> suba archivos A y B contra la versión publicada (Módulo 5).</li>
-    <li><strong>Historial / Bridge:</strong> auditoría de jobs e integración opcional FILE GATE.</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es este hub</h3>
+        <p class="help-intro">
+            Es el <strong>punto de entrada</strong> del proyecto Conciliador (FILE MATCH). Agrupa perfiles A y B,
+            reglas de cruce, la versión publicada, las conciliaciones (jobs) y el historial.
+            No es FilePipe (no hay archivo destino ETL) ni FILE GATE (no valida un solo archivo de producción).
+        </p>
+        <ul>
+            <li><strong>Objetivo:</strong> cruzar dos orígenes (A vs B) por clave 1:1 y obtener un informe de diferencias.</li>
+            <li><strong>Strip superior:</strong> versión borrador, versión activa publicada y conteo de miembros.</li>
+            <li><strong>Stepper + paneles:</strong> avance del ciclo y accesos directos a cada módulo.</li>
+            <li><strong>Miembros:</strong> botón visible solo para el administrador (PA).</li>
+        </ul>
+
+        <h3 class="form-section-title">Fases del ciclo</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Fase</th><th>Qué cubre</th><th>En el hub</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Definición (M1–M4)</td>
+                    <td>Perfil A → Perfil B → Reglas → Publicar</td>
+                    <td>Primera franja del stepper</td>
+                </tr>
+                <tr>
+                    <td>Ejecución (M5–M6)</td>
+                    <td>Conciliar A+B → Historial / informe</td>
+                    <td>Segunda franja del stepper</td>
+                </tr>
+                <tr>
+                    <td>Integración (M8)</td>
+                    <td>Bridge opcional FILE GATE (pre-check)</td>
+                    <td>Panel de auditoría; no es paso numerado</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Stepper — qué hace cada paso</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>#</th><th>Paso</th><th>Para qué sirve</th><th>Cuándo se activa</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="mono">1</td>
+                    <td>Perfil A</td>
+                    <td>Define cómo se lee el archivo de referencia (tipo, encoding, campos del lado A).</td>
+                    <td>Desde el inicio; wizard de 6 pasos.</td>
+                </tr>
+                <tr>
+                    <td class="mono">2</td>
+                    <td>Perfil B</td>
+                    <td>Igual para la contraparte (lado B).</td>
+                    <td>Tras completar Perfil A.</td>
+                </tr>
+                <tr>
+                    <td class="mono">3</td>
+                    <td>Reglas</td>
+                    <td>Clave de cruce 1:1, campos a comparar y normalización.</td>
+                    <td>Tras completar Perfil B.</td>
+                </tr>
+                <tr>
+                    <td class="mono">4</td>
+                    <td>Publicar</td>
+                    <td>Congela A + B + reglas juntos en una <strong>versión activa</strong>. Sin publish parcial.</td>
+                    <td>Tras reglas listas; queda marcado si ya hay publicada.</td>
+                </tr>
+                <tr>
+                    <td class="mono">5</td>
+                    <td>Conciliar</td>
+                    <td>Suba archivos A y B contra la versión publicada; genera el job e informe.</td>
+                    <td>Solo si hay versión publicada.</td>
+                </tr>
+                <tr>
+                    <td class="mono">6</td>
+                    <td>Historial</td>
+                    <td>Auditoría de jobs, certificados y acceso al informe.</td>
+                    <td>Si hay versión publicada.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Paneles del hub</h3>
+        <ul>
+            <li><strong>Perfil A / B:</strong> progreso del wizard y CTA para continuar o abrir.</li>
+            <li><strong>Reglas:</strong> conteos de clave / campos a comparar.</li>
+            <li><strong>Publicar:</strong> estado de la versión activa y CTA al módulo 4.</li>
+            <li><strong>Ejecutar:</strong> acceso a Conciliar (bloqueado hasta publicar).</li>
+            <li><strong>Auditoría e integración:</strong> Historial + enlace a Integración FILE GATE (bridge).</li>
+        </ul>
+
+        <h3 class="form-section-title">Orden de trabajo recomendado</h3>
+        <ol>
+            <li>Revise miembros (PA) si otras personas deben editar o ejecutar.</li>
+            <li>Complete <strong>Perfil A</strong> (6 pasos) → <strong>Perfil B</strong> → <strong>Reglas</strong>.</li>
+            <li><strong>Publique</strong> la definición (A + B + reglas).</li>
+            <li>(Opcional) Configure el <strong>bridge FILE GATE</strong> si quiere pre-check de A y/o B.</li>
+            <li><strong>Concilie</strong> subiendo A y B → revise el <strong>informe</strong> y el <strong>historial</strong>.</li>
+        </ol>
+        <p class="help-intro">Regla de producto: <strong>no se concilia sin versión publicada</strong>.</p>
+
+        <h3 class="form-section-title">Borrador vs versión publicada</h3>
+        <ul>
+            <li>Perfil A, Perfil B y reglas se editan en <strong>borrador</strong> hasta publicar.</li>
+            <li>Al publicar se crea una <strong>versión activa</strong>; el borrador vuelve a ser editable (copia).</li>
+            <li>Los jobs de conciliación usan solo la versión <strong>publicada activa</strong>, no el borrador.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles (resumen)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>En este hub</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">PA</td><td>Ve todo; gestiona miembros; edita, publica, concilia y configura bridge.</td></tr>
+                <tr><td class="mono">ED</td><td>Edita definición, publica y concilia; no gestiona miembros.</td></tr>
+                <tr><td class="mono">GE</td><td>Concilia y descarga informe; no edita perfiles/reglas ni publica.</td></tr>
+                <tr><td class="mono">CO</td><td>Consulta hub e historial; sin detalle de filas ni descarga de datos de negocio.</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Detalle de invitaciones y permisos: pantalla <strong>Miembros</strong> → Ayuda.
+            Guía de producto: menú FILE MATCH → <strong>Ayuda</strong>.
+        </p>
+
+        <h3 class="form-section-title">Qué no hace este hub</h3>
+        <ul>
+            <li>No edita campos del perfil ni reglas (eso está en cada módulo del stepper).</li>
+            <li>No sube archivos de conciliación (eso es <strong>Conciliar</strong>).</li>
+            <li>No publica automáticamente: hay que entrar a <strong>Publicar</strong> y confirmar.</li>
+            <li>No sustituye FILE GATE ni genera un archivo destino de negocio.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

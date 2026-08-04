@@ -54,6 +54,34 @@
 </div>
 {% endif %}
 
+{% if can_copy_from_a %}
+<div class="panel" style="margin-bottom:16px;border-color:#b7d4c8;background:#e4f0eb">
+    <div class="panel-body">
+        <h3 class="form-section-title">Misma estructura que A</h3>
+        <p class="hint">
+            Si el archivo B tiene el <strong>mismo layout</strong> que A, copie la estructura del borrador A
+            al borrador B (tipo, captura, campos, reglas de contenido e informe). No publica la definición Match.
+            {% if copy_from_a_b_fields %}El Perfil B ya tiene {{ copy_from_a_b_fields }} campos; se pedirá confirmación.{% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'file_match:profile_b_copy_from_a' project_slug=project.slug %}" class="btn btn-primary">Copiar desde Perfil A</a>
+            <a href="{% url 'file_match:profile_b_copy_from_a_help' project_slug=project.slug %}?from=hub" class="btn btn-secondary">¿Qué es esto?</a>
+        </div>
+    </div>
+</div>
+{% elif copy_from_a_can_edit and not copy_from_a_a_ready %}
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Copiar desde Perfil A</h3>
+        <p class="hint">
+            Cuando el Perfil A tenga tipo y campos definidos, podrá copiar esa estructura al borrador B
+            si ambos archivos son iguales.
+        </p>
+        <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-ghost">Ir a Perfil A</a>
+    </div>
+</div>
+{% endif %}
+
 <div class="stats-strip" aria-label="Progreso">
     <div class="stat-card{% if wizard.steps_complete == wizard.steps_total %} is-done{% else %} is-accent{% endif %}">
         <p class="stat-label">Pasos completos</p>

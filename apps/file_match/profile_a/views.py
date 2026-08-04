@@ -101,7 +101,31 @@ def profile_a_seed_hub_help(request, project_slug: str):
     project = _get_project_or_redirect(request, project_slug)
     if project is None:
         return redirect("file_match:project_list")
-    return _render(request, project_slug, "profile_seed/seed_entry_help.html")
+    # Whitelist: help opened from Perfil A hub vs Importar shell.
+    from_key = (request.GET.get("from") or "").strip().lower()
+    if from_key == "hub":
+        help_back_url_name = "file_match:profile_a_hub"
+        help_back_label = "← Perfil A"
+        help_from_hub = True
+    else:
+        # Default / from=import → shell Importar when allowed.
+        can_import = profile_seed_service.user_can_import(request.user, project)
+        if can_import:
+            help_back_url_name = "file_match:profile_a_seed_hub"
+            help_back_label = "← Volver a Importar"
+            help_from_hub = False
+        else:
+            help_back_url_name = "file_match:profile_a_hub"
+            help_back_label = "← Perfil A"
+            help_from_hub = True
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/seed_entry_help.html",
+        help_back_url_name=help_back_url_name,
+        help_back_label=help_back_label,
+        help_from_hub=help_from_hub,
+    )
 
 
 @_profile_a_view

@@ -58,9 +58,14 @@
         {% url 'file_match:run_result_help' project_slug=project.slug job_id=view.id as result_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=result_help_url %}
         <a href="{% url 'file_match:run_hub' project_slug=project.slug %}" class="btn btn-secondary">Nueva corrida</a>
+        {% if view.downloads.report or view.detail_preview %}
         <a href="{% url 'file_match:report_detail' project_slug=project.slug job_id=view.id %}" class="btn btn-primary">Ver informe</a>
+        {% endif %}
         {% if run.can_download and view.downloads.diff %}
         <a href="{{ view.downloads.diff }}" class="btn btn-secondary">Descargar CSV</a>
+        {% endif %}
+        {% if run.can_download and view.downloads.parse and view.parse_issues_count %}
+        <a href="{{ view.downloads.parse }}" class="btn btn-secondary">Lecturas CSV</a>
         {% endif %}
     </div>
 </div>
@@ -73,12 +78,68 @@
             Filas A/B {{ view.metrics.rows_a|default:"—" }} / {{ view.metrics.rows_b|default:"—" }}.
             {% endif %}
         </p>
+        {% if view.parse_issues_count %}
+        <p>
+            Rechazos al leer:
+            <strong>{{ view.parse_issues_count }}</strong>
+            (A: {{ view.parse_issues_a }} · B: {{ view.parse_issues_b }}).
+            Revise la tabla de lectura abajo o descargue el CSV.
+        </p>
+        {% endif %}
     </div>
     <div class="hint">
         {% if view.duration_ms %}{{ view.duration_ms }} ms · {% endif %}
         hash A/B registrados
     </div>
 </div>
+
+{% if view.parse_issues_count %}
+<div class="panel" style="margin-bottom:14px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Informe de lectura (A / B)</h3>
+        <p class="hint">
+            Errores al parsear o validar filas contra el perfil publicado
+            (content_type, required, pattern, etc.). El cruce solo usa filas válidas.
+        </p>
+        <table class="bucket-table">
+            <thead>
+                <tr>
+                    <th>Lado</th>
+                    <th>Línea</th>
+                    <th>Campo</th>
+                    <th>Código</th>
+                    <th>Mensaje</th>
+                    <th>Valor</th>
+                    <th>Esperado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for issue in view.parse_issues %}
+                <tr>
+                    <td><code>{{ issue.side }}</code></td>
+                    <td>{{ issue.line|default:"—" }}</td>
+                    <td>{% if issue.field %}<code>{{ issue.field }}</code>{% else %}—{% endif %}</td>
+                    <td><code>{{ issue.code|default:"—" }}</code></td>
+                    <td>{{ issue.message }}</td>
+                    <td class="mono" style="max-width:12rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ issue.value }}">{{ issue.value|default:"—" }}</td>
+                    <td>{% if issue.expected %}<code>{{ issue.expected }}</code>{% else %}—{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7">Sin detalle en vista previa; descargue el CSV de lectura.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if view.parse_issues_capped %}
+        <p class="hint">Lista limitada en pantalla; el archivo de descarga puede incluir más filas (tope de almacenamiento).</p>
+        {% endif %}
+        <div class="page-actions" style="margin-top:12px">
+            {% if run.can_download and view.downloads.parse %}
+            <a href="{{ view.downloads.parse }}" class="btn btn-secondary">Descargar lecturas CSV</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <div class="stats-strip" aria-label="Métricas">
     <div class="stat-card">
@@ -162,8 +223,14 @@
             {% if run.can_download and view.downloads.diff %}
             <a href="{{ view.downloads.diff }}" class="btn btn-secondary">Diferencias CSV</a>
             {% endif %}
+            {% if run.can_download and view.downloads.parse and view.parse_issues_count %}
+            <a href="{{ view.downloads.parse }}" class="btn btn-secondary">Lecturas CSV</a>
+            {% endif %}
+            {% if view.has_report %}
             <a href="{% url 'file_match:report_detail' project_slug=project.slug job_id=view.id %}" class="btn btn-primary">Ver informe / evidencia</a>
+            {% endif %}
             <a href="{% url 'file_match:history_hub' project_slug=project.slug %}" class="btn btn-secondary">Ir a historial</a>
+            <a href="{% url 'file_match:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
         </div>
     </div>
 </div>

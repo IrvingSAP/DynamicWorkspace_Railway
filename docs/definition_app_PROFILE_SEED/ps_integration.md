@@ -224,8 +224,8 @@ CSS: reuso `projects.css` / `mapping.css` / `source_profile.css`. Sin Django For
 | **P0** | FILE GATE `schema` publicado → Match `profile_a` | **Implementado** |
 | P1 | GATE → Match `profile_b` | Pendiente |
 | P2 | GATE / Match → Reverse `input` | Pendiente |
-| P3 | Match A ↔ B / otro Match | Pendiente |
-| Fase 2 | DMS / FilePipe; hub kind Seed | Pendiente |
+| P3 | Match A → B (mismo proyecto) | **Implementado** (`copy_from_a_service`; no cross-project aún) |
+| Fase 2 | DMS / FilePipe; hub kind Seed; Match↔Match otro proyecto | Pendiente |
 
 ---
 

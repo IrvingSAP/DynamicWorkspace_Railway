@@ -1,0 +1,94 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos a comparar — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:rules_hub' project_slug=project.slug %}">Reglas</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:rules_compare' project_slug=project.slug %}">Comparar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_match/rules/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · FILE MATCH · Reglas · Sección 2 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Campos a comparar</h2>
+        <p>Qué valores contrastar cuando la clave A↔B ya coincidió. Cero pares es válido.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:rules_compare' project_slug=project.slug %}" class="btn btn-secondary">← Volver a Comparar</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué decide esta sección</h3>
+        <p class="help-intro">
+            Tras emparejar filas por <strong>clave</strong>, el motor contrasta estos pares A↔B.
+            Sirven para detectar <code>value_mismatch</code> (misma clave, valor distinto).
+        </p>
+        <ul>
+            <li><strong>Cero pares</strong> es válido: solo se mira presencia (matched / only_a / only_b).</li>
+            <li>Los selects usan los <code>name</code> de Perfil A y Perfil B.</li>
+            <li>MVP: <strong>sin</strong> tolerancia numérica ni fuzzy.</li>
+        </ul>
+
+        <h3 class="form-section-title">Cómo trabajar la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Efecto</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Elegir Campo A / B</td><td>Par a contrastar cuando la clave coincide.</td></tr>
+                <tr><td>+ Añadir par</td><td>Agrega otro contraste (p. ej. monto, estado).</td></tr>
+                <tr><td>Quitar</td><td>Elimina ese par de compare.</td></tr>
+                <tr><td>Guardar borrador</td><td>Persiste y permanece en Comparar.</td></tr>
+                <tr><td>Guardar y continuar</td><td>Guarda e ir a <strong>Normalización</strong>.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Relación con la clave</h3>
+        <ul>
+            <li>Un campo puede estar en clave y también en compare (permitido).</li>
+            <li>Lo habitual: clave = identificadores; compare = montos, fechas, estados.</li>
+            <li>Si copió A→B y propuso 1:1, el primer campo suele ser clave y el resto compare: <strong>revíselo</strong>.</li>
+        </ul>
+
+        <h3 class="form-section-title">Navegación</h3>
+        <ul>
+            <li><strong>Franja de alcance</strong>: contexto del proyecto.</li>
+            <li><strong>Stepper</strong>: Claves (hecha) → Comparar (activa) → Normalize.</li>
+            <li><strong>Atrás</strong> vuelve a Claves; <strong>← Resumen</strong> al hub de Reglas.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace</h3>
+        <ul>
+            <li>No define cómo se emparejan las filas (eso es <strong>Claves</strong>).</li>
+            <li>No normaliza espacios/mayúsculas de la clave (eso es <strong>Normalización</strong>).</li>
+            <li>No publica ni ejecuta el job de conciliación.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles</h3>
+        <p class="help-intro"><span class="mono">PA</span> / <span class="mono">ED</span> editan. Consulta / ejecutar: solo lectura.</p>
+    </div>
+</div>
+{% endblock %}

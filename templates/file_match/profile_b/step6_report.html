@@ -96,8 +96,10 @@
                     <a href="{% url 'file_match:profile_b_step5' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
                     {% if can_edit_source %}
                     <button type="button" id="btn-save-processing-report-footer" class="btn btn-ghost" onclick="document.getElementById('btn-save-processing-report').click()">Guardar borrador</button>
-                    {% endif %}
+                    <button type="button" id="btn-finish-processing-report" class="btn btn-primary" data-next="{% url 'file_match:profile_b_hub' project_slug=project.slug %}">Finalizar Perfil B →</button>
+                    {% else %}
                     <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}" class="btn btn-primary">Finalizar Perfil B →</a>
+                    {% endif %}
                 </div>
             </div>
         </div>

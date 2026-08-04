@@ -8,7 +8,7 @@ from apps.file_match.projects.services import match_project_service
 from apps.file_match.run.services import match_run_service
 from apps.projects.services import project_service
 
-DOWNLOAD_KINDS = {"report", "diff"}
+DOWNLOAD_KINDS = {"report", "diff", "parse"}
 
 
 def _run_view(view_func):
@@ -66,14 +66,20 @@ def run_execute(request, project_slug: str):
         request.FILES.get("file_a"),
         request.FILES.get("file_b"),
     )
+    job = (result.payload or {}).get("job")
     if not result.ok:
         messages.error(request, result.user_message)
         for field_errors in (result.errors or {}).values():
             for msg in field_errors:
                 messages.error(request, msg)
+        if job is not None:
+            return redirect(
+                "file_match:run_result",
+                project_slug=project_slug,
+                job_id=job.id,
+            )
         return redirect("file_match:run_hub", project_slug=project_slug)
 
-    job = result.payload["job"]
     messages.success(request, result.user_message)
     return redirect(
         "file_match:run_result",
@@ -148,5 +154,12 @@ def run_download(request, project_slug: str, job_id, kind: str):
         )
 
     content_type = "application/json" if kind == "report" else "text/csv; charset=utf-8"
-    filename = "match_report.json" if kind == "report" else "match_diff.csv"
+    if kind == "report":
+        filename = "match_report.json"
+    elif kind == "diff":
+        filename = "match_diff.csv"
+    else:
+        filename = path.name
+        if path.suffix.lower() == ".json":
+            content_type = "application/json"
     return FileResponse(path.open("rb"), as_attachment=True, filename=filename, content_type=content_type)

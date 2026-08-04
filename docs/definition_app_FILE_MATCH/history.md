@@ -93,6 +93,7 @@ flowchart LR
 3. Aplicar filtros (veredicto, fechas, usuario, archivo A/B, versión).
 4. Abrir Resultado / Informe / Certificado según permiso y TTL.
 5. Si TTL vencido → badge «Expirado»; metadatos siguen; descargas M6 bloqueadas.
+6. Opcional: **Eliminar** una corrida propia, o **Eliminar mis corridas** (todas las propias del proyecto). Borrado permanente de registro + evidencia; no permite borrar ejecuciones ajenas.
 
 ```mermaid
 flowchart TB
@@ -159,8 +160,10 @@ Validación filtros: fechas invertidas → error inline (mismo espíritu Reverse
 | Abrir informe (detalle filas) | Sí | Sí | Sí | No* |
 | Descargar JSON/CSV | Sí | Sí | Sí | No |
 | Ver / descargar certificado | Sí | Sí | Sí | Sí |
+| Eliminar corrida propia | Sí** | Sí** | Sí** | Sí** |
 
-\*CO: ve metadatos de historial y certificado; no tabla de diferencias ni descargas con celdas (alineado M6).
+\*CO: ve metadatos de historial y certificado; no tabla de diferencias ni descargas con celdas (alineado M6).  
+\*\*Solo si `executed_by` es el usuario actual; nunca corridas de otros.
 
 ---
 
@@ -174,6 +177,7 @@ Validación filtros: fechas invertidas → error inline (mismo espíritu Reverse
 | HIS4 | Copy: “historial de conciliaciones”. |
 | HIS5 | Completar M7 no implementa bridge GATE (M8). |
 | HIS6 | Preview de hub Ejecutar no sustituye este listado. |
+| HIS7 | Un usuario solo puede eliminar jobs donde `executed_by` es él; borrado permanente + storage. |
 
 ---
 

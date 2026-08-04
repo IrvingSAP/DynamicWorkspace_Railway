@@ -131,7 +131,7 @@ Escenarios típicos:
 | GATE publicado → Match Perfil A | **P0** |
 | GATE → Match Perfil B | P1 |
 | GATE → Reverse entrada | P2 |
-| Match A ↔ Match B / otro Match | P3 |
+| Match A ↔ Match B / otro Match | P3 — **parcial:** A→B mismo proyecto en hub Perfil B |
 | Preview: tipo de archivo, # campos, nombres muestra | Diff suave |
 | Confirmación + warning overwrite si destino ya tiene campos | Como Scout apply |
 | Solo **borrador** destino (`save_source`) | Nunca auto-publicar |

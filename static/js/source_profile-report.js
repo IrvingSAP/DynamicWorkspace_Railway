@@ -13,6 +13,7 @@
     const previewEl = document.getElementById("processing-report-preview");
     const btnSave = document.getElementById("btn-save-processing-report");
     const btnSaveProfile = document.getElementById("btn-save-source-profile");
+    const btnFinish = document.getElementById("btn-finish-processing-report");
     const form = document.getElementById("processing-report-form");
 
     const fields = {
@@ -46,6 +47,15 @@
                 value: "ABC",
             },
         ],
+    };
+
+    const DEFAULT_REPORT = {
+        report_enabled: true,
+        include_summary: true,
+        include_row_errors: true,
+        reject_alert_threshold: 10,
+        reject_alert_threshold_unit: "count",
+        report_format: "json",
     };
 
     function readForm() {
@@ -89,9 +99,13 @@
 
     function loadConfig() {
         if (window.dmsSourceProfile) {
-            return window.dmsSourceProfile.getSource().processing_report || {};
+            return Object.assign(
+                {},
+                DEFAULT_REPORT,
+                window.dmsSourceProfile.getSource().processing_report || {}
+            );
         }
-        return {};
+        return Object.assign({}, DEFAULT_REPORT);
     }
 
     function setStatus(message, isError) {
@@ -150,20 +164,30 @@
         previewEl.textContent = JSON.stringify(buildSampleOutput(config), null, 2);
     }
 
-    function saveConfig(showMessage, strict) {
+    function saveConfig(showMessage, strict, nextUrl) {
         const data = readForm();
+        const goNext = function () {
+            if (nextUrl) {
+                window.location.href = nextUrl;
+            }
+        };
         if (!window.dmsSourceProfile) {
             updatePreview();
+            goNext();
             return Promise.resolve();
+        }
+        if (nextUrl) {
+            setStatus("Guardando…", false);
         }
         return window.dmsSourceProfile.save(
             { processing_report: data },
             { strict: Boolean(strict) }
         ).then(function (result) {
             updatePreview();
-            if (showMessage) {
+            if (showMessage && !nextUrl) {
                 setStatus(result.message || "Borrador guardado en el servidor.", false);
             }
+            goNext();
             return result;
         }).catch(function (err) {
             const message = err.message || "No se pudo guardar.";
@@ -192,6 +216,16 @@
         btnSave.addEventListener("click", function (e) {
             e.preventDefault();
             saveConfig(true);
+        });
+    }
+
+    if (btnFinish) {
+        btnFinish.addEventListener("click", function (e) {
+            e.preventDefault();
+            btnFinish.disabled = true;
+            saveConfig(false, false, btnFinish.dataset.next || "").catch(function () {
+                btnFinish.disabled = false;
+            });
         });
     }
 
