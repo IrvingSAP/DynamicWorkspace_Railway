@@ -16,7 +16,7 @@
 <div class="page-header">
     <div>
         <h2>Ayuda — Hub del proyecto</h2>
-        <p>Punto de entrada del Explorador. Stepper: Muestra → Detectar → Campos → Borrador → Aplicar → Historial.</p>
+        <p>Stepper: Muestra → Detectar → Campos → Borrador → Aplicar → Historial.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-secondary" href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">← Volver</a>
@@ -24,10 +24,13 @@
 </div>
 <div class="panel"><div class="panel-body">
 <ul>
+    <li><strong>Objetivo:</strong> descubrir la estructura de un archivo a partir de una muestra y sembrar un <em>borrador</em> en otra app.</li>
+    <li><strong>Muestra / Detectar / Campos:</strong> proponen; usted confirma. No validan producción.</li>
+    <li><strong>Campos:</strong> nombres y tipos; con <code>txt_fixed</code> también <strong>Inicio / Fin / Long.</strong> estimados (editables).</li>
+    <li><strong>Aplicar:</strong> solo borrador en GATE / Reverse (nunca auto-publica).</li>
+    <li><strong>Historial:</strong> versiones de borrador y aplicaciones.</li>
     <li><strong>Miembros:</strong> solo PA invita UF y asigna roles.</li>
-    <li><strong>Muestra / Detectar / Campos:</strong> proponen un borrador; usted confirma.</li>
-    <li><strong>Aplicar:</strong> siembra solo borrador en GATE / Reverse / Match / FilePipe (nunca auto-publica).</li>
-    <li><strong>Historial:</strong> auditoría de exploraciones y aplicaciones.</li>
+    <li>Guía completa: menú STRUCTURE SCOUT → <strong>Ayuda</strong>.</li>
 </ul>
 </div></div>
 {% endblock %}

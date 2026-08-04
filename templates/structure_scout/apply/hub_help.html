@@ -9,7 +9,7 @@
 <div class="page-header">
     <div>
         <h2>Ayuda — Aplicar a destino</h2>
-        <p>Qué se siembra en el Módulo 6 del Explorador.</p>
+        <p>Siembra el borrador Scout en otra app — solo como borrador.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-secondary" href="{% url 'structure_scout:apply_hub' project_slug=project.slug %}">← Volver</a>
@@ -17,12 +17,13 @@
 </div>
 <div class="panel"><div class="panel-body">
 <ul>
-    <li>Requiere un <strong>borrador Scout</strong> guardado (M5).</li>
-    <li>Destinos MVP: FILE GATE y Reverse Studio (misma compañía).</li>
-    <li>Solo escribe el <strong>borrador</strong> del destino — nunca publica.</li>
-    <li>Si el destino ya tiene campos, verá un aviso de sobrescritura.</li>
+    <li>Requiere un <strong>borrador Scout</strong> guardado.</li>
+    <li>Destinos MVP: <strong>FILE GATE</strong> y <strong>Reverse Studio</strong> (misma compañía).</li>
+    <li>Solo escribe el <strong>borrador</strong> del destino — <strong>nunca publica</strong>.</li>
+    <li>Si el destino ya tiene campos, verá aviso de sobrescritura.</li>
+    <li>Si el draft era <code>txt_fixed</code>, se siembran las longitudes confirmadas en Campos (no placeholders ciegos).</li>
+    <li>Tras aplicar, abra el destino: revise captura, políticas y el contrato; publique cuando corresponda.</li>
     <li>Roles: PA / ED en Scout y en el destino.</li>
-    <li>Tras aplicar, abra el destino para revisar y publicar allí.</li>
 </ul>
 </div></div>
 {% endblock %}

@@ -26,23 +26,26 @@
         <p class="page-eyebrow">Guía de trabajo · <span class="role-badge">UF</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
         <h2>Cómo funciona STRUCTURE SCOUT</h2>
         <p>
-            El <strong>Explorador de estructura</strong> analiza una <strong>muestra</strong> de archivo y propone un
-            <strong>borrador de estructura</strong> (campos y tipos) editable, para sembrarlo en FILE GATE, Reverse,
-            Match o FilePipe — sin armar el wizard desde cero.
+            El <strong>Explorador de estructura</strong> analiza una <strong>muestra</strong> de archivo y
+            <strong>propone</strong> un borrador (tipo de archivo, columnas y tipos de contenido).
+            Usted confirma cada paso y luego puede <strong>sembrar</strong> ese borrador en FILE GATE o Reverse Studio.
         </p>
         <p>
-            <strong>Propone</strong>; usted confirma. No valida producción, no emite layouts y no concilia.
-            Si ya tiene una definición publicada, use PROFILE_SEED en su lugar.
+            <strong>No valida archivos de producción</strong> (eso es FILE GATE).
+            <strong>No clona una definición ya publicada</strong> (eso es Importar estructura / PROFILE SEED).
+            Solo ayuda a <em>descubrir</em> la forma del archivo cuando aún no hay contrato.
         </p>
     </div>
     <aside class="guide-hero-aside" aria-label="Ruta rápida">
         <h3>Ruta rápida</h3>
         <ol class="guide-quick-path">
             <li>Cree un proyecto Explorador.</li>
-            <li>(Opcional) Asigne miembros (PA).</li>
-            <li>Cargue una muestra y revise la detección.</li>
-            <li>Confirme campos/tipos y guarde el borrador.</li>
-            <li>Aplíquelo a un destino (solo borrador).</li>
+            <li>Suba una muestra (CSV, Excel o TXT).</li>
+            <li>Confirme el patrón (tipo, delimitador, header).</li>
+            <li>Revise nombres y tipos de campos → confirmar.</li>
+            <li>Guarde el borrador Scout.</li>
+            <li>Aplíquelo a GATE o Reverse (solo borrador).</li>
+            <li>En el destino, afine captura u otros detalles del contrato y publique allí.</li>
         </ol>
         <p><a href="{% url 'structure_scout:project_list' %}" class="btn btn-primary">Ir a proyectos</a></p>
     </aside>
@@ -50,11 +53,50 @@
 
 <div class="panel" style="margin-top:20px">
     <div class="panel-body">
-        <h3 class="form-section-title">Estado del producto</h3>
-        <p class="hint">
-            El ciclo de acceso (listado, alta, hub, miembros) ya está disponible.
-            Los módulos de muestra, detección, campos, borrador, apply e historial se irán habilitando en esta rama.
-        </p>
+        <h3 class="form-section-title">Los 6 pasos del ciclo</h3>
+        <ol>
+            <li><strong>Muestra</strong> — Archivo de ejemplo (&le; 10 MB). No es un job de producción.</li>
+            <li><strong>Detectar</strong> — Encoding, tipo (csv / delimitado / Excel / posicional), delimitador, fila de encabezado. Confirme o ajuste.</li>
+            <li><strong>Campos</strong> — Lista de columnas: nombre, tipo, obligatorio, ejemplos. Con <code>txt_fixed</code> también <strong>Inicio / Fin / Long.</strong> estimados (editables).</li>
+            <li><strong>Borrador</strong> — Congela una versión del snapshot Scout (exportable).</li>
+            <li><strong>Aplicar</strong> — Copia el borrador al proyecto destino (GATE / Reverse). Nunca publica el destino.</li>
+            <li><strong>Historial</strong> — Versiones de borrador y aplicaciones realizadas.</li>
+        </ol>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué edita en Campos (y qué no)</h3>
+        <p class="hint" style="margin-top:0">Delimitados / CSV / Excel: nombre y tipos. Posicional (<code>txt_fixed</code>): además longitudes estimadas.</p>
+        <ul>
+            <li><strong>Sí:</strong> nombre, tipo (<code>content_type</code>), obligatorio, notas.</li>
+            <li><strong>Sí (si <code>txt_fixed</code>):</strong> Inicio / Fin / Longitud estimados; revise solapes antes de confirmar.</li>
+            <li><strong>No (en Scout):</strong> políticas GATE, reglas Match, publicación del destino.</li>
+            <li>Las longitudes en Scout son <strong>estimación</strong>; el contrato definitivo se publica en el destino tras Aplicar.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Scout vs otras apps</h3>
+        <ul>
+            <li><strong>FILE GATE</strong> — Valida archivos contra un contrato ya definido.</li>
+            <li><strong>PROFILE SEED (Importar estructura)</strong> — Clona un contrato/perfil <em>publicado</em> a otro borrador.</li>
+            <li><strong>STRUCTURE SCOUT</strong> — Parte de una <em>muestra cruda</em> cuando aún no hay definición.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Roles</h3>
+        <ul>
+            <li><strong>PA / ED</strong> — Editan detección y campos, guardan borrador, aplican a destino.</li>
+            <li><strong>GE</strong> — Puede subir muestra y confirmar pasos de exploración según el hub; no aplica a destinos.</li>
+            <li><strong>CO</strong> — Consulta hubs e historial; sin preview de filas ni ejemplos de celdas.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

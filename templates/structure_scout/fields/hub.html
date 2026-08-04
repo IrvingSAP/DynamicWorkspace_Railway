@@ -106,18 +106,19 @@
 </div>
 
 {% if status == 'needs_review' or global_notes %}
+{% if status == 'needs_review' %}
+{% include "structure_scout/includes/needs_review_alert.html" with kind="fields" dialog_id="ss-fields-needs-review-help" summary="Campos con revisión pendiente (cobertura, tipos mixtos o patrón dudoso)." notes=global_notes %}
+{% else %}
 <div class="alert alert-warning" style="margin-top:16px">
-    {% if status == 'needs_review' %}
-    Campos con revisión pendiente (cobertura, tipos mixtos o patrón dudoso).
-    {% endif %}
-    {% if global_notes %}<span class="hint">{{ global_notes }}</span>{% endif %}
+    <span class="hint">Detalle técnico: <code>{{ global_notes }}</code></span>
 </div>
+{% endif %}
 {% endif %}
 
 {% if detection.file_type_code == 'txt_fixed' or detection.file_type_code == 'xlsx' %}
 <div class="alert alert-info" style="margin-top:16px">
     {% if detection.file_type_code == 'txt_fixed' %}
-    TXT posicional: en el MVP las columnas son tentativas; revise a mano.
+    TXT posicional: edite <strong>Inicio / Fin / Long.</strong> estimados. Revise solapes antes de confirmar; el destino publica el contrato.
     {% else %}
     Excel: preview limitado en MVP; confirme tipos con cuidado.
     {% endif %}
@@ -126,18 +127,79 @@
 
 <div class="panel" style="margin-top:16px">
     <div class="panel-body">
-        <h3 class="form-section-title">Origen</h3>
+        <h3 class="form-section-title">Vista posicional</h3>
         <p class="hint">
             Muestra <strong>{{ sample.original_filename }}</strong>
+            {% if detection %}
+            · patrón confirmado (<code>{{ detection.file_type_code }}</code>)
+            {% endif %}
             · <a href="{% url 'structure_scout:detect_hub' project_slug=project.slug %}">Ajustar en Detectar</a>
         </p>
+        {% if show_bounds and can_preview %}
+        <div class="ss-layout-dual" aria-label="Origen y construcción posicional">
+            <section class="ss-layout-block ss-layout-block--origen" aria-labelledby="ss-layout-origen-title">
+                <div class="ss-layout-block__head">
+                    <h4 class="ss-layout-block__title" id="ss-layout-origen-title">Origen</h4>
+                    <span class="ss-layout-block__tag">registro crudo · 1-based</span>
+                </div>
+                <div class="ss-layout-block__body">
+                    <p class="ss-layout-block__caption">Identificadores posicionales / Registro y posiciones de origen</p>
+                    <pre class="ss-layout-block__pre ss-layout-block__pre--ruler" id="ss-layout-origen-ruler">{% if layout_preview %}{{ layout_preview.ruler }}{% endif %}</pre>
+                    <pre
+                        class="ss-layout-block__pre ss-layout-block__pre--data"
+                        id="ss-layout-origen-data"
+                        data-sample="{% if layout_preview %}{{ layout_preview.sample_line|escape }}{% endif %}"
+                    >{% if layout_preview %}{{ layout_preview.sample_line }}{% endif %}</pre>
+                </div>
+            </section>
+            <section class="ss-layout-block ss-layout-block--construccion" aria-labelledby="ss-layout-build-title">
+                <div class="ss-layout-block__head">
+                    <h4 class="ss-layout-block__title" id="ss-layout-build-title">Construcción</h4>
+                    <span class="ss-layout-block__tag">desde Tabla de campos · por longitud</span>
+                </div>
+                <div class="ss-layout-block__body">
+                    <pre class="ss-layout-block__pre ss-layout-block__pre--ruler" id="ss-layout-build-ruler">{% if layout_preview %}{{ layout_preview.ruler }}{% endif %}</pre>
+                    <pre class="ss-layout-block__pre ss-layout-block__pre--built" id="ss-layout-build-data">{% if layout_preview %}{{ layout_preview.built_line }}{% endif %}</pre>
+                </div>
+            </section>
+        </div>
+        <div class="ss-layout-actions">
+            {% if can_edit %}
+            <button type="button" class="btn btn-secondary btn-sm" id="ss-refresh-layout">Actualizar vista posicional</button>
+            {% endif %}
+            {% if can_reinfer %}
+            <form method="post" style="display:inline;margin:0">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="reinfer">
+                <button type="submit" class="btn btn-secondary btn-sm">Re-inferir desde muestra</button>
+            </form>
+            {% endif %}
+        </div>
+        <p class="hint" style="margin-top:8px">
+            <strong>Origen</strong> muestra el registro tal cual.
+            <strong>Construcción</strong> arma la línea leyendo cada campo de la tabla (Inicio / Long.) sobre ese registro y colocando los trozos en secuencia.
+            {% if can_edit %}«Actualizar vista» refresca Construcción tras editar la tabla (no guarda hasta Confirmar).{% endif %}
+        </p>
+        {% if can_reinfer %}
+        <p class="hint" style="margin-top:6px">Re-inferir recalcula columnas y longitudes; resetea overrides (sin confirmar).</p>
+        {% endif %}
+        {% elif show_bounds and not can_preview %}
+        <p class="hint" style="margin-top:8px">Su rol no permite ver la fila de muestra alineada a posiciones.</p>
         {% if can_reinfer %}
         <form method="post" style="margin-top:12px">
             {% csrf_token %}
             <input type="hidden" name="action" value="reinfer">
             <button type="submit" class="btn btn-secondary">Re-inferir desde muestra</button>
         </form>
-        <p class="hint" style="margin-top:8px">Recalcula columnas y resetea overrides (sin confirmar).</p>
+        <p class="hint" style="margin-top:8px">Recalcula columnas y longitudes; resetea overrides (sin confirmar).</p>
+        {% endif %}
+        {% elif can_reinfer %}
+        <form method="post" style="margin-top:12px">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reinfer">
+            <button type="submit" class="btn btn-secondary">Re-inferir desde muestra</button>
+        </form>
+        <p class="hint" style="margin-top:8px">Recalcula columnas y longitudes; resetea overrides (sin confirmar).</p>
         {% endif %}
     </div>
 </div>
@@ -149,12 +211,20 @@
 <div class="panel" style="margin-top:16px">
     <div class="panel-body">
         <h3 class="form-section-title">Tabla de campos</h3>
+        <p class="hint">
+            {% if show_bounds %}
+            Edite nombre, tipo, obligatorio e <strong>Inicio / Fin / Long.</strong> (estimados para <code>txt_fixed</code>).
+            {% else %}
+            Edite nombre, tipo y obligatorio. Longitud posicional solo aplica a <code>txt_fixed</code>.
+            {% endif %}
+            <a href="{% url 'structure_scout:fields_hub_help' project_slug=project.slug %}">Más ayuda</a>
+        </p>
         {% if not can_edit %}
         <p class="hint">Solo PA / ED pueden editar. {% if can_confirm %}Puede confirmar la propuesta actual.{% endif %}</p>
         {% endif %}
-        {% if errors.__all__ %}
+        {% if errors.form %}
         <div class="form-errors">
-            {% for msg in errors.__all__ %}
+            {% for msg in errors.form %}
             <p class="field-error">{{ msg }}</p>
             {% endfor %}
         </div>
@@ -174,6 +244,11 @@
                             <th>Nombre</th>
                             <th>Tipo</th>
                             <th>Req.</th>
+                            {% if show_bounds %}
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                            <th>Long.</th>
+                            {% endif %}
                             <th>Confianza</th>
                             {% if can_preview %}<th>Ejemplos</th>{% endif %}
                             <th>Notas</th>
@@ -207,6 +282,30 @@
                             <td>
                                 <input type="checkbox" name="required_{{ forloop.counter0 }}" value="1"{% if field.required %} checked{% endif %}{% if not can_edit %} disabled{% endif %}>
                             </td>
+                            {% if show_bounds %}
+                            <td>
+                                <div class="field{% if field.errors.bounds %} has-error{% endif %}">
+                                    <input type="number" class="js-ss-start" name="start_{{ forloop.counter0 }}" min="1" value="{{ field.start|default:'' }}"{% if not can_edit %} disabled{% endif %} required style="width:4.5rem">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="field{% if field.errors.bounds %} has-error{% endif %}">
+                                    <input type="number" class="js-ss-end" name="end_{{ forloop.counter0 }}" min="1" value="{{ field.end|default:'' }}"{% if not can_edit %} disabled{% endif %} required style="width:4.5rem">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="field{% if field.errors.bounds %} has-error{% endif %}">
+                                    <input type="number" class="js-ss-length" name="length_{{ forloop.counter0 }}" min="1" value="{{ field.length|default:'' }}"{% if not can_edit %} disabled{% endif %} required style="width:4.5rem">
+                                    <input type="hidden" name="length_confidence_{{ forloop.counter0 }}" value="{{ field.length_confidence|default:'low' }}">
+                                    {% if field.length_confidence == 'low' or field.length_confidence == 'medium' %}
+                                    <span class="hint">estimado</span>
+                                    {% endif %}
+                                    {% for msg in field.errors.bounds %}
+                                    <p class="field-error">{{ msg }}</p>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            {% endif %}
                             <td>
                                 <input type="hidden" name="confidence_{{ forloop.counter0 }}" value="{{ field.confidence }}">
                                 {% if field.confidence == 'high' %}Alta
@@ -215,9 +314,9 @@
                                 {% else %}—{% endif %}
                             </td>
                             {% if can_preview %}
-                            <td class="mono hint">
-                                <input type="hidden" name="examples_{{ forloop.counter0 }}" value="{% for ex in field.examples %}{{ ex }}{% if not forloop.last %} · {% endif %}{% endfor %}">
-                                {% for ex in field.examples %}{{ ex }}{% if not forloop.last %} · {% endif %}{% empty %}—{% endfor %}
+                            <td class="mono hint js-ss-examples-cell">
+                                <input type="hidden" class="js-ss-examples" name="examples_{{ forloop.counter0 }}" value="{% if field.examples %}{{ field.examples.0|escape }}{% endif %}">
+                                <span class="js-ss-examples-label">{% if field.examples %}{{ field.examples.0 }}{% else %}—{% endif %}</span>
                             </td>
                             {% endif %}
                             <td>
@@ -243,6 +342,9 @@
             <div class="page-actions" style="margin-top:16px">
                 {% if can_edit %}
                 <button type="button" class="btn btn-secondary" id="ss-add-field">+ Agregar campo</button>
+                {% if show_bounds and can_preview %}
+                <button type="button" class="btn btn-secondary" id="ss-refresh-layout-table">Actualizar vista posicional</button>
+                {% endif %}
                 {% endif %}
                 {% if can_confirm %}
                 <button type="submit" class="btn btn-primary">Confirmar campos</button>
@@ -267,6 +369,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/ss_needs_review_help.js' %}"></script>
 {% if has_detection and can_edit %}
 <script>
 (function () {
@@ -279,6 +382,32 @@
     {% for ct in content_types %}"{{ ct.code }}"{% if not forloop.last %}, {% endif %}{% endfor %}
   ];
   var showExamples = {% if can_preview %}true{% else %}false{% endif %};
+  var showBounds = {% if show_bounds %}true{% else %}false{% endif %};
+
+  function toInt(el) {
+    if (!el) return null;
+    var n = parseInt(el.value, 10);
+    return isNaN(n) ? null : n;
+  }
+
+  function syncBounds(row, source) {
+    if (!showBounds || !row) return;
+    var startEl = row.querySelector(".js-ss-start");
+    var endEl = row.querySelector(".js-ss-end");
+    var lenEl = row.querySelector(".js-ss-length");
+    var start = toInt(startEl);
+    var end = toInt(endEl);
+    var length = toInt(lenEl);
+    if (source === "start" || source === "length") {
+      if (start != null && length != null && length >= 1 && endEl) {
+        endEl.value = String(start + length - 1);
+      }
+    } else if (source === "end") {
+      if (start != null && end != null && end >= start && lenEl) {
+        lenEl.value = String(end - start + 1);
+      }
+    }
+  }
 
   function reindex() {
     var rows = table.querySelectorAll("tbody tr");
@@ -295,23 +424,112 @@
     countInput.value = String(rows.length);
   }
 
+  function digitRuler(width) {
+    var out = "";
+    for (var i = 1; i <= width; i++) out += String(i % 10);
+    return out;
+  }
+
+  function refreshLayoutRuler() {
+    if (!showBounds) return;
+    var origenData = document.getElementById("ss-layout-origen-data");
+    var origenRuler = document.getElementById("ss-layout-origen-ruler");
+    var buildRuler = document.getElementById("ss-layout-build-ruler");
+    var buildData = document.getElementById("ss-layout-build-data");
+    if (!origenData || !origenRuler || !buildRuler || !buildData) return;
+
+    var sample = origenData.getAttribute("data-sample");
+    if (sample == null || sample === "") sample = origenData.textContent || "";
+    var parts = [];
+    var maxEnd = sample.length;
+    table.querySelectorAll("tbody tr").forEach(function (row) {
+      var startEl = row.querySelector(".js-ss-start");
+      var endEl = row.querySelector(".js-ss-end");
+      var lenEl = row.querySelector(".js-ss-length");
+      var start = toInt(startEl);
+      var end = toInt(endEl);
+      var length = toInt(lenEl);
+      if (start == null) {
+        setExampleCell(row, "");
+        return;
+      }
+      if (length == null || length < 1) {
+        length = (end != null && end >= start) ? (end - start + 1) : 1;
+      }
+      maxEnd = Math.max(maxEnd, start + length - 1);
+      var from = start - 1;
+      var slice = sample.slice(from, from + length);
+      if (slice.length < length) {
+        slice = slice + Array(length - slice.length + 1).join(" ");
+      }
+      parts.push(slice);
+      setExampleCell(row, slice.replace(/\s+$/, ""));
+    });
+    var built = parts.join("");
+    var width = Math.max(sample.length, maxEnd, built.length, 40);
+    var ruler = digitRuler(width);
+    origenRuler.textContent = ruler;
+    buildRuler.textContent = ruler;
+    buildData.textContent = built || sample;
+  }
+
+  function setExampleCell(row, value) {
+    var hidden = row.querySelector(".js-ss-examples");
+    var label = row.querySelector(".js-ss-examples-label");
+    if (hidden) hidden.value = value || "";
+    if (label) label.textContent = value || "—";
+  }
+
+  function onBoundsOrNameChange(ev) {
+    var t = ev.target;
+    if (!t) return;
+    var isBound = t.classList.contains("js-ss-start")
+      || t.classList.contains("js-ss-end")
+      || t.classList.contains("js-ss-length");
+    if (isBound) {
+      var source = t.classList.contains("js-ss-start") ? "start"
+        : t.classList.contains("js-ss-length") ? "length" : "end";
+      syncBounds(t.closest("tr"), source);
+      refreshLayoutRuler();
+    }
+  }
+
   table.addEventListener("click", function (ev) {
     var btn = ev.target.closest("[data-action='remove-field']");
     if (!btn) return;
     var row = btn.closest("tr");
     if (row) row.remove();
     reindex();
+    refreshLayoutRuler();
+  });
+
+  table.addEventListener("input", onBoundsOrNameChange);
+  table.addEventListener("change", onBoundsOrNameChange);
+
+  document.querySelectorAll("#ss-refresh-layout, #ss-refresh-layout-table").forEach(function (btn) {
+    btn.addEventListener("click", function (ev) {
+      ev.preventDefault();
+      refreshLayoutRuler();
+    });
   });
 
   if (addBtn) {
     addBtn.addEventListener("click", function () {
       var tbody = table.querySelector("tbody");
+      if (!tbody) return;
       var idx = tbody.querySelectorAll("tr").length;
       var opts = contentTypes.map(function (code) {
         return '<option value="' + code + '"' + (code === "free_text" ? " selected" : "") + ">" + code + "</option>";
       }).join("");
       var examplesCell = showExamples
-        ? '<td class="mono hint"><input type="hidden" name="examples_' + idx + '" value="">—</td>'
+        ? '<td class="mono hint js-ss-examples-cell"><input type="hidden" class="js-ss-examples" name="examples_' + idx + '" value=""><span class="js-ss-examples-label">—</span></td>'
+        : "";
+      var startVal = idx + 1;
+      var boundsCells = showBounds
+        ? '<td><div class="field"><input type="number" class="js-ss-start" name="start_' + idx + '" min="1" value="' + startVal + '" required style="width:4.5rem"></div></td>' +
+          '<td><div class="field"><input type="number" class="js-ss-end" name="end_' + idx + '" min="1" value="' + startVal + '" required style="width:4.5rem"></div></td>' +
+          '<td><div class="field"><input type="number" class="js-ss-length" name="length_' + idx + '" min="1" value="1" required style="width:4.5rem">' +
+          '<input type="hidden" name="length_confidence_' + idx + '" value="low"><span class="hint">estimado</span></div></td>'
         : "";
       var tr = document.createElement("tr");
       tr.innerHTML =
@@ -319,12 +537,14 @@
         '<td><div class="field"><input type="text" name="name_' + idx + '" value="col_' + (idx + 1) + '" maxlength="80" required></div></td>' +
         '<td><div class="field"><select name="content_type_' + idx + '">' + opts + "</select></div></td>" +
         '<td><input type="checkbox" name="required_' + idx + '" value="1"></td>' +
+        boundsCells +
         '<td><input type="hidden" name="confidence_' + idx + '" value="low">Baja</td>' +
         examplesCell +
         '<td><input type="text" name="notes_' + idx + '" value=""></td>' +
         '<td><button type="button" class="btn btn-secondary btn-sm" data-action="remove-field">Quitar</button></td>';
       tbody.appendChild(tr);
       reindex();
+      refreshLayoutRuler();
     });
   }
 })();

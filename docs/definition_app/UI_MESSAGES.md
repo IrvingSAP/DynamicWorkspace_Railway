@@ -682,13 +682,17 @@ Mensajes de usuario para el Explorador de estructura. Alineados a [`../STRUCTURE
 | Nombre vacío | `error` + inline | Indique el nombre del campo. |
 | Nombre duplicado | `error` + inline | El nombre del campo debe ser único. |
 | Tipo inválido | `error` + inline | Seleccione un tipo de contenido válido. |
+| Bounds faltantes (`txt_fixed`) | `error` + inline | Indique inicio/fin o longitud de cada campo posicional. |
+| Fin &lt; inicio | `error` + inline | El fin debe ser ≥ al inicio. |
+| Longitud &lt; 1 | `error` + inline | La longitud debe ser ≥ 1. |
+| Solape de rangos | `error` + inline | Hay campos posicionales que se solapan; ajuste inicio/fin. |
 | Fallo inferencia | `error` + log | No se pudieron inferir campos desde la muestra. Revise el patrón o la muestra. |
 | Sin permiso editar | `error` | No tiene permiso para editar los campos propuestos. |
 | Sin permiso confirmar | `error` | No tiene permiso para confirmar los campos. |
 | Validación formulario | `error` + inline | Revise los datos de los campos propuestos. |
 | Sin acceso | `error` | No tiene acceso a este proyecto Explorador. |
 
-> Motor: `propose_fields_service` + catálogo `FieldContentType` + patrones `source_field_validation_service`. Persistencia: `ScoutFieldsState`. Roles: PA/ED editan; PA/ED/GE confirman. CO sin ejemplos.
+> Motor: `propose_fields_service` (+ bounds Fase 2 `txt_fixed`) + catálogo `FieldContentType` + patrones `source_field_validation_service`. Persistencia: `ScoutFieldsState`. Roles: PA/ED editan; PA/ED/GE confirman. CO sin ejemplos.
 
 #### Módulo 5 — Borrador de estructura
 

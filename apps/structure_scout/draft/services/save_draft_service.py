@@ -108,16 +108,29 @@ def build_payload(
                 "confidence": item.get("confidence") or "",
                 "examples": examples,
                 "notes": item.get("notes") or "",
+                "start": item.get("start"),
+                "end": item.get("end"),
+                "length": item.get("length"),
+                "length_confidence": item.get("length_confidence") or "",
             }
         )
-        source_fields.append(
-            {
-                "name": name,
-                "label": name,
-                "content_type": content_type,
-                "required": required,
-            }
-        )
+        source_field = {
+            "name": name,
+            "label": name,
+            "content_type": content_type,
+            "required": required,
+        }
+        if detection and (detection.file_type_code or "") == "txt_fixed":
+            start = item.get("start")
+            end = item.get("end")
+            length = item.get("length")
+            if start is not None:
+                source_field["start"] = start
+            if end is not None:
+                source_field["end"] = end
+            if length is not None:
+                source_field["length"] = length
+        source_fields.append(source_field)
 
     sample_block = {
         "id": str(sample.id) if sample else "",

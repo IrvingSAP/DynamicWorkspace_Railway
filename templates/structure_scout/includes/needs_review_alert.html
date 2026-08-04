@@ -1,0 +1,191 @@
+{% comment %}
+Alerta contextual Scout + dialogo de ayuda.
+Params: kind (detect|fields|draft|apply|apply_overwrite), summary, notes (opcional),
+dialog_id, y para apply_overwrite: overwrite + version_label.
+{% endcomment %}
+{% if kind == "apply_overwrite" %}
+{% if overwrite.target_field_count %}
+<div class="alert alert-warning ss-needs-review-alert" style="margin-top:14px">
+{% else %}
+<div class="alert alert-info ss-needs-review-alert" style="margin-top:14px">
+{% endif %}
+    <div class="ss-needs-review-alert__main">
+        <p class="ss-needs-review-alert__summary">
+            {% if overwrite.target_field_count %}
+            El borrador de <strong>{{ overwrite.target_slug }}</strong> ya tiene
+            <strong>{{ overwrite.target_field_count }}</strong> campos.
+            Se sobrescribirán con los <strong>{{ overwrite.scout_field_count }}</strong> del draft Scout {{ version_label }}.
+            No se publica ninguna versión.
+            {% else %}
+            Se llenará el borrador de <strong>{{ overwrite.target_slug }}</strong> con
+            <strong>{{ overwrite.scout_field_count }}</strong> campos del draft Scout {{ version_label }}.
+            No se publica ninguna versión.
+            {% endif %}
+        </p>
+    </div>
+    <button
+        type="button"
+        class="help-link ss-needs-review-alert__help"
+        data-ss-review-help-open="{{ dialog_id }}"
+        aria-haspopup="dialog"
+        aria-controls="{{ dialog_id }}"
+        title="¿Qué implica aplicar al destino?"
+    >
+        <span class="help-link-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="8" cy="8" r="6.25"/>
+                <path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/>
+                <circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/>
+            </svg>
+        </span>
+        <span class="help-link-label">¿Qué significa?</span>
+    </button>
+</div>
+{% else %}
+<div class="alert alert-warning ss-needs-review-alert" style="margin-top:16px">
+    <div class="ss-needs-review-alert__main">
+        <p class="ss-needs-review-alert__summary">{{ summary }}</p>
+        {% if notes %}
+        <p class="hint ss-needs-review-alert__notes">Detalle técnico: <code>{{ notes }}</code></p>
+        {% endif %}
+    </div>
+    <button
+        type="button"
+        class="help-link ss-needs-review-alert__help"
+        data-ss-review-help-open="{{ dialog_id }}"
+        aria-haspopup="dialog"
+        aria-controls="{{ dialog_id }}"
+        title="¿Qué significa revisión pendiente?"
+    >
+        <span class="help-link-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="8" cy="8" r="6.25"/>
+                <path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/>
+                <circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/>
+            </svg>
+        </span>
+        <span class="help-link-label">¿Qué significa?</span>
+    </button>
+</div>
+{% endif %}
+
+<dialog id="{{ dialog_id }}" class="ss-needs-review-dialog" aria-labelledby="{{ dialog_id }}-title">
+    <div class="ss-needs-review-dialog__panel">
+        <div class="ss-needs-review-dialog__header">
+            {% if kind == "apply_overwrite" %}
+            <h3 id="{{ dialog_id }}-title" class="ss-needs-review-dialog__title">Aplicar al destino — qué implica</h3>
+            {% else %}
+            <h3 id="{{ dialog_id }}-title" class="ss-needs-review-dialog__title">Revisión pendiente — qué hacer</h3>
+            {% endif %}
+            <button type="button" class="btn btn-secondary btn-sm" data-ss-review-help-close>&times; Cerrar</button>
+        </div>
+        <div class="ss-needs-review-dialog__body">
+            {% if kind == "apply_overwrite" %}
+            <p><strong>Aplicar no publica.</strong> Solo escribe (o reemplaza) el <strong>borrador</strong> SourceProfile del proyecto destino. Las versiones publicadas del destino no se tocan.</p>
+
+            <h4>Qué espera el sistema</h4>
+            <ul>
+                <li>Que haya elegido un destino de la misma compañía donde usted sea PA o ED.</li>
+                <li>Que entienda si el destino ya tenía campos en borrador (se reemplazan en MVP).</li>
+                <li>Que después afine y publique <strong>en el destino</strong> (GATE / Reverse), no desde Scout.</li>
+            </ul>
+
+            <h4>Qué hacer ahora (Aplicar)</h4>
+            <ol>
+                {% if overwrite.target_field_count %}
+                <li>Confirme que quiere reemplazar los <strong>{{ overwrite.target_field_count }}</strong> campos actuales del borrador de <strong>{{ overwrite.target_slug }}</strong>.</li>
+                <li>Si necesita conservar ese borrador destino, no aplique; trabaje en otra copia/proyecto o exporte antes fuera de este flujo MVP.</li>
+                {% else %}
+                <li>El destino <strong>{{ overwrite.target_slug }}</strong> no tiene campos en borrador: se crearán / llenarán con el draft Scout.</li>
+                {% endif %}
+                <li>Pulse <strong>Aplicar borrador al destino</strong> cuando esté seguro.</li>
+                <li>Abra el destino y revise campos/tipos; publique allí cuando esté listo.</li>
+            </ol>
+            <h4>Qué se sobrescribe (MVP)</h4>
+            <ul>
+                <li>El partial <code>source</code> del borrador destino (tipo/layout + campos) con el del draft Scout {{ version_label }}.</li>
+                <li>Conteo esperado: <strong>{{ overwrite.scout_field_count }}</strong> campos del Scout.</li>
+                <li><strong>No</strong> se publica ninguna versión del destino.</li>
+                <li><strong>No</strong> se modifica el draft Scout (M5); solo se lee la versión current.</li>
+            </ul>
+            <p class="ss-needs-review-dialog__footer-note"><strong>Resumen:</strong> sembrar borrador en otro proyecto — revisar y publicar solo en el destino.</p>
+
+            {% else %}
+            <p><strong>No es un error ni le bloquea el flujo.</strong> El paso ya quedó confirmado, pero el sistema marca confianza media/baja y le pide revisar con cuidado antes de aplicar a un destino.</p>
+
+            <h4>Qué espera el sistema</h4>
+            <ul>
+                <li>Que revise los datos propuestos en esta pantalla.</li>
+                <li>Que continúe al siguiente paso cuando le parezcan razonables.</li>
+                <li>Que no asuma un patrón/tipos perfectos al sembrar en GATE o Reverse.</li>
+            </ul>
+
+            {% if kind == "detect" %}
+            <h4>Qué hacer ahora (Detectar)</h4>
+            <ol>
+                <li>Mire el <strong>preview</strong> (columna parseada): ¿las columnas se parten bien?</li>
+                <li>Si el tipo, delimitador o encabezado están mal → ajústelos y pulse otra vez <strong>Confirmar detección</strong>.</li>
+                <li>Si se ve razonable → <strong>Continuar a campos</strong> (allí afinará tipos y, si es posicional, longitudes).</li>
+            </ol>
+            <h4>Por qué suele salir este aviso</h4>
+            <ul>
+                <li><code>txt_fixed</code> (posicional): el flujo pide revisión; las longitudes se estiman y editan en <strong>Campos</strong>.</li>
+                <li><code>xlsx</code>: preview Excel limitado.</li>
+                <li>Pocas filas en el preview (&lt; 3).</li>
+                <li>CSV/delimitado con distinto número de columnas entre filas.</li>
+                <li>Tipo delimitado sin delimitador claro.</li>
+            </ul>
+            {% elif kind == "draft" %}
+            <h4>Qué hacer ahora (Borrador)</h4>
+            <ol>
+                <li>Revise el snapshot: tipo de archivo, número de campos y estado heredado.</li>
+                <li>Si algo no cuadra → vuelva a <strong>Campos</strong> (o Detectar), corrija y <strong>guarde de nuevo</strong> el borrador (crea una versión nueva).</li>
+                <li>Si el snapshot le parece razonable → puede ir a <strong>Aplicar a destino</strong>; el destino recibirá solo un <strong>borrador</strong> (no se publica).</li>
+            </ol>
+            <h4>Por qué suele salir este aviso</h4>
+            <ul>
+                <li>Se <strong>hereda</strong> del estado de Campos al guardar: si Campos estaba en revisión, el borrador también.</li>
+                <li>No es un fallo al congelar la versión; es una marca de confianza para que revise antes de sembrar.</li>
+                <li>Aplicar (M6) no bloquea por este aviso, pero es la última alerta útil antes de escribir en otro proyecto.</li>
+            </ul>
+            <p class="hint">El borrador Scout <strong>no publica</strong> destinos. Si era posicional, las longitudes ya vienen del paso Campos; publique en GATE o Reverse.</p>
+            {% elif kind == "apply" %}
+            <h4>Qué hacer ahora (Aplicar)</h4>
+            <ol>
+                <li>Puede aplicar igualmente: el aviso <strong>no bloquea</strong> el botón.</li>
+                <li>Si duda del patrón/tipos/longitudes → vuelva a <strong>Campos</strong> / <strong>Borrador</strong>, corrija y guarde una versión nueva antes de aplicar.</li>
+                <li>Tras aplicar, abra el destino y revise el borrador sembrado <strong>antes de publicar</strong> allí.</li>
+            </ol>
+            <h4>Por qué suele salir este aviso</h4>
+            <ul>
+                <li>El draft Scout current heredó <code>needs_review</code> desde Campos.</li>
+                <li>Es la misma marca de confianza de pasos anteriores, no un fallo de Aplicar.</li>
+                <li>Scout propone estructura (incl. bounds estimados); la publicación ocurre en el destino.</li>
+            </ul>
+            <p class="hint">Aplicar solo escribe borrador en el destino. Nunca publica desde Scout.</p>
+            {% else %}
+            <h4>Qué hacer ahora (Campos)</h4>
+            <ol>
+                <li>Revise nombre y <strong>tipo</strong> de cada campo; corríjalos si hace falta.</li>
+                <li>Si el patrón es <code>txt_fixed</code>, revise también <strong>Inicio / Fin / Long.</strong> (estimados) y evite solapes.</li>
+                <li>Si la tabla se ve bien → confirme / <strong>Continuar a borrador</strong>.</li>
+                <li>Tras <strong>Aplicar</strong>, puede seguir afinando en el destino y publicar allí.</li>
+            </ol>
+            <h4>Por qué suele salir este aviso</h4>
+            <ul>
+                <li>El patrón en Detectar también estaba en revisión (se hereda).</li>
+                <li>Tipo <code>xlsx</code> o <code>txt_fixed</code> (longitudes estimadas).</li>
+                <li>Algún campo con confianza media/baja (valores mixtos, fechas dudosas).</li>
+                <li>Pocas filas de ejemplo (cobertura baja).</li>
+            </ul>
+            <p class="hint">En CSV/Excel no se editan longitudes posicionales. En <code>txt_fixed</code> sí, ya en Campos.</p>
+            {% endif %}
+
+            <p class="ss-needs-review-dialog__footer-note"><strong>Resumen:</strong> adelante con cuidado — no hace falta el estado «listo» para continuar.</p>
+            {% endif %}
+        </div>
+        <div class="ss-needs-review-dialog__actions">
+            <button type="button" class="btn btn-primary" data-ss-review-help-close>Entendido</button>
+        </div>
+    </div>
+</dialog>

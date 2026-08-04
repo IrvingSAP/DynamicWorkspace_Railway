@@ -94,14 +94,12 @@
 </div>
 
 {% if status == 'needs_review' %}
-<div class="alert alert-warning" style="margin-top:16px">
-    Patrón con revisión pendiente. Puede continuar a campos cuando esté disponible; revise antes de aplicar a un destino.
-</div>
+{% include "structure_scout/includes/needs_review_alert.html" with kind="detect" dialog_id="ss-detect-needs-review-help" summary="Patrón con revisión pendiente. Puede continuar a campos; revise antes de aplicar a un destino." %}
 {% endif %}
 
 {% if posted.file_type_code == 'txt_fixed' %}
 <div class="alert alert-info" style="margin-top:16px">
-    TXT posicional: en el MVP las longitudes requieren revisión manual.
+    TXT posicional: tras confirmar, en <strong>Campos</strong> podrá editar Inicio / Fin / Long. estimados. Revise antes de aplicar a un destino.
 </div>
 {% endif %}
 
@@ -258,3 +256,8 @@
 
 {% endif %}
 {% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/ss_needs_review_help.js' %}"></script>
+{% endblock %}
+

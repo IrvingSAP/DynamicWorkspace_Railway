@@ -9,7 +9,7 @@
 <div class="page-header">
     <div>
         <h2>Ayuda — Borrador de estructura</h2>
-        <p>Qué se congela en el Módulo 5 del Explorador.</p>
+        <p>Congela lo confirmado en Detectar + Campos en una versión exportable.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-secondary" href="{% url 'structure_scout:draft_hub' project_slug=project.slug %}">← Volver</a>
@@ -17,11 +17,12 @@
 </div>
 <div class="panel"><div class="panel-body">
 <ul>
-    <li>Requiere <strong>campos confirmados</strong> (M4). No edita la tabla aquí.</li>
-    <li>Cada «Guardar» crea una <strong>versión nueva</strong>; no pisa en silencio.</li>
-    <li>El JSON incluye producto §11 y bloque <code>source</code> alineado a SourceProfile / GATE.</li>
+    <li>Requiere <strong>campos confirmados</strong>. Aquí no se edita la tabla (vuelva a Campos para nombres, tipos o longitudes).</li>
+    <li>Cada «Guardar» crea una <strong>versión nueva</strong> (no pisa en silencio).</li>
+    <li>El snapshot incluye el bloque <code>source</code> listo para sembrar en un destino (con bounds si era <code>txt_fixed</code>).</li>
     <li>Exportar descarga la versión actual (CO: sin ejemplos de celdas).</li>
-    <li>Roles: PA / ED guardan; GE / CO ven y exportan. Nadie aplica destinos aquí (M6).</li>
+    <li>Siguiente: <strong>Aplicar</strong> a GATE/Reverse (solo borrador). La <strong>publicación</strong> se hace en el destino.</li>
+    <li>Roles: PA / ED guardan; GE / CO ven y exportan.</li>
 </ul>
 </div></div>
 {% endblock %}
