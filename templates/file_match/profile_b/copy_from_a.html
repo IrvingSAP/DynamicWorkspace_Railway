@@ -1,0 +1,148 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Copiar desde A — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}">Perfil B</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Copiar desde A</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_match/profile_b/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Perfil B · Copiar estructura</p>
+        <h2>Copiar desde Perfil A</h2>
+        <p>
+            Se clonará el borrador del <strong>Perfil A</strong> al borrador del <strong>Perfil B</strong>
+            (mismo proyecto). No publica la definición Match ni crea un vínculo vivo entre A y B.
+        </p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_match:profile_b_copy_from_a_help' project_slug=project.slug as copy_help_url %}
+        {% with help_url=copy_help_url|add:"?from=confirm" %}
+        {% include "projects/includes/project_help_link.html" with help_url=help_url %}
+        {% endwith %}
+        <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}" class="btn btn-secondary">← Perfil B</a>
+    </div>
+</div>
+
+{% if whitelist_error %}
+<div class="alert alert-warning" style="margin-bottom:16px">
+    {{ whitelist_error }}
+    <span class="hint" style="display:block;margin-top:6px">No se escribirá el borrador B.</span>
+</div>
+{% elif overwrite %}
+<div class="alert alert-warning" style="margin-bottom:16px">
+    El borrador del Perfil B ya tiene <strong>{{ target.field_count }}</strong> campos;
+    se sobrescribirán con <strong>{{ source.fields_count }}</strong> del Perfil A.
+    No se publica la definición Match.
+</div>
+{% else %}
+<div class="alert alert-info" style="margin-bottom:16px">
+    Se llenará el borrador del Perfil B con <strong>{{ source.fields_count }}</strong> campos
+    del Perfil A. El borrador B actual está vacío (o sin campos).
+</div>
+{% endif %}
+
+<div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="panel">
+        <div class="panel-body">
+            <h3 class="form-section-title">Origen (borrador A)</h3>
+            <dl style="display:grid;grid-template-columns:110px 1fr;gap:6px 12px;font-size:14px;margin:0">
+                <dt class="hint">Slot</dt>
+                <dd style="margin:0">{{ source.slot_label }}</dd>
+                <dt class="hint">Versión</dt>
+                <dd style="margin:0">{{ source.version_label }}</dd>
+                <dt class="hint">Tipo</dt>
+                <dd style="margin:0">{{ source.file_type_code }}</dd>
+                <dt class="hint">Encoding</dt>
+                <dd style="margin:0">
+                    {% if source.encoding_code %}{{ source.encoding_code }}{% else %}—{% endif %}
+                    {% if source.delimiter %} · delim <code>{{ source.delimiter }}</code>{% endif %}
+                </dd>
+                <dt class="hint">Campos</dt>
+                <dd style="margin:0">{{ source.fields_count }}</dd>
+            </dl>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-body">
+            <h3 class="form-section-title">Destino (borrador B)</h3>
+            <dl style="display:grid;grid-template-columns:110px 1fr;gap:6px 12px;font-size:14px;margin:0">
+                <dt class="hint">Slot</dt>
+                <dd style="margin:0">{{ target.slot_label }}</dd>
+                <dt class="hint">Proyecto</dt>
+                <dd style="margin:0"><span class="cell-badge">{{ project.slug }}</span></dd>
+                <dt class="hint">Campos hoy</dt>
+                <dd style="margin:0">{{ target.field_count }}</dd>
+                <dt class="hint">Efecto</dt>
+                <dd style="margin:0">Solo borrador — publicar Match es el Módulo 4</dd>
+            </dl>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Campos a copiar (muestra)</h3>
+        <p class="hint">{{ source.fields_count }} campos en total</p>
+        {% if source.field_names_sample %}
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+            {% for name in source.field_names_sample %}
+            <span class="cell-badge">{{ name }}</span>
+            {% endfor %}
+            {% if source.fields_count > source.field_names_sample|length %}
+            <span class="hint">…</span>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <form method="post" style="margin-top:16px">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="apply">
+            {% if can_suggest_rules and can_apply %}
+            <div class="toggle-row" style="margin-bottom:14px">
+                <input type="checkbox" id="suggest_rules" name="suggest_rules" value="1" checked>
+                <label for="suggest_rules">
+                    Proponer pares 1:1 en <strong>Reglas</strong> (primer campo homónimo como clave;
+                    el resto a comparar). Solo si aún no hay clave definida.
+                </label>
+            </div>
+            {% endif %}
+            <div class="page-actions">
+                {% if can_apply %}
+                <button type="submit" class="btn btn-primary">Copiar al borrador B</button>
+                {% else %}
+                <span class="btn btn-primary" aria-disabled="true" title="Complete el Perfil A primero">Copiar al borrador B</span>
+                {% endif %}
+                <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+        <p class="hint" style="margin-top:10px">
+            Se registra un evento de auditoría (PROFILE SEED). A y B siguen siendo slots independientes.
+        </p>
+    </div>
+</div>
+{% endblock %}

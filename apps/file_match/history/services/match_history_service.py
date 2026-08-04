@@ -1,11 +1,13 @@
 """Historial y auditoría FILE MATCH — Módulo 7 (history.md).
 
 Lista y filtra FileMatchJob. No recalcula veredictos; TTL vía match_report_service.
-Sin migración nueva.
+Sin migración nueva. Borrado propio: solo executed_by == usuario.
 """
 
 from __future__ import annotations
 
+import logging
+import shutil
 from datetime import datetime, time, timedelta
 from urllib.parse import urlencode
 
@@ -16,11 +18,21 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 
-from apps.dms.file_intake.services import detection_service
+from apps.dms.file_intake.services import detection_service, storage_service
 from apps.file_match.models import FileMatchJob
 from apps.file_match.report.services import match_report_service as report_svc
 from apps.file_match.run.services import match_run_service as run_svc
 from apps.projects.models import Project, ProjectMembership
+
+logger = logging.getLogger(__name__)
+
+MSG_DELETED = "Corrida eliminada del historial."
+MSG_DELETED_MANY = "Se eliminaron {n} corridas propias del historial."
+MSG_NONE_OWN = "No tiene corridas propias para eliminar en este proyecto."
+MSG_NOT_FOUND = "No se encontró la corrida en este proyecto."
+MSG_NOT_OWNER = "Solo puede eliminar corridas que usted ejecutó."
+MSG_NO_PERMISSION = "No tiene permiso para ver el historial de este proyecto."
+MSG_UNEXPECTED = "No se pudo eliminar la corrida. Si el problema continúa, contacte al administrador."
 
 PAGE_SIZE = 25
 MAX_SCAN = 500
@@ -181,7 +193,153 @@ def _filtered_queryset(project: Project, filters: dict):
     return qs
 
 
-def build_row(project: Project, job: FileMatchJob) -> dict:
+def can_delete_job(user, job: FileMatchJob) -> bool:
+    if user is None or not getattr(user, "is_authenticated", False):
+        return False
+    if not job.executed_by_id:
+        return False
+    return job.executed_by_id == user.id
+
+
+def _job_storage_root(project: Project, job: FileMatchJob):
+    """Parent of input/reports/output for this job."""
+    return storage_service.job_input_dir(
+        project.company_id, project.id, job.id
+    ).parent
+
+
+def _purge_job_storage(project: Project, job: FileMatchJob) -> None:
+    root = _job_storage_root(project, job)
+    if not root.exists():
+        return
+    try:
+        shutil.rmtree(root, ignore_errors=False)
+    except OSError:
+        logger.exception(
+            "purge_job_storage failed project=%s job=%s path=%s",
+            project.id,
+            job.id,
+            root,
+        )
+
+
+def _own_jobs_queryset(user, project: Project):
+    return (
+        FileMatchJob.objects.filter(project=project, executed_by=user)
+        .exclude(status__in=NON_FINAL_STATUSES)
+        .order_by("-created_at")
+    )
+
+
+def delete_own_job(user, project: Project, job_id) -> dict:
+    if not report_svc.can_view_report(user, project):
+        return {
+            "ok": False,
+            "error_code": "permission_denied",
+            "user_message": MSG_NO_PERMISSION,
+            "errors": {},
+        }
+
+    job = (
+        FileMatchJob.objects.filter(project=project, pk=job_id)
+        .exclude(status__in=NON_FINAL_STATUSES)
+        .first()
+    )
+    if job is None:
+        return {
+            "ok": False,
+            "error_code": "not_found",
+            "user_message": MSG_NOT_FOUND,
+            "errors": {},
+        }
+    if not can_delete_job(user, job):
+        return {
+            "ok": False,
+            "error_code": "permission_denied",
+            "user_message": MSG_NOT_OWNER,
+            "errors": {},
+        }
+
+    try:
+        _purge_job_storage(project, job)
+        job.delete()
+    except Exception:
+        logger.exception("delete_own_job failed project=%s job=%s", project.id, job_id)
+        return {
+            "ok": False,
+            "error_code": "unexpected",
+            "user_message": MSG_UNEXPECTED,
+            "errors": {},
+        }
+
+    return {
+        "ok": True,
+        "error_code": None,
+        "user_message": MSG_DELETED,
+        "errors": {},
+        "deleted_count": 1,
+    }
+
+
+def delete_own_jobs(user, project: Project) -> dict:
+    if not report_svc.can_view_report(user, project):
+        return {
+            "ok": False,
+            "error_code": "permission_denied",
+            "user_message": MSG_NO_PERMISSION,
+            "errors": {},
+            "deleted_count": 0,
+        }
+
+    jobs = list(_own_jobs_queryset(user, project))
+    if not jobs:
+        return {
+            "ok": False,
+            "error_code": "not_found",
+            "user_message": MSG_NONE_OWN,
+            "errors": {},
+            "deleted_count": 0,
+        }
+
+    deleted = 0
+    try:
+        for job in jobs:
+            _purge_job_storage(project, job)
+            job.delete()
+            deleted += 1
+    except Exception:
+        logger.exception(
+            "delete_own_jobs failed project=%s user=%s deleted=%s",
+            project.id,
+            getattr(user, "id", None),
+            deleted,
+        )
+        if deleted:
+            return {
+                "ok": True,
+                "error_code": None,
+                "user_message": MSG_DELETED_MANY.format(n=deleted),
+                "errors": {},
+                "deleted_count": deleted,
+            }
+        return {
+            "ok": False,
+            "error_code": "unexpected",
+            "user_message": MSG_UNEXPECTED,
+            "errors": {},
+            "deleted_count": 0,
+        }
+
+    return {
+        "ok": True,
+        "error_code": None,
+        "user_message": MSG_DELETED_MANY.format(n=deleted),
+        "errors": {},
+        "deleted_count": deleted,
+    }
+
+
+def build_row(project: Project, job: FileMatchJob, *, user=None) -> dict:
     metrics = job.metrics or {}
     expired = report_svc.is_download_expired(job)
     hash_a = job.file_a_hash or ""
@@ -221,6 +379,7 @@ def build_row(project: Project, job: FileMatchJob) -> dict:
         "finished_at": report_svc.job_finished_at(job),
         "is_expired": expired,
         "ttl_label": report_svc.ttl_remaining_label(job),
+        "can_delete": can_delete_job(user, job) if user is not None else False,
         "result_url": reverse(
             "file_match:run_result",
             kwargs={"project_slug": project.slug, "job_id": job.id},
@@ -272,7 +431,11 @@ def build_history_context(user, project: Project, params) -> dict:
     qs = _filtered_queryset(project, filters)
     jobs = list(qs[:MAX_SCAN])
 
-    universe = [build_row(project, job) for job in jobs if report_svc.is_job_final(job)]
+    universe = [
+        build_row(project, job, user=user)
+        for job in jobs
+        if report_svc.is_job_final(job)
+    ]
 
     # TTL filter in Python (depends on finished_at + DOWNLOAD_TTL)
     rows = universe
@@ -295,6 +458,10 @@ def build_history_context(user, project: Project, params) -> dict:
     page_rows = rows[start : start + PAGE_SIZE]
 
     has_any_job = _base_queryset(project).exists()
+    can_delete_own_any = (
+        report_svc.can_view_report(user, project)
+        and _own_jobs_queryset(user, project).exists()
+    )
 
     return {
         "rows": page_rows,
@@ -306,6 +473,7 @@ def build_history_context(user, project: Project, params) -> dict:
         "can_download": report_svc.can_download_files(user, project),
         "can_view_detail": report_svc.can_view_detail(user, project),
         "can_execute": run_svc.user_can_execute(user, project),
+        "can_delete_own_any": can_delete_own_any,
         "has_any_job": has_any_job,
         "has_active_filters": has_active_filters(filters),
         "verdict_options": verdict_options(),

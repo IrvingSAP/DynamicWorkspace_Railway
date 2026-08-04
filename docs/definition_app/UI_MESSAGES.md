@@ -522,8 +522,14 @@ Mensajes de usuario para el Conciliador. Alineados a [`../FILE_MATCH.md`](../FIL
 | Tipo no editable en paso 4 | `warning` | Elija un tipo de archivo permitido (CSV, Excel, TXT delimitado, TXT posicional, JSON o XML) en el paso 1. |
 | Kind incorrecto | `error` | Este proyecto no es de tipo FILE MATCH. |
 | A incompleto (aviso hub) | hint UI | Recomendado: complete el perfil A antes de definir el B. |
+| Copiar A→B OK | `success` | Estructura del Perfil A copiada al borrador del Perfil B. Revise B y configure las reglas de cruce cuando corresponda. |
+| Copiar A→B OK + reglas | `success` | Estructura del Perfil A copiada al borrador B y se propusieron pares 1:1 en Reglas (borrador). Revise clave y campos a comparar. |
+| Copiar A→B falló | `error` | No se pudo copiar la estructura desde el Perfil A. Si persiste, contacte al administrador. |
+| Copiar A incompleto | `error` | El Perfil A no tiene tipo de archivo y campos suficientes para copiar. Complete el Perfil A e intente de nuevo. |
+| Copiar sin permiso | `error` | No tiene permiso para editar el perfil B de este proyecto. |
+| Overwrite B (aviso UI) | warning panel | El borrador del Perfil B ya tiene M campos; se sobrescribirán con N del Perfil A. |
 
-> Slot B: modelo `FileMatchSourceB` (`version.match_source_b`) con `config.match_side = "B"`. Persistencia: `profile_b_persistence_service.save_source_b`. No hay publish solo-B (Módulo 4).
+> Slot B: modelo `FileMatchSourceB` (`version.match_source_b`) con `config.match_side = "B"`. Persistencia: `profile_b_persistence_service.save_source_b`. Copiar desde A: `copy_from_a_service` (`…/perfil-b/copiar-desde-a/`). No hay publish solo-B (Módulo 4).
 
 #### Módulo 3 — Reglas de cruce
 
@@ -537,6 +543,9 @@ Mensajes de usuario para el Conciliador. Alineados a [`../FILE_MATCH.md`](../FIL
 | Par incompleto | `error` + inline | El par de clave/compare #N debe tener campo A y campo B. |
 | Campo inexistente | `error`/`warning` + inline | El campo A/B «…» no existe en el perfil A/B. |
 | Kind incorrecto | `error` | Este proyecto no es de tipo FILE MATCH. |
+| Proponer 1:1 OK | `success` | Se propusieron pares 1:1 por nombre (primer campo como clave). Revise y ajuste. |
+| Proponer 1:1 sin homónimos | `error` | No hay campos con el mismo nombre en A y B para proponer pares 1:1. |
+| Proponer 1:1 con clave ya definida | `error` | Ya hay clave definida. Borre o edite los pares existentes antes de proponer 1:1. |
 
 > Persistencia: `FileMatchRules` (`version.match_rules`) vía `match_rules_persistence_service.save_rules`. No hay publish solo-reglas (Módulo 4).
 
@@ -571,8 +580,9 @@ Mensajes de usuario para el Conciliador. Alineados a [`../FILE_MATCH.md`](../FIL
 | Descarga ausente | `error` | El archivo de descarga no está disponible. |
 | Kind incorrecto | `error` | Este proyecto no es de tipo FILE MATCH. |
 | Inesperado | `error` | Ocurrió un error al conciliar. Si persiste, contacte al administrador. |
+| Rechazos de lectura (parcial) | hint / veredicto partial | Hubo N rechazo(s) al leer A/B; el cruce usó solo filas válidas. |
 
-> Motor: `match_run_service.match_and_run` + `match_engine.run_match`. Persistencia: `FileMatchJob`. Parsers DMS ×2. Descargas MVP: JSON + CSV diferencias.
+> Motor: `match_run_service.match_and_run` + `match_engine.run_match`. Persistencia: `FileMatchJob`. Parsers DMS ×2. Descargas: JSON informe, CSV diferencias, **CSV/JSON issues de lectura** (`parse_issues.*`). En parse fatal o rechazos parciales se redirige al resultado del job con tabla lado/línea/campo/valor.
 
 #### Módulo 6 — Informe y evidencia
 
@@ -598,8 +608,14 @@ Mensajes de usuario para el Conciliador. Alineados a [`../FILE_MATCH.md`](../FIL
 | Sin conciliaciones | UX vacío | Sin conciliaciones registradas + CTA Ejecutar. |
 | Filtro sin resultados | UX | Sin resultados para estos filtros + limpiar filtros. |
 | Sin acceso al proyecto | `error` | No tiene acceso a este proyecto FILE MATCH. |
+| Corrida eliminada | `success` | Corrida eliminada del historial. |
+| Corridas propias eliminadas | `success` | Se eliminaron {n} corridas propias del historial. |
+| Sin corridas propias | `error` | No tiene corridas propias para eliminar en este proyecto. |
+| Corrida no encontrada | `error` | No se encontró la corrida en este proyecto. |
+| No es el ejecutor | `error` | Solo puede eliminar corridas que usted ejecutó. |
+| Error al eliminar | `error` | No se pudo eliminar la corrida. Si el problema continúa, contacte al administrador. |
 
-> Motor: `match_history_service` — filtros, paginación 25, badges TTL vía `match_report_service`. Reusa `FileMatchJob` (sin migración). Enlaces a resultado (M5), informe y certificado (M6).
+> Motor: `match_history_service` — filtros, paginación 25, badges TTL vía `match_report_service`. Reusa `FileMatchJob` (sin migración). Enlaces a resultado (M5), informe y certificado (M6). Borrado permanente solo de jobs con `executed_by` = usuario actual (fila o «Eliminar mis corridas»).
 
 #### Módulo 8 — Bridge FILE GATE
 

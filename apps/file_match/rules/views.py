@@ -64,6 +64,47 @@ def hub(request, project_slug: str):
 
 
 @_rules_view
+@require_http_methods(["POST"])
+def suggest_homonyms(request, project_slug: str):
+    from apps.file_match.profile_b.services import copy_from_a_service
+
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_match:project_list")
+    if not source_persistence_service.user_can_edit_source(request.user, project):
+        messages.error(request, "No tiene permiso para editar el contrato de este proyecto.")
+        return redirect("file_match:rules_hub", project_slug=project_slug)
+
+    rules = match_rules_persistence_service.get_rules_dict(project)
+    if rules.get("key"):
+        messages.error(
+            request,
+            "Ya hay clave definida. Borre o edite los pares existentes antes de proponer 1:1.",
+        )
+        return redirect("file_match:rules_hub", project_slug=project_slug)
+
+    partial = copy_from_a_service.build_homonym_rules_partial(project)
+    if not partial:
+        messages.error(
+            request,
+            "No hay campos con el mismo nombre en A y B para proponer pares 1:1.",
+        )
+        return redirect("file_match:rules_hub", project_slug=project_slug)
+
+    result = match_rules_persistence_service.save_rules(
+        request.user, project, partial, strict=False
+    )
+    if result.ok:
+        messages.success(
+            request,
+            "Se propusieron pares 1:1 por nombre (primer campo como clave). Revise y ajuste.",
+        )
+    else:
+        messages.error(request, result.user_message or "No se pudieron proponer las reglas.")
+    return redirect("file_match:rules_hub", project_slug=project_slug)
+
+
+@_rules_view
 def hub_help(request, project_slug: str):
     project = _get_project_or_redirect(request, project_slug)
     if project is None:
@@ -88,6 +129,18 @@ def keys_edit(request, project_slug: str):
 
 
 @_rules_view
+def keys_help(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_match:project_list")
+    return render(
+        request,
+        "file_match/rules/keys_help.html",
+        _base_context(request, project, current_section="keys"),
+    )
+
+
+@_rules_view
 def compare_edit(request, project_slug: str):
     project = _get_project_or_redirect(request, project_slug)
     if project is None:
@@ -100,6 +153,18 @@ def compare_edit(request, project_slug: str):
 
 
 @_rules_view
+def compare_help(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_match:project_list")
+    return render(
+        request,
+        "file_match/rules/compare_help.html",
+        _base_context(request, project, current_section="compare"),
+    )
+
+
+@_rules_view
 def normalize_edit(request, project_slug: str):
     project = _get_project_or_redirect(request, project_slug)
     if project is None:
@@ -107,6 +172,18 @@ def normalize_edit(request, project_slug: str):
     return render(
         request,
         "file_match/rules/normalize.html",
+        _base_context(request, project, current_section="normalize"),
+    )
+
+
+@_rules_view
+def normalize_help(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_match:project_list")
+    return render(
+        request,
+        "file_match/rules/normalize_help.html",
         _base_context(request, project, current_section="normalize"),
     )
 

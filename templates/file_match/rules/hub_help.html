@@ -6,12 +6,17 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
     <a href="{% url 'file_match:rules_hub' project_slug=project.slug %}">Reglas</a>
     <span class="breadcrumb-sep">/</span>
     <span>Ayuda</span>
@@ -23,24 +28,65 @@
 
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">FILE MATCH · Ayuda · Módulo 3</p>
-        <h2>Cómo usar las reglas de cruce</h2>
-        <p>Definen cómo se emparejan filas de A y B y qué valores se contrastan.</p>
+        <p class="page-eyebrow">Referencia · FILE MATCH · Módulo 3 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Reglas de cruce</h2>
+        <p>Cómo se emparejan filas A↔B, qué valores se contrastan y cómo se normaliza la clave.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'file_match:rules_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al hub</a>
     </div>
 </div>
 
-<div class="panel">
+<div class="panel help-panel">
     <div class="panel-body">
-        <ul class="hint" style="margin:0; padding-left:1.2rem">
-            <li><strong>Clave</strong> — uno o más pares A↔B (compuesta = varios pares en orden).</li>
-            <li><strong>Comparar</strong> — cero o más pares; vacío = solo presencia.</li>
-            <li><strong>Normalización MVP</strong> — trim y case-fold en la clave.</li>
+        <h3 class="form-section-title">Qué es este módulo</h3>
+        <p class="help-intro">
+            Declara las <strong>reglas de cruce</strong> del Conciliador. Se editan en borrador;
+            se congelan al <strong>Publicar</strong> (Módulo 4) junto con Perfil A y Perfil B.
+        </p>
+
+        <h3 class="form-section-title">Secciones</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>#</th><th>Sección</th><th>Para qué</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="mono">1</td>
+                    <td><a href="{% url 'file_match:rules_keys_help' project_slug=project.slug %}">Claves</a></td>
+                    <td>Pares A↔B que forman la clave 1:1 (compuesta si hay varios; el orden importa).</td>
+                </tr>
+                <tr>
+                    <td class="mono">2</td>
+                    <td><a href="{% url 'file_match:rules_compare_help' project_slug=project.slug %}">Comparar</a></td>
+                    <td>Valores a contrastar si la clave coincide. Cero pares = solo presencia.</td>
+                </tr>
+                <tr>
+                    <td class="mono">3</td>
+                    <td><a href="{% url 'file_match:rules_normalize_help' project_slug=project.slug %}">Normalización</a></td>
+                    <td><code>trim</code> / <code>case_fold_keys</code> y política de claves duplicadas.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Elementos comunes de la UI</h3>
+        <ul>
+            <li><strong>Franja de alcance</strong> (arriba): compañía, código de proyecto y rol — contexto compartido en todas las pantallas de reglas.</li>
+            <li><strong>Stepper de secciones</strong>: atajos Claves → Comparar → Normalize dentro del Módulo 3.</li>
+            <li>Los desplegables usan los <code>name</code> definidos en Perfil A y Perfil B.</li>
+        </ul>
+
+        <h3 class="form-section-title">Atajos útiles</h3>
+        <ul>
+            <li><strong>Proponer pares 1:1</strong> (hub): si A y B tienen los mismos nombres y aún no hay clave.</li>
+            <li>Tras proponer, revise siempre cuál campo es la clave de negocio.</li>
+        </ul>
+
+        <h3 class="form-section-title">Reglas de producto</h3>
+        <ul>
             <li>Cardinalidad fija <strong>1:1</strong>.</li>
-            <li>Los selects usan los <code>name</code> de los perfiles A y B.</li>
-            <li>Publicar (M4) congela A + B + estas reglas.</li>
+            <li>Al menos un par de clave para publicar.</li>
+            <li>No publica ni ejecuta desde aquí; siguiente paso típico: <strong>Publicar</strong>.</li>
         </ul>
     </div>
 </div>

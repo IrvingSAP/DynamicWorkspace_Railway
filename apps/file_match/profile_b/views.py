@@ -41,6 +41,9 @@ def _base_context(request, project, current_step: int | None = None) -> dict:
     membership = project_service.get_membership(request.user, project)
     wizard = profile_b_wizard_service.get_wizard_context(project, membership)
     source = profile_b_persistence_service.get_source_b_dict(project)
+    from apps.file_match.profile_b.services import copy_from_a_service
+
+    copy_ctx = copy_from_a_service.get_copy_from_a_hub_context(request.user, project)
     return {
         "project": project,
         "wizard": wizard,
@@ -54,6 +57,7 @@ def _base_context(request, project, current_step: int | None = None) -> dict:
         "source_save_url": reverse(
             "file_match:profile_b_save", kwargs={"project_slug": project.slug}
         ),
+        **copy_ctx,
     }
 
 
@@ -74,6 +78,51 @@ def hub(request, project_slug: str):
 @_profile_b_view
 def hub_help(request, project_slug: str):
     return _render(request, project_slug, "file_match/profile_b/hub_help.html")
+
+
+@_profile_b_view
+@require_http_methods(["GET", "POST"])
+def copy_from_a(request, project_slug: str):
+    from apps.file_match.profile_b.services import copy_from_a_service
+
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_match:project_list")
+
+    if not copy_from_a_service.user_can_copy_from_a(request.user, project):
+        messages.error(request, copy_from_a_service.MSG_NO_PERMISSION)
+        return redirect("file_match:profile_b_hub", project_slug=project_slug)
+
+    if request.method == "POST":
+        action = (request.POST.get("action") or "").strip()
+        if action == "apply":
+            suggest = (request.POST.get("suggest_rules") or "") in ("1", "on", "true")
+            result = copy_from_a_service.apply_copy_from_a(
+                request.user, project, suggest_rules=suggest
+            )
+            if result.ok:
+                messages.success(request, result.user_message)
+                return redirect("file_match:profile_b_hub", project_slug=project_slug)
+            messages.error(request, result.user_message or copy_from_a_service.MSG_COPY_FAIL)
+            return redirect("file_match:profile_b_copy_from_a", project_slug=project_slug)
+        return redirect("file_match:profile_b_hub", project_slug=project_slug)
+
+    preview = copy_from_a_service.get_copy_preview(request.user, project)
+    if preview is None:
+        messages.error(request, copy_from_a_service.MSG_NO_PERMISSION)
+        return redirect("file_match:profile_b_hub", project_slug=project_slug)
+
+    return _render(
+        request,
+        project_slug,
+        "file_match/profile_b/copy_from_a.html",
+        **preview,
+    )
+
+
+@_profile_b_view
+def copy_from_a_help(request, project_slug: str):
+    return _render(request, project_slug, "file_match/profile_b/copy_from_a_help.html")
 
 
 @_profile_b_view

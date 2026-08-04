@@ -236,7 +236,23 @@ Mensajes: ampliar [`UI_MESSAGES.md`](../definition_app/UI_MESSAGES.md) §3.11 bl
 | Extensión inválida | `error` | El archivo A/B no coincide con el tipo publicado (…). |
 | Sin permiso | `error` | No tiene permiso para ejecutar conciliaciones en este proyecto. |
 | Parse fatal | `error` | No se pudo leer el archivo A/B. Revise el perfil publicado. |
+| Rechazos lectura (parcial) | veredicto `partial` | Hubo N rechazo(s) al leer A/B; el cruce usó solo filas válidas. |
 | Inesperado | `error` | Ocurrió un error al conciliar. Si persiste, contacte al administrador. |
+
+### Informe de lectura (parse issues)
+
+Tras parsear A y B, los errores del parser DMS (`line`, `field`, `code`, `message`, `value`, `content_type`/`expected`) se normalizan con `side` (A|B) y se persisten:
+
+| Artefacto | Uso |
+|-----------|-----|
+| `parse_issues.json` / `parse_issues.csv` | Evidencia descargable (PA/ED/GE) |
+| `metrics.parse_issues_*` + preview | UI resultado |
+| Inclusión en `match_report.json` | Cuando el job llega a conciliar |
+
+- **Fatal** (sin filas válidas / `ParseError`): job `failed`, redirect a resultado con tabla + descarga.
+- **Parcial** (hay filas OK + rechazos): el cruce usa solo filas válidas; si el veredicto del motor era `passed`, pasa a `partial` con aviso.
+
+Topes: UI 100 filas; almacenamiento hasta 2000.
 
 ---
 

@@ -5,6 +5,12 @@ from apps.file_match.profile_b import views
 urlpatterns = [
     path("", views.hub, name="profile_b_hub"),
     path("ayuda/", views.hub_help, name="profile_b_hub_help"),
+    path("copiar-desde-a/", views.copy_from_a, name="profile_b_copy_from_a"),
+    path(
+        "copiar-desde-a/ayuda/",
+        views.copy_from_a_help,
+        name="profile_b_copy_from_a_help",
+    ),
     path("guardar/", views.profile_b_save, name="profile_b_save"),
     path("paso/1/ayuda/", views.step1_help, name="profile_b_step1_help"),
     path("paso/1/", views.step1_file_type, name="profile_b_step1"),

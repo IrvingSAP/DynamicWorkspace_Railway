@@ -161,7 +161,25 @@ Detalle de modos, parámetros JSON y semántica: **delegar a** [`source_definiti
 | Publicar solo B | **No** |
 | Match usa | Solo versión `published` (M4) |
 | Relación con A | Tipos pueden diferir; campos independientes; cruce en M3 |
-| Copiar desde A | **No** en MVP (evitar acoplamiento). Fase 2: “Duplicar estructura desde A” opcional |
+| Copiar desde A | **Implementado** — CTA hub B → confirmación → clone snapshot A→B; opcional proponer reglas 1:1 |
+
+---
+
+## Copiar estructura desde Perfil A
+
+Atajo cuando A y B tienen el **mismo layout**.
+
+| Pieza | Detalle |
+|-------|---------|
+| CTA | Hub Perfil B · «Copiar desde Perfil A» (PA/ED; A con tipo + campos) |
+| Confirmación | `…/perfil-b/copiar-desde-a/` — preview, overwrite si B tiene campos |
+| Escritura | 2× `save_source_b` (meta → fields); `config.match_side = "B"` |
+| Auditoría | `ProfileSeedEvent` destino `profile_b`, origen `file_match` / `profile_a` |
+| Reglas (opcional) | Checkbox en confirmación + CTA en hub Reglas «Proponer pares 1:1» |
+| Qué no hace | No publica Match; no vínculo vivo; no reemplaza Seed GATE→A |
+
+Servicio: `apps/file_match/profile_b/services/copy_from_a_service.py`.  
+Templates: `copy_from_a.html`, `copy_from_a_help.html`.
 
 ---
 
@@ -402,6 +420,7 @@ Catálogo formal: [`UI_MESSAGES.md`](../definition_app/UI_MESSAGES.md) §3.11 (M
 - [x] Enlace hub proyecto + CTA desde Perfil A → Perfil B
 - [x] CTA → Reglas (Módulo 3) — implementado
 - [x] Resolver segundo SourceProfile (B12) vía `FileMatchSourceB`
+- [x] Copiar desde A (CTA + confirmación + opcional reglas 1:1)
 
 ---
 
@@ -411,7 +430,7 @@ Catálogo formal: [`UI_MESSAGES.md`](../definition_app/UI_MESSAGES.md) §3.11 (M
 |---|------|---------------|
 | 1 | ¿Cómo persistir slot B si `DmsSourceProfile` es OneToOne con la versión? | Opción A: segundo modelo `DmsSourceProfileB` / `MatchSideProfile`. Opción B: JSON en `config` + tabla auxiliar. Preferir **segundo perfil explícito** documentado en `fm_integration.md` |
 | 2 | ¿Bloquear B si A incompleto? | **No** bloquear; aviso recomendatorio (B7) |
-| 3 | ¿“Copiar campos desde A”? | No MVP |
+| 3 | ¿“Copiar campos desde A”? | **Hecho** — `copy_from_a_service` + CTA hub B |
 | 4 | ¿json/xml en MVP B? | Misma decisión que A |
 
 ---

@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
 {% block sidebar_nav %}
@@ -22,15 +23,30 @@
     <div>
         <p class="page-eyebrow">Ayuda · Resultado</p>
         <h2>Cómo leer el resultado</h2>
-        <p>El veredicto respeta las flags <code>verdict</code> de las reglas publicadas.</p>
+        <p>Veredicto del cruce A↔B e informe de lectura si hubo rechazos al parsear.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:run_result' project_slug=project.slug job_id=view.id %}" class="btn btn-secondary">← Volver</a>
     </div>
 </div>
-<div class="panel">
+<div class="panel help-panel">
     <div class="panel-body">
-        <ul class="help-list">
-            <li><strong>passed</strong> — no hay buckets que disparen fallo según la política.</li>
-            <li><strong>failed</strong> — hay only_*, mismatch o duplicados según flags.</li>
-            <li><strong>partial</strong> — se alcanzó el tope de filas del MVP.</li>
+        <h3 class="form-section-title">Veredicto</h3>
+        <ul>
+            <li><strong>passed</strong> — no hay buckets que disparen fallo según la política de reglas.</li>
+            <li><strong>failed</strong> — only_*, mismatch, duplicados según flags, o error fatal al leer A/B.</li>
+            <li><strong>partial</strong> — tope de filas MVP, o hubo rechazos de lectura pero el cruce usó filas válidas.</li>
+        </ul>
+
+        <h3 class="form-section-title">Informe de lectura</h3>
+        <p class="help-intro">
+            Si el perfil rechazó filas (<code>content_type</code>, required, pattern, etc.) o el parse falló,
+            verá una tabla con <strong>lado (A/B)</strong>, <strong>línea</strong>, <strong>campo</strong>,
+            <strong>código</strong>, <strong>mensaje</strong>, <strong>valor</strong> y <strong>esperado</strong>.
+        </p>
+        <ul>
+            <li>Descargue <strong>Lecturas CSV</strong> para validar fuera de la UI.</li>
+            <li>El CSV de diferencias es otro artefacto: solo buckets del cruce, no lectura.</li>
         </ul>
     </div>
 </div>

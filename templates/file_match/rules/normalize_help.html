@@ -1,0 +1,113 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Normalización — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:rules_hub' project_slug=project.slug %}">Reglas</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:rules_normalize' project_slug=project.slug %}">Normalización</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "file_match/rules/_project_scope.html" %}
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · FILE MATCH · Reglas · Sección 3 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Normalización</h2>
+        <p>Ajustes aplicados a la clave antes del match 1:1, y política si la clave se repite.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:rules_normalize' project_slug=project.slug %}" class="btn btn-secondary">← Volver a Normalización</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué decide esta sección</h3>
+        <p class="help-intro">
+            Antes de cruzar filas, el motor puede <strong>normalizar</strong> los valores de clave
+            para evitar falsos “no match” por espacios o mayúsculas. También define qué hacer
+            si una clave aparece más de una vez en A o en B.
+        </p>
+
+        <h3 class="form-section-title">Opciones MVP</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Opción</th><th>Efecto</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>trim</code></td>
+                    <td>Recorta espacios al inicio/fin en valores de <strong>clave</strong>.</td>
+                </tr>
+                <tr>
+                    <td><code>case_fold_keys</code></td>
+                    <td>Ignora mayúsculas/minúsculas en la <strong>clave</strong> (p. ej. AB12 = ab12).</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            MVP: no hay tolerancia numérica, fuzzy ni <code>case_fold</code> en campos de compare.
+        </p>
+
+        <h3 class="form-section-title">Duplicados de clave</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Política</th><th>Comportamiento</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>bucket</code> (recomendado)</td>
+                    <td>El job continúa; las filas con clave repetida van al bucket <code>duplicate_key</code>.</td>
+                </tr>
+                <tr>
+                    <td><code>fail</code></td>
+                    <td>El job falla (<code>failed</code>). No se inventa un match entre duplicados.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Cómo guardar</h3>
+        <ul>
+            <li><strong>Guardar borrador</strong> — persiste y permanece en Normalización.</li>
+            <li><strong>Finalizar → Hub</strong> — guarda y vuelve al resumen de Reglas.</li>
+            <li><strong>Atrás</strong> — vuelve a Comparar (sin perder el enlace del stepper).</li>
+        </ul>
+
+        <h3 class="form-section-title">Navegación</h3>
+        <ul>
+            <li><strong>Franja de alcance</strong>: compañía / proyecto / rol.</li>
+            <li><strong>Stepper</strong>: Claves y Comparar marcadas; Normalize activa.</li>
+            <li>Tras finalizar: revise el hub y continúe a <strong>Publicar</strong> (Módulo 4) cuando A + B + reglas estén listos.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace</h3>
+        <ul>
+            <li>No cambia los campos de Perfil A/B.</li>
+            <li>No publica la definición ni ejecuta la conciliación.</li>
+            <li>No resuelve automáticamente claves duplicadas emparejando “el primero con el primero”.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles</h3>
+        <p class="help-intro"><span class="mono">PA</span> / <span class="mono">ED</span> editan. El resto consulta en solo lectura.</p>
+    </div>
+</div>
+{% endblock %}

@@ -70,7 +70,7 @@
         </p>
         <div class="page-actions" style="margin-top:12px">
             <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}" class="btn btn-primary">Importar estructura</a>
-            <a href="{% url 'file_match:profile_a_seed_hub_help' project_slug=project.slug %}" class="btn btn-secondary">¿Qué es esto?</a>
+            <a href="{% url 'file_match:profile_a_seed_hub_help' project_slug=project.slug %}?from=hub" class="btn btn-secondary">¿Qué es esto?</a>
             <a href="{% url 'file_match:profile_a_seed_history' project_slug=project.slug %}" class="btn btn-secondary">Historial de importaciones</a>
         </div>
     </div>

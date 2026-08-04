@@ -1,0 +1,76 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Copiar desde A — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}">Perfil B</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda · Copiar desde A</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · FILE MATCH · Perfil B · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Copiar desde Perfil A</h2>
+        <p>Atajo cuando A y B tienen el mismo layout: clona el borrador A al borrador B sin repetir el wizard.</p>
+    </div>
+    <div class="page-actions">
+        {% if request.GET.from == "confirm" %}
+        <a class="btn btn-secondary" href="{% url 'file_match:profile_b_copy_from_a' project_slug=project.slug %}">← Volver a confirmar</a>
+        {% else %}
+        <a class="btn btn-secondary" href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}">← Perfil B</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué hace</h3>
+        <p class="help-intro">
+            Copia tipo, encoding, captura, campos, reglas de contenido e informe de lectura
+            del <strong>borrador Perfil A</strong> al <strong>borrador Perfil B</strong> del mismo proyecto.
+            Es un <strong>clone snapshot</strong> (no vínculo vivo).
+        </p>
+
+        <h3 class="form-section-title">Cuándo usarlo</h3>
+        <ul>
+            <li>Ambos archivos tienen la <strong>misma estructura</strong> (mismos campos / mismo tipo).</li>
+            <li>Quiere evitar repetir los 6 pasos del asistente B.</li>
+            <li>El Perfil A ya tiene tipo y al menos un campo.</li>
+        </ul>
+
+        <h3 class="form-section-title">Reglas 1:1 (opcional)</h3>
+        <ul>
+            <li>En la confirmación puede marcar <strong>Proponer pares 1:1 en Reglas</strong>.</li>
+            <li>Si las reglas aún no tienen clave: el primer campo homónimo pasa a clave; el resto a comparar.</li>
+            <li>Revise siempre el Módulo 3: la clave de negocio puede no ser el primer campo.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace</h3>
+        <ul>
+            <li>No publica la definición Match (Módulo 4).</li>
+            <li>No sustituye Importar estructura desde FILE GATE (PROFILE SEED en Perfil A).</li>
+            <li>No es el bridge FILE GATE (hash de job).</li>
+            <li>Si B ya tiene campos, se sobrescriben tras confirmar.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles</h3>
+        <p class="help-intro">Solo <span class="mono">PA</span> / <span class="mono">ED</span> (permiso de editar definición).</p>
+    </div>
+</div>
+{% endblock %}

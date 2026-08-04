@@ -250,8 +250,11 @@ Si `compare: []`, dos filas con la misma clave normalizada → `matched` (existe
 | `prototype/file_match/rules/hub.html` | `templates/file_match/rules/hub.html` |
 | `prototype/file_match/rules/hub_help.html` | idem |
 | `prototype/file_match/rules/keys.html` | `…/keys.html` |
+| `prototype/file_match/rules/keys_help.html` | `…/keys_help.html` |
 | `prototype/file_match/rules/compare.html` | `…/compare.html` |
+| `prototype/file_match/rules/compare_help.html` | `…/compare_help.html` |
 | `prototype/file_match/rules/normalize.html` | `…/normalize.html` |
+| `prototype/file_match/rules/normalize_help.html` | `…/normalize_help.html` |
 | `proto.css` | Solo demo |
 
 ---
@@ -263,11 +266,14 @@ Prefijo: `/app/file-match/proyectos/<slug>/reglas/`
 | Vista | Ruta |
 |-------|------|
 | Hub | `.../reglas/` |
-| Ayuda | `.../reglas/ayuda/` |
+| Ayuda hub | `.../reglas/ayuda/` |
 | Claves | `.../reglas/claves/` |
+| Ayuda claves | `.../reglas/claves/ayuda/` |
 | Comparar | `.../reglas/comparar/` |
+| Ayuda comparar | `.../reglas/comparar/ayuda/` |
 | Normalización | `.../reglas/normalizacion/` |
-| Guardar | `.../reglas/guardar/` (POST JSON) |
+| Ayuda normalización | `.../reglas/normalizacion/ayuda/` |
+| Guardar | `.../reglas/guardar/` (POST) |
 
 ---
 

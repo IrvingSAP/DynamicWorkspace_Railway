@@ -37,6 +37,8 @@ from apps.projects.services import project_service
 logger = logging.getLogger(__name__)
 
 RUN_MAX_BYTES = PRODUCTION_PREVIEW_MAX_BYTES
+PARSE_ISSUES_STORE_LIMIT = 2000
+PARSE_ISSUES_UI_LIMIT = 100
 
 VERDICT_LABELS = {
     FileMatchJob.VERDICT_PASSED: "Cuadra",
@@ -217,8 +219,34 @@ def get_job(project: Project, job_id) -> FileMatchJob | None:
     )
 
 
+def _load_parse_issues(job: FileMatchJob) -> list[dict]:
+    metrics = job.metrics or {}
+    preview = list(metrics.get("parse_issues_preview") or [])
+    if preview:
+        return preview
+    if not job.report_path:
+        return []
+    try:
+        path = storage_service.absolute_from_stored(job.report_path).parent / "parse_issues.json"
+        if not path.is_file():
+            return []
+        data = json.loads(path.read_text(encoding="utf-8"))
+        issues = data.get("issues") if isinstance(data, dict) else data
+        if not isinstance(issues, list):
+            return []
+        return issues[:PARSE_ISSUES_UI_LIMIT]
+    except Exception:
+        logger.exception("load_parse_issues failed job=%s", job.id)
+        return []
+
+
 def build_job_view(project: Project, job: FileMatchJob) -> dict:
     metrics = job.metrics or {}
+    parse_issues = _load_parse_issues(job)
+    parse_count = int(metrics.get("parse_issues_count") or len(parse_issues) or 0)
+    downloads = {}
+    if job.report_path:
+        downloads = build_download_links(project.slug, job)
     return {
         "job": job,
         "id": str(job.id),
@@ -227,8 +255,15 @@ def build_job_view(project: Project, job: FileMatchJob) -> dict:
         "verdict_tone": VERDICT_TONE.get(job.verdict, "failed"),
         "is_success": job.verdict == FileMatchJob.VERDICT_PASSED,
         "is_partial": job.verdict == FileMatchJob.VERDICT_PARTIAL,
+        "is_failed": job.verdict == FileMatchJob.VERDICT_FAILED
+        or job.status == FileMatchJob.STATUS_FAILED,
         "metrics": metrics,
         "detail_preview": job.detail_preview or [],
+        "parse_issues": parse_issues,
+        "parse_issues_count": parse_count,
+        "parse_issues_capped": bool(metrics.get("parse_issues_capped")),
+        "parse_issues_a": int(metrics.get("parse_issues_a") or 0),
+        "parse_issues_b": int(metrics.get("parse_issues_b") or 0),
         "file_a_name": job.file_a_name,
         "file_b_name": job.file_b_name,
         "file_a_hash": job.file_a_hash,
@@ -238,17 +273,21 @@ def build_job_view(project: Project, job: FileMatchJob) -> dict:
         "published_version_number": job.published_version_number,
         "error_message": job.error_message,
         "duration_ms": metrics.get("duration_ms"),
-        "downloads": build_download_links(project.slug, job) if job.report_path else {},
+        "downloads": downloads,
+        "has_report": bool(job.report_path),
     }
 
 
 def build_download_links(project_slug: str, job: FileMatchJob) -> dict:
     links = {}
-    for kind in ("report", "diff"):
-        links[kind] = reverse(
-            "file_match:run_download",
-            kwargs={"project_slug": project_slug, "job_id": job.id, "kind": kind},
-        )
+    if not job.report_path:
+        return links
+    for kind in ("report", "diff", "parse"):
+        if resolve_download_path(job, kind) is not None:
+            links[kind] = reverse(
+                "file_match:run_download",
+                kwargs={"project_slug": project_slug, "job_id": job.id, "kind": kind},
+            )
     return links
 
 
@@ -293,9 +332,108 @@ def _validate_upload(uploaded_file, *, side: str, allowed_exts: list[str]) -> Op
     return None
 
 
-def _write_reports(project: Project, job: FileMatchJob, *, engine_result, rules: dict) -> str:
+def _normalize_parse_issues(raw_errors, *, side: str) -> list[dict]:
+    out: list[dict] = []
+    for err in raw_errors or []:
+        if len(out) >= PARSE_ISSUES_STORE_LIMIT:
+            break
+        if not isinstance(err, dict):
+            out.append(
+                {
+                    "side": side,
+                    "line": "",
+                    "field": "",
+                    "code": "",
+                    "message": str(err),
+                    "value": "",
+                    "expected": "",
+                }
+            )
+            continue
+        expected = err.get("expected")
+        if expected is None or expected == "":
+            expected = err.get("content_type") or err.get("pattern") or ""
+        if isinstance(expected, (dict, list)):
+            expected = json.dumps(expected, ensure_ascii=False)
+        value = err.get("value")
+        if value is None:
+            value = ""
+        elif not isinstance(value, (str, int, float, bool)):
+            value = str(value)
+        out.append(
+            {
+                "side": side,
+                "line": err.get("line") if err.get("line") is not None else "",
+                "field": err.get("field") or "",
+                "code": err.get("code") or "",
+                "message": err.get("message") or "",
+                "value": value,
+                "expected": expected,
+            }
+        )
+    return out
+
+
+def _write_parse_issues_files(
+    project: Project, job: FileMatchJob, issues: list[dict]
+) -> str:
+    """Write parse_issues.json + .csv; return relative path to JSON (report_path)."""
     reports_dir = storage_service.job_reports_dir(project.company_id, project.id, job.id)
     reports_dir.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "job_id": str(job.id),
+        "issues_count": len(issues),
+        "issues_capped": len(issues) >= PARSE_ISSUES_STORE_LIMIT,
+        "issues": issues,
+    }
+    json_abs = reports_dir / "parse_issues.json"
+    json_abs.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(
+        ["side", "line", "field", "code", "message", "value", "expected"]
+    )
+    for item in issues:
+        writer.writerow(
+            [
+                item.get("side", ""),
+                item.get("line", ""),
+                item.get("field", ""),
+                item.get("code", ""),
+                item.get("message", ""),
+                item.get("value", ""),
+                item.get("expected", ""),
+            ]
+        )
+    (reports_dir / "parse_issues.csv").write_text(buffer.getvalue(), encoding="utf-8")
+    return storage_service.relative_to_media(json_abs)
+
+
+def _parse_metrics(issues: list[dict]) -> dict:
+    count_a = sum(1 for i in issues if i.get("side") == "A")
+    count_b = sum(1 for i in issues if i.get("side") == "B")
+    return {
+        "parse_issues_count": len(issues),
+        "parse_issues_a": count_a,
+        "parse_issues_b": count_b,
+        "parse_issues_capped": len(issues) >= PARSE_ISSUES_STORE_LIMIT,
+        "parse_issues_preview": issues[:PARSE_ISSUES_UI_LIMIT],
+    }
+
+
+def _write_reports(
+    project: Project,
+    job: FileMatchJob,
+    *,
+    engine_result,
+    rules: dict,
+    parse_issues: list[dict] | None = None,
+) -> str:
+    reports_dir = storage_service.job_reports_dir(project.company_id, project.id, job.id)
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    issues = list(parse_issues or [])
 
     payload = {
         "job_id": str(job.id),
@@ -317,6 +455,8 @@ def _write_reports(project: Project, job: FileMatchJob, *, engine_result, rules:
         "metrics": engine_result.metrics,
         "messages": engine_result.messages,
         "detail": engine_result.detail,
+        "parse_issues_count": len(issues),
+        "parse_issues": issues[:PARSE_ISSUES_UI_LIMIT],
     }
     json_abs = reports_dir / "match_report.json"
     json_abs.write_text(
@@ -351,39 +491,63 @@ def _write_reports(project: Project, job: FileMatchJob, *, engine_result, rules:
     csv_abs = reports_dir / "match_diff.csv"
     csv_abs.write_text(buffer.getvalue(), encoding="utf-8")
 
+    if issues:
+        _write_parse_issues_files(project, job, issues)
+
     return storage_service.relative_to_media(json_abs)
 
 
-def _parse_side(path, source: dict, *, side: str) -> tuple[list[dict], bool, OperationResult | None]:
+def _parse_side(
+    path, source: dict, *, side: str
+) -> tuple[list[dict], bool, OperationResult | None, list[dict]]:
     try:
         result = parse_source_file(path, source, limit=match_engine.ROW_HARD_LIMIT + 1)
     except ParseError as exc:
+        issues = [
+            {
+                "side": side,
+                "line": "",
+                "field": "",
+                "code": "PARSE_ERROR",
+                "message": str(exc) or "Error de parseo.",
+                "value": "",
+                "expected": "",
+            }
+        ]
         return [], False, OperationResult.failure(
             "validation_form",
             f"No se pudo leer el archivo {side}. Revise el perfil publicado.",
             errors={f"file_{side.lower()}": [str(exc) or "Error de parseo."]},
-        )
+        ), issues
     except Exception:
         logger.exception("parse_side unexpected side=%s", side)
+        issues = [
+            {
+                "side": side,
+                "line": "",
+                "field": "",
+                "code": "UNEXPECTED",
+                "message": f"Error inesperado al leer el archivo {side}.",
+                "value": "",
+                "expected": "",
+            }
+        ]
         return [], False, OperationResult.failure(
             "unexpected",
             f"Ocurrió un error al leer el archivo {side}. Si persiste, contacte al administrador.",
-        )
+        ), issues
 
+    issues = _normalize_parse_issues(result.errors, side=side)
     truncated = result.rows_read > match_engine.ROW_HARD_LIMIT or len(result.rows) > match_engine.ROW_HARD_LIMIT
     rows = [row.data for row in result.rows[: match_engine.ROW_HARD_LIMIT]]
-    if not rows and result.errors:
+    if not rows and (issues or result.errors):
+        first_msg = issues[0]["message"] if issues else "Sin filas válidas."
         return [], False, OperationResult.failure(
             "validation_form",
             f"No se pudo leer el archivo {side}. Revise el perfil publicado.",
-            errors={
-                f"file_{side.lower()}": [
-                    (result.errors[0].get("message") if isinstance(result.errors[0], dict) else str(result.errors[0]))
-                    or "Sin filas válidas."
-                ]
-            },
-        )
-    return rows, truncated, None
+            errors={f"file_{side.lower()}": [first_msg]},
+        ), issues
+    return rows, truncated, None, issues
 
 
 @transaction.atomic
@@ -490,33 +654,67 @@ def match_and_run(user, project: Project, file_a, file_b) -> OperationResult:
     started = time.perf_counter()
     abs_a = storage_service.absolute_from_stored(path_a)
     abs_b = storage_service.absolute_from_stored(path_b)
+    all_parse_issues: list[dict] = []
 
-    rows_a, trunc_a, parse_err_a = _parse_side(abs_a, source_a, side="A")
+    def _fail_parse(parse_err: OperationResult, issues: list[dict]) -> OperationResult:
+        report_path = ""
+        if issues:
+            report_path = _write_parse_issues_files(project, job, issues)
+        metrics = {
+            "duration_ms": int((time.perf_counter() - started) * 1000),
+            **_parse_metrics(issues),
+        }
+        gate_seal = (job.metrics or {}).get("file_gate_check")
+        if gate_seal:
+            metrics["file_gate_check"] = gate_seal
+        job.status = FileMatchJob.STATUS_FAILED
+        job.verdict = FileMatchJob.VERDICT_FAILED
+        job.error_message = parse_err.user_message or ""
+        job.finished_at = timezone.now()
+        job.metrics = metrics
+        job.report_path = report_path
+        job.save()
+        return OperationResult.failure(
+            parse_err.error_code or "validation_form",
+            parse_err.user_message or "",
+            errors=parse_err.errors,
+            job=job,
+        )
+
+    rows_a, trunc_a, parse_err_a, issues_a = _parse_side(abs_a, source_a, side="A")
+    all_parse_issues.extend(issues_a)
     if parse_err_a is not None:
-        job.status = FileMatchJob.STATUS_FAILED
-        job.verdict = FileMatchJob.VERDICT_FAILED
-        job.error_message = parse_err_a.user_message or ""
-        job.finished_at = timezone.now()
-        job.metrics = {"duration_ms": int((time.perf_counter() - started) * 1000)}
-        job.save()
-        return parse_err_a
+        return _fail_parse(parse_err_a, all_parse_issues)
 
-    rows_b, trunc_b, parse_err_b = _parse_side(abs_b, source_b, side="B")
+    rows_b, trunc_b, parse_err_b, issues_b = _parse_side(abs_b, source_b, side="B")
+    all_parse_issues.extend(issues_b)
     if parse_err_b is not None:
-        job.status = FileMatchJob.STATUS_FAILED
-        job.verdict = FileMatchJob.VERDICT_FAILED
-        job.error_message = parse_err_b.user_message or ""
-        job.finished_at = timezone.now()
-        job.metrics = {"duration_ms": int((time.perf_counter() - started) * 1000)}
-        job.save()
-        return parse_err_b
+        return _fail_parse(parse_err_b, all_parse_issues)
 
     try:
         engine_result = match_engine.run_match(
             rows_a, rows_b, rules, truncated=trunc_a or trunc_b
         )
         engine_result.metrics["duration_ms"] = int((time.perf_counter() - started) * 1000)
-        report_path = _write_reports(project, job, engine_result=engine_result, rules=rules)
+        engine_result.metrics.update(_parse_metrics(all_parse_issues))
+
+        if all_parse_issues and engine_result.verdict == "passed":
+            engine_result.verdict = "partial"
+            note = (
+                f"Hubo {len(all_parse_issues)} rechazo(s) al leer A/B; "
+                "el cruce usó solo filas válidas."
+            )
+            messages_list = list(engine_result.messages or [])
+            messages_list.append(note)
+            engine_result.messages = messages_list
+
+        report_path = _write_reports(
+            project,
+            job,
+            engine_result=engine_result,
+            rules=rules,
+            parse_issues=all_parse_issues,
+        )
 
         if engine_result.verdict == "passed":
             job.status = FileMatchJob.STATUS_COMPLETED
@@ -545,10 +743,17 @@ def match_and_run(user, project: Project, file_a, file_b) -> OperationResult:
         job.verdict = FileMatchJob.VERDICT_FAILED
         job.error_message = "Ocurrió un error al conciliar."
         job.finished_at = timezone.now()
+        if all_parse_issues:
+            job.report_path = _write_parse_issues_files(project, job, all_parse_issues)
+            job.metrics = {
+                **(job.metrics or {}),
+                **_parse_metrics(all_parse_issues),
+            }
         job.save()
         return OperationResult.failure(
             "unexpected",
             "Ocurrió un error al conciliar. Si persiste, contacte al administrador.",
+            job=job,
         )
 
     project.save(update_fields=["updated_at"])
@@ -567,6 +772,10 @@ def resolve_download_path(job: FileMatchJob, kind: str):
         path = reports_dir / "match_report.json"
     elif kind == "diff":
         path = reports_dir / "match_diff.csv"
+    elif kind == "parse":
+        path = reports_dir / "parse_issues.csv"
+        if not path.is_file():
+            path = reports_dir / "parse_issues.json"
     else:
         return None
     if not path.is_file():

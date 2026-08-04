@@ -39,6 +39,8 @@ class MatchRulesContext:
     rules_json: str = "{}"
     fields_a: list[str] = field(default_factory=list)
     fields_b: list[str] = field(default_factory=list)
+    can_suggest_homonyms: bool = False
+    homonym_count: int = 0
 
 
 def get_rules_context(project, membership=None) -> MatchRulesContext:
@@ -95,6 +97,12 @@ def get_rules_context(project, membership=None) -> MatchRulesContext:
             continue_url = section.url_name
             break
 
+    fields_a = match_rules_persistence_service.field_names_a(project)
+    fields_b = match_rules_persistence_service.field_names_b(project)
+    names_b = set(fields_b)
+    homonyms = [n for n in fields_a if n in names_b]
+    can_suggest = (not key) and len(homonyms) >= 1
+
     return MatchRulesContext(
         project_name=project.name,
         project_slug=project.slug,
@@ -111,8 +119,10 @@ def get_rules_context(project, membership=None) -> MatchRulesContext:
         continue_section_url_name=continue_url,
         rules=rules,
         rules_json=json.dumps(rules, indent=2, ensure_ascii=False),
-        fields_a=match_rules_persistence_service.field_names_a(project),
-        fields_b=match_rules_persistence_service.field_names_b(project),
+        fields_a=fields_a,
+        fields_b=fields_b,
+        can_suggest_homonyms=can_suggest,
+        homonym_count=len(homonyms),
     )
 
 

@@ -78,6 +78,23 @@
     </div>
 </div>
 
+{% if wizard.can_suggest_homonyms and can_edit_source %}
+<div class="panel" style="margin-bottom:16px;border-color:#b7d4c8;background:#e4f0eb">
+    <div class="panel-body">
+        <h3 class="form-section-title">Proponer pares 1:1 por nombre</h3>
+        <p class="hint">
+            Hay <strong>{{ wizard.homonym_count }}</strong> campos con el mismo <code>name</code> en A y B
+            y aún no hay clave. Se puede proponer: primer campo → clave; resto → comparar.
+            Revise siempre la clave de negocio.
+        </p>
+        <form method="post" action="{% url 'file_match:rules_suggest_homonyms' project_slug=project.slug %}" style="margin-top:12px">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Proponer pares 1:1</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
 <div class="panel" style="margin-bottom:16px">
     <div class="panel-body">
         <h3 class="form-section-title">Secciones</h3>

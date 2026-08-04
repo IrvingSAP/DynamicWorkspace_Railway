@@ -6,12 +6,17 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
     <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
     <span class="breadcrumb-sep">/</span>
     <span>Ayuda</span>
@@ -23,23 +28,137 @@
 
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">FILE MATCH · Ayuda · Módulo 1</p>
-        <h2>Cómo usar el perfil A</h2>
-        <p>Describe cómo debe leerse el archivo A (origen de referencia / lado izquierdo). No define el archivo B ni publica la definición.</p>
+        <p class="page-eyebrow">Referencia · FILE MATCH · Módulo 1 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Perfil A</h2>
+        <p>Cómo debe leerse el archivo A (origen de referencia / lado izquierdo). No define el archivo B ni publica la definición.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al hub</a>
     </div>
 </div>
 
-<div class="panel">
+<div class="panel help-panel">
     <div class="panel-body">
-        <ul class="hint" style="margin:0; padding-left:1.2rem">
-            <li>Seis pasos: tipo, inicio/fin de captura, campos, reglas e informe de lectura.</li>
-            <li><strong>A3</strong> — whitelist: CSV, Excel, TXT delimitado, TXT posicional, JSON, XML.</li>
-            <li>Los <code>name</code> de campo deben ser estables: alimentan las claves del Módulo 3.</li>
-            <li>Completar M1 no basta para conciliar: faltan B, reglas y publicar (A7).</li>
-            <li>No hay «Publicar solo A»; publicar es el Módulo 4.</li>
+        <h3 class="form-section-title">Qué es este hub</h3>
+        <p class="help-intro">
+            Es el <strong>Módulo 1</strong> del Conciliador: el asistente que describe el
+            <strong>archivo A</strong> (extracto, origen de referencia). El resultado es un
+            perfil versionable (forma <code>SourceProfile</code>) en el borrador del proyecto.
+        </p>
+        <ul>
+            <li><strong>Copy correcto:</strong> “Archivo A” / “Lado A” / “Perfil A”. No es “planilla de emisión” (Reverse), “contrato de validación” (FILE GATE) ni “origen para transformar” (FilePipe).</li>
+            <li>La edición ocurre siempre en el <strong>borrador</strong> de la versión.</li>
+            <li>En el hub ve progreso (pasos hechos), tipo de archivo, conteo de campos y el listado del asistente.</li>
+        </ul>
+
+        <h3 class="form-section-title">Los 6 pasos del asistente</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>#</th><th>Paso</th><th>Para qué sirve</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="mono">1</td>
+                    <td>Tipo de archivo A</td>
+                    <td>Formato, encoding y fin de línea. Condiciona la pantalla de campos (paso 4).</td>
+                </tr>
+                <tr>
+                    <td class="mono">2</td>
+                    <td>Inicio de captura</td>
+                    <td>Dónde empieza a leerse el contenido útil del archivo A.</td>
+                </tr>
+                <tr>
+                    <td class="mono">3</td>
+                    <td>Fin de captura</td>
+                    <td>Dónde termina la captura (cola, marcador, etc.).</td>
+                </tr>
+                <tr>
+                    <td class="mono">4</td>
+                    <td>Campos del archivo A</td>
+                    <td>Columnas/campos con <code>name</code> estable. Alimentan las claves del Módulo 3.</td>
+                </tr>
+                <tr>
+                    <td class="mono">5</td>
+                    <td>Reglas de contenido</td>
+                    <td>Reglas globales al leer A (p. ej. filas vacías, validaciones de contenido).</td>
+                </tr>
+                <tr>
+                    <td class="mono">6</td>
+                    <td>Informe de lectura</td>
+                    <td>Qué reportar al parsear A en el job de conciliación.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Estados en el hub: <strong>Completo</strong> / <strong>En edición</strong> / <strong>Pendiente</strong>.
+            Cada paso tiene su propia ayuda contextual.
+        </p>
+
+        <h3 class="form-section-title">Tipos de archivo permitidos (MVP)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Código</th><th>Uso típico</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">csv</td><td>Extractos delimitados por coma (caso frecuente).</td></tr>
+                <tr><td class="mono">xlsx</td><td>Hojas Excel.</td></tr>
+                <tr><td class="mono">txt_delimited</td><td>TXT con delimitador (p. ej. pipe o tab).</td></tr>
+                <tr><td class="mono">txt_fixed</td><td>TXT posicional (libros / legados).</td></tr>
+                <tr><td class="mono">json</td><td>JSON (si el parser está activo en el tenant).</td></tr>
+                <tr><td class="mono">xml</td><td>XML (si el parser está activo en el tenant).</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            La UI solo ofrece esta whitelist; un tipo fuera de lista se rechaza al guardar.
+            Si cambia el tipo con campos ya definidos, revise el paso 4: la estructura anterior puede quedar inválida.
+        </p>
+
+        <h3 class="form-section-title">Importar estructura (PROFILE SEED)</h3>
+        <ul>
+            <li>Si ya modeló el layout en <strong>FILE GATE</strong> u otro Match, puede <strong>Importar estructura</strong> al borrador A (solo PA/ED).</li>
+            <li>Copia un perfil/contrato <strong>publicado</strong>; no publica Match ni abre el bridge FILE GATE.</li>
+            <li>No sustituye a STRUCTURE SCOUT (eso parte de una muestra de archivo).</li>
+            <li>Use <strong>¿Qué es esto?</strong> en el panel del hub o el historial de importaciones para más detalle.</li>
+        </ul>
+
+        <h3 class="form-section-title">Orden de trabajo recomendado</h3>
+        <ol>
+            <li>Complete los 6 pasos del Perfil A (o importe estructura y revise).</li>
+            <li>Continúe a <strong>Perfil B</strong> (Módulo 2).</li>
+            <li>Defina <strong>Reglas</strong> de cruce (Módulo 3) usando los <code>name</code> de A y B.</li>
+            <li><strong>Publique</strong> A + B + reglas juntos (Módulo 4).</li>
+            <li><strong>Concilie</strong> subiendo archivos A y B (Módulo 5).</li>
+        </ol>
+        <p class="help-intro">
+            Regla de producto: completar el Módulo 1 <strong>no basta</strong> para conciliar.
+            No existe “Publicar solo A”.
+        </p>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>En Perfil A</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">PA / ED</td><td>Editan y guardan el borrador; pueden importar estructura.</td></tr>
+                <tr><td class="mono">GE / CO</td><td>Consulta del hub y pasos en solo lectura (sin guardar definición).</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Buenas prácticas</h3>
+        <ul>
+            <li>Los <code>name</code> de campo deben ser <strong>únicos y estables</strong>: alimentan las claves del Módulo 3.</li>
+            <li>Elija el tipo de archivo que usa el proveedor, no “el más flexible”.</li>
+            <li>Al menos un campo y tipo de archivo A son obligatorios al publicar la definición completa (M4).</li>
+            <li>Guarde borrador al cerrar cada paso; use <strong>Continuar edición</strong> para retomar el siguiente pendiente.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace este módulo</h3>
+        <ul>
+            <li>No define el <strong>Perfil B</strong> ni las reglas de cruce.</li>
+            <li>No sube archivos de producción ni ejecuta la conciliación.</li>
+            <li>No publica solo el lado A (publicar es el Módulo 4: A + B + reglas).</li>
+            <li>No configura el bridge FILE GATE ni sustituye STRUCTURE SCOUT.</li>
         </ul>
     </div>
 </div>

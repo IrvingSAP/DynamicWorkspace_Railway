@@ -12,27 +12,143 @@
 {% include "includes/sidebar_uf.html" %}
 {% endblock %}
 
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
+    {% if not help_from_hub and can_seed_import %}
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}">Importar</a>
+    {% endif %}
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div>
+        <p class="page-eyebrow">Referencia · PROFILE SEED · <span class="cell-badge">{{ project.slug }}</span> · Perfil A</p>
         <h2>Ayuda — Importar estructura</h2>
-        <p>Qué es el Módulo 1 del Sembrador de perfiles (PROFILE SEED).</p>
+        <p>Puerta de entrada del Sembrador: copiar un perfil o contrato ya publicado al borrador de este Perfil A.</p>
     </div>
     <div class="page-actions">
-        {% if can_seed_import %}
-        <a class="btn btn-secondary" href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}">← Volver</a>
-        {% else %}
-        <a class="btn btn-secondary" href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">← Perfil A</a>
-        {% endif %}
+        <a class="btn btn-secondary" href="{% url help_back_url_name project_slug=project.slug %}">{{ help_back_label }}</a>
     </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li><strong>Importar estructura</strong> copia un perfil o contrato <em>ya publicado</em> de otro proyecto al borrador de este Perfil A.</li>
-    <li>No publica la definición Match. No es el bridge FILE GATE (eso valida por hash). No es STRUCTURE SCOUT (eso parte de una muestra).</li>
-    <li>Roles: solo <strong>PA / ED</strong> del proyecto Match ven el CTA y entran al flujo.</li>
-    <li>Este paso solo confirma el <strong>destino</strong> (Match · Perfil A). Elegir origen es el siguiente módulo.</li>
-    <li>Prioridad P0 del producto: origen FILE GATE → este Perfil A.</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es este paso</h3>
+        <p class="help-intro">
+            Es el <strong>Módulo 1</strong> de PROFILE SEED (Sembrador de perfiles). Confirma el
+            <strong>destino</strong> de la siembra: este proyecto FILE MATCH · slot <strong>Perfil A</strong>.
+            Aún no elige origen ni escribe el borrador.
+        </p>
+        <ul>
+            <li><strong>Copy correcto:</strong> “Importar estructura”. No es “sincronizar”, “vincular”, “bridge” ni “aplicar Scout”.</li>
+            <li><strong>Efecto futuro:</strong> solo borrador del Perfil A. La publicación Match sigue siendo el Módulo 4 del Conciliador.</li>
+            <li><strong>Prioridad P0:</strong> origen típico FILE GATE (esquema publicado) → este Perfil A.</li>
+        </ul>
+
+        <h3 class="form-section-title">Flujo completo (3 pasos)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>#</th><th>Paso</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="mono">1</td>
+                    <td>Entrada (esta pantalla)</td>
+                    <td>Confirma destino Match · Perfil A y permisos. Continuar abre el selector de origen.</td>
+                </tr>
+                <tr>
+                    <td class="mono">2</td>
+                    <td>Origen</td>
+                    <td>Elige un proyecto/versión <strong>publicada</strong> de su compañía (p. ej. FILE GATE).</td>
+                </tr>
+                <tr>
+                    <td class="mono">3</td>
+                    <td>Confirmar</td>
+                    <td>Preview, aviso si hay overwrite, y siembra el borrador A. Queda auditado en historial.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Contexto destino (P0)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Valor en este flujo</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>App</td><td>FILE MATCH (Conciliador)</td></tr>
+                <tr><td>Proyecto</td><td><span class="mono">{{ project.slug }}</span> — {{ project.name }}</td></tr>
+                <tr><td>Slot</td><td>Perfil A (archivo A / referencia)</td></tr>
+                <tr><td>Escritura</td><td>Solo borrador del Perfil A — nunca publica la definición Match</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué hará a continuación</h3>
+        <ol>
+            <li>Pulse <strong>Continuar a elegir origen</strong> (Módulo 2).</li>
+            <li>Seleccione un origen publicado que pueda ver (misma compañía).</li>
+            <li>Revise el preview y confirme (Módulo 3): se siembra el borrador; si ya había campos, verá aviso de overwrite.</li>
+            <li>Revise o ajuste el Perfil A en el wizard de 6 pasos; publique Match cuando la definición esté lista.</li>
+        </ol>
+
+        <h3 class="form-section-title">Fronteras (no confundir)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Producto</th><th>Diferencia con Importar estructura</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>STRUCTURE SCOUT</td>
+                    <td>Parte de una <strong>muestra</strong> de archivo y propone estructura. Seed copia una definición <strong>ya publicada</strong>.</td>
+                </tr>
+                <tr>
+                    <td>Bridge FILE GATE</td>
+                    <td>Pre-check por <strong>hash</strong> de job al conciliar. Seed <strong>clona</strong> forma/campos al borrador A.</td>
+                </tr>
+                <tr>
+                    <td>Publicar Match</td>
+                    <td>Congela A + B + reglas. Seed no publica; solo rellena el borrador A.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>En Importar estructura</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">PA / ED</td><td>Ven el CTA en Perfil A, abren el shell y continúan a origen / confirmar.</td></tr>
+                <tr><td class="mono">GE / CO</td><td>No ven el CTA activo; no inician el flujo de importación.</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Esta ayuda puede consultarse con acceso al proyecto; el botón <strong>Importar estructura</strong>
+            sigue restringido a PA/ED.
+        </p>
+
+        <h3 class="form-section-title">Qué no hace este paso</h3>
+        <ul>
+            <li>No lista orígenes ni elige versión publicada (eso es <strong>Origen</strong>).</li>
+            <li>No muestra preview ni escribe el borrador (eso es <strong>Confirmar</strong>).</li>
+            <li>No publica la definición Match ni configura el bridge FILE GATE.</li>
+            <li>No abre STRUCTURE SCOUT ni sube una muestra.</li>
+            <li>No clona políticas GATE, reglas de cruce Match ni destino Reverse — solo la forma del origen/entrada.</li>
+        </ul>
+
+        <h3 class="form-section-title">Historial</h3>
+        <p class="help-intro">
+            Cada siembra exitosa o fallida queda en <strong>Importar → Historial</strong> (auditoría del Sembrador),
+            independiente del historial de conciliaciones del Conciliador.
+        </p>
+    </div>
+</div>
 {% endblock %}

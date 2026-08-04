@@ -31,6 +31,8 @@
         <p>Cuando la clave coincide, contraste estos valores. Cero pares es válido (solo presencia).</p>
     </div>
     <div class="page-actions">
+        {% url 'file_match:rules_compare_help' project_slug=project.slug as rules_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=rules_help_url %}
         <a href="{% url 'file_match:rules_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
     </div>
 </div>
