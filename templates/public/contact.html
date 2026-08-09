@@ -7,7 +7,7 @@
     <div class="pub-container">
         <p class="pub-eyebrow">Contacto</p>
         <h1>Hablemos sobre tu equipo y tus procesos</h1>
-        <p>Cuéntanos qué gestionas hoy en hojas de cálculo y te ayudamos a evaluar cómo DynamicWorkspace puede centralizarlo. Las cuentas se habilitan por administración.</p>
+        <p>Cuéntanos qué gestionas hoy en hojas de cálculo o con archivos de intercambio (validación, transformación, emisión, conciliación) y te ayudamos a evaluar cómo DynamicWorkspace puede centralizarlo. Las cuentas se habilitan por administración.</p>
     </div>
 </section>
 
@@ -81,7 +81,7 @@
             </div>
             <div class="form-row{% if errors.message %} has-error{% endif %}">
                 <label for="message">Mensaje</label>
-                <textarea id="message" name="message" placeholder="Describe brevemente qué procesos gestionas hoy y cuántas personas participarían." required>{{ posted.message }}</textarea>
+                <textarea id="message" name="message" placeholder="Describe brevemente qué procesos o archivos gestionas hoy (tablas, validación, mapping, conciliación…) y cuántas personas participarían." required>{{ posted.message }}</textarea>
                 {% if errors.message %}
                 {% for msg in errors.message %}
                 <p class="field-error">{{ msg }}</p>

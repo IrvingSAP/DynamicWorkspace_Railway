@@ -5,6 +5,7 @@ from django.utils import timezone
 from apps.dashboard.services._models import get_model_optional
 from apps.dashboard.services.types import (
     ActivityRow,
+    AppProjectRow,
     DmsProjectRow,
     MemberAuthRow,
     ProjectRow,
@@ -38,6 +39,7 @@ def get_uf_home_data(user) -> UfHomeData:
 
     if ProjectMembership is None:
         _fill_dms_kpis(data, user)
+        _fill_factory_app_kpis(data, user)
         return data
 
     data.projects_available = True
@@ -137,7 +139,115 @@ def get_uf_home_data(user) -> UfHomeData:
 
     data.activity = _uf_activity(user, workspace_ids, Record, ProjectMembership)
     _fill_dms_kpis(data, user)
+    _fill_factory_app_kpis(data, user)
     return data
+
+
+def _is_published_row(row: dict) -> bool:
+    project = row.get("project")
+    if project is None:
+        return False
+    config = getattr(project, "dms_config", None)
+    return bool(config and config.current_version_id)
+
+
+def _fill_versioned_app(
+    data: UfHomeData,
+    user,
+    *,
+    list_with_stats,
+    total_attr: str,
+    ready_attr: str,
+    recent_attr: str,
+    status_key: str = "version_label",
+) -> None:
+    try:
+        rows, _stats = list_with_stats(user)
+    except Exception:
+        return
+
+    setattr(data, total_attr, len(rows))
+    setattr(data, ready_attr, sum(1 for row in rows if _is_published_row(row)))
+    recent = getattr(data, recent_attr)
+    for row in rows[:6]:
+        project = row["project"]
+        recent.append(
+            AppProjectRow(
+                name=project.name,
+                slug=project.slug,
+                role=row.get("role") or "CO",
+                status_label=row.get(status_key) or "—",
+                updated_at=project.updated_at,
+            )
+        )
+
+
+def _fill_factory_app_kpis(data: UfHomeData, user) -> None:
+    try:
+        from apps.file_gate.projects.services import gate_project_service
+
+        _fill_versioned_app(
+            data,
+            user,
+            list_with_stats=gate_project_service.list_with_stats,
+            total_attr="kpi_gate_projects_total",
+            ready_attr="kpi_gate_ready_count",
+            recent_attr="recent_gate_projects",
+        )
+    except Exception:
+        pass
+
+    try:
+        from apps.reverse_studio.projects.services import reverse_project_service
+
+        _fill_versioned_app(
+            data,
+            user,
+            list_with_stats=reverse_project_service.list_with_stats,
+            total_attr="kpi_reverse_projects_total",
+            ready_attr="kpi_reverse_ready_count",
+            recent_attr="recent_reverse_projects",
+        )
+    except Exception:
+        pass
+
+    try:
+        from apps.file_match.projects.services import match_project_service
+
+        _fill_versioned_app(
+            data,
+            user,
+            list_with_stats=match_project_service.list_with_stats,
+            total_attr="kpi_match_projects_total",
+            ready_attr="kpi_match_ready_count",
+            recent_attr="recent_match_projects",
+        )
+    except Exception:
+        pass
+
+    try:
+        from apps.structure_scout.projects.services import scout_project_service
+
+        rows, _stats = scout_project_service.list_with_stats(user)
+        data.kpi_scout_projects_total = len(rows)
+        data.kpi_scout_with_sample = sum(
+            1
+            for row in rows
+            if (row.get("exploration_label") or "") != "Sin exploración"
+        )
+        for row in rows[:6]:
+            project = row["project"]
+            data.recent_scout_projects.append(
+                AppProjectRow(
+                    name=project.name,
+                    slug=project.slug,
+                    role=row.get("role") or "CO",
+                    status_label=row.get("exploration_label") or "—",
+                    updated_at=project.updated_at,
+                )
+            )
+    except Exception:
+        pass
 
 
 def _fill_dms_kpis(data: UfHomeData, user) -> None:

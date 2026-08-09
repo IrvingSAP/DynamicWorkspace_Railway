@@ -39,6 +39,17 @@ class DmsProjectRow:
 
 
 @dataclass
+class AppProjectRow:
+    """Fila reciente para apps File Gate / Reverse / Match / Scout."""
+
+    name: str
+    slug: str
+    role: str
+    status_label: str
+    updated_at: date | datetime
+
+
+@dataclass
 class MemberAuthRow:
     project_name: str
     username: str
@@ -74,6 +85,7 @@ class UaHomeData:
     subs_pending: int = 0
     expiring_subscriptions: list[ExpiringSubscriptionRow] = field(default_factory=list)
     activity: list[ActivityRow] = field(default_factory=list)
+    projects_by_kind: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass
@@ -100,6 +112,7 @@ class UsHomeData:
     last_payment_date: str = "—"
     license_row: dict[str, Any] | None = None
     activity: list[ActivityRow] = field(default_factory=list)
+    projects_by_kind: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass
@@ -117,10 +130,22 @@ class UfHomeData:
     kpi_dms_last_execution: str = "—"
     kpi_dms_ge_count: int = 0
     catalog_count: int = 0
+    kpi_gate_projects_total: int = 0
+    kpi_gate_ready_count: int = 0
+    kpi_reverse_projects_total: int = 0
+    kpi_reverse_ready_count: int = 0
+    kpi_match_projects_total: int = 0
+    kpi_match_ready_count: int = 0
+    kpi_scout_projects_total: int = 0
+    kpi_scout_with_sample: int = 0
     roles_by_type: dict[str, int] = field(default_factory=dict)
     pa_members_count: int = 0
     recent_projects: list[ProjectRow] = field(default_factory=list)
     recent_dms_projects: list[DmsProjectRow] = field(default_factory=list)
+    recent_gate_projects: list[AppProjectRow] = field(default_factory=list)
+    recent_reverse_projects: list[AppProjectRow] = field(default_factory=list)
+    recent_match_projects: list[AppProjectRow] = field(default_factory=list)
+    recent_scout_projects: list[AppProjectRow] = field(default_factory=list)
     recent_authorizations: list[MemberAuthRow] = field(default_factory=list)
     activity: list[ActivityRow] = field(default_factory=list)
     quick_project_links: list[dict[str, str]] = field(default_factory=list)

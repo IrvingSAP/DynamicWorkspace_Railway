@@ -79,9 +79,11 @@
     background: var(--accent-subtle);
 }
 
-/* Modo iconos: ocultar submenús y chevron; tooltip en el toggle */
+/* Modo iconos: ocultar submenús y chevron; tooltip en el toggle.
+   Debe ganar a `.sidebar-nav-group.is-open .sidebar-nav-submenu` (misma o mayor especificidad). */
 html.sidebar-icons .sidebar-nav-group-chevron,
-html.sidebar-icons .sidebar-nav-submenu {
+html.sidebar-icons .sidebar-nav-group .sidebar-nav-submenu,
+html.sidebar-icons .sidebar-nav-group.is-open .sidebar-nav-submenu {
     display: none;
 }
 

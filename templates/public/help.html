@@ -12,11 +12,11 @@
     <div class="pub-container pub-page-hero-grid">
         <div>
             <p class="pub-eyebrow">Guía de la plataforma</p>
-            <h1>Una compañía. Dos formas de trabajar con datos.</h1>
+            <h1>Una compañía. Una suite para datos operativos.</h1>
             <p>
                 <strong>DynamicWorkspace</strong> es el espacio de trabajo de tu organización: usuarios, roles y proyectos aislados por compañía.
-                Dentro conviven dos capacidades: <strong>Worksheets</strong> (tablas configurables) y
-                <strong>FilePipe · Data Mapping</strong> (transformación de archivos sin código).
+                Dentro conviven <strong>Worksheets</strong> (tablas configurables), <strong>FilePipe</strong> (transformación)
+                y apps de archivos: <strong>File Gate</strong>, <strong>Reverse Studio</strong>, <strong>File Match</strong> y <strong>Structure Scout</strong>.
                 Esta guía es el mapa del producto — no un manual de cada pantalla.
             </p>
         </div>
@@ -24,8 +24,8 @@
             <h2>En resumen</h2>
             <ol class="pub-quick-list">
                 <li>Tu compañía obtiene acceso; las cuentas las habilita la administración.</li>
-                <li><strong>Worksheets</strong> — tablas con campos, registros y permisos por proyecto.</li>
-                <li><strong>FilePipe</strong> — define origen → destino → mapeo → ejecuta y descarga.</li>
+                <li><strong>Worksheets</strong> — tablas con campos, registros y permisos.</li>
+                <li><strong>FilePipe y apps de archivos</strong> — transformar, validar, emitir, conciliar y explorar.</li>
             </ol>
         </aside>
     </div>
@@ -35,10 +35,10 @@
     <div class="pub-container">
         <div class="pub-section-header pub-section-header--compact">
             <h2>¿Qué incluye la plataforma?</h2>
-            <p>Elige la capacidad según el problema. Ambas comparten compañía, seguridad y el mismo modelo de roles por proyecto.</p>
+            <p>Elige la app según el problema. Todas comparten compañía, seguridad y el mismo modelo de roles por proyecto.</p>
         </div>
 
-        <div class="pub-pillars" aria-label="Productos de la plataforma">
+        <div class="pub-pillars" aria-label="Motores principales">
             <article class="pub-pillar pub-pillar--ws" id="worksheets">
                 <p class="pub-pillar-tag">Worksheets</p>
                 <h3>Tablas configurables para el equipo</h3>
@@ -70,13 +70,40 @@
             </article>
         </div>
 
+        <div class="pub-pillars pub-pillars--suite" aria-label="Apps de archivos">
+            <article class="pub-pillar pub-pillar--gate" id="file-gate">
+                <p class="pub-pillar-tag">File Gate</p>
+                <h3>Validador</h3>
+                <p>Comprueba si un archivo cumple el contrato publicado y genera un informe de aceptación o rechazos.</p>
+                <a class="pub-pillar-jump" href="#flujo-apps">Ver apps de archivos ↓</a>
+            </article>
+            <article class="pub-pillar pub-pillar--reverse" id="reverse-studio">
+                <p class="pub-pillar-tag">Reverse Studio</p>
+                <h3>Emisor</h3>
+                <p>De planilla (CSV/Excel) a layout de envío posicional, JSON o XML según la definición publicada.</p>
+                <a class="pub-pillar-jump" href="#flujo-apps">Ver apps de archivos ↓</a>
+            </article>
+            <article class="pub-pillar pub-pillar--match" id="file-match">
+                <p class="pub-pillar-tag">File Match</p>
+                <h3>Conciliador</h3>
+                <p>Cruza dos archivos (A vs B) por clave, aplica reglas y reporta coincidencias y diferencias.</p>
+                <a class="pub-pillar-jump" href="#flujo-apps">Ver apps de archivos ↓</a>
+            </article>
+            <article class="pub-pillar pub-pillar--scout" id="structure-scout">
+                <p class="pub-pillar-tag">Structure Scout</p>
+                <h3>Explorador</h3>
+                <p>Analiza una muestra, propone estructura y acelera el modelado hacia File Gate o Reverse Studio.</p>
+                <a class="pub-pillar-jump" href="#flujo-apps">Ver apps de archivos ↓</a>
+            </article>
+        </div>
+
         <div class="pub-role-strip" aria-label="Roles compartidos">
             <span class="label">Roles por proyecto</span>
             <span class="pub-role-item"><span class="role-tag role-tag--pa">PA</span><span>Admin</span></span>
             <span class="pub-role-item"><span class="role-tag role-tag--ed">ED</span><span>Editor</span></span>
             <span class="pub-role-item"><span class="role-tag role-tag--co">CO</span><span>Consulta</span></span>
             <span class="pub-role-item"><span class="role-tag role-tag--ge">GE</span><span>Generar / ejecutar</span></span>
-            <span>· El mismo usuario puede tener roles distintos en cada proyecto (Worksheet o FilePipe).</span>
+            <span>· El mismo usuario puede tener roles distintos en cada proyecto de la suite.</span>
         </div>
 
         <div class="pub-guide-layout">
@@ -87,7 +114,8 @@
                     <a href="#flujo-ws">2. Worksheets</a>
                     <a href="#flujo-fp">3. FilePipe</a>
                     <a href="#ejemplo-fp">4. Ejemplo mapping</a>
-                    <a href="#cuando-usar">5. Cuándo usar cada uno</a>
+                    <a href="#flujo-apps">5. Apps de archivos</a>
+                    <a href="#cuando-usar">6. Cuándo usar cada uno</a>
                 </nav>
             </nav>
 
@@ -101,7 +129,7 @@
                         </div>
                     </header>
                     <p class="pub-flow-purpose">
-                        <strong>Base común:</strong> cada compañía opera aislada (usuarios, proyectos Worksheets y FilePipe, licencia).
+                        <strong>Base común:</strong> cada compañía opera aislada (usuarios, proyectos de toda la suite, licencia).
                         No hay registro público abierto: las cuentas las habilita la plataforma o tu administrador.
                     </p>
                     <div class="pub-flow-grid">
@@ -110,15 +138,15 @@
                             <ol>
                                 <li>Se configura la compañía y la licencia.</li>
                                 <li>Los usuarios completan correo y 2FA al primer acceso.</li>
-                                <li>El panel muestra Worksheets y FilePipe según membresías.</li>
+                                <li>El panel muestra las apps según membresías (Worksheets, FilePipe, File Gate, etc.).</li>
                             </ol>
                         </div>
                         <div class="pub-flow-block">
                             <h4>Puntos clave</h4>
                             <ul>
                                 <li>Los datos de una compañía no se mezclan con otras.</li>
-                                <li>La guía detallada de pantallas vive dentro del área privada (Ayuda).</li>
-                                <li>Worksheets y FilePipe son proyectos distintos, con el mismo lenguaje de roles.</li>
+                                <li>La guía detallada de pantallas vive dentro del área privada (Ayuda por menú).</li>
+                                <li>Cada app es un tipo de proyecto distinto, con el mismo lenguaje de roles.</li>
                             </ul>
                         </div>
                     </div>
@@ -157,8 +185,8 @@
                             <h4>No es para…</h4>
                             <ul>
                                 <li>Convertir archivos de un sistema a otro de forma recurrente.</li>
-                                <li>Definir layouts posicionales TXT o pipelines de transformación.</li>
-                                <li>Eso corresponde a FilePipe · Data Mapping.</li>
+                                <li>Validar o conciliar lotes de intercambio.</li>
+                                <li>Eso corresponde a FilePipe y a las apps de archivos.</li>
                             </ul>
                         </div>
                     </div>
@@ -244,8 +272,57 @@
                     </div>
                 </article>
 
-                <article class="pub-flow-card" id="cuando-usar">
+                <article class="pub-flow-card" id="flujo-apps">
                     <span class="pub-flow-card-num" aria-hidden="true">5</span>
+                    <header class="pub-flow-card-header">
+                        <h3>Apps de archivos</h3>
+                        <div class="pub-flow-roles">
+                            <span class="role-tag role-tag--pa">PA</span>
+                            <span class="role-tag role-tag--ge">GE</span>
+                        </div>
+                    </header>
+                    <p class="pub-flow-purpose">
+                        <strong>Para qué sirven:</strong> verticales sobre el mismo motor de perfiles y versiones,
+                        orientados a validar, emitir, conciliar o descubrir estructura — sin reinventar el chasis.
+                    </p>
+                    <div class="pub-flow-grid">
+                        <div class="pub-flow-block">
+                            <h4>File Gate · Validador</h4>
+                            <ul>
+                                <li>Define contrato (esquema + políticas) y publícalo.</li>
+                                <li>Sube el archivo, obtiene OK o rechazos con detalle.</li>
+                                <li>Opcional: exigir corrida aceptada antes de FilePipe, Reverse o Match.</li>
+                            </ul>
+                        </div>
+                        <div class="pub-flow-block">
+                            <h4>Reverse Studio · Emisor</h4>
+                            <ul>
+                                <li>Entrada tipo planilla → layout de negocio (posicional / JSON / XML).</li>
+                                <li>Se genera solo con versión publicada.</li>
+                                <li>Complemento natural de FilePipe (camino inverso).</li>
+                            </ul>
+                        </div>
+                        <div class="pub-flow-block">
+                            <h4>File Match · Conciliador</h4>
+                            <ul>
+                                <li>Dos perfiles (A y B), claves y reglas de comparación.</li>
+                                <li>Informe de coincidencias / diferencias e historial.</li>
+                                <li>Útil para banco vs ERP u orígenes similares.</li>
+                            </ul>
+                        </div>
+                        <div class="pub-flow-block">
+                            <h4>Structure Scout · Explorador</h4>
+                            <ul>
+                                <li>Muestra → detección de patrón → propuesta de campos.</li>
+                                <li>Acelera el arranque de File Gate o Reverse Studio.</li>
+                                <li>No sustituye la publicación del contrato destino.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="pub-flow-card" id="cuando-usar">
+                    <span class="pub-flow-card-num" aria-hidden="true">6</span>
                     <header class="pub-flow-card-header">
                         <h3>¿Cuándo usar cada capacidad?</h3>
                     </header>
@@ -267,12 +344,24 @@
                             <span class="pub-compare-badge pub-compare-badge--fp">FilePipe</span>
                         </div>
                         <div class="pub-compare-row" role="row">
-                            <span>TXT posicional, CSV o Excel de entrada → otro formato de salida</span>
+                            <span>TXT / CSV / Excel de entrada → otro formato de salida (ETL)</span>
                             <span class="pub-compare-badge pub-compare-badge--fp">FilePipe</span>
                         </div>
                         <div class="pub-compare-row" role="row">
-                            <span>Quieres dejar de mantener scripts puntuales de conversión</span>
-                            <span class="pub-compare-badge pub-compare-badge--fp">FilePipe</span>
+                            <span>Solo validar conformidad antes de integrar (sin transformar)</span>
+                            <span class="pub-compare-badge pub-compare-badge--gate">File Gate</span>
+                        </div>
+                        <div class="pub-compare-row" role="row">
+                            <span>Planilla → archivo de envío posicional / JSON / XML</span>
+                            <span class="pub-compare-badge pub-compare-badge--reverse">Reverse Studio</span>
+                        </div>
+                        <div class="pub-compare-row" role="row">
+                            <span>Cruzar dos archivos por clave y listar diferencias</span>
+                            <span class="pub-compare-badge pub-compare-badge--match">File Match</span>
+                        </div>
+                        <div class="pub-compare-row" role="row">
+                            <span>No conoces bien el layout: partir de una muestra</span>
+                            <span class="pub-compare-badge pub-compare-badge--scout">Structure Scout</span>
                         </div>
                     </div>
                 </article>
@@ -280,8 +369,9 @@
         </div>
 
         <p class="pub-guide-note">
-            <strong>¿Ya tienes cuenta?</strong> Dentro del sistema hay ayuda por producto:
-            menú <em>Worksheets → Ayuda</em> y <em>FilePipe → Ayuda</em>, más el botón de ayuda contextual en cada pantalla.
+            <strong>¿Ya tienes cuenta?</strong> Dentro del sistema hay ayuda por producto en el menú lateral
+            (Worksheets, FilePipe, File Gate, Reverse Studio, File Match, Structure Scout → <em>Ayuda</em>),
+            más el botón de ayuda contextual en cada pantalla.
             <strong>¿Aún no?</strong> <a href="{% url 'public:contact' %}">Contáctanos</a> y evaluamos el encaje con tu equipo.
         </p>
     </div>
@@ -291,7 +381,7 @@
     <div class="pub-container">
         <div class="pub-cta">
             <h2>¿Quieres verlo con datos de tu compañía?</h2>
-            <p>Las cuentas se habilitan por administración. Cuéntanos si tu prioridad son tablas de equipo, transformación de archivos, o ambas.</p>
+            <p>Las cuentas se habilitan por administración. Cuéntanos si tu prioridad son tablas de equipo, transformación, validación, emisión o conciliación de archivos.</p>
             <a href="{% url 'public:contact' %}" class="btn btn-primary">Solicitar información</a>
         </div>
     </div>
