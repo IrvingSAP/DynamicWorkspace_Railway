@@ -15,7 +15,7 @@
 <div class="dashboard-intro">
     <p class="page-eyebrow">Panel de control · <span class="role-badge">US</span> · <span class="cell-badge">{{ dashboard.company_short }}</span></p>
     <h2>Bienvenida, {{ dashboard.display_name }}</h2>
-    <p>Resumen de tu compañía: usuarios UF, proyectos y estado de la licencia.</p>
+    <p>Resumen de tu compañía: usuarios UF, proyectos por app (Worksheets, FilePipe, File Gate, Reverse Studio, File Match, Structure Scout) y estado de la licencia.</p>
 </div>
 
 <div class="kpi-strip" aria-label="Indicadores principales">
@@ -32,7 +32,7 @@
     <div class="kpi-card">
         <p class="kpi-label">Proyectos</p>
         <p class="kpi-value">{{ dashboard.kpi_projects_total }}</p>
-        <p class="kpi-meta">En tu compañía</p>
+        <p class="kpi-meta">En tu compañía · todas las apps</p>
     </div>
     <div class="kpi-card">
         <p class="kpi-label">Licencia</p>
@@ -68,6 +68,48 @@
         </div>
     </section>
 
+    <section class="widget-panel" aria-labelledby="widget-apps">
+        <div class="widget-header">
+            <h3 id="widget-apps">Proyectos por app</h3>
+        </div>
+        <div class="widget-body">
+            <div class="type-grid type-grid--3">
+                <div class="type-card">
+                    <span class="type-code">WS</span>
+                    <p class="type-count">{{ dashboard.projects_by_kind.workspace|default:0 }}</p>
+                    <p class="type-label">Worksheets</p>
+                </div>
+                <div class="type-card">
+                    <span class="type-code">DM</span>
+                    <p class="type-count">{{ dashboard.projects_by_kind.dms|default:0 }}</p>
+                    <p class="type-label">FilePipe</p>
+                </div>
+                <div class="type-card">
+                    <span class="type-code">FG</span>
+                    <p class="type-count">{{ dashboard.projects_by_kind.file_gate|default:0 }}</p>
+                    <p class="type-label">File Gate</p>
+                </div>
+                <div class="type-card">
+                    <span class="type-code">RS</span>
+                    <p class="type-count">{{ dashboard.projects_by_kind.reverse|default:0 }}</p>
+                    <p class="type-label">Reverse Studio</p>
+                </div>
+                <div class="type-card">
+                    <span class="type-code">FM</span>
+                    <p class="type-count">{{ dashboard.projects_by_kind.file_match|default:0 }}</p>
+                    <p class="type-label">File Match</p>
+                </div>
+                <div class="type-card">
+                    <span class="type-code">SS</span>
+                    <p class="type-count">{{ dashboard.projects_by_kind.structure_scout|default:0 }}</p>
+                    <p class="type-label">Structure Scout</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="dashboard-grid">
     <section class="widget-panel" aria-labelledby="widget-billing">
         <div class="widget-header">
             <h3 id="widget-billing">Licencias y billing</h3>
@@ -99,9 +141,7 @@
             {% endif %}
         </div>
     </section>
-</div>
 
-<div class="dashboard-grid">
     <section class="widget-panel" aria-labelledby="widget-expiring">
         <div class="widget-header">
             <h3 id="widget-expiring">Vencimiento de licencia</h3>
@@ -133,7 +173,9 @@
             </table>
         </div>
     </section>
+</div>
 
+<div class="dashboard-grid">
     <section class="widget-panel" aria-labelledby="widget-activity">
         <div class="widget-header">
             <h3 id="widget-activity">Actividad reciente</h3>

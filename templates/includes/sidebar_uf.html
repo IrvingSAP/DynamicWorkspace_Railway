@@ -1,4 +1,4 @@
-{# Navegación lateral UF — Worksheets + FilePipe + FILE GATE + Reverse Studio + FILE MATCH + STRUCTURE SCOUT #}
+{# Navegación lateral UF — Worksheets + FilePipe + File Gate + Reverse Studio + File Match + Structure Scout #}
 <a href="{% url 'dashboard:home' %}" class="sidebar-link{% if app_nav_active == 'home' %} is-active{% endif %}" title="Inicio">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 6.5L8 2l6 4.5V13a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"/></svg>
     <span class="sidebar-link-label">Inicio</span>
@@ -30,9 +30,9 @@
 </div>
 
 <div class="sidebar-nav-group{% if file_gate_nav_open or app_nav_active == 'file_gate' or app_nav_active == 'file_gate_guide' %} is-open{% endif %}{% if app_nav_active == 'file_gate' or app_nav_active == 'file_gate_guide' %} is-active{% endif %}" data-nav-group="file-gate">
-    <button type="button" class="sidebar-nav-group-toggle" title="FILE GATE" aria-expanded="{% if file_gate_nav_open or app_nav_active == 'file_gate' or app_nav_active == 'file_gate_guide' %}true{% else %}false{% endif %}" aria-controls="file-gate-submenu">
+    <button type="button" class="sidebar-nav-group-toggle" title="File Gate" aria-expanded="{% if file_gate_nav_open or app_nav_active == 'file_gate' or app_nav_active == 'file_gate_guide' %}true{% else %}false{% endif %}" aria-controls="file-gate-submenu">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3M5 8h6M5 11h4"/></svg>
-        <span class="sidebar-link-label">FILE GATE</span>
+        <span class="sidebar-link-label">File Gate</span>
         <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
     </button>
     <div class="sidebar-nav-submenu" id="file-gate-submenu">
@@ -54,9 +54,9 @@
 </div>
 
 <div class="sidebar-nav-group{% if file_match_nav_open or app_nav_active == 'file_match' or app_nav_active == 'file_match_guide' %} is-open{% endif %}{% if app_nav_active == 'file_match' or app_nav_active == 'file_match_guide' %} is-active{% endif %}" data-nav-group="file-match">
-    <button type="button" class="sidebar-nav-group-toggle" title="FILE MATCH" aria-expanded="{% if file_match_nav_open or app_nav_active == 'file_match' or app_nav_active == 'file_match_guide' %}true{% else %}false{% endif %}" aria-controls="file-match-submenu">
+    <button type="button" class="sidebar-nav-group-toggle" title="File Match" aria-expanded="{% if file_match_nav_open or app_nav_active == 'file_match' or app_nav_active == 'file_match_guide' %}true{% else %}false{% endif %}" aria-controls="file-match-submenu">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 4h4v8H3V4zM9 4h4v8H9V4z"/><path d="M5 8h6"/></svg>
-        <span class="sidebar-link-label">FILE MATCH</span>
+        <span class="sidebar-link-label">File Match</span>
         <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
     </button>
     <div class="sidebar-nav-submenu" id="file-match-submenu">
@@ -66,9 +66,9 @@
 </div>
 
 <div class="sidebar-nav-group{% if structure_scout_nav_open or app_nav_active == 'structure_scout' or app_nav_active == 'structure_scout_guide' %} is-open{% endif %}{% if app_nav_active == 'structure_scout' or app_nav_active == 'structure_scout_guide' %} is-active{% endif %}" data-nav-group="structure-scout">
-    <button type="button" class="sidebar-nav-group-toggle" title="STRUCTURE SCOUT" aria-expanded="{% if structure_scout_nav_open or app_nav_active == 'structure_scout' or app_nav_active == 'structure_scout_guide' %}true{% else %}false{% endif %}" aria-controls="structure-scout-submenu">
+    <button type="button" class="sidebar-nav-group-toggle" title="Structure Scout" aria-expanded="{% if structure_scout_nav_open or app_nav_active == 'structure_scout' or app_nav_active == 'structure_scout_guide' %}true{% else %}false{% endif %}" aria-controls="structure-scout-submenu">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/><path d="M5.5 6.5h3M7 5v3"/></svg>
-        <span class="sidebar-link-label">STRUCTURE SCOUT</span>
+        <span class="sidebar-link-label">Structure Scout</span>
         <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
     </button>
     <div class="sidebar-nav-submenu" id="structure-scout-submenu">

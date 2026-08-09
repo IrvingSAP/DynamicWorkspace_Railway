@@ -15,7 +15,7 @@
 <div class="dashboard-intro">
     <p class="page-eyebrow">Panel de control · <span class="role-badge">UF</span> · <span class="cell-badge">{{ dashboard.company_short }}</span></p>
     <h2>Bienvenido, {{ dashboard.display_name }}</h2>
-    <p>Worksheets configurables, transformaciones <strong>FilePipe</strong> (Data Mapping) y membresías de tu compañía.</p>
+    <p>Worksheets, FilePipe, File Gate, Reverse Studio, File Match y Structure Scout — accesos y actividad de tu compañía.</p>
 </div>
 
 <p class="dashboard-section-label">Worksheets</p>
@@ -53,6 +53,30 @@
         <p class="kpi-label">Catálogos activos</p>
         <p class="kpi-value">{{ dashboard.catalog_count }}</p>
         <p class="kpi-meta"><a href="{% url 'dms:catalog_hub' %}" class="project-link">Ver catálogos</a></p>
+    </div>
+</div>
+
+<p class="dashboard-section-label">Apps de archivos</p>
+<div class="kpi-strip" aria-label="Indicadores apps de archivos">
+    <div class="kpi-card kpi-card--gate">
+        <p class="kpi-label">File Gate</p>
+        <p class="kpi-value">{{ dashboard.kpi_gate_projects_total }}</p>
+        <p class="kpi-meta">{{ dashboard.kpi_gate_ready_count }} con versión publicada</p>
+    </div>
+    <div class="kpi-card kpi-card--reverse">
+        <p class="kpi-label">Reverse Studio</p>
+        <p class="kpi-value">{{ dashboard.kpi_reverse_projects_total }}</p>
+        <p class="kpi-meta">{{ dashboard.kpi_reverse_ready_count }} con versión publicada</p>
+    </div>
+    <div class="kpi-card kpi-card--match">
+        <p class="kpi-label">File Match</p>
+        <p class="kpi-value">{{ dashboard.kpi_match_projects_total }}</p>
+        <p class="kpi-meta">{{ dashboard.kpi_match_ready_count }} con versión publicada</p>
+    </div>
+    <div class="kpi-card kpi-card--scout">
+        <p class="kpi-label">Structure Scout</p>
+        <p class="kpi-value">{{ dashboard.kpi_scout_projects_total }}</p>
+        <p class="kpi-meta">{{ dashboard.kpi_scout_with_sample }} con muestra cargada</p>
     </div>
 </div>
 
@@ -116,6 +140,142 @@
                     {% empty %}
                     <tr>
                         <td colspan="4">No tienes proyectos Data Mapping visibles. <a href="{% url 'dms:mapping_create' %}" class="project-link">Crear uno</a> o revisa los <a href="{% url 'dms:catalog_hub' %}" class="project-link">catálogos</a> ({% if dashboard.catalog_count %}{{ dashboard.catalog_count }} valores{% else %}sin datos aún{% endif %}).</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<div class="dashboard-grid">
+    <section class="widget-panel widget-panel--gate" aria-labelledby="widget-gate">
+        <div class="widget-header">
+            <h3 id="widget-gate">File Gate recientes</h3>
+            <a href="{% url 'file_gate:project_create' %}" class="btn btn-ghost btn-sm">Nuevo validador</a>
+        </div>
+        <div class="widget-body">
+            <table class="mini-table">
+                <thead>
+                    <tr>
+                        <th>Proyecto</th>
+                        <th>Mi rol</th>
+                        <th>Estado</th>
+                        <th>Actualizado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in dashboard.recent_gate_projects %}
+                    <tr>
+                        <td><span class="kind-badge kind-badge--gate">FG</span><a href="{% url 'file_gate:project_hub' project_slug=project.slug %}" class="project-link">{{ project.name }}</a></td>
+                        <td><span class="role-code{% if project.role == 'PA' %} role-code--pa{% endif %}">{{ project.role }}</span></td>
+                        <td class="mono">{{ project.status_label }}</td>
+                        <td class="mono">{{ project.updated_at|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">Sin proyectos File Gate visibles. <a href="{% url 'file_gate:project_create' %}" class="project-link">Crear validador</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="widget-panel widget-panel--reverse" aria-labelledby="widget-reverse">
+        <div class="widget-header">
+            <h3 id="widget-reverse">Reverse Studio recientes</h3>
+            <a href="{% url 'reverse_studio:project_create' %}" class="btn btn-ghost btn-sm">Nuevo emisor</a>
+        </div>
+        <div class="widget-body">
+            <table class="mini-table">
+                <thead>
+                    <tr>
+                        <th>Proyecto</th>
+                        <th>Mi rol</th>
+                        <th>Estado</th>
+                        <th>Actualizado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in dashboard.recent_reverse_projects %}
+                    <tr>
+                        <td><span class="kind-badge kind-badge--reverse">RS</span><a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}" class="project-link">{{ project.name }}</a></td>
+                        <td><span class="role-code{% if project.role == 'PA' %} role-code--pa{% endif %}">{{ project.role }}</span></td>
+                        <td class="mono">{{ project.status_label }}</td>
+                        <td class="mono">{{ project.updated_at|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">Sin proyectos Reverse Studio visibles. <a href="{% url 'reverse_studio:project_create' %}" class="project-link">Crear emisor</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<div class="dashboard-grid">
+    <section class="widget-panel widget-panel--match" aria-labelledby="widget-match">
+        <div class="widget-header">
+            <h3 id="widget-match">File Match recientes</h3>
+            <a href="{% url 'file_match:project_create' %}" class="btn btn-ghost btn-sm">Nuevo conciliador</a>
+        </div>
+        <div class="widget-body">
+            <table class="mini-table">
+                <thead>
+                    <tr>
+                        <th>Proyecto</th>
+                        <th>Mi rol</th>
+                        <th>Estado</th>
+                        <th>Actualizado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in dashboard.recent_match_projects %}
+                    <tr>
+                        <td><span class="kind-badge kind-badge--match">FM</span><a href="{% url 'file_match:project_hub' project_slug=project.slug %}" class="project-link">{{ project.name }}</a></td>
+                        <td><span class="role-code{% if project.role == 'PA' %} role-code--pa{% endif %}">{{ project.role }}</span></td>
+                        <td class="mono">{{ project.status_label }}</td>
+                        <td class="mono">{{ project.updated_at|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">Sin proyectos File Match visibles. <a href="{% url 'file_match:project_create' %}" class="project-link">Crear conciliador</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="widget-panel widget-panel--scout" aria-labelledby="widget-scout">
+        <div class="widget-header">
+            <h3 id="widget-scout">Structure Scout recientes</h3>
+            <a href="{% url 'structure_scout:project_create' %}" class="btn btn-ghost btn-sm">Nuevo explorador</a>
+        </div>
+        <div class="widget-body">
+            <table class="mini-table">
+                <thead>
+                    <tr>
+                        <th>Proyecto</th>
+                        <th>Mi rol</th>
+                        <th>Muestra</th>
+                        <th>Actualizado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in dashboard.recent_scout_projects %}
+                    <tr>
+                        <td><span class="kind-badge kind-badge--scout">SS</span><a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}" class="project-link">{{ project.name }}</a></td>
+                        <td><span class="role-code{% if project.role == 'PA' %} role-code--pa{% endif %}">{{ project.role }}</span></td>
+                        <td class="mono">{{ project.status_label }}</td>
+                        <td class="mono">{{ project.updated_at|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">Sin proyectos Structure Scout visibles. <a href="{% url 'structure_scout:project_create' %}" class="project-link">Crear explorador</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -199,7 +359,7 @@
         <h3 id="widget-quick">Accesos rápidos</h3>
     </div>
     <div class="widget-body">
-        <div class="quick-links quick-links--split">
+        <div class="quick-links quick-links--suite">
             <div class="quick-links-group">
                 <h4>Worksheets</h4>
                 <div class="quick-links">
@@ -212,6 +372,34 @@
                 <div class="quick-links">
                     <a href="{% url 'dms:mapping_list' %}" class="btn btn-secondary">Data Mapping</a>
                     <a href="{% url 'dms:catalog_hub' %}" class="btn btn-secondary">Catálogos</a>
+                </div>
+            </div>
+            <div class="quick-links-group">
+                <h4>File Gate</h4>
+                <div class="quick-links">
+                    <a href="{% url 'file_gate:project_list' %}" class="btn btn-secondary">Validador</a>
+                    <a href="{% url 'file_gate:project_create' %}" class="btn btn-secondary">Nuevo</a>
+                </div>
+            </div>
+            <div class="quick-links-group">
+                <h4>Reverse Studio</h4>
+                <div class="quick-links">
+                    <a href="{% url 'reverse_studio:project_list' %}" class="btn btn-secondary">Emisor</a>
+                    <a href="{% url 'reverse_studio:project_create' %}" class="btn btn-secondary">Nuevo</a>
+                </div>
+            </div>
+            <div class="quick-links-group">
+                <h4>File Match</h4>
+                <div class="quick-links">
+                    <a href="{% url 'file_match:project_list' %}" class="btn btn-secondary">Conciliador</a>
+                    <a href="{% url 'file_match:project_create' %}" class="btn btn-secondary">Nuevo</a>
+                </div>
+            </div>
+            <div class="quick-links-group">
+                <h4>Structure Scout</h4>
+                <div class="quick-links">
+                    <a href="{% url 'structure_scout:project_list' %}" class="btn btn-secondary">Explorador</a>
+                    <a href="{% url 'structure_scout:project_create' %}" class="btn btn-secondary">Nuevo</a>
                 </div>
             </div>
         </div>

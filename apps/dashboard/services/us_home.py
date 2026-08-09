@@ -114,6 +114,14 @@ def get_us_home_data(user) -> UsHomeData:
     Project = get_model_optional("projects", "Project")
     if Project is not None:
         data.kpi_projects_total = Project.objects.filter(company=company).count()
+        kind_rows = (
+            Project.objects.filter(company=company)
+            .values("project_kind")
+            .annotate(count=Count("id"))
+        )
+        data.projects_by_kind = {
+            row["project_kind"]: row["count"] for row in kind_rows
+        }
 
     Subscription = get_model_optional("billing", "Subscription")
     if Subscription is None:

@@ -7,22 +7,26 @@
     <div class="pub-container">
         <p class="pub-eyebrow">Servicios</p>
         <h1>Todo lo que tu equipo necesita para gestionar datos operativos</h1>
-        <p>Desde la definición de campos hasta la auditoría de cada cambio. Una plataforma multiusuario pensada para reemplazar hojas de cálculo dispersas.</p>
+        <p>Tablas configurables, transformación de archivos y apps especializadas (validador, emisor, conciliador y explorador) sobre el mismo chasis multi-compañía.</p>
     </div>
 </section>
 
 <section class="pub-section">
     <div class="pub-container">
+        <div class="pub-section-header">
+            <h2>Capacidades de plataforma</h2>
+            <p>Lo que comparte toda la suite: proyectos, permisos, auditoría, importación y seguridad.</p>
+        </div>
         <div class="service-grid">
             <article class="service-card service-card--teal">
                 <span class="service-card-icon">📋</span>
                 <h3>Gestión de proyectos</h3>
-                <p>Cada proyecto es una tabla configurable dentro de tu compañía. Crea, archiva y organiza aplicaciones de gestión sin tocar código.</p>
+                <p>Cada proyecto es una unidad de trabajo dentro de tu compañía. Crea, archiva y organiza sin tocar código.</p>
                 <ul class="service-list">
                     <li>Creación de proyectos con nombre, descripción y slug</li>
-                    <li>Campos dinámicos: texto, número, fecha, lista, booleano</li>
+                    <li>Campos dinámicos en Worksheets: texto, número, fecha, lista, booleano</li>
                     <li>Archivado sin pérdida de datos</li>
-                    <li>Plantillas y duplicación de estructura (roadmap)</li>
+                    <li>Mismo modelo de roles en todas las apps (PA, ED, CO, GE)</li>
                 </ul>
             </article>
             <article class="service-card service-card--coral">
@@ -84,11 +88,85 @@
     </div>
 </section>
 
-<section class="pub-section pub-section--alt">
+<section class="pub-section pub-section--alt" id="suite">
+    <div class="pub-container">
+        <div class="pub-section-header">
+            <h2>Suite de aplicaciones</h2>
+            <p>Seis productos sobre el mismo chasis. Elige según el problema: tablas de equipo o ciclo de archivos.</p>
+        </div>
+        <div class="service-grid">
+            <article class="service-card service-card--teal">
+                <span class="service-card-icon">WS</span>
+                <h3>Worksheets</h3>
+                <p>Tablas configurables con campos dinámicos, registros, permisos y auditoría — reemplazo de hojas operativas.</p>
+                <ul class="service-list">
+                    <li>Esquema por proyecto sin desarrollo</li>
+                    <li>Membresías y roles PA / ED / CO / GE</li>
+                    <li>Vista expandida y apariencia</li>
+                </ul>
+            </article>
+            <article class="service-card service-card--sky">
+                <span class="service-card-icon">FP</span>
+                <h3>FilePipe</h3>
+                <p>Data Mapping: transforma archivos (TXT posicional, CSV, Excel y similares) con mapeo, reglas y versiones publicadas.</p>
+                <ul class="service-list">
+                    <li>Origen → destino → mapeo → reglas</li>
+                    <li>Ejecución con preview e historial</li>
+                    <li>Catálogos reutilizables</li>
+                </ul>
+            </article>
+            <article class="service-card service-card--coral">
+                <span class="service-card-icon">FG</span>
+                <h3>File Gate</h3>
+                <p>Validador de archivos: comprueba conformidad frente a un contrato publicado y genera informe de aceptación o rechazos.</p>
+                <ul class="service-list">
+                    <li>Esquema y políticas versionables</li>
+                    <li>Corridas con content hash</li>
+                    <li>Bridge opcional hacia FilePipe / Reverse / Match</li>
+                </ul>
+            </article>
+            <article class="service-card service-card--violet">
+                <span class="service-card-icon">RS</span>
+                <h3>Reverse Studio</h3>
+                <p>Emisor de layouts: de planilla (CSV/Excel) a archivo de envío posicional, JSON o XML según definición publicada.</p>
+                <ul class="service-list">
+                    <li>Perfil de entrada y layout de salida</li>
+                    <li>Generación controlada por versión</li>
+                    <li>Pre-check opcional con File Gate</li>
+                </ul>
+            </article>
+            <article class="service-card service-card--lime">
+                <span class="service-card-icon">FM</span>
+                <h3>File Match</h3>
+                <p>Conciliador A vs B: cruza dos archivos por clave, aplica reglas de comparación y reporta diferencias.</p>
+                <ul class="service-list">
+                    <li>Perfiles A y B independientes</li>
+                    <li>Claves, normalización y comparación</li>
+                    <li>Informe e historial de conciliaciones</li>
+                </ul>
+            </article>
+            <article class="service-card service-card--teal">
+                <span class="service-card-icon">SS</span>
+                <h3>Structure Scout</h3>
+                <p>Explorador de estructura: sube una muestra, detecta patrón/campos y acelera el modelado hacia Gate o Reverse.</p>
+                <ul class="service-list">
+                    <li>Detección asistida desde muestra</li>
+                    <li>Propuesta de campos y borrador</li>
+                    <li>Aplicación a proyectos destino</li>
+                </ul>
+            </article>
+        </div>
+        <p class="pub-suite-more">
+            <a href="{% url 'public:help' %}">Ver guía de cuándo usar cada app →</a>
+        </p>
+    </div>
+</section>
+
+<section class="pub-section">
     <div class="pub-container">
         <div class="pub-section-header">
             <h2>Para quién es</h2>
-            <p>Equipos operativos que hoy dependen de hojas de cálculo para controles, seguimientos y gestiones con poca extensión de datos.</p>
+            <p>Equipos operativos que hoy dependen de hojas de cálculo o de scripts sueltos para controles, integraciones y conciliaciones.</p>
         </div>
         <div class="audience-grid">
             <article class="audience-card">
@@ -98,19 +176,19 @@
             </article>
             <article class="audience-card">
                 <div class="audience-card-icon">📁</div>
-                <h3>Administración</h3>
-                <p>Gestiones internas, registros de proveedores, vencimientos y tablas de referencia compartidas.</p>
+                <h3>Integraciones de archivo</h3>
+                <p>Bancos, ERP y sistemas legacy: validar, transformar, emitir o conciliar lotes sin desarrollo a medida.</p>
             </article>
             <article class="audience-card">
                 <div class="audience-card-icon">👥</div>
                 <h3>Equipos pequeños</h3>
-                <p>Grupos que necesitan colaborar sin IT: definen su tabla, invitan colegas y auditan cambios.</p>
+                <p>Grupos que necesitan colaborar sin IT: definen su tabla o pipeline, invitan colegas y auditan cambios.</p>
             </article>
         </div>
     </div>
 </section>
 
-<section class="pub-section">
+<section class="pub-section pub-section--alt">
     <div class="pub-container">
         <div class="pub-cta">
             <h2>Conoce el plan adecuado para tu compañía</h2>

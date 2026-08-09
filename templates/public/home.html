@@ -8,7 +8,7 @@
         <div>
             <p class="pub-eyebrow">Adiós a las hojas de cálculo caóticas</p>
             <h1>Tus hojas de cálculo, <span>convertidas en apps</span> de gestión</h1>
-            <p class="pub-lead">DynamicWorkspace sustituye hojas de cálculo dispersas por proyectos configurables: campos dinámicos, usuarios con roles, registros auditables y una sola fuente de verdad por equipo.</p>
+            <p class="pub-lead">DynamicWorkspace sustituye hojas de cálculo dispersas por una suite multi-compañía: Worksheets, FilePipe y apps de archivos (File Gate, Reverse Studio, File Match, Structure Scout), con roles, auditoría y una sola fuente de verdad por equipo.</p>
             <div class="pub-hero-actions">
                 <a href="{% url 'public:contact' %}" class="btn btn-primary">Solicitar acceso</a>
                 <a href="{% url 'public:help' %}" class="btn btn-secondary">Guía del sistema</a>
@@ -89,7 +89,52 @@
     </div>
 </section>
 
-<section class="pub-section pub-section--alt" id="como-funciona">
+<section class="pub-section pub-section--alt">
+    <div class="pub-container">
+        <div class="pub-section-header">
+            <h2>Una suite, varios problemas de datos</h2>
+            <p>Además de tablas configurables, DynamicWorkspace incluye aplicaciones para transformar, validar, emitir, conciliar y explorar archivos — con el mismo acceso por compañía y roles.</p>
+        </div>
+        <div class="suite-grid" aria-label="Aplicaciones de la plataforma">
+            <article class="suite-card">
+                <p class="suite-card-tag">Worksheets</p>
+                <h3>Tablas de equipo</h3>
+                <p>Proyectos con campos dinámicos, registros y auditoría.</p>
+            </article>
+            <article class="suite-card">
+                <p class="suite-card-tag">FilePipe</p>
+                <h3>Transformación</h3>
+                <p>Origen → destino → mapeo → ejecutar, sin scripts sueltos.</p>
+            </article>
+            <article class="suite-card">
+                <p class="suite-card-tag">File Gate</p>
+                <h3>Validador</h3>
+                <p>Verifica conformidad de archivos antes de integrarlos.</p>
+            </article>
+            <article class="suite-card">
+                <p class="suite-card-tag">Reverse Studio</p>
+                <h3>Emisor</h3>
+                <p>De planilla a layout posicional, JSON o XML.</p>
+            </article>
+            <article class="suite-card">
+                <p class="suite-card-tag">File Match</p>
+                <h3>Conciliador</h3>
+                <p>Compara dos archivos por clave y reporta diferencias.</p>
+            </article>
+            <article class="suite-card">
+                <p class="suite-card-tag">Structure Scout</p>
+                <h3>Explorador</h3>
+                <p>Infiere estructura desde una muestra y acelera el modelado.</p>
+            </article>
+        </div>
+        <p class="pub-suite-more">
+            <a href="{% url 'public:services' %}">Ver servicios →</a>
+            <a href="{% url 'public:help' %}">Guía de la plataforma →</a>
+        </p>
+    </div>
+</section>
+
+<section class="pub-section" id="como-funciona">
     <div class="pub-container">
         <div class="pub-section-header">
             <h2>Así de simple funciona</h2>

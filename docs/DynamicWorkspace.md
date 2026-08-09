@@ -31,6 +31,7 @@
 | [`docs/FILE_GATE.md`](FILE_GATE.md) | **FILE GATE** — Validador de archivos (prioridad #1 APP_FACTORY) |
 | [`docs/REVERSE_STUDIO.md`](REVERSE_STUDIO.md) | **Reverse Studio** — Emisor de layouts (CSV/Excel → posicional/JSON/XML) |
 | [`docs/FILE_MATCH.md`](FILE_MATCH.md) | **FILE MATCH** — Conciliador de archivos (A vs B por clave) |
+| [`docs/STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) | **Structure Scout** — Explorador de estructura de archivos |
 | [`docs/definition_app_FILE_GATE/`](definition_app_FILE_GATE/) | Definición por módulo FILE GATE (espejo `definition_app_DMS`) |
 | [`docs/definition_app/UI_MESSAGES.md`](definition_app/UI_MESSAGES.md) | Catálogo de mensajes UI, `error_code`, reglas vista/servicio |
 | [`docs/definition_app/DynamicWorkspace_Model.md`](definition_app/DynamicWorkspace_Model.md) | Modelos de datos, relaciones e integridad |
@@ -286,7 +287,12 @@ apps/
 ├── records/           # Record, FieldValue, CRUD
 ├── audit/             # RecordHistory, eventos
 ├── imports/           # Importación Excel
-└── dms/               # Data Mapping Studio — ver definition_app_DMS/
+├── dms/               # FilePipe / Data Mapping Studio — ver definition_app_DMS/
+├── file_gate/         # File Gate — Validador — ver FILE_GATE.md
+├── reverse_studio/    # Reverse Studio — Emisor — ver REVERSE_STUDIO.md
+├── file_match/        # File Match — Conciliador — ver FILE_MATCH.md
+├── structure_scout/   # Structure Scout — Explorador — ver STRUCTURE_SCOUT.md
+└── profile_seed/      # Siembra de perfiles (p. ej. Gate → Match)
 ```
 
 **Modelo tenant:** `Company` → usuarios (`UserProfile`) → proyectos → registros **o** mapeos DMS (`project_kind`). Ver [`definition_app/DynamicWorkspace_Model.md`](definition_app/DynamicWorkspace_Model.md).

@@ -64,7 +64,7 @@ Montaje en `dynamicworkspace/urls.py` (raíz del sitio, fuera de `/app/`).
 
 ## Guía pública (`/ayuda/`)
 
-Misma estructura de **7 flujos** que la guía UF, con tono comercial y sin enlaces a pantallas internas autenticadas.
+Misma estructura de flujos que la guía UF, con tono comercial y sin enlaces a pantallas internas autenticadas. Incluye Worksheets, FilePipe y las apps de archivos (File Gate, Reverse Studio, File Match, Structure Scout).
 
 | Aspecto | Guía pública | Guía UF (`apps.help`) |
 |---------|--------------|------------------------|

@@ -9,6 +9,7 @@ SUBJECT_CHOICES = {
     "demo": "Solicitar demostración",
     "acceso": "Solicitar acceso para mi compañía",
     "planes": "Consulta sobre planes",
+    "archivos": "Validación / transformación / conciliación de archivos",
     "soporte": "Soporte general",
     "otro": "Otro",
 }
