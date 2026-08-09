@@ -406,7 +406,16 @@ def _parse_xml_rows(path: Path, source: dict, fields: list[dict]) -> ParseResult
     return result
 
 
+def _normalize_header_key(value: str) -> str:
+    """Clave comparable para encabezados: mayúsculas y separadores unificados a espacio."""
+    text = (value or "").strip().upper()
+    for sep in ("_", "-", ".", "/"):
+        text = text.replace(sep, " ")
+    return " ".join(text.split())
+
+
 def _column_letter_to_index(column: str) -> int | None:
+    """Índice 0-based desde letra Excel (A..XFD) o número 1-based. No interpreta nombres."""
     text = (column or "").strip().upper()
     if not text:
         return None
@@ -415,22 +424,62 @@ def _column_letter_to_index(column: str) -> int | None:
             return max(0, int(text) - 1)
         except ValueError:
             return None
+    # Excel: columnas A..XFD (1–3 letras). «NOMBRE» / «EDAD» no son letras de columna.
+    if len(text) > 3 or not all("A" <= char <= "Z" for char in text):
+        return None
     value = 0
     for char in text:
-        if not ("A" <= char <= "Z"):
-            return None
         value = value * 26 + (ord(char) - ord("A") + 1)
     return value - 1 if value > 0 else None
 
 
-def _cell_as_text(value) -> str:
+def _resolve_xlsx_column_index(column: str, header_map: dict[str, int]) -> int | None:
+    """Resuelve columna por encabezado (preferido) o letra/número Excel."""
+    key = (column or "").strip()
+    if not key:
+        return None
+    if header_map:
+        hit = header_map.get(_normalize_header_key(key))
+        if hit is not None:
+            return hit
+    return _column_letter_to_index(key)
+
+
+def _cell_as_text(value, *, date_format: str | None = None) -> str:
+    """Serializa celda Excel/Python a texto; fechas reales usan date_format del campo."""
+    from datetime import date, datetime, time
+
+    from apps.dms.transform_execution.services.source_field_validation_service import (
+        DATE_FORMAT_MAP,
+    )
+
     if value is None:
         return ""
     if isinstance(value, bool):
         return "true" if value else "false"
+    if isinstance(value, datetime):
+        fmt_key = (date_format or "").strip()
+        py_fmt = DATE_FORMAT_MAP.get(fmt_key) or (
+            "%Y-%m-%d"
+            if value.time() == time(0, 0, 0) and value.microsecond == 0
+            else "%Y-%m-%d %H:%M:%S"
+        )
+        has_time = any(token in py_fmt for token in ("%H", "%I", "%M", "%S", "%f", "%p"))
+        if not has_time:
+            return value.date().strftime(py_fmt)
+        return value.strftime(py_fmt)
+    if isinstance(value, date):
+        fmt_key = (date_format or "").strip()
+        py_fmt = DATE_FORMAT_MAP.get(fmt_key) or "%Y-%m-%d"
+        has_time = any(token in py_fmt for token in ("%H", "%I", "%M", "%S", "%f", "%p"))
+        if has_time:
+            return datetime.combine(value, time.min).strftime(py_fmt)
+        return value.strftime(py_fmt)
     if isinstance(value, float):
         if value.is_integer():
             return str(int(value))
+        return str(value)
+    if isinstance(value, int):
         return str(value)
     return str(value).strip()
 
@@ -515,6 +564,31 @@ def _xlsx_row_bounds(source: dict, max_row: int) -> tuple[int, int, list[dict]]:
     return begin, finish, messages
 
 
+def _xlsx_open_error_message(path: Path, exc: Exception) -> str:
+    """User-facing message when openpyxl cannot open the workbook."""
+    detail = str(exc).lower()
+    suffix = path.suffix.lower()
+    is_legacy_xls = (
+        suffix == ".xls"
+        or "old .xls" in detail
+        or "does not support the old" in detail
+        or ("xlrd" in detail and ".xls" in detail)
+    )
+    if is_legacy_xls:
+        return (
+            "El archivo está en formato Excel antiguo (.xls). "
+            "Este producto solo lee planillas .xlsx. "
+            "Ábralo en Excel o LibreOffice, guárdelo como "
+            "«Libro de Excel (.xlsx)» y súbalo de nuevo."
+        )
+    return (
+        "No se pudo abrir el Excel. "
+        "Compruebe que el archivo no esté dañado ni protegido, "
+        "que sea .xlsx y vuelva a subirlo. "
+        f"Detalle: {exc}"
+    )
+
+
 def _parse_xlsx_rows(path: Path, source: dict, fields: list[dict]) -> ParseResult:
     try:
         from openpyxl import load_workbook
@@ -526,15 +600,20 @@ def _parse_xlsx_rows(path: Path, source: dict, fields: list[dict]) -> ParseResul
     try:
         workbook = load_workbook(path, read_only=True, data_only=True)
     except Exception as exc:
-        raise ParseError(f"No se pudo abrir el Excel: {exc}") from exc
+        raise ParseError(_xlsx_open_error_message(path, exc)) from exc
 
     try:
         sheet_name = (source.get("sheet_name") or "").strip()
         if sheet_name:
             if sheet_name not in workbook.sheetnames:
+                available = ", ".join(workbook.sheetnames) or "(ninguna)"
                 raise ParseError(
-                    f"No existe la hoja «{sheet_name}». "
-                    f"Disponibles: {', '.join(workbook.sheetnames)}."
+                    f"La definición espera la hoja «{sheet_name}», "
+                    f"pero el archivo no la tiene. "
+                    f"Hojas en el archivo: {available}. "
+                    f"Renombre la hoja en el Excel para que coincida, "
+                    f"o cambie el nombre de hoja en Definir entrada (paso 4), "
+                    f"guarde y publique de nuevo."
                 )
             sheet = workbook[sheet_name]
         else:
@@ -559,9 +638,9 @@ def _parse_xlsx_rows(path: Path, source: dict, fields: list[dict]) -> ParseResul
                 (),
             )
             for col_idx, cell in enumerate(header_values):
-                label = _cell_as_text(cell).strip().upper()
+                label = _cell_as_text(cell).strip()
                 if label:
-                    header_map[label] = col_idx
+                    header_map[_normalize_header_key(label)] = col_idx
 
         result = ParseResult(start_line=begin, messages=capture_messages)
         skip_empty = bool((source.get("content_rules") or {}).get("skip_empty_lines", True))
@@ -581,13 +660,19 @@ def _parse_xlsx_rows(path: Path, source: dict, fields: list[dict]) -> ParseResul
                 if not name:
                     continue
                 column = (field_def.get("column") or "").strip()
-                index = _column_letter_to_index(column)
-                if index is None and column:
-                    index = header_map.get(column.upper())
+                index = _resolve_xlsx_column_index(column, header_map)
                 if index is None or index < 0 or index >= len(values):
                     row[name] = ""
                 else:
-                    row[name] = _cell_as_text(values[index])
+                    field_date_format = None
+                    if (field_def.get("content_type") or "").strip() in {
+                        "date",
+                        "datetime",
+                    }:
+                        field_date_format = (field_def.get("date_format") or "").strip() or None
+                    row[name] = _cell_as_text(
+                        values[index], date_format=field_date_format
+                    )
             _accept_row(fields, row, line_no=row_number, result=result)
         return result
     finally:

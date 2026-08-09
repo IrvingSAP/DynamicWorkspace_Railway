@@ -1,19 +1,154 @@
 ﻿{% extends "app_base.html" %}
 {% load static %}
+
 {% block title %}Ayuda · Paso 4 — {{ project.name }}{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/source_profile.css' %}"><link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">Entrada</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
-    <div><h2>Ayuda — Campos de la planilla</h2></div>
-    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'reverse_studio:input_step4' project_slug=project.slug %}">← Volver</a></div>
+    <div>
+        <p class="page-eyebrow">Referencia · Entrada · Paso 4 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Campos de la planilla</h2>
+        <p>Define qué columnas leer y con qué nombre interno se usarán en mapeo, reglas y generación.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'reverse_studio:input_step4' project_slug=project.slug %}">← Volver al paso 4</a>
+    </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li><strong>Nombre interno</strong> será la clave en el mapeo (Módulo 3).</li>
-    <li>Nombres con espacios → <code>alphanumeric_spaces</code> o <code>free_text</code>.</li>
-    <li>Teléfonos con guion → <code>free_text</code> o patrón <code>custom</code>.</li>
-    <li>Solo CSV / Excel / delimitado; sin wizard posicional/JSON/XML de entrada.</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué decide este paso</h3>
+        <p class="help-intro">
+            Declara los <strong>campos</strong> de la planilla. La UI depende del tipo del paso 1
+            (Excel → hoja + columna; CSV/delimitado → índice / encabezado).
+            No es el layout de envío (Módulo 2).
+        </p>
+
+        <h3 class="form-section-title">Nombre interno ≠ encabezado del Excel</h3>
+        <p class="help-intro">
+            Son dos datos distintos. El <strong>nombre interno</strong> <em>no</em> tiene que ser igual
+            al texto de la fila de encabezados. Lo que debe apuntar bien a la celda es la
+            propiedad <strong>Columna</strong>.
+        </p>
+        <table class="help-table">
+            <thead><tr><th>Propiedad</th><th>Qué es</th><th>¿Debe coincidir con el Excel?</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Nombre interno</td>
+                    <td>Clave estable del contrato (<code>tipo_documento</code>, <code>monto</code>). Se usa en mapeo (M3), reglas y salida.</td>
+                    <td><strong>No.</strong> Puede ser distinto del encabezado.</td>
+                </tr>
+                <tr>
+                    <td>Columna</td>
+                    <td>Indica <em>de dónde leer</em> en la planilla.</td>
+                    <td><strong>Sí</strong> (letra Excel <em>o</em> texto del encabezado; ver abajo).</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Ejemplo válido: encabezado <code>Tipo Documento</code>, columna <code>D</code> o
+            <code>Tipo Documento</code>, nombre interno <code>tipo_documento</code>.
+        </p>
+
+        <h3 class="form-section-title">Excel — cómo rellenar «Columna»</h3>
+        <table class="help-table">
+            <thead><tr><th>Forma</th><th>Ejemplo</th><th>Notas</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Letra de columna</td>
+                    <td class="mono">A, B, D</td>
+                    <td>Independiente del texto del encabezado. Recomendada si los títulos cambian entre archivos.</td>
+                </tr>
+                <tr>
+                    <td>Nombre de encabezado</td>
+                    <td class="mono">Tipo Documento</td>
+                    <td>Debe corresponder a la fila de encabezados.
+                        Se toleran mayúsculas/minúsculas y separadores <code>_</code> <code>-</code> espacio
+                        (p. ej. <code>TIPO-DOCUMENTO</code> ≡ <code>Tipo Documento</code>).
+                        Si no coincide, el valor llega vacío (<code>REQUIRED_FIELD_EMPTY</code>).</td>
+                </tr>
+            </tbody>
+        </table>
+        <ul>
+            <li><strong>Nombre de hoja</strong> (p. ej. <code>Sheet1</code> vs <code>Hoja1</code>): debe existir en el archivo.</li>
+            <li>Al generar use <strong>.xlsx</strong>. El formato antiguo <strong>.xls</strong> no se lee.</li>
+        </ul>
+
+        <h3 class="form-section-title">Fechas y <code>date_format</code></h3>
+        <p class="help-intro">
+            Si el tipo es <code>date</code> / <code>datetime</code>, indique el formato esperado
+            (<code>DD/MM/YYYY</code>, <code>MM/DD/YYYY</code>, <code>YYYY-MM-DD</code>, etc.).
+            Al generar y en vista previa el motor respeta la <strong>configuración del proyecto</strong>,
+            no el formato regional del equipo.
+        </p>
+        <ul>
+            <li>Celdas fecha nativas de Excel se convierten a ese formato al leer.</li>
+            <li>Fechas como texto deben coincidir con el mismo patrón.</li>
+            <li>La salida del banco puede usar otro formato (salida / reglas de mapeo).</li>
+        </ul>
+
+        <h3 class="form-section-title">Propiedades de cada campo</h3>
+        <table class="help-table">
+            <thead><tr><th>Propiedad</th><th>Para qué sirve</th></tr></thead>
+            <tbody>
+                <tr><td>Nombre interno</td><td>Clave en el <strong>mapeo (M3)</strong>. Minúsculas, sin espacios.</td></tr>
+                <tr><td>Columna / índice</td><td>Dónde leer (letra, encabezado o índice según tipo).</td></tr>
+                <tr><td>Tipo contenido</td><td>Forma esperada; si no cumple, la fila puede rechazarse (M5).</td></tr>
+                <tr><td>Obligatorio</td><td>Vacío → error de campo requerido.</td></tr>
+                <tr><td>Formato fecha</td><td>Obligatorio/recomendado si el tipo es fecha.</td></tr>
+                <tr><td>Patrón regex</td><td>Si el tipo es <code>custom</code>; validación <code>fullmatch</code>.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Guía de tipos de contenido</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Tipo sugerido</th></tr></thead>
+            <tbody>
+                <tr><td>Nombres con espacios</td><td><code>alphanumeric_spaces</code> o <code>free_text</code></td></tr>
+                <tr><td>Teléfonos / guiones</td><td><code>free_text</code> o <code>custom</code> con patrón</td></tr>
+                <tr><td>Montos <code>1.25</code> / <code>1,25</code></td><td><code>custom</code> + regex, p. ej. <code>^[0-9]+([.,][0-9]+)?$</code></td></tr>
+                <tr><td>Fechas</td><td><code>date</code> + <code>date_format</code></td></tr>
+                <tr><td>Enteros (edad, cantidad)</td><td><code>numeric</code>; en reglas de mapeo puede usar <em>Numérico entero</em></td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Cómo se guarda</h3>
+        <ul>
+            <li><strong>Parámetros de hoja</strong>: botón <strong>Guardar parámetros</strong> o <strong>Anterior / Siguiente</strong>.</li>
+            <li><strong>Campos</strong>: se guardan al agregar / editar / eliminar cada uno.</li>
+            <li>Tras cambiar el borrador, <strong>publique de nuevo</strong> (M4) para que Generar use la versión actualizada.</li>
+        </ul>
+
+        <h3 class="form-section-title">Diagnóstico rápido (vista previa vacía o errores)</h3>
+        <ul>
+            <li>Revise <strong>Columna</strong> y <strong>nombre de hoja</strong> — no el nombre interno.</li>
+            <li>Confirme que el archivo es <code>.xlsx</code> y que la definición está <strong>publicada</strong>.</li>
+            <li>En fechas, revise <code>date_format</code> del campo frente al contenido real de la celda.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

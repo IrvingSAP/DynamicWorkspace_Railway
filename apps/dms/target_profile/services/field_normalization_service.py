@@ -119,11 +119,11 @@ def normalize_field(field: dict, file_type_code: str) -> dict:
         normalized["start"] = start
         normalized["end"] = end
         normalized["length"] = length
+        # En posicional la ranura (inicio–fin) define el ancho de escritura.
+        normalized["max_length"] = length
         normalized["align"] = (item.get("align") or "left").strip() or "left"
         pad = item.get("pad_char")
         normalized["pad_char"] = " " if pad in (None, "") else str(pad)[:1]
-        if "max_length" not in normalized:
-            normalized["max_length"] = length
     elif code in ("txt_delimited", "csv"):
         if "quote" in item:
             normalized["quote"] = bool(item.get("quote"))

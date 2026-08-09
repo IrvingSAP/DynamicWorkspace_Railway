@@ -137,6 +137,11 @@
                         Campo obligatorio
                     </label>
                 </div>
+                <div id="field-pattern-wrap" class="field" hidden>
+                    <label for="field-pattern">Patrón regex (<code>pattern</code>) <span class="req">*</span></label>
+                    <input type="text" id="field-pattern" class="mono" placeholder="^[0-9]+([.,][0-9]+)?$" maxlength="512">
+                    <p class="hint">Obligatorio si el tipo es <code>custom</code>. Debe coincidir con todo el valor (<code>fullmatch</code>).</p>
+                </div>
                 <div id="field-date-format-wrap" class="field" hidden>
                     <label for="field-date-format">Formato fecha (<code>date_format</code>)</label>
                     <input type="text" id="field-date-format" class="mono" placeholder="DD/MM/YYYY">
@@ -152,7 +157,7 @@
     {% endif %}
 
     <div class="wizard-footer">
-        <span class="hint">Los campos se guardan en el borrador del servidor (v{{ wizard.version_number }})</span>
+        <span class="hint">Parámetros y campos: se guardan con «Guardar parámetros» / al agregar campos, o al pulsar Anterior/Siguiente (v{{ wizard.version_number }})</span>
         <div class="wizard-footer-actions">
             <a href="{% url 'reverse_studio:input_step3' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
             <a href="{% url 'reverse_studio:input_step5' project_slug=project.slug %}" class="btn btn-primary">Siguiente →</a>

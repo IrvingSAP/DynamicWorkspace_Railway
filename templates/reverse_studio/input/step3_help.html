@@ -1,17 +1,72 @@
 ﻿{% extends "app_base.html" %}
 {% load static %}
+
 {% block title %}Ayuda · Paso 3 — {{ project.name }}{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/source_profile.css' %}"><link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">Entrada</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_step3' project_slug=project.slug %}">Paso 3</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
-    <div><h2>Ayuda — Fin de captura</h2></div>
-    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'reverse_studio:input_step3' project_slug=project.slug %}">← Volver</a></div>
+    <div>
+        <p class="page-eyebrow">Referencia · Entrada · Paso 3 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Fin de captura</h2>
+        <p>Dónde terminan los datos útiles de la planilla (<code>capture_end</code>).</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'reverse_studio:input_step3' project_slug=project.slug %}">← Volver al paso 3</a>
+    </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li><code>eof</code> es el default habitual para emisiones mensuales.</li>
-    <li><code>max_rows</code> sirve para pruebas sin leer todo el archivo.</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué decide este paso</h3>
+        <p class="help-intro">
+            Cierra la zona de lectura. Evita pie de página, totales, firmas o filas de control
+            que no deben mapearse al layout de envío.
+        </p>
+
+        <h3 class="form-section-title">Modos habituales</h3>
+        <table class="help-table">
+            <thead><tr><th>Modo</th><th>Cuándo usarlo</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">eof</td><td><strong>Default recomendado</strong> en emisiones mensuales: leer hasta el final del archivo.</td></tr>
+                <tr><td>Número de línea</td><td>Cortar en una fila fija (útil si siempre hay N filas de datos).</td></tr>
+                <tr><td>Máximo de filas</td><td>Limitar filas leídas (pruebas o techos de seguridad). No sustituye filtros de negocio.</td></tr>
+                <tr><td>Marcador / patrón</td><td>Parar al encontrar un texto o regex (p. ej. «TOTAL»).</td></tr>
+                <tr><td>Líneas en blanco</td><td>Parar tras un bloque de filas vacías.</td></tr>
+                <tr><td>Porcentaje</td><td>Leer solo una fracción del archivo (sobre todo en pruebas).</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Reglas</h3>
+        <ul>
+            <li>El fin debe ser coherente con el inicio (paso 2); el servidor valida rangos incompatibles.</li>
+            <li><code>max_rows</code> solo acota la lectura: no reemplaza validaciones de campo ni reglas de mapeo.</li>
+            <li>Misma semántica DMS (<code>capture_end</code>).</li>
+            <li>Cambios en borrador; publique (M4) para que Generar los aplique.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

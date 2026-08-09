@@ -193,6 +193,12 @@
                             {% if history.can_download and row.downloads.errors %}
                             <a href="{{ row.downloads.errors }}">Errores</a>
                             {% endif %}
+                            {% if row.can_delete %}
+                            <form method="post" action="{% url 'reverse_studio:history_delete_job' project_slug=project.slug job_id=row.id %}" class="js-history-delete-form" data-confirm="¿Eliminar esta generación? Se borrarán el registro, la planilla, el archivo de envío y los informes asociados.">
+                                {% csrf_token %}
+                                <button type="submit" class="history-delete-btn">Eliminar</button>
+                            </form>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
@@ -225,4 +231,23 @@
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("form.js-history-delete-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            if (typeof dwConfirmWarning !== "function") {
+                return;
+            }
+            e.preventDefault();
+            var message = form.getAttribute("data-confirm") || "¿Eliminar?";
+            dwConfirmWarning(message, function () {
+                HTMLFormElement.prototype.submit.call(form);
+            }, { title: "Eliminar generación", okLabel: "Eliminar" });
+        });
+    });
+});
+</script>
 {% endblock %}

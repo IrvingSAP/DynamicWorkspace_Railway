@@ -76,14 +76,24 @@ def line_content_rule_errors(line: str, rules: dict | None, *, line_no: int) -> 
 
 
 def _matches_date(value: str, date_format: str) -> bool:
-    fmt = DATE_FORMAT_MAP.get((date_format or "").strip(), date_format or "")
-    if not fmt:
-        return True
-    try:
-        datetime.strptime(value, fmt)
-        return True
-    except ValueError:
+    text = (value or "").strip()
+    if not text:
         return False
+    fmt = DATE_FORMAT_MAP.get((date_format or "").strip(), date_format or "")
+    candidates: list[str] = []
+    if fmt:
+        candidates.append(fmt)
+    # Excel a menudo entrega datetime nativo; si quedó ISO, aún es una fecha válida.
+    for extra in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%d-%m-%Y"):
+        if extra not in candidates:
+            candidates.append(extra)
+    for candidate in candidates:
+        try:
+            datetime.strptime(text, candidate)
+            return True
+        except ValueError:
+            continue
+    return False
 
 
 def validate_field_value(field: dict, value: str, *, line_no: int) -> list[dict]:
@@ -128,7 +138,8 @@ def validate_field_value(field: dict, value: str, *, line_no: int) -> list[dict]
                     "code": "CONTENT_TYPE_MISMATCH",
                     "message": (
                         f"Fecha/hora inválida para formato "
-                        f"«{field.get('date_format') or '—'}»."
+                        f"«{field.get('date_format') or '—'}» "
+                        f"(valor leído: «{text}»)."
                     ),
                     "value": text,
                 }

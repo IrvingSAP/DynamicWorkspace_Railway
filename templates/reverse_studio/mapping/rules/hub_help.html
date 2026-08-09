@@ -6,12 +6,21 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/transform_rules.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:mapping_hub' project_slug=project.slug %}">Mapeo</a>
+    <span class="breadcrumb-sep">/</span>
     <a href="{% url 'reverse_studio:mapping_rules_hub' project_slug=project.slug %}">Reglas</a>
     <span class="breadcrumb-sep">/</span>
     <span>Ayuda</span>
@@ -21,9 +30,9 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
+        <p class="page-eyebrow">Referencia · Módulo 3 · Reglas · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Hub de reglas</h2>
-        <p>Pipeline post-mapeo: transformaciones aplicadas a cada campo del layout antes de escribir.</p>
+        <p>Transformaciones post-mapeo por campo del layout, antes de escribir el archivo de envío.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:mapping_rules_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al hub</a>
@@ -32,31 +41,60 @@
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Propósito</h3>
+        <h3 class="form-section-title">Qué es este hub</h3>
         <p class="help-intro">
-            Tras el mapeo, puede aplicar operaciones por campo del layout (trim, upper, fechas, pad, default…).
-            Requiere al menos un mapeo definido.
+            Forma parte del <strong>Módulo 3</strong> (mapeo + reglas). Tras enlazar planilla → layout,
+            aquí resume qué campos del layout ya tienen un <code>transform_pipeline</code>
+            (trim, upper, fechas, pad, default…).
+            No genera el archivo ni publica la definición.
         </p>
+
+        <h3 class="form-section-title">Orden en el ciclo</h3>
+        <table class="help-table">
+            <thead><tr><th>Paso</th><th>Relación</th></tr></thead>
+            <tbody>
+                <tr><td>Entrada / Salida (M1–M2)</td><td>Deben tener campos; sin ellos no hay mapeo.</td></tr>
+                <tr><td>Mapeo (enlaces)</td><td><strong>Obligatorio antes:</strong> al menos un mapeo. Sin mapeos, este hub pide ir al editor de mapeo.</td></tr>
+                <tr><td>Reglas (este módulo)</td><td><strong>Opcional:</strong> vacío = se escribe el valor del mapeo tal cual.</td></tr>
+                <tr><td>Publicar (M4)</td><td>Congela entrada + salida + mapeo + reglas juntos.</td></tr>
+                <tr><td>Generar (M5)</td><td>Aplica mapeo y pipelines al emitir el archivo.</td></tr>
+            </tbody>
+        </table>
 
         <h3 class="form-section-title">Indicadores</h3>
         <table class="help-table">
             <thead><tr><th>Indicador</th><th>Significado</th></tr></thead>
             <tbody>
-                <tr><td>Campos mapeados</td><td>Destinos con mapeo (candidatos a reglas).</td></tr>
-                <tr><td>Con reglas / pasos</td><td>Cuántos pipelines tienen operaciones definidas.</td></tr>
+                <tr><td>Campos mapeados</td><td>Destinos del layout con mapeo (candidatos a reglas).</td></tr>
+                <tr><td>Con reglas</td><td>Cuántos campos tienen al menos un paso en el pipeline.</td></tr>
+                <tr><td>Pasos totales</td><td>Suma de operaciones en todos los pipelines.</td></tr>
                 <tr><td>Estado</td><td>Listo / en edición / pendiente de mapeo.</td></tr>
             </tbody>
         </table>
+
+        <h3 class="form-section-title">Lista del hub</h3>
+        <ul>
+            <li>Cada fila es un campo del layout ya mapeado, con resumen del tipo de mapeo y si tiene reglas.</li>
+            <li>«Sin reglas» es válido: no hace falta transformar todos los campos.</li>
+            <li>La tarjeta <strong>Editor de pipelines</strong> abre la pantalla de detalle.</li>
+        </ul>
 
         <h3 class="form-section-title">Acciones</h3>
         <table class="help-table">
             <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
             <tbody>
-                <tr><td>Abrir editor</td><td>Configura el pipeline por campo del layout.</td></tr>
-                <tr><td>Ir a mapeo</td><td>Si aún no hay mapeos, completa primero FieldMapping.</td></tr>
+                <tr><td>Abrir editor</td><td>Configura el pipeline por campo (si ya hay mapeos).</td></tr>
+                <tr><td>Ir a mapeo</td><td>Si aún no hay mapeos, complete primero los enlaces.</td></tr>
                 <tr><td>← Proyecto</td><td>Vuelve al hub del proyecto.</td></tr>
             </tbody>
         </table>
+
+        <h3 class="form-section-title">Reglas de producto</h3>
+        <ul>
+            <li>Solo <span class="mono">PA</span> / <span class="mono">ED</span> editan (MAP1).</li>
+            <li>Las reglas viven en el mismo registro de mapeo (<code>transform_pipeline</code>); no hay modelo aparte (MAP10).</li>
+            <li>Completar reglas <strong>no</strong> habilita generar: falta publicar (MAP7).</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

@@ -213,16 +213,43 @@
         });
     }
 
-    function saveConfig() {
+    function saveConfig(nextUrl) {
         if (!canEdit) {
+            if (nextUrl) {
+                window.location.href = nextUrl;
+            }
             return Promise.resolve();
         }
         config = readConfigForm();
         if (!config.record_element) {
-            setStatus("Indique el elemento repetido (record_element).", true);
-            return Promise.reject(new Error("Indique el elemento repetido (record_element)."));
+            const message = "Indique el elemento repetido (record_element).";
+            setStatus(message, true);
+            return Promise.reject(new Error(message));
         }
-        return persist({ config: config });
+        if (nextUrl) {
+            setStatus("Guardando…", false);
+        }
+        return persist({ config: config }).then(function () {
+            if (nextUrl) {
+                window.location.href = nextUrl;
+            }
+        });
+    }
+
+    function bindWizardNavSave() {
+        const links = document.querySelectorAll(".wizard-footer-actions a[href]");
+        links.forEach(function (link) {
+            link.addEventListener("click", function (e) {
+                if (!canEdit) {
+                    return;
+                }
+                e.preventDefault();
+                const href = link.getAttribute("href");
+                saveConfig(href).catch(function () {
+                    /* status / modal already shown */
+                });
+            });
+        });
     }
 
     function saveFields() {
@@ -335,6 +362,10 @@
 
     writeConfigForm();
     renderTable();
+    bindWizardNavSave();
+    if (canEdit) {
+        setStatus("Los parámetros se guardan con «Guardar parámetros» o al pulsar Anterior/Siguiente.", false);
+    }
     if (canEdit && form) {
         openCreate();
     }

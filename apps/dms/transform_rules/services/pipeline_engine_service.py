@@ -144,7 +144,7 @@ def apply_step(value, step: dict):
                 op=op,
                 error_code="op_params",
             ) from exc
-    if op == "number_format":
+    if op in ("number_format", "number_integer"):
         text = _as_text(value).strip()
         if not text:
             return text
@@ -156,7 +156,12 @@ def apply_step(value, step: dict):
                 op=op,
                 error_code="number_parse",
             ) from exc
-        places = int(step.get("decimal_places") if step.get("decimal_places") is not None else 2)
+        if op == "number_integer":
+            places = 0
+        else:
+            places = int(
+                step.get("decimal_places") if step.get("decimal_places") is not None else 2
+            )
         if places < 0:
             places = 0
         quant = Decimal("1").scaleb(-places) if places else Decimal("1")

@@ -6,4 +6,9 @@ urlpatterns = [
     path("", views.hub, name="history_hub"),
     path("ayuda/", views.hub_help, name="history_hub_help"),
     path("jobs/<uuid:job_id>/", views.detail, name="history_detail"),
+    path(
+        "jobs/<uuid:job_id>/eliminar/",
+        views.delete_job,
+        name="history_delete_job",
+    ),
 ]

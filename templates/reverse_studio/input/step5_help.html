@@ -1,18 +1,85 @@
 ﻿{% extends "app_base.html" %}
 {% load static %}
+
 {% block title %}Ayuda · Paso 5 — {{ project.name }}{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/source_profile.css' %}"><link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">Entrada</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_step5' project_slug=project.slug %}">Paso 5</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
-    <div><h2>Ayuda — Reglas de contenido</h2></div>
-    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'reverse_studio:input_step5' project_slug=project.slug %}">← Volver</a></div>
+    <div>
+        <p class="page-eyebrow">Referencia · Entrada · Paso 5 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Reglas de contenido</h2>
+        <p>Limpieza y filtros globales al leer la planilla, antes del mapeo (<code>content_rules</code>).</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'reverse_studio:input_step5' project_slug=project.slug %}">← Volver al paso 5</a>
+    </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li>Aplican al leer la planilla, antes del mapeo.</li>
-    <li>En Excel/CSV, <code>trim_lines</code> suele ayudar.</li>
-    <li>Los cambios deben persistirse al guardar o al pulsar Siguiente.</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué decide este paso</h3>
+        <p class="help-intro">
+            Políticas que aplican a <strong>toda</strong> la lectura: espacios, líneas vacías, comentarios,
+            caracteres prohibidos y patrones globales. Complementan (no sustituyen) el tipo de contenido
+            por campo del paso 4.
+        </p>
+
+        <h3 class="form-section-title">Opciones frecuentes</h3>
+        <table class="help-table">
+            <thead><tr><th>Opción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">trim_lines</td><td>Quita espacios al inicio/fin de cada línea. <strong>Recomendado</strong> en CSV/Excel amigables.</td></tr>
+                <tr><td class="mono">skip_empty_lines</td><td>Ignora líneas en blanco. Suele ayudar en planillas exportadas.</td></tr>
+                <tr><td>Prefijo comentario</td><td>Líneas que empiezan así se omiten (p. ej. <code>#</code>).</td></tr>
+                <tr><td>Caracteres / patrones</td><td>Restricciones adicionales; un valor incompatible puede rechazar la fila.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">No confundir</h3>
+        <table class="help-table">
+            <thead><tr><th>Esto (paso 5)</th><th>No es…</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Limpieza al <em>leer</em> la planilla</td>
+                    <td>Reglas de mapeo (M3): trim/upper/pad/fechas <em>después</em> del enlace campo→layout</td>
+                </tr>
+                <tr>
+                    <td>Política global de líneas</td>
+                    <td>Tipo de contenido por campo (paso 4) ni serialización de salida (Módulo 2 paso 5)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Cómo se guarda</h3>
+        <ul>
+            <li>Pulse <strong>Guardar borrador</strong> o <strong>Siguiente</strong> para persistir; no asuma guardado solo al marcar checks.</li>
+            <li>La política de error del proyecto (<code>skip_row</code> / <code>abort</code>) define qué pasa si una fila falla al generar.</li>
+            <li>Publique (M4) para que Generar use estos cambios.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

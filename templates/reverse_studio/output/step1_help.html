@@ -1,17 +1,24 @@
 ﻿{% extends "app_base.html" %}
 {% load static %}
 
-{% block title %}Ayuda — Paso 1 layout de envío{% endblock %}
+{% block title %}Ayuda · Paso 1 salida — {{ project.name }}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
     <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}">Salida</a>
     <span class="breadcrumb-sep">/</span>
     <a href="{% url 'reverse_studio:output_step1' project_slug=project.slug %}">Paso 1</a>
@@ -23,9 +30,9 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Referencia · Paso 1 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <p class="page-eyebrow">Referencia · Salida · Paso 1 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Tipo de layout de envío</h2>
-        <p>Formato rígido del archivo que recibe el banco/ERP (<code>TargetFileType</code>, whitelist Reverse).</p>
+        <p>Formato rígido que exige el receptor. Condiciona estructura, campos y serialización.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:output_step1' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 1</a>
@@ -34,14 +41,30 @@
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <p class="help-intro">Elija solo formatos de emisión del MVP. Condiciona estructura, campos y serialización. CSV/Excel no aplican como salida (son entrada).</p>
+        <h3 class="form-section-title">Qué decide este paso</h3>
+        <p class="help-intro">
+            El <strong>tipo de archivo de salida</strong>. No es la planilla de negocio (entrada) ni genera el archivo todavía.
+        </p>
+
+        <h3 class="form-section-title">Whitelist MVP</h3>
         <table class="help-table">
-            <thead><tr><th>Elemento</th><th>Qué hace</th></tr></thead>
+            <thead><tr><th>Código</th><th>Uso típico</th></tr></thead>
             <tbody>
-                <tr><td>Tarjetas de tipo</td><td>Solo <span class="mono">txt_fixed</span>, <span class="mono">json</span> o <span class="mono">xml</span>.</td></tr>
-                <tr><td>Guardar / Continuar</td><td>Persiste el tipo y avanza al paso 2 (codificación).</td></tr>
+                <tr><td class="mono">txt_fixed</td><td>TXT posicional (bancos / legacy). Caso estrella Reverse.</td></tr>
+                <tr><td class="mono">json</td><td>Batch JSON / APIs.</td></tr>
+                <tr><td class="mono">xml</td><td>XML del proveedor o ERP.</td></tr>
             </tbody>
         </table>
+        <p class="help-intro">
+            <strong>No</strong> se admiten como salida: CSV, Excel ni delimitado amigable (el negocio ya los usa de entrada; use FilePipe si necesita emitirlos).
+        </p>
+
+        <h3 class="form-section-title">Reglas</h3>
+        <ul>
+            <li>Solo <span class="mono">PA</span> / <span class="mono">ED</span> editan (OUT1).</li>
+            <li>Cambiar el tipo con campos ya definidos pide confirmación; puede limpiar campos (OUT4).</li>
+            <li>Se guarda en borrador; publicar la definición completa es el Módulo 4.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

@@ -380,8 +380,10 @@
                 window.location.href = nextUrl;
             }
         } catch (err) {
-            const detail = formatErrors(err.errors);
-            const message = detail || err.message || "No se pudo guardar.";
+            const message =
+                err.message ||
+                formatErrors(err.errors) ||
+                "No se pudo guardar.";
             setStatus(message, true);
             showErrorModal(message);
         }

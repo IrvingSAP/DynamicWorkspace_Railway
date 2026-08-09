@@ -38,6 +38,7 @@
     <div class="page-actions">
         {% url 'reverse_studio:mapping_rules_hub_help' project_slug=project.slug as transform_rules_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=transform_rules_help_url %}
+        <a href="{% url 'reverse_studio:mapping_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub mapeo</a>
         <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
         {% if rule_rows %}
         <a href="{% url 'reverse_studio:mapping_rules_editor' project_slug=project.slug %}" class="btn btn-primary">Abrir editor</a>

@@ -114,10 +114,16 @@
             <a href="{% url 'reverse_studio:mapping_rules_hub' project_slug=project.slug %}" class="step-summary-card">
                 <div>
                     <h4>2 · Reglas de transformación</h4>
-                    <p>Pipeline post-enlace: trim, upper, date_format, replace_map…</p>
+                    <p>Pipeline post-enlace: trim, upper, date_format, replace_map… (opcional).</p>
                 </div>
-                <span class="flow-card-status flow-card-status--{% if mapping_summary.pipelines_with_steps %}draft{% else %}empty{% endif %}">
-                    {% if mapping_summary.pipelines_with_steps %}Parcial{% else %}Pendiente{% endif %}
+                <span class="flow-card-status flow-card-status--{% if mapping_summary.rules_all_configured %}done{% elif mapping_summary.pipelines_with_steps %}draft{% else %}empty{% endif %}">
+                    {% if mapping_summary.rules_all_configured %}
+                    Listo
+                    {% elif mapping_summary.pipelines_with_steps %}
+                    Parcial ({{ mapping_summary.pipelines_with_steps }}/{{ mapping_summary.mappings_count }})
+                    {% else %}
+                    Sin reglas
+                    {% endif %}
                 </span>
             </a>
             <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}" class="step-summary-card">

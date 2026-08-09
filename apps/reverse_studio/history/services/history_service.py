@@ -6,6 +6,8 @@ resultados (HIS2). Descargas vía enlaces M5 + TTL DMS.
 
 from __future__ import annotations
 
+import logging
+import shutil
 from datetime import datetime, time, timedelta
 from urllib.parse import urlencode
 
@@ -16,12 +18,23 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 
+from apps.core.services.operation_result import OperationResult
 from apps.dms.file_intake.models import DmsExecutionJob
-from apps.dms.file_intake.services import detection_service
+from apps.dms.file_intake.services import detection_service, storage_service
 from apps.dms.transform_execution.constants import DOWNLOAD_TTL
 from apps.dms.transform_execution.services import execution_service
 from apps.projects.models import Project, ProjectMembership
 from apps.reverse_studio.run.services import generate_run_service
+
+logger = logging.getLogger(__name__)
+
+MSG_DELETED = "Generación eliminada del historial."
+MSG_NOT_FOUND = "No se encontró la generación o ya no está disponible."
+MSG_NOT_OWNER = "Solo puede eliminar generaciones que usted ejecutó."
+MSG_NO_PERMISSION = "No tiene permiso para ver el historial de este proyecto."
+MSG_UNEXPECTED = (
+    "No se pudo eliminar la generación. Si el problema continúa, contacte al administrador."
+)
 
 PAGE_SIZE = 25
 MAX_SCAN = 500
@@ -203,7 +216,7 @@ def _executed_by_label(job: DmsExecutionJob) -> str:
     )
 
 
-def build_row(project: Project, job: DmsExecutionJob, *, can_download: bool) -> dict:
+def build_row(project: Project, job: DmsExecutionJob, *, can_download: bool, user=None) -> dict:
     content_hash = job.input_content_hash or ""
     expired = execution_service.is_download_expired(job)
     status = job.status
@@ -253,6 +266,7 @@ def build_row(project: Project, job: DmsExecutionJob, *, can_download: bool) -> 
         "finished_at": job.finished_at or job.created_at,
         "is_expired": expired,
         "downloads": downloads,
+        "can_delete": can_delete_job(user, job) if user is not None else False,
         "detail_url": reverse(
             "reverse_studio:history_detail",
             kwargs={"project_slug": project.slug, "job_id": job.id},
@@ -261,8 +275,8 @@ def build_row(project: Project, job: DmsExecutionJob, *, can_download: bool) -> 
     }
 
 
-def build_detail(project: Project, job: DmsExecutionJob, *, can_download: bool) -> dict:
-    row = build_row(project, job, can_download=can_download)
+def build_detail(project: Project, job: DmsExecutionJob, *, can_download: bool, user=None) -> dict:
+    row = build_row(project, job, can_download=can_download, user=user)
     row["input_mime_type"] = job.input_mime_type or ""
     row["output_size_label"] = detection_service.human_size(job.output_size_bytes or 0)
     row["job_type"] = job.job_type
@@ -317,7 +331,9 @@ def build_history_context(user, project: Project, params) -> dict:
     role = membership.role if membership else ProjectMembership.ROLE_CO
 
     jobs = list(_filtered_queryset(project, filters)[:MAX_SCAN])
-    universe = [build_row(project, job, can_download=can_download) for job in jobs]
+    universe = [
+        build_row(project, job, can_download=can_download, user=user) for job in jobs
+    ]
     any_jobs = (
         DmsExecutionJob.objects.filter(project=project)
         .exclude(status__in=NON_FINAL_JOB_STATUSES)
@@ -379,4 +395,65 @@ def get_job_detail(user, project: Project, job_id) -> dict | None:
     if job.status in NON_FINAL_JOB_STATUSES:
         return None
     can_download = generate_run_service.user_can_download(user, project)
-    return build_detail(project, job, can_download=can_download)
+    return build_detail(project, job, can_download=can_download, user=user)
+
+
+def can_delete_job(user, job: DmsExecutionJob) -> bool:
+    """Solo el ejecutor puede borrar su propia generación finalizada."""
+    if user is None or not getattr(user, "is_authenticated", False):
+        return False
+    if not job.executed_by_id:
+        return False
+    if job.status in NON_FINAL_JOB_STATUSES:
+        return False
+    if job.job_type == DmsExecutionJob.JOB_PREVIEW:
+        return False
+    return job.executed_by_id == user.id
+
+
+def _job_storage_root(project: Project, job: DmsExecutionJob):
+    return storage_service.job_input_dir(
+        project.company_id, project.id, job.id
+    ).parent
+
+
+def _purge_job_storage(project: Project, job: DmsExecutionJob) -> None:
+    root = _job_storage_root(project, job)
+    if not root.exists():
+        return
+    try:
+        shutil.rmtree(root, ignore_errors=False)
+    except OSError:
+        logger.exception(
+            "purge_job_storage failed project=%s job=%s path=%s",
+            project.id,
+            job.id,
+            root,
+        )
+
+
+def delete_own_job(user, project: Project, job_id) -> OperationResult:
+    if not user_can_view_history(user, project):
+        return OperationResult.failure("permission_denied", MSG_NO_PERMISSION)
+
+    job = (
+        DmsExecutionJob.objects.filter(project=project, pk=job_id)
+        .exclude(status__in=NON_FINAL_JOB_STATUSES)
+        .exclude(job_type=DmsExecutionJob.JOB_PREVIEW)
+        .first()
+    )
+    if job is None:
+        return OperationResult.failure("not_found", MSG_NOT_FOUND)
+    if not can_delete_job(user, job):
+        return OperationResult.failure("permission_denied", MSG_NOT_OWNER)
+
+    try:
+        _purge_job_storage(project, job)
+        job.delete()
+    except Exception:
+        logger.exception(
+            "delete_own_job failed project=%s job=%s", project.id, job_id
+        )
+        return OperationResult.failure("unexpected", MSG_UNEXPECTED)
+
+    return OperationResult.success(user_message=MSG_DELETED)

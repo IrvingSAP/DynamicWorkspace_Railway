@@ -1,19 +1,109 @@
 ﻿{% extends "app_base.html" %}
 {% load static %}
+
 {% block title %}Ayuda · Nuevo proyecto — Reverse Studio{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Emisor</span>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_create' %}">Nuevo</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
-    <div><h2>Ayuda — Crear proyecto</h2>
-    <p>Nombre, código (slug) y visibilidad.</p></div>
-    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'reverse_studio:project_create' %}">← Volver</a></div>
+    <div>
+        <p class="page-eyebrow">Referencia · Reverse Studio · Acceso</p>
+        <h2>Ayuda — Crear proyecto</h2>
+        <p>Nombre, código (slug) y visibilidad del emisor. Quién crea queda como administrador (PA).</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'reverse_studio:project_create' %}">← Volver al formulario</a>
+    </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li>El slug es único por compañía (compartido entre apps).</li>
-    <li>Quien crea queda como PA del proyecto.</li>
-    <li>Tras crear: gestiona miembros (privado) y configura el contrato de entrada (6 pasos).</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué crea este formulario</h3>
+        <p class="help-intro">
+            Un proyecto <strong>Reverse Studio</strong> (kind <code>reverse</code>) en su compañía:
+            listo para definir planilla → layout → mapeo → publicar → generar.
+            No crea la definición de campos ni genera archivos todavía.
+        </p>
+
+        <h3 class="form-section-title">Campos</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Detalle</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Nombre corto (código)</td>
+                    <td>Slug único <strong>por compañía</strong>, compartido con Worksheets / FilePipe / otras apps. Use minúsculas y guiones (p. ej. <code>emision-pagos-banco</code>).</td>
+                </tr>
+                <tr>
+                    <td>Nombre visible</td>
+                    <td>Título que verá el equipo en listados y hub.</td>
+                </tr>
+                <tr>
+                    <td>Descripción</td>
+                    <td>Opcional: contexto de negocio (banco, ciclo mensual, layout destino…).</td>
+                </tr>
+                <tr>
+                    <td>Visibilidad</td>
+                    <td><strong>Privado</strong> o <strong>Público</strong> (ver abajo).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Visibilidad</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Opción</th><th>Efecto</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Privado</td>
+                    <td>Solo usuarios que agregue en <strong>Miembros</strong> ven y trabajan el proyecto.</td>
+                </tr>
+                <tr>
+                    <td>Público</td>
+                    <td>Cualquier UF de la compañía puede <strong>ver</strong> el proyecto. Editar, publicar o generar siguen exigiendo rol (ED / GE / PA).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Después de crear</h3>
+        <ol>
+            <li>Queda como <strong>PA</strong> automáticamente.</li>
+            <li>Si el proyecto es privado, invite miembros (hub → <strong>Miembros</strong>).</li>
+            <li>Configure el <strong>contrato de entrada</strong> (asistente de 6 pasos).</li>
+            <li>Siga con salida → mapeo → <strong>publicar</strong> → generar.</li>
+        </ol>
+        <p class="help-intro">
+            Sin versión publicada no se puede generar el archivo de envío.
+        </p>
+
+        <h3 class="form-section-title">Qué no hace esta pantalla</h3>
+        <ul>
+            <li>No define campos de planilla ni layout.</li>
+            <li>No publica ni genera archivos.</li>
+            <li>No crea proyectos FilePipe, FILE GATE ni FILE MATCH (use el menú de cada app).</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

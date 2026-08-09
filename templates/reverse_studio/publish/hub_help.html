@@ -27,26 +27,86 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span> · Módulo 4</p>
+        <p class="page-eyebrow">Referencia · Módulo 4 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Publicar definición</h2>
-        <p>Qué se congela y quién puede publicar.</p>
+        <p>Congela el borrador (entrada + salida + mapeo + reglas) en una versión activa. No genera el archivo de envío.</p>
     </div>
     <div class="page-actions">
-        <a href="{% url 'reverse_studio:publish_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver</a>
+        <a href="{% url 'reverse_studio:publish_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver a publicar</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
+        <h3 class="form-section-title">Qué es este módulo</h3>
+        <p class="help-intro">
+            Es el paso que convierte el trabajo de diseño en una <strong>definición publicada</strong>
+            contra la cual se generarán archivos (Módulo 5). Sin publicar, no hay emisión (RS2 / MAP7 / OUT7).
+            No es “publicar solo la planilla” ni “publicar solo el layout”: se congela todo junto (PUB2).
+        </p>
+
+        <h3 class="form-section-title">Borrador vs versión activa</h3>
         <table class="help-table">
-            <thead><tr><th>Tema</th><th>Detalle</th></tr></thead>
+            <thead><tr><th>Concepto</th><th>Detalle</th></tr></thead>
             <tbody>
-                <tr><td>Roles</td><td>Solo <span class="mono">PA</span> / <span class="mono">ED</span>.</td></tr>
-                <tr><td>Snapshot</td><td>Entrada + layout + mapeo + reglas del borrador.</td></tr>
-                <tr><td>Después</td><td>Versión activa + nuevo borrador; generar = Módulo 5.</td></tr>
-                <tr><td>Motor</td><td>Mismo <span class="mono">publish_draft_version</span> que FilePipe, con whitelist Reverse.</td></tr>
+                <tr>
+                    <td>Borrador</td>
+                    <td>Versión editable donde trabaja en M1–M3. Se publica con el botón <strong>Publicar vN</strong>.</td>
+                </tr>
+                <tr>
+                    <td>Versión activa</td>
+                    <td>Última definición <code>published</code>. Las generaciones usan solo esta.</td>
+                </tr>
+                <tr>
+                    <td>Tras publicar</td>
+                    <td>vN queda activa y se abre un nuevo borrador vN+1 (copia editable) (PUB4).</td>
+                </tr>
             </tbody>
         </table>
+
+        <h3 class="form-section-title">Checklist antes de publicar</h3>
+        <p class="help-intro">
+            El hub muestra ítems (entrada, salida, mapeo, reglas…). Cada tarjeta indica
+            <strong>Listo</strong> o <strong>Pendiente</strong> y enlaza al módulo correspondiente.
+            El botón publicar permanece deshabilitado hasta que no haya bloqueos; el servidor también valida en modo strict (PUB5).
+        </p>
+        <ul>
+            <li>Entrada: tipo whitelist, campos, pasos del asistente.</li>
+            <li>Salida: layout whitelist (posicional / JSON / XML), campos, encoding explícito.</li>
+            <li>Mapeo: obligatorios del layout cubiertos.</li>
+            <li>Reglas: opcionales; no bloquean si están vacías, pero se incluyen en el snapshot si existen.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué se congela</h3>
+        <table class="help-table">
+            <thead><tr><th>Incluido</th><th>Notas</th></tr></thead>
+            <tbody>
+                <tr><td>Contrato de entrada</td><td>Planilla csv / xlsx / delimitado + captura + campos + reglas de lectura.</td></tr>
+                <tr><td>Contrato de salida</td><td>Layout + campos + serialización + validación al escribir.</td></tr>
+                <tr><td>Mapeo + reglas</td><td>Enlaces planilla → layout y <code>transform_pipeline</code>.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Quién puede publicar</h3>
+        <ul>
+            <li>Solo <span class="mono">PA</span> / <span class="mono">ED</span> (PUB1).</li>
+            <li><span class="mono">GE</span> genera contra la versión activa; no publica.</li>
+            <li><span class="mono">CO</span> consulta; no publica ni genera datos de negocio.</li>
+        </ul>
+
+        <h3 class="form-section-title">Después de publicar</h3>
+        <ol>
+            <li>Confirme el diálogo; verá el mensaje de éxito con vN publicada y nuevo borrador.</li>
+            <li>Use <strong>Continuar a generar</strong> (Módulo 5) para subir la planilla y emitir el archivo.</li>
+            <li>Si necesita ajustes: edite el nuevo borrador → vuelva a publicar (la nueva activa sustituye la anterior para generar).</li>
+        </ol>
+
+        <h3 class="form-section-title">Qué no hace esta pantalla</h3>
+        <ul>
+            <li>No edita campos ni mapeos (use M1–M3).</li>
+            <li>No sube planillas ni escribe el archivo de envío (eso es Generar).</li>
+            <li>Publicar no ejecuta un job: solo habilita la generación (PUB9).</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

@@ -101,6 +101,29 @@ def flatten_validation_messages(bucket: dict[str, list[str]] | None) -> list[str
     return messages
 
 
+def build_validation_user_message(
+    errors: dict[str, list[str]] | None,
+    *,
+    is_reverse: bool = False,
+    max_details: int = 3,
+) -> str:
+    """Mensaje de cabecera + detalle de validación para modal / JSON."""
+    intro = (
+        "Revise los datos del contrato de salida."
+        if is_reverse
+        else "Revise los datos del perfil de destino."
+    )
+    details = flatten_validation_messages(errors)
+    if not details:
+        return intro
+    shown = details[: max(1, max_details)]
+    text = f"{intro} {' '.join(shown)}"
+    remaining = len(details) - len(shown)
+    if remaining > 0:
+        text += f" (+{remaining} más)."
+    return text
+
+
 def validate_target_dict(
     data: dict,
     *,
@@ -192,9 +215,13 @@ def validate_target_dict(
             prev_start, prev_end, prev_name = positional[index - 1]
             start, end, name = positional[index]
             if start <= prev_end:
+                suggested = prev_end + 1
                 errors.setdefault("fields", []).append(
                     f"Solapamiento entre «{prev_name}» ({prev_start}-{prev_end}) "
-                    f"y «{name}» ({start}-{end})."
+                    f"y «{name}» ({start}-{end}). "
+                    f"Al cambiar la longitud de un campo debe ajustar el inicio "
+                    f"de los siguientes: «{name}» debería empezar en {suggested} "
+                    f"(o más) y revisar el resto del layout."
                 )
 
         record_length = layout.get("record_length")
@@ -202,13 +229,17 @@ def validate_target_dict(
             try:
                 record_length = int(record_length)
             except (TypeError, ValueError):
-                errors.setdefault("layout", []).append("record_length inválido.")
+                errors.setdefault("layout", []).append(
+                    "Longitud de registro (record_length) inválida: use un número entero."
+                )
                 record_length = None
             if record_length is not None and positional:
                 max_end = max(item[1] for item in positional)
                 if max_end > record_length:
                     errors.setdefault("layout", []).append(
-                        f"Los campos superan record_length ({max_end} > {record_length})."
+                        f"Los campos llegan hasta la posición {max_end}, "
+                        f"pero record_length es {record_length}. "
+                        f"Aumente record_length a {max_end} o reduzca los campos."
                     )
 
     if file_type in ("txt_delimited", "csv"):
@@ -405,11 +436,7 @@ def save_target(
     if errors:
         return OperationResult.failure(
             "validation_form",
-            (
-                "Revise los datos del contrato de salida."
-                if is_reverse
-                else "Revise los datos del perfil de destino."
-            ),
+            build_validation_user_message(errors, is_reverse=is_reverse),
             errors=errors,
             warnings=warnings,
         )

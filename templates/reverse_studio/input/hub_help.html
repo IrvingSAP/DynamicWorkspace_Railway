@@ -6,9 +6,12 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -25,26 +28,61 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Reverse Studio · ayuda</p>
-        <h2>Cómo usar el contrato de entrada</h2>
-        <p>Describe la planilla de negocio. No genera el archivo del banco/ERP.</p>
+        <p class="page-eyebrow">Referencia · Módulo 1 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Contrato de entrada</h2>
+        <p>Describe cómo se lee la planilla de negocio. No genera el archivo del banco/ERP.</p>
     </div>
     <div class="page-actions">
-        <a class="btn btn-secondary" href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">← Volver</a>
+        <a class="btn btn-secondary" href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">← Volver al hub</a>
     </div>
 </div>
-<div class="panel"><div class="panel-body">
-    <h3 class="form-section-title">Función</h3>
-    <ul>
-        <li>Configura tipo (solo CSV / Excel / delimitado), captura, campos y reglas.</li>
-        <li>Guarda borrador; la publicación completa es el Módulo 4.</li>
-        <li>Tras completar los 6 pasos → continuar a contrato de salida (Módulo 2).</li>
-    </ul>
-    <h3 class="form-section-title" style="margin-top:18px">Reglas clave</h3>
-    <ul>
-        <li><strong>IN1</strong> — Solo PA/ED editan</li>
-        <li><strong>IN3</strong> — Whitelist de tipos de planilla</li>
-        <li><strong>IN7</strong> — Completar M1 solo no habilita generar</li>
-    </ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es este módulo</h3>
+        <p class="help-intro">
+            Define el <strong>contrato de entrada</strong>: tipo de planilla, zona de captura, campos,
+            reglas de lectura e informe. El resultado queda en el <strong>borrador</strong> de la versión;
+            solo la <strong>definición publicada</strong> (Módulo 4) se usa al generar (M5).
+        </p>
+
+        <h3 class="form-section-title">Los 6 pasos</h3>
+        <table class="help-table">
+            <thead><tr><th>Paso</th><th>Decide</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">1</td><td>Tipo de planilla (csv / xlsx / delimitado), encoding y fin de línea.</td></tr>
+                <tr><td class="mono">2</td><td>Inicio de captura (<code>capture_start</code>).</td></tr>
+                <tr><td class="mono">3</td><td>Fin de captura (<code>capture_end</code>).</td></tr>
+                <tr><td class="mono">4</td><td>Campos: dónde leer y nombre interno para el mapeo.</td></tr>
+                <tr><td class="mono">5</td><td>Reglas de contenido globales al leer.</td></tr>
+                <tr><td class="mono">6</td><td>Informe de lectura del job de generación.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no hace</h3>
+        <ul>
+            <li>No define el layout de envío (Módulo 2 — Salida).</li>
+            <li>No mapea ni aplica reglas de transformación post-mapeo (Módulo 3).</li>
+            <li>No sube la planilla de producción ni genera el archivo (Módulo 5).</li>
+            <li>Completar solo M1 <strong>no</strong> habilita generar (IN7): hace falta salida + mapeo + publicar.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles y publicación</h3>
+        <table class="help-table">
+            <thead><tr><th>Tema</th><th>Detalle</th></tr></thead>
+            <tbody>
+                <tr><td>Edición</td><td>Solo <span class="mono">PA</span> / <span class="mono">ED</span> (IN1).</td></tr>
+                <tr><td>Tipos</td><td>Whitelist MVP: <code>csv</code>, <code>xlsx</code>, <code>txt_delimited</code> (IN3).</td></tr>
+                <tr><td>Borrador vs publicado</td><td>Los cambios del asistente van al borrador. Tras editar, <strong>publique</strong> (M4) para que Generar use la versión nueva.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Después de completar</h3>
+        <ol>
+            <li>Continúe al <strong>contrato de salida</strong> (Módulo 2).</li>
+            <li>Enlace campos en <strong>Mapeo</strong> y, si hace falta, <strong>Reglas</strong> (Módulo 3).</li>
+            <li><strong>Publique</strong> la definición y pruebe en <strong>Generar</strong>.</li>
+        </ol>
+    </div>
+</div>
 {% endblock %}

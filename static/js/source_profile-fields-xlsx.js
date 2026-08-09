@@ -22,6 +22,7 @@
     const btnDelete = document.getElementById("btn-delete-field");
     const btnSaveConfig = document.getElementById("btn-save-xlsx-config");
     const dateFormatWrap = document.getElementById("field-date-format-wrap");
+    const patternWrap = document.getElementById("field-pattern-wrap");
 
     let config = loadConfig();
     let fields = loadFields();
@@ -57,11 +58,16 @@
             content_type: item.content_type || "free_text",
             required: Boolean(item.required),
             date_format: item.date_format || "",
+            pattern: item.pattern || "",
         };
     }
 
     function isDateType(type) {
         return type === "date" || type === "datetime";
+    }
+
+    function isCustomType(type) {
+        return type === "custom";
     }
 
     function setStatus(message, isError) {
@@ -97,12 +103,14 @@
     }
 
     function readForm() {
+        const patternEl = document.getElementById("field-pattern");
         return {
             name: (document.getElementById("field-name").value || "").trim().toLowerCase(),
             column: (document.getElementById("field-column").value || "").trim().toUpperCase(),
             content_type: document.getElementById("field-content-type").value,
             required: document.getElementById("field-required").checked,
             date_format: (document.getElementById("field-date-format").value || "").trim(),
+            pattern: patternEl ? (patternEl.value || "").trim() : "",
         };
     }
 
@@ -112,7 +120,11 @@
         document.getElementById("field-content-type").value = item.content_type;
         document.getElementById("field-required").checked = item.required;
         document.getElementById("field-date-format").value = item.date_format || "";
-        syncDateFormatField();
+        const patternEl = document.getElementById("field-pattern");
+        if (patternEl) {
+            patternEl.value = item.pattern || "";
+        }
+        syncConditionalFields();
     }
 
     function blankForm() {
@@ -122,6 +134,7 @@
             content_type: "numeric",
             required: true,
             date_format: "",
+            pattern: "",
         });
     }
 
@@ -162,7 +175,18 @@
         if (isDateType(data.content_type) && !data.date_format) {
             errors.push("Indique date_format para campos de fecha u hora.");
         }
+        if (isCustomType(data.content_type) && !data.pattern) {
+            errors.push("Indique el patrón regex para el tipo custom.");
+        }
         return errors;
+    }
+
+    function syncPatternField() {
+        if (!patternWrap) {
+            return;
+        }
+        const type = document.getElementById("field-content-type").value;
+        patternWrap.hidden = !isCustomType(type);
     }
 
     function syncDateFormatField() {
@@ -171,6 +195,11 @@
         }
         const type = document.getElementById("field-content-type").value;
         dateFormatWrap.hidden = !isDateType(type);
+    }
+
+    function syncConditionalFields() {
+        syncPatternField();
+        syncDateFormatField();
     }
 
     function setEditorMode(mode, index) {
@@ -236,16 +265,43 @@
         });
     }
 
-    function saveConfig() {
+    function saveConfig(nextUrl) {
         if (!canEdit) {
+            if (nextUrl) {
+                window.location.href = nextUrl;
+            }
             return Promise.resolve();
         }
         config = readConfigForm();
         if (!config.sheet_name) {
-            setStatus("Indique el nombre de la hoja.", true);
-            return Promise.reject(new Error("Indique el nombre de la hoja."));
+            const message = "Indique el nombre de la hoja.";
+            setStatus(message, true);
+            return Promise.reject(new Error(message));
         }
-        return persist({ config: config });
+        if (nextUrl) {
+            setStatus("Guardando…", false);
+        }
+        return persist({ config: config }).then(function () {
+            if (nextUrl) {
+                window.location.href = nextUrl;
+            }
+        });
+    }
+
+    function bindWizardNavSave() {
+        const links = document.querySelectorAll(".wizard-footer-actions a[href]");
+        links.forEach(function (link) {
+            link.addEventListener("click", function (e) {
+                if (!canEdit) {
+                    return;
+                }
+                e.preventDefault();
+                const href = link.getAttribute("href");
+                saveConfig(href).catch(function () {
+                    /* status / modal already shown */
+                });
+            });
+        });
     }
 
     function saveFields() {
@@ -308,6 +364,18 @@
             saveConfig();
         });
     }
+    ["sheet_name", "header_row"].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el && canEdit) {
+            el.addEventListener("input", function () {
+                setStatus("Cambios sin guardar. Pulse «Guardar parámetros» o Anterior/Siguiente.", false);
+            });
+            el.addEventListener("change", function () {
+                setStatus("Cambios sin guardar. Pulse «Guardar parámetros» o Anterior/Siguiente.", false);
+            });
+        }
+    });
+    bindWizardNavSave();
     if (btnAdd) {
         btnAdd.addEventListener("click", openCreate);
     }
@@ -357,13 +425,16 @@
     }
     const contentTypeSelect = document.getElementById("field-content-type");
     if (contentTypeSelect) {
-        contentTypeSelect.addEventListener("change", syncDateFormatField);
+        contentTypeSelect.addEventListener("change", syncConditionalFields);
     }
 
     writeConfigForm();
     renderTable();
+    if (canEdit) {
+        setStatus("Los parámetros de hoja se guardan con «Guardar parámetros» o al pulsar Anterior/Siguiente.", false);
+    }
     if (canEdit && form) {
-        syncDateFormatField();
+        syncConditionalFields();
         openCreate();
     }
 })();

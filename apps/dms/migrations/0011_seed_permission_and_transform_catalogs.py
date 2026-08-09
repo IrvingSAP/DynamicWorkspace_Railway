@@ -43,7 +43,8 @@ def seed_packages_and_ops(apps, schema_editor):
             ("rtrim", "Trim derecha", "phase_2", [], 120),
             ("regex_extract", "Extraer regex", "phase_2", ["pattern", "group"], 130),
             ("coalesce", "Coalesce", "phase_2", ["value", "values"], 140),
-            ("number_format", "Formato numérico", "phase_2", ["decimal_places", "thousands_sep", "decimal_sep"], 150),
+            ("number_format", "Numérico con decimales", "phase_2", ["decimal_places", "thousands_sep", "decimal_sep"], 150),
+            ("number_integer", "Numérico entero", "phase_2", [], 155),
             ("boolean_map", "Mapa booleano", "phase_2", ["true_values", "false_values", "output_true", "output_false"], 160),
         ]
         for code, name, phase, params, order in transform_ops:

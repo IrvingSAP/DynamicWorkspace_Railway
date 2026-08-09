@@ -2,25 +2,91 @@
 {% load static %}
 
 {% block title %}Ayuda · Paso 1 — {{ project.name }}{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
 {% block breadcrumb %}
-<nav class="breadcrumb"><a href="{% url 'reverse_studio:input_step1' project_slug=project.slug %}">Paso 1</a><span class="breadcrumb-sep">/</span><span>Ayuda</span></nav>
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">Entrada</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_step1' project_slug=project.slug %}">Paso 1</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
 {% endblock %}
+
 {% block content %}
 <div class="page-header">
-    <div><h2>Ayuda — Tipo de planilla</h2><p>Whitelist MVP y parámetros de texto.</p></div>
-    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'reverse_studio:input_step1' project_slug=project.slug %}">← Volver</a></div>
+    <div>
+        <p class="page-eyebrow">Referencia · Entrada · Paso 1 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Tipo de planilla</h2>
+        <p>Formato que enviará el negocio, encoding y fin de línea. Condiciona el paso 4 y las extensiones al generar.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'reverse_studio:input_step1' project_slug=project.slug %}">← Volver al paso 1</a>
+    </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li><strong>Permitidos:</strong> <code>xlsx</code>, <code>csv</code>, <code>txt_delimited</code>.</li>
-    <li><strong>Bloqueados:</strong> posicional / JSON / XML como entrada (FilePipe o salida M2).</li>
-    <li>Encoding y fin de línea afectan la lectura de la planilla.</li>
-    <li>Cambiar tipo con campos existentes dispara confirmación (IN4).</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué decide este paso</h3>
+        <p class="help-intro">
+            El <strong>tipo de planilla</strong> de entrada (contrato de lectura). No define el layout del banco/ERP
+            (salida, Módulo 2) ni genera archivos.
+        </p>
+
+        <h3 class="form-section-title">Whitelist MVP</h3>
+        <table class="help-table">
+            <thead><tr><th>Código</th><th>Uso</th><th>Al generar (M5)</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td class="mono">xlsx</td>
+                    <td>Excel de negocio. En el paso 4 se configuran hoja, encabezados y columnas.</td>
+                    <td>Use archivos <strong>.xlsx</strong>. El formato antiguo <strong>.xls</strong> no se lee.</td>
+                </tr>
+                <tr>
+                    <td class="mono">csv</td>
+                    <td>CSV con delimitador (coma u otro, paso 4).</td>
+                    <td>Extensión acorde al tipo publicado.</td>
+                </tr>
+                <tr>
+                    <td class="mono">txt_delimited</td>
+                    <td>Texto delimitado (punto y coma, tab, etc.).</td>
+                    <td>Igual: extensión y delimitador deben coincidir con el contrato.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            <strong>No</strong> se admiten como entrada: posicional, JSON ni XML (van en FilePipe o como <em>salida</em> Reverse).
+        </p>
+
+        <h3 class="form-section-title">Parámetros de texto</h3>
+        <table class="help-table">
+            <thead><tr><th>Parámetro</th><th>Para qué</th></tr></thead>
+            <tbody>
+                <tr><td>Encoding</td><td>Cómo se interpretan los caracteres al leer CSV/delimitado. En Excel suele ser secundario.</td></tr>
+                <tr><td>Fin de línea</td><td>Relevante en CSV / delimitado; en Excel no suele condicionar la lectura.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Reglas</h3>
+        <ul>
+            <li>Solo <span class="mono">PA</span> / <span class="mono">ED</span> editan (IN1).</li>
+            <li>Cambiar el tipo con campos ya definidos pide confirmación; puede limpiar campos (IN4).</li>
+            <li>Se guarda en <strong>borrador</strong>; publicar la definición completa es el Módulo 4.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

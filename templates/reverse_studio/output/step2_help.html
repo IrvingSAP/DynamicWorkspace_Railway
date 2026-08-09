@@ -1,17 +1,24 @@
 ﻿{% extends "app_base.html" %}
 {% load static %}
 
-{% block title %}Ayuda — Paso 2 layout de envío{% endblock %}
+{% block title %}Ayuda · Paso 2 salida — {{ project.name }}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
     <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}">Salida</a>
     <span class="breadcrumb-sep">/</span>
     <a href="{% url 'reverse_studio:output_step2' project_slug=project.slug %}">Paso 2</a>
@@ -23,9 +30,9 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Referencia · Paso 2 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <p class="page-eyebrow">Referencia · Salida · Paso 2 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Codificación y final de línea</h2>
-        <p>Parámetros de texto al escribir el archivo (sin detección automática).</p>
+        <p>Parámetros de texto al <strong>escribir</strong> el archivo de envío (no es captura de la planilla).</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:output_step2' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 2</a>
@@ -34,14 +41,27 @@
 
 <div class="panel help-panel">
     <div class="panel-body">
+        <h3 class="form-section-title">Qué decide este paso</h3>
+        <p class="help-intro">
+            Cómo se codifican los bytes y qué fin de línea usa el receptor. Debe ser
+            <strong>explícito</strong>: no hay detección automática al escribir (OUT11).
+        </p>
+
+        <h3 class="form-section-title">Campos</h3>
         <table class="help-table">
-            <thead><tr><th>Campo</th><th>Función</th></tr></thead>
+            <thead><tr><th>Campo</th><th>Detalle</th></tr></thead>
             <tbody>
-                <tr><td>Encoding</td><td>Codificación de salida (<span class="mono">utf-8</span>, <span class="mono">latin-1</span>…).</td></tr>
-                <tr><td>Fin de línea</td><td><span class="mono">LF</span>, <span class="mono">CRLF</span> u opción personalizada.</td></tr>
-                <tr><td>Guardar / Continuar</td><td>Persiste y avanza al layout (paso 3).</td></tr>
+                <tr><td>Codificación</td><td>p. ej. <code>utf-8</code>, <code>latin-1</code>. Elija lo que exige el banco/ERP.</td></tr>
+                <tr><td>Final de línea</td><td><code>LF</code>, <code>CRLF</code> u opción personalizada.</td></tr>
             </tbody>
         </table>
+
+        <h3 class="form-section-title">No confundir</h3>
+        <ul>
+            <li>Este paso <strong>no</strong> define inicio/fin de captura de la planilla (eso es entrada, pasos 2–3).</li>
+            <li>El encoding de <em>lectura</em> de la planilla se configura en el contrato de entrada.</li>
+            <li>Pueden ser distintos: UTF-8 en la planilla y Latin-1 en el TXT del banco, si el receptor lo pide.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

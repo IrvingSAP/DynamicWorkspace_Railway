@@ -22,6 +22,7 @@ TRANSFORM_OPS_PHASE2 = frozenset(
         "regex_extract",
         "coalesce",
         "number_format",
+        "number_integer",
         "boolean_map",
     }
 )
@@ -87,9 +88,15 @@ TRANSFORM_OP_OPTIONS = [
     },
     {
         "code": "number_format",
-        "name": "Formato numérico",
+        "name": "Numérico con decimales",
         "phase": "phase_2",
         "params": ["decimal_places", "thousands_sep", "decimal_sep"],
+    },
+    {
+        "code": "number_integer",
+        "name": "Numérico entero",
+        "phase": "phase_2",
+        "params": [],
     },
     {
         "code": "boolean_map",

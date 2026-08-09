@@ -1,19 +1,124 @@
 ﻿{% extends "app_base.html" %}
 {% load static %}
+
 {% block title %}Ayuda · Listado — Reverse Studio{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Emisor</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
-    <div><h2>Ayuda — Proyectos Reverse Studio</h2>
-    <p>Listado de emisores de layout de su compañía.</p></div>
-    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'reverse_studio:project_list' %}">← Volver</a></div>
+    <div>
+        <p class="page-eyebrow">Referencia · Reverse Studio · Emisor</p>
+        <h2>Ayuda — Listado de proyectos</h2>
+        <p>Proyectos de emisión de su compañía: qué ve, qué significan las columnas y cómo empezar.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'reverse_studio:project_list' %}">← Volver al listado</a>
+    </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li>Cada proyecto tiene kind <code>reverse</code> (aislado de FilePipe y FILE GATE).</li>
-    <li>El PA gestiona miembros y roles (PA/ED/GE/CO) en la pantalla Miembros.</li>
-    <li>Empiece por el contrato de entrada; salida y generación vienen después.</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es este listado</h3>
+        <p class="help-intro">
+            Es la puerta de entrada a <strong>Reverse Studio</strong> (Emisor). Cada fila es un proyecto
+            con kind <code>reverse</code>: convierte una planilla amigable (CSV / Excel / delimitado)
+            en el layout de envío (TXT posicional / JSON / XML). Está aislado de FilePipe, FILE GATE y FILE MATCH.
+        </p>
+        <ul>
+            <li>Solo se listan proyectos de <strong>su compañía</strong> (alcance UF).</li>
+            <li>Aparecen los proyectos donde usted es <strong>miembro</strong> y los <strong>públicos</strong> de la compañía (aunque no sea miembro).</li>
+            <li>Desde aquí crea un proyecto nuevo o abre el <strong>hub</strong> de uno existente.</li>
+        </ul>
+
+        <h3 class="form-section-title">Tarjetas de resumen</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Indicador</th><th>Significado</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Total</td><td>Proyectos Reverse visibles para usted en esta compañía.</td></tr>
+                <tr><td>Activos</td><td>No archivados (disponibles para trabajo).</td></tr>
+                <tr><td>Como admin (PA)</td><td>Proyectos donde su rol es administrador.</td></tr>
+                <tr><td>Públicos compañía</td><td>Visibilidad pública: cualquier UF de la compañía puede verlos.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columnas de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Qué muestra</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Código</td><td>Slug único del proyecto en la compañía; enlace al hub.</td></tr>
+                <tr><td>Nombre</td><td>Nombre visible del emisor.</td></tr>
+                <tr><td>Visibilidad</td><td><strong>Privado</strong> (solo miembros) o <strong>Público</strong> (la compañía puede verlo).</td></tr>
+                <tr><td>Mi permiso</td><td>Su rol (PA / ED / GE / CO) o consulta si solo lo ve por ser público.</td></tr>
+                <tr><td>Versión</td><td>Estado de la definición (borrador / versión publicada activa).</td></tr>
+                <tr><td>Acciones</td><td>Abrir el hub del proyecto.</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            El filtro de <strong>Visibilidad</strong> en la barra de la tabla permite restringir a públicos o privados.
+        </p>
+
+        <h3 class="form-section-title">Visibilidad y acceso</h3>
+        <ul>
+            <li><strong>Privado:</strong> solo membresía activa puede ver y trabajar según el rol.</li>
+            <li><strong>Público:</strong> UF de la misma compañía pueden <strong>ver</strong> el proyecto sin ser miembros. Editar, publicar o generar siguen exigiendo el rol adecuado.</li>
+            <li>El creador queda siempre como <strong>PA</strong>, independientemente de la visibilidad.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles (resumen)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Permisos principales</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">PA</td><td>Admin: miembros, editar definición, publicar, generar, bridge.</td></tr>
+                <tr><td class="mono">ED</td><td>Editar entrada / salida / mapeo; publicar; generar.</td></tr>
+                <tr><td class="mono">GE</td><td>Generar y descargar archivo de envío (sin editar definición).</td></tr>
+                <tr><td class="mono">CO</td><td>Consulta: ver hub e historial; sin editar ni generar datos de negocio.</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Los miembros se gestionan dentro de cada proyecto (hub → <strong>Miembros</strong>, solo PA).
+        </p>
+
+        <h3 class="form-section-title">Cómo empezar</h3>
+        <ol>
+            <li>Pulse <strong>+ Nuevo proyecto</strong> (nombre, código/slug y visibilidad).</li>
+            <li>En el hub, complete <strong>Entrada</strong> → <strong>Salida</strong> → <strong>Mapeo</strong>.</li>
+            <li><strong>Publique</strong> la definición.</li>
+            <li><strong>Genere</strong> subiendo la planilla; revise historial y descargas.</li>
+        </ol>
+        <p class="help-intro">
+            Regla de producto: no se genera sin versión publicada. FILE GATE es opcional (pre-check de la planilla).
+        </p>
+
+        <h3 class="form-section-title">Qué no es este listado</h3>
+        <ul>
+            <li>No muestra proyectos de FilePipe, FILE GATE ni FILE MATCH.</li>
+            <li>No edita contratos ni mapeo (eso ocurre en el hub de cada proyecto).</li>
+            <li>No genera archivos de envío ni sube planillas.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

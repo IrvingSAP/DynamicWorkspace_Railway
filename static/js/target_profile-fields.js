@@ -82,8 +82,18 @@
     }
 
     function readForm() {
+        const start = parseInt(document.getElementById("field-start").value, 10);
+        const end = parseInt(document.getElementById("field-end").value, 10);
+        const slotLength =
+            Number.isFinite(start) && Number.isFinite(end) && end >= start
+                ? end - start + 1
+                : null;
         const maxLengthRaw = (document.getElementById("field-max-length").value || "").trim();
-        const maxLength = maxLengthRaw === "" ? null : parseInt(maxLengthRaw, 10);
+        let maxLength = maxLengthRaw === "" ? null : parseInt(maxLengthRaw, 10);
+        // En posicional, el ancho de ranura manda; evita max_length obsoleto (p. ej. 1).
+        if (slotLength != null) {
+            maxLength = slotLength;
+        }
         const pad = document.getElementById("field-pad-char").value;
         return {
             name: (document.getElementById("field-name").value || "").trim().toLowerCase(),
@@ -91,8 +101,8 @@
             order: parseInt(document.getElementById("field-order").value, 10),
             data_type: document.getElementById("field-data-type").value,
             required: document.getElementById("field-required").checked,
-            start: parseInt(document.getElementById("field-start").value, 10),
-            end: parseInt(document.getElementById("field-end").value, 10),
+            start: start,
+            end: end,
             align: document.getElementById("field-align").value || "left",
             pad_char: pad === "" ? " " : String(pad).slice(0, 1),
             max_length: Number.isFinite(maxLength) ? maxLength : null,
@@ -391,6 +401,20 @@
         });
     }
 
+    function syncMaxLengthFromBounds() {
+        const startEl = document.getElementById("field-start");
+        const endEl = document.getElementById("field-end");
+        const maxEl = document.getElementById("field-max-length");
+        if (!startEl || !endEl || !maxEl) {
+            return;
+        }
+        const start = parseInt(startEl.value, 10);
+        const end = parseInt(endEl.value, 10);
+        if (Number.isFinite(start) && Number.isFinite(end) && end >= start) {
+            maxEl.value = String(end - start + 1);
+        }
+    }
+
     document.addEventListener("dms:target-fields-imported", function (event) {
         const imported = (event.detail && event.detail.fields) || [];
         fields = imported.map(cloneField);
@@ -398,6 +422,14 @@
         setStatus(event.detail && event.detail.message ? event.detail.message : "Campos importados.", false);
         if (canEdit && form) {
             openCreate();
+        }
+    });
+
+    ["field-start", "field-end"].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener("input", syncMaxLengthFromBounds);
+            el.addEventListener("change", syncMaxLengthFromBounds);
         }
     });
 

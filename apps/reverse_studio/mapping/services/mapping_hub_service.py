@@ -20,6 +20,10 @@ def get_mapping_hub_summary(project, membership=None) -> dict:
         "pipelines_with_steps": rules_hub.pipelines_with_steps,
         "total_rule_steps": rules_hub.total_steps,
         "rules_status_label": rules_hub.status_label,
+        "rules_all_configured": bool(
+            hub.mappings_count
+            and rules_hub.pipelines_with_steps >= hub.mappings_count
+        ),
         "version_label": hub.version_label,
         "has_source_fields": bool(editor.get("source_fields")),
         "has_target_fields": bool(editor.get("target_fields")),

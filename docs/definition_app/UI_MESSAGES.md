@@ -390,7 +390,7 @@ Código: `apps/reverse_studio/` · kind `Project.KIND_REVERSE = "reverse"`.
 | Situación | Tag / canal | Texto al usuario |
 |-----------|-------------|------------------|
 | Salida guardada (borrador) | `success` | Contrato de salida guardado correctamente. |
-| Validación bloqueante al guardar | `error` + inline | Revise los datos del contrato de salida. |
+| Validación bloqueante al guardar | `error` + inline / modal | Revise los datos del contrato de salida. {detalle}. Ej. solapamiento posicional: «campoA» (1-40) y «campoB» (2-2). Al cambiar la longitud… «campoB» debería empezar en 41… (+N más). |
 | Sin permiso editar | `error` | No tiene permiso para editar el contrato de este proyecto. |
 | JSON inválido (POST) | `error` | JSON de contrato de salida inválido. |
 | Tipo fuera de whitelist (OUT3) | `error` + inline | El tipo de layout no está permitido en Reverse Studio. Use TXT posicional, JSON o XML. |
@@ -405,12 +405,12 @@ Código: `apps/reverse_studio/` · kind `Project.KIND_REVERSE = "reverse"`.
 
 | Situación | Tag / canal | Texto al usuario |
 |-----------|-------------|------------------|
-| Mapeo guardado (borrador) | `success` | Mapeo guardado correctamente. |
+| Mapeo guardado (borrador) | `success` | Mapeo guardado correctamente. Puede continuar con Reglas (transformaciones post-mapeo) y luego publicar la definición. |
 | Validación bloqueante mapeo | `error` + inline | Revise los datos del mapeo. |
 | Sin permiso editar mapeo | `error` | No tiene permiso para editar el mapeo de este proyecto. |
 | JSON mapeo inválido | `error` | JSON de mapeo inválido. |
 | Faltan entrada/salida | `warning` | Complete primero el contrato de entrada y el de salida antes de mapear campos. |
-| Reglas guardadas | `success` | Reglas guardadas correctamente. |
+| Reglas guardadas | `success` | Reglas guardadas correctamente. Seleccione Hub reglas para ver la definición de cada campo y luego seleccione Hub mapeo para seguir el proceso, o Proyecto. |
 | Sin permiso editar reglas | `error` | No tiene permiso para editar las reglas de este proyecto. |
 | JSON reglas inválido | `error` | JSON de reglas inválido. |
 | Sin mapeos para reglas | `warning` | Defina al menos un enlace de mapeo antes de configurar reglas de transformación. |
@@ -444,6 +444,8 @@ Código: `apps/reverse_studio/` · kind `Project.KIND_REVERSE = "reverse"`.
 | Enlace descarga inválido | `error` / JSON | Enlace de descarga inválido o expirado. |
 | Archivo expirado | `error` / JSON | Archivo expirado. |
 | Extensión / tamaño | `error` / JSON | Mensajes de file intake DMS (tipo no permitido, tamaño…). |
+| Excel .xls (formato antiguo) | `error` / JSON (ParseError) | El archivo está en formato Excel antiguo (.xls). Este producto solo lee planillas .xlsx. Ábralo en Excel o LibreOffice, guárdelo como «Libro de Excel (.xlsx)» y súbalo de nuevo. |
+| Hoja Excel inexistente | `error` / JSON (ParseError) | La definición espera la hoja «{sheet}», pero el archivo no la tiene. Hojas en el archivo: …. Renombre la hoja en el Excel para que coincida, o cambie el nombre de hoja en Definir entrada (paso 4), guarde y publique de nuevo. |
 | Error inesperado generate | `error` / JSON | Ocurrió un error al generar el archivo. Si persiste, contacte al administrador. |
 | Sin acceso a recientes | `error` | No tiene acceso al historial de este proyecto. |
 
@@ -462,8 +464,12 @@ Código: `apps/reverse_studio/` · kind `Project.KIND_REVERSE = "reverse"`.
 | Archivo expirado (detalle) | hint | Archivo expirado… regenere desde Generar. |
 | Enlace descarga inválido | `error` / JSON | Enlace de descarga inválido o expirado. (M5) |
 | Archivo expirado (HTTP) | `error` / JSON | Archivo expirado. (M5) |
+| Generación propia eliminada | `success` | Generación eliminada del historial. |
+| No es el ejecutor | `error` | Solo puede eliminar generaciones que usted ejecutó. |
+| Generación no encontrada | `error` | No se encontró la generación o ya no está disponible. |
+| Error al eliminar | `error` | No se pudo eliminar la generación. Si el problema continúa, contacte al administrador. |
 
-> Motor: `apps/reverse_studio/history/` sobre `DmsExecutionJob`. Descargas reutilizan rutas M5. CO solo metadatos (HIS5).
+> Motor: `apps/reverse_studio/history/` sobre `DmsExecutionJob`. Descargas reutilizan rutas M5. CO solo metadatos (HIS5). Eliminar: solo corridas propias (ejecutor), con limpieza de storage.
 
 #### Módulo 7 — Integración FILE GATE
 

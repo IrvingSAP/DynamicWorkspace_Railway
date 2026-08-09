@@ -332,7 +332,8 @@ def save_mappings(
 
     return OperationResult.success(
         user_message=(
-            "Mapeo guardado correctamente."
+            "Mapeo guardado correctamente. "
+            "Puede continuar con Reglas (transformaciones post-mapeo) y luego publicar la definición."
             if project.project_kind == Project.KIND_REVERSE
             else "Mapeo de campos guardado correctamente."
         ),
