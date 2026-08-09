@@ -1,18 +1,84 @@
 ﻿{% extends "app_base.html" %}
 {% load static %}
+
 {% block title %}Ayuda · Paso 6 — {{ project.name }}{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/source_profile.css' %}"><link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">Entrada</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_step6' project_slug=project.slug %}">Paso 6</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
-    <div><h2>Ayuda — Informe de lectura</h2></div>
-    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'reverse_studio:input_step6' project_slug=project.slug %}">← Volver</a></div>
+    <div>
+        <p class="page-eyebrow">Referencia · Entrada · Paso 6 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Informe de lectura</h2>
+        <p>Qué se registra al parsear la planilla en una generación (<code>processing_report</code>).</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'reverse_studio:input_step6' project_slug=project.slug %}">← Volver al paso 6</a>
+    </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li>Configura qué se registra al parsear la planilla en una generación.</li>
-    <li>No publica la definición ni define el archivo de envío.</li>
-    <li>CTA de cierre: volver al hub de entrada (salida = Módulo 2).</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué decide este paso</h3>
+        <p class="help-intro">
+            Configura el <strong>informe de lectura</strong> que acompaña al job de generación (Módulo 5):
+            resumen de filas, detalle de errores y umbrales de alerta.
+            Cierra el asistente de entrada; no publica ni genera el archivo de envío.
+        </p>
+
+        <h3 class="form-section-title">Opciones</h3>
+        <table class="help-table">
+            <thead><tr><th>Opción</th><th>Detalle</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">report_enabled</td><td>Activa o desactiva el informe. Se recomienda dejarlo encendido.</td></tr>
+                <tr><td>Incluir resumen</td><td>Conteos: leídas, OK, rechazadas.</td></tr>
+                <tr><td>Detalle por fila</td><td>Línea, campo y mensaje de cada incidencia (útil para diagnosticar vista previa / generación).</td></tr>
+                <tr><td>Umbral de alerta</td><td>Aviso cuando los rechazos superan N (o %).</td></tr>
+                <tr><td>Formato</td><td>Cómo se materializa el informe (según opciones del producto).</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Cómo se guarda</h3>
+        <ul>
+            <li>Use <strong>Guardar borrador</strong>, <strong>Siguiente / Finalizar</strong> según los botones de la pantalla.</li>
+            <li>Los cambios quedan en el borrador hasta que <strong>publique</strong> la definición (M4).</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace</h3>
+        <ul>
+            <li>No congela la definición (publicar = Módulo 4).</li>
+            <li>No genera el layout del banco/ERP (Generar = Módulo 5, con versión publicada).</li>
+            <li>No es el historial de generaciones (Módulo 6).</li>
+        </ul>
+
+        <h3 class="form-section-title">Después de completar</h3>
+        <ol>
+            <li>Vuelva al hub de <strong>Entrada</strong> o continúe al <strong>contrato de salida</strong> (Módulo 2).</li>
+            <li>Siga con mapeo → reglas (opcional) → <strong>publicar</strong> → generar.</li>
+            <li>Completar solo M1 <strong>no</strong> habilita generar (IN7).</li>
+        </ol>
+    </div>
+</div>
 {% endblock %}

@@ -1,6 +1,7 @@
-from django.contrib import messages
+﻿from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from apps.core.decorators import security_complete_required, user_type_required
 from apps.dms.transform_execution.constants import DOWNLOAD_TTL
@@ -87,3 +88,18 @@ def detail(request, project_slug: str, job_id):
     )
     ctx["ttl_days"] = DOWNLOAD_TTL.days
     return render(request, "reverse_studio/history/detail.html", ctx)
+
+
+@_rs_view
+@require_POST
+def delete_job(request, project_slug: str, job_id):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("reverse_studio:project_list")
+
+    result = history_service.delete_own_job(request.user, project, job_id)
+    if result.ok:
+        messages.success(request, result.user_message)
+    else:
+        messages.error(request, result.user_message)
+    return redirect("reverse_studio:history_hub", project_slug=project.slug)

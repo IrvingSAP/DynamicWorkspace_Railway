@@ -97,6 +97,8 @@ def validate_pipeline_steps(
                 places = -1
             if places < 0:
                 errors.append(f"{step_label}: number_format decimal_places inválido.")
+        elif op == "number_integer":
+            pass  # sin parámetros; siempre 0 decimales
 
     return errors, warnings
 
@@ -324,7 +326,7 @@ def save_pipelines(
             "Defina al menos un mapeo antes de configurar reglas.",
         )
 
-    known = {(item.get("target_field") or "") for item in mappings}
+    known = {(item.get("target_field") or "").strip().lower() for item in mappings}
     unknown = [name for name in by_target if name not in known]
     if unknown:
         return OperationResult.failure(
@@ -339,9 +341,10 @@ def save_pipelines(
         )
 
     for item in mappings:
-        target = item.get("target_field") or ""
+        target = (item.get("target_field") or "").strip().lower()
         if target in by_target:
             item["transform_pipeline"] = by_target[target]
+            item["target_field"] = target
 
     pipe_errors, pipe_warnings = validate_mappings_pipelines(mappings, strict=strict)
     if pipe_errors:
@@ -391,7 +394,11 @@ def save_pipelines(
         user_message=(
             "Reglas de transformación guardadas correctamente."
             if project.project_kind != Project.KIND_REVERSE
-            else "Reglas guardadas correctamente."
+            else (
+                "Reglas guardadas correctamente. "
+                "Seleccione Hub reglas para ver la definición de cada campo "
+                "y luego seleccione Hub mapeo para seguir el proceso, o Proyecto."
+            )
         ),
         payload={
             "mappings": field_mapping_persistence_service.set_to_dict(mapping_set)["mappings"],

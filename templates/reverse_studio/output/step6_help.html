@@ -1,17 +1,24 @@
 ﻿{% extends "app_base.html" %}
 {% load static %}
 
-{% block title %}Ayuda — Paso 6 layout de envío{% endblock %}
+{% block title %}Ayuda · Paso 6 salida — {{ project.name }}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
     <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}">Salida</a>
     <span class="breadcrumb-sep">/</span>
     <a href="{% url 'reverse_studio:output_step6' project_slug=project.slug %}">Paso 6</a>
@@ -23,9 +30,9 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Referencia · Paso 6 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <p class="page-eyebrow">Referencia · Salida · Paso 6 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Validación al escribir</h2>
-        <p>Qué hacer cuando un valor no cumple el layout de envío en ejecución.</p>
+        <p>Qué hacer cuando un valor no cumple el layout al generar el archivo de envío.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:output_step6' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 6</a>
@@ -34,15 +41,40 @@
 
 <div class="panel help-panel">
     <div class="panel-body">
+        <h3 class="form-section-title">Qué decide este paso</h3>
+        <p class="help-intro">
+            Políticas de <code>write_validation</code>: obligatorio vacío, tipo incorrecto, longitud excedida, etc.
+            Se aplican en la <strong>generación (M5)</strong>, no al editar el borrador.
+        </p>
+
+        <h3 class="form-section-title">Políticas típicas</h3>
         <table class="help-table">
-            <thead><tr><th>Política típica</th><th>Comportamiento</th></tr></thead>
+            <thead><tr><th>Política</th><th>Comportamiento</th></tr></thead>
             <tbody>
-                <tr><td class="mono">reject_row</td><td>Descarta la fila y la reporta.</td></tr>
+                <tr><td class="mono">reject_row</td><td>Descarta la fila y la reporta (default habitual).</td></tr>
                 <tr><td class="mono">abort</td><td>Detiene el job ante el primer error.</td></tr>
-                <tr><td class="mono">truncate / use_default / write_empty</td><td>Intenta corregir o escribir un valor sustituido.</td></tr>
+                <tr><td class="mono">truncate</td><td>Recorta al máximo permitido (use con cuidado en bancos).</td></tr>
+                <tr><td class="mono">use_default / write_empty</td><td>Sustituye por default o vacío según configuración.</td></tr>
             </tbody>
         </table>
-        <p class="help-intro">Al completar este paso, el layout de envío queda listo para mapeo, reglas y publicación en el hub del proyecto.</p>
+
+        <h3 class="form-section-title">Errores de ejecución (referencia)</h3>
+        <table class="help-table">
+            <thead><tr><th>Código</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">TARGET_REQUIRED_EMPTY</td><td>Campo obligatorio sin valor.</td></tr>
+                <tr><td class="mono">TARGET_TYPE_MISMATCH</td><td>No convertible al <code>data_type</code>.</td></tr>
+                <tr><td class="mono">TARGET_LENGTH_EXCEEDED</td><td>Supera longitud y la política no permite truncar.</td></tr>
+                <tr><td class="mono">TARGET_RECORD_LENGTH_OVERFLOW</td><td>Línea posicional excede <code>record_length</code>.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Después de completar</h3>
+        <ol>
+            <li>Continúe al <strong>mapeo</strong> (Módulo 3).</li>
+            <li>Luego <strong>publique</strong> (M4) y <strong>genere</strong> (M5).</li>
+            <li>Completar solo salida <strong>no</strong> habilita generar (OUT7).</li>
+        </ol>
     </div>
 </div>
 {% endblock %}

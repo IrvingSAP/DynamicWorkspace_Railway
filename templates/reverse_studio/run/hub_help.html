@@ -6,12 +6,19 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/transform_execution.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
     <a href="{% url 'reverse_studio:run_hub' project_slug=project.slug %}">Generar</a>
     <span class="breadcrumb-sep">/</span>
     <span>Ayuda</span>
@@ -21,9 +28,9 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
+        <p class="page-eyebrow">Referencia · Módulo 5 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Generar archivo de envío</h2>
-        <p>Suba la planilla, genere el layout publicado y descargue el archivo.</p>
+        <p>Suba la planilla, genere el layout con la definición publicada y descargue el resultado.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:run_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver a generar</a>
@@ -32,39 +39,66 @@
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Propósito</h3>
+        <h3 class="form-section-title">Qué es este módulo</h3>
         <p class="help-intro">
-            Emite el <strong>archivo de envío</strong> (banco / ERP) a partir de una planilla de negocio,
-            usando solo la <strong>definición publicada</strong>. No edita el contrato ni publica versiones.
+            Emite el <strong>archivo de envío</strong> (banco / ERP) a partir de una planilla de negocio.
+            Usa solo la <strong>definición publicada</strong> (entrada + salida + mapeo + reglas).
+            No edita el contrato ni publica versiones (GEN1 / GEN3).
         </p>
 
         <h3 class="form-section-title">Prerrequisitos</h3>
         <table class="help-table">
             <thead><tr><th>Requisito</th><th>Dónde se resuelve</th></tr></thead>
             <tbody>
-                <tr><td>Definición publicada</td><td>Módulo 4 — Publicar.</td></tr>
-                <tr><td>Planilla de producción</td><td>Esta pantalla (sección subir).</td></tr>
-                <tr><td>Permiso de generación</td><td>Roles PA / ED / GE.</td></tr>
+                <tr><td>Definición publicada</td><td>Módulo 4 — Publicar. Sin ella el hub pide ir a publicar.</td></tr>
+                <tr><td>Planilla de producción</td><td>Esta pantalla (sección 1 · Subir).</td></tr>
+                <tr><td>Extensión correcta</td><td>Según el tipo de entrada publicado (csv / xlsx / delimitado) (GEN4).</td></tr>
+                <tr><td>Permiso</td><td><span class="mono">PA</span> / <span class="mono">ED</span> / <span class="mono">GE</span> generan; <span class="mono">CO</span> solo consulta (GEN2).</td></tr>
             </tbody>
         </table>
+
+        <h3 class="form-section-title">Flujo en esta pantalla</h3>
+        <ol>
+            <li><strong>Subir planilla</strong> — crea un job en estado listo (uploaded) contra la versión activa.</li>
+            <li><strong>Vista previa</strong> (opcional) — dry run de filas para validar sin cerrar el job completo.</li>
+            <li><strong>Generar archivo</strong> — job completo: parse → mapeo → reglas → serialización.</li>
+            <li><strong>Descargar</strong> — archivo de envío, informe y/o errores (TTL típico 7 días).</li>
+        </ol>
 
         <h3 class="form-section-title">Acciones principales</h3>
         <table class="help-table">
             <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
             <tbody>
-                <tr><td>Subir planilla</td><td>Crea un job listo (estado uploaded) contra la versión publicada.</td></tr>
-                <tr><td>Vista previa</td><td>Dry run de N filas para validar sin cerrar el job completo.</td></tr>
-                <tr><td>Generar archivo</td><td>Job completo: layout + informe + errores si aplica.</td></tr>
-                <tr><td>Descargas</td><td>Enlaces firmados (TTL típico 7 días). Rol CO no descarga datos de negocio.</td></tr>
-                <tr><td>Recientes</td><td>Listado mínimo; historial filtrable = Módulo 6.</td></tr>
+                <tr><td>Subir planilla</td><td>Valida extensión/tamaño y deja el job listo en la tabla.</td></tr>
+                <tr><td>Vista previa</td><td>Prueba el pipeline sin sustituir el resultado definitivo.</td></tr>
+                <tr><td>Generar archivo</td><td>Confirma y produce salida + informe; estados <code>completed</code> / <code>partial</code> / <code>failed</code>.</td></tr>
+                <tr><td>Descargas</td><td>Enlaces con TTL. Rol CO no descarga datos de negocio.</td></tr>
+                <tr><td>Generaciones recientes</td><td>Vista rápida; el listado filtrable es el <strong>Historial</strong> (Módulo 6).</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Integración FILE GATE (opcional)</h3>
+        <p class="help-intro">
+            Si el bridge está activo (Módulo 7), antes de generar se exige una validación FILE GATE aceptada
+            con el mismo content hash de la planilla (GEN10). Si aparece bloqueado, valide en FILE GATE
+            o revise la evidencia / certificado desde los enlaces de la fila.
+        </p>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Rol</th><th>En Generar</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">PA / ED / GE</td><td>Subir, vista previa, generar y descargar (según permisos del proyecto).</td></tr>
+                <tr><td class="mono">CO</td><td>Ver estado de generaciones; sin subir ni descargar archivos con datos de negocio.</td></tr>
             </tbody>
         </table>
 
         <h3 class="form-section-title">Qué no hace este módulo</h3>
         <ul>
-            <li>No edita entrada, salida ni mapeo.</li>
-            <li>No exige pre-check FILE GATE (Módulo 7 / Fase 2).</li>
-            <li>No sustituye al historial avanzado.</li>
+            <li>No edita entrada, salida, mapeo ni reglas.</li>
+            <li>No publica la definición (eso es Módulo 4).</li>
+            <li>No sustituye al historial filtrable (Módulo 6).</li>
+            <li>El job <strong>no</strong> modifica la versión publicada.</li>
         </ul>
     </div>
 </div>

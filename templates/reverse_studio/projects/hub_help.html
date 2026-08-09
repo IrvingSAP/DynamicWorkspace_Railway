@@ -2,31 +2,192 @@
 {% load static %}
 
 {% block title %}Ayuda · Proyecto — {{ project.name }}{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
 {% block breadcrumb %}
-<nav class="breadcrumb">
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
     <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
-    <span class="breadcrumb-sep">/</span><span>Ayuda</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
 </nav>
 {% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span> · Emisor</p>
         <h2>Ayuda — Hub del proyecto</h2>
-        <p>Punto de entrada del emisor. Disponibles M1–M4 (entrada, salida, mapeo, publicar) y miembros (PA).</p>
+        <p>Tablero del ciclo: planilla → layout → mapeo → publicar → generar → historial.</p>
     </div>
     <div class="page-actions">
-        <a class="btn btn-secondary" href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">← Volver</a>
+        <a class="btn btn-secondary" href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">← Volver al hub</a>
     </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li><strong>Miembros:</strong> solo PA invita UF y asigna roles.</li>
-    <li><strong>Entrada / salida / mapeo:</strong> se editan en borrador.</li>
-    <li><strong>Publicar:</strong> congela la definición; generar = Módulo 5 (pendiente).</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es este hub</h3>
+        <p class="help-intro">
+            Es el <strong>punto de entrada</strong> del proyecto Reverse Studio (emisor).
+            Agrupa el contrato de la planilla, el layout de envío, el mapeo, la versión publicada,
+            las generaciones y el historial.
+            No es FilePipe (hub ETL amplio) ni FILE GATE (solo valida; no escribe el archivo de negocio).
+        </p>
+        <ul>
+            <li><strong>Objetivo:</strong> convertir una planilla amigable (CSV / Excel / delimitado) en el layout que espera el banco, ERP u otro destino (TXT posicional / JSON / XML).</li>
+            <li><strong>Strip superior:</strong> versión borrador, versión activa publicada y conteo de miembros.</li>
+            <li><strong>Stepper + paneles:</strong> avance del ciclo y accesos a cada módulo.</li>
+            <li><strong>Miembros:</strong> botón visible solo para el administrador (PA).</li>
+        </ul>
+
+        <h3 class="form-section-title">Fases del ciclo</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Fase</th><th>Qué cubre</th><th>En el hub</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Definición (M1–M4)</td>
+                    <td>Entrada → Salida → Mapeo → Publicar</td>
+                    <td>Primera franja del stepper</td>
+                </tr>
+                <tr>
+                    <td>Ejecución (M5–M6)</td>
+                    <td>Generar archivo → Historial</td>
+                    <td>Segunda franja del stepper</td>
+                </tr>
+                <tr>
+                    <td>Integración (M7)</td>
+                    <td>Bridge opcional FILE GATE (pre-check de la planilla)</td>
+                    <td>Panel al final; no es paso numerado</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Stepper — qué hace cada paso</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>#</th><th>Paso</th><th>Para qué sirve</th><th>Cuándo se activa</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="mono">1</td>
+                    <td>Planilla / entrada</td>
+                    <td>Define cómo viene la planilla de negocio (tipo, encoding, campos, reglas de contenido).</td>
+                    <td>Desde el inicio; asistente de 6 pasos.</td>
+                </tr>
+                <tr>
+                    <td class="mono">2</td>
+                    <td>Salida</td>
+                    <td>Define el layout de envío (posicional / JSON / XML) y sus campos.</td>
+                    <td>Tras completar la entrada (recomendado).</td>
+                </tr>
+                <tr>
+                    <td class="mono">3</td>
+                    <td>Mapeo</td>
+                    <td>Enlaza campos planilla → layout y aplica reglas (trim, upper, constantes, etc.).</td>
+                    <td>Tras completar la salida (recomendado).</td>
+                </tr>
+                <tr>
+                    <td class="mono">4</td>
+                    <td>Publicar</td>
+                    <td>Congela entrada + salida + mapeo en una <strong>versión activa</strong>. Sin publicar no se puede generar.</td>
+                    <td>Cuando el borrador está listo; queda marcado si ya hay publicada.</td>
+                </tr>
+                <tr>
+                    <td class="mono">5</td>
+                    <td>Generar</td>
+                    <td>Sube la planilla y emite el archivo de envío con la definición publicada.</td>
+                    <td>Solo con versión activa; si no, el paso aparece deshabilitado.</td>
+                </tr>
+                <tr>
+                    <td class="mono">6</td>
+                    <td>Historial</td>
+                    <td>Auditoría de emisiones, descargas y TTL.</td>
+                    <td>Siempre accesible; vacío hasta la primera generación.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Paneles del hub</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Panel</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Contrato de entrada</td>
+                    <td>Resumen y CTA para continuar el asistente de planilla (M1).</td>
+                </tr>
+                <tr>
+                    <td>Contrato de salida</td>
+                    <td>Resumen y CTA del layout de envío (M2).</td>
+                </tr>
+                <tr>
+                    <td>Mapeo y reglas</td>
+                    <td>Acceso al editor de enlaces y transformaciones (M3).</td>
+                </tr>
+                <tr>
+                    <td>Publicar definición</td>
+                    <td>Congela el borrador; muestra la versión activa si existe (M4).</td>
+                </tr>
+                <tr>
+                    <td>Generar archivo de envío</td>
+                    <td>Ir a emitir; pide publicar primero si aún no hay versión activa (M5).</td>
+                </tr>
+                <tr>
+                    <td>Historial de generaciones</td>
+                    <td>Listado filtrable de jobs y evidencia (M6).</td>
+                </tr>
+                <tr>
+                    <td>Integración FILE GATE</td>
+                    <td>Opcional: exigir validación GATE en verde sobre la misma planilla antes de generar (M7).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles (resumen)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>En este hub</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="mono">PA</td>
+                    <td>Administra el proyecto y miembros; edita definición; puede publicar y generar según permisos.</td>
+                </tr>
+                <tr>
+                    <td class="mono">ED</td>
+                    <td>Edita entrada, salida y mapeo; puede publicar.</td>
+                </tr>
+                <tr>
+                    <td class="mono">GE</td>
+                    <td>Ejecuta generaciones sobre la versión publicada; no diseña el contrato.</td>
+                </tr>
+                <tr>
+                    <td class="mono">CO</td>
+                    <td>Consulta metadatos / historial acotado; no descarga celdas ni edita.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Reglas útiles</h3>
+        <ul>
+            <li>Se edita en <strong>borrador</strong>; solo la <strong>versión publicada</strong> se usa al generar.</li>
+            <li>Completar entrada, salida o mapeo por separado <strong>no</strong> habilita Generar: hace falta publicar.</li>
+            <li>Una corrida de generación lee la planilla y escribe el archivo de salida; <strong>no</strong> altera la definición.</li>
+            <li>FILE GATE es opcional: valida la planilla; Reverse Studio es quien emite el layout.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

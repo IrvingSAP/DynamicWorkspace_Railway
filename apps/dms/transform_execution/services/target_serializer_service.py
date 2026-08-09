@@ -340,6 +340,25 @@ def _serialize_xml(rows, fields, serialization, layout) -> bytes:
     return buffer.getvalue()
 
 
+def _fixed_field_width(field: dict) -> int | None:
+    """Ancho de ranura posicional: prioriza inicio/fin sobre max_length obsoleto."""
+    try:
+        start = field.get("start")
+        end = field.get("end")
+        if start is not None and end is not None:
+            return max(1, int(end) - int(start) + 1)
+    except (TypeError, ValueError):
+        pass
+    for key in ("length", "max_length"):
+        try:
+            raw = field.get(key)
+            if raw is not None and raw != "":
+                return max(1, int(raw))
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
 def _serialize_fixed(rows, fields, serialization, layout) -> bytes:
     record_length = layout.get("record_length")
     trailing = bool(layout.get("trailing_newline", True))
@@ -350,13 +369,17 @@ def _serialize_fixed(rows, fields, serialization, layout) -> bytes:
         use_positions = any(field.get("start") is not None for field in fields)
         for field in fields:
             name = (field.get("name") or "").strip().lower()
-            text = _apply_field_serialization(row.get(name, ""), field, serialization)
-            length = field.get("length") or field.get("max_length")
+            width = _fixed_field_width(field)
+            field_for_write = dict(field)
+            if width is not None:
+                field_for_write["max_length"] = width
+                field_for_write["length"] = width
+            text = _apply_field_serialization(
+                row.get(name, ""), field_for_write, serialization
+            )
             align = (field.get("align") or "left").strip()
             pad_char = (field.get("pad_char") or " ")[:1] or " "
-            try:
-                width = int(length) if length is not None else len(text)
-            except (TypeError, ValueError):
+            if width is None:
                 width = len(text)
             if align == "right":
                 text = text.rjust(width, pad_char)[:width]

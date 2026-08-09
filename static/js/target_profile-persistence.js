@@ -108,6 +108,38 @@
         }
     }
 
+    function formatValidationErrors(errors) {
+        if (!errors || typeof errors !== "object") {
+            return "";
+        }
+        const messages = [];
+        Object.keys(errors).forEach(function (key) {
+            (errors[key] || []).forEach(function (item) {
+                if (item) {
+                    messages.push(String(item));
+                }
+            });
+        });
+        return messages.join(" ");
+    }
+
+    function composeSaveErrorMessage(data) {
+        const base = (data && data.message) || MSG_SAVE_FAILED;
+        const details = formatValidationErrors(data && data.errors);
+        if (!details) {
+            return base;
+        }
+        if (base.indexOf(details) !== -1) {
+            return base;
+        }
+        // Si el servidor ya incrustó el primer detalle, no duplicar el bloque completo.
+        const first = details.split(". ")[0];
+        if (first && base.indexOf(first) !== -1) {
+            return base;
+        }
+        return base + " " + details;
+    }
+
     async function save(partial, options) {
         const opts = options || {};
         const csrfToken = readCsrfToken();
@@ -151,7 +183,7 @@
                     }
                 );
             }
-            throw makeError(data.message || MSG_SAVE_FAILED, {
+            throw makeError(composeSaveErrorMessage(data), {
                 errorCode: data.error_code || "unexpected",
                 status: response.status,
                 errors: data.errors || {},
@@ -176,6 +208,7 @@
         save: save,
         readCsrfToken: readCsrfToken,
         showUserMessage: showUserMessage,
+        formatValidationErrors: formatValidationErrors,
         MSG_SESSION_EXPIRED: MSG_SESSION_EXPIRED,
     };
 })();

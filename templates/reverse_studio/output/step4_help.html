@@ -1,17 +1,24 @@
 ﻿{% extends "app_base.html" %}
 {% load static %}
 
-{% block title %}Ayuda — Paso 4 layout de envío{% endblock %}
+{% block title %}Ayuda · Paso 4 salida — {{ project.name }}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
     <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}">Salida</a>
     <span class="breadcrumb-sep">/</span>
     <a href="{% url 'reverse_studio:output_step4' project_slug=project.slug %}">Paso 4</a>
@@ -23,9 +30,9 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Referencia · Paso 4 · <span class="cell-badge">{{ project.slug }}</span></p>
-        <h2>Ayuda — Definición de Campos del layout</h2>
-        <p>La interfaz cambia según el Tipo de layout (posicional, JSON o XML).</p>
+        <p class="page-eyebrow">Referencia · Salida · Paso 4 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Campos del layout</h2>
+        <p>Cada campo del archivo de envío. La UI cambia según posicional, JSON o XML.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:output_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
@@ -34,19 +41,55 @@
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <p class="help-intro">Cada campo del layout recibirá el mapeo desde la entrada (Módulo 3). Debe guardarse al menos un campo. Use «Cargar desde entrada» para sembrar nombres desde la planilla.</p>
+        <h3 class="form-section-title">Qué decide este paso</h3>
+        <p class="help-intro">
+            Declara los <strong>campos destino</strong> que el receptor espera. El mapeo (M3) enlazará
+            campos de la planilla → estos nombres. Entrada usa <code>content_type</code>; salida usa <code>data_type</code>.
+        </p>
+
+        <h3 class="form-section-title">Según tipo</h3>
         <table class="help-table">
             <thead><tr><th>Tipo</th><th>Qué defines</th></tr></thead>
             <tbody>
-                <tr><td class="mono">txt_fixed</td><td>Posiciones <code>start</code>/<code>end</code>, alineación y carácter de relleno.</td></tr>
-                <tr><td class="mono">csv / txt_delimited</td><td>Orden, nombre y tipo de dato de cada columna.</td></tr>
-                <tr><td class="mono">xlsx</td><td>Columna, tipo Excel y orden de escritura.</td></tr>
+                <tr>
+                    <td class="mono">txt_fixed</td>
+                    <td>Nombre, <code>start</code>/<code>end</code> (o longitud), alineación, relleno, obligatorio.</td>
+                </tr>
+                <tr>
+                    <td class="mono">json</td>
+                    <td>Nombre, path/clave en el JSON, tipo de dato, obligatorio.</td>
+                </tr>
+                <tr>
+                    <td class="mono">xml</td>
+                    <td>Nombre, path/elemento, tipo de dato, obligatorio.</td>
+                </tr>
             </tbody>
         </table>
-        <ul class="help-list">
-            <li><strong>Cargar desde entrada</strong> — copia los campos del contrato de entrada (adaptados al tipo de layout) y los deja editables.</li>
-            <li><strong>+ Agregar campo</strong> — nueva fila en la definición.</li>
-            <li><strong>Guardar</strong> — persiste los campos del borrador.</li>
+
+        <h3 class="form-section-title">Acciones</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Cargar desde entrada</td>
+                    <td>Siembra nombres/labels/tipos desde la planilla. Debe existir contrato de entrada con campos. Usted completa posiciones o paths.</td>
+                </tr>
+                <tr>
+                    <td>+ Agregar campo</td>
+                    <td>Nueva fila en el layout.</td>
+                </tr>
+                <tr>
+                    <td>Guardar / editar</td>
+                    <td>Persiste el borrador. Nombres únicos; en posicional, rangos sin solape.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Notas</h3>
+        <ul>
+            <li>El <strong>nombre interno</strong> será la clave en el mapeo: manténgalo estable.</li>
+            <li>Al publicar (M4) se exige al menos un campo destino (OUT10).</li>
+            <li>Cambiar el tipo de layout (paso 1) puede invalidar estos campos (OUT4).</li>
         </ul>
     </div>
 </div>

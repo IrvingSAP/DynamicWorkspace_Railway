@@ -149,6 +149,17 @@
                 step.length = Number((node.querySelector('[data-param="length"]') || {}).value || 0);
             } else if (op === "default_if_empty") {
                 step.value = (node.querySelector('[data-param="value"]') || {}).value || "";
+            } else if (op === "number_format") {
+                const placesRaw = (node.querySelector('[data-param="decimal_places"]') || {}).value;
+                step.decimal_places = placesRaw === "" || placesRaw == null ? 2 : Number(placesRaw);
+                const thousands = (node.querySelector('[data-param="thousands_sep"]') || {}).value;
+                if (thousands != null && thousands !== "") {
+                    step.thousands_sep = thousands;
+                }
+                const decSep = (node.querySelector('[data-param="decimal_sep"]') || {}).value;
+                if (decSep != null && decSep !== "") {
+                    step.decimal_sep = decSep;
+                }
             }
             pipeline.push(step);
         });
@@ -193,6 +204,27 @@
                 '<input type="text" data-param="value" value="' +
                 escapeAttr(step.value || "") +
                 '"></div>'
+            );
+        }
+        if (op === "number_format") {
+            return (
+                '<div class="field"><label>Decimales</label>' +
+                '<input type="number" data-param="decimal_places" min="0" max="12" value="' +
+                escapeAttr(step.decimal_places != null ? step.decimal_places : 2) +
+                '"></div>' +
+                '<div class="field"><label>Separador miles</label>' +
+                '<input type="text" data-param="thousands_sep" maxlength="1" value="' +
+                escapeAttr(step.thousands_sep != null ? step.thousands_sep : "") +
+                '" placeholder="(ninguno)"></div>' +
+                '<div class="field"><label>Separador decimal</label>' +
+                '<input type="text" data-param="decimal_sep" maxlength="1" value="' +
+                escapeAttr(step.decimal_sep != null ? step.decimal_sep : ".") +
+                '"></div>'
+            );
+        }
+        if (op === "number_integer") {
+            return (
+                '<span class="hint">Sin decimales (p. ej. edad: 29.7 → 30 o 29 según redondeo). Ideal para conteos enteros.</span>'
             );
         }
         return '<span class="hint">Sin parámetros</span>';

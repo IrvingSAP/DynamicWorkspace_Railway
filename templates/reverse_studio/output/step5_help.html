@@ -1,17 +1,24 @@
 ﻿{% extends "app_base.html" %}
 {% load static %}
 
-{% block title %}Ayuda — Paso 5 layout de envío{% endblock %}
+{% block title %}Ayuda · Paso 5 salida — {{ project.name }}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
     <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}">Salida</a>
     <span class="breadcrumb-sep">/</span>
     <a href="{% url 'reverse_studio:output_step5' project_slug=project.slug %}">Paso 5</a>
@@ -23,8 +30,8 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Referencia · Paso 5 · <span class="cell-badge">{{ project.slug }}</span></p>
-        <h2>Ayuda — Serialización global</h2>
+        <p class="page-eyebrow">Referencia · Salida · Paso 5 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Serialización</h2>
         <p>Cómo se formatean los valores al escribirlos en el archivo de envío.</p>
     </div>
     <div class="page-actions">
@@ -34,13 +41,40 @@
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <p class="help-intro">Reglas a nivel archivo (no sustituyen el pipeline de reglas del mapeo). Ejemplos: formato de fecha, decimales, representación de nulos o booleanos.</p>
+        <h3 class="form-section-title">Qué decide este paso</h3>
+        <p class="help-intro">
+            Reglas de <strong>escritura</strong> a nivel layout: padding, truncado, formatos de fecha/número,
+            representación de nulos. No sustituyen las transformaciones de negocio del mapeo (M3).
+        </p>
+
+        <h3 class="form-section-title">Temas frecuentes</h3>
         <table class="help-table">
-            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <thead><tr><th>Tema</th><th>Detalle</th></tr></thead>
             <tbody>
-                <tr><td>Guardar / Continuar</td><td>Persiste la serialización y avanza a validación (paso 6).</td></tr>
+                <tr>
+                    <td class="mono">trim_before_write</td>
+                    <td>Quita espacios antes de rellenar (pad) en posicional. Suele ser deseable.</td>
+                </tr>
+                <tr>
+                    <td>Padding / alineación</td>
+                    <td>Completa a la longitud del campo (espacios, ceros…). Definido por campo y/o defaults globales.</td>
+                </tr>
+                <tr>
+                    <td>Truncate</td>
+                    <td>En layouts bancarios se recomienda fallar si no cabe (<code>error</code>), no “casi correcto”.</td>
+                </tr>
+                <tr>
+                    <td>Fechas / decimales</td>
+                    <td>Formato de salida hacia el receptor (distinto del <code>date_format</code> de lectura en entrada).</td>
+                </tr>
             </tbody>
         </table>
+
+        <h3 class="form-section-title">No confundir</h3>
+        <ul>
+            <li><code>trim_lines</code> del contrato de <em>entrada</em> limpia al leer la planilla.</li>
+            <li><code>trim_before_write</code> limpia al <em>escribir</em> el layout; ocurre antes del pad posicional.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

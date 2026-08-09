@@ -1,18 +1,79 @@
 ﻿{% extends "app_base.html" %}
 {% load static %}
+
 {% block title %}Ayuda · Paso 2 — {{ project.name }}{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/source_profile.css' %}"><link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
-{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">Entrada</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_step2' project_slug=project.slug %}">Paso 2</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
-    <div><h2>Ayuda — Inicio de captura</h2></div>
-    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'reverse_studio:input_step2' project_slug=project.slug %}">← Volver</a></div>
+    <div>
+        <p class="page-eyebrow">Referencia · Entrada · Paso 2 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Inicio de captura</h2>
+        <p>Dónde empiezan los datos útiles de la planilla (<code>capture_start</code>).</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'reverse_studio:input_step2' project_slug=project.slug %}">← Volver al paso 2</a>
+    </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li>Define dónde empiezan los datos de la planilla.</li>
-    <li>Si hay encabezado, configure también la fila en el paso 4.</li>
-    <li>Misma semántica que captura DMS (<code>capture_start</code>).</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué decide este paso</h3>
+        <p class="help-intro">
+            Marca el <strong>inicio</strong> de la zona de datos al leer el archivo en una generación.
+            Títulos, logos o filas basura por encima no deben entrar al mapeo.
+        </p>
+
+        <h3 class="form-section-title">Modos habituales</h3>
+        <table class="help-table">
+            <thead><tr><th>Modo</th><th>Cuándo usarlo</th></tr></thead>
+            <tbody>
+                <tr><td>Primera fila / número de línea</td><td>Default típico: datos desde la fila N (p. ej. 1).</td></tr>
+                <tr><td>Tras bloque de cabecera</td><td>Saltar N líneas fijas al inicio.</td></tr>
+                <tr><td>Marcador / patrón</td><td>Empezar después de un texto o regex conocido.</td></tr>
+                <tr><td>Tras líneas en blanco</td><td>Cuando hay un hueco antes de la tabla.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Relación con el paso 4 (Excel / CSV)</h3>
+        <ul>
+            <li>Si la planilla tiene <strong>fila de encabezados</strong>, indíquela en el paso 4
+                (<em>Fila de encabezados</em>). El motor <strong>omite esa fila</strong> como dato y la usa
+                para resolver columnas por nombre.</li>
+            <li>Captura e encabezado se complementan: la captura recorta el archivo; el header identifica columnas.</li>
+            <li>En Excel sencillo (fila 1 = títulos, fila 2+ = datos) suele bastar:
+                inicio en la primera fila + <code>header_row = 1</code> en el paso 4.</li>
+        </ul>
+
+        <h3 class="form-section-title">Notas</h3>
+        <ul>
+            <li>Misma semántica que el origen DMS (<code>capture_start</code>).</li>
+            <li>Debe ser coherente con el fin de captura (paso 3); rangos incompatibles se rechazan al guardar.</li>
+            <li>Los cambios van al borrador; publique (M4) para que Generar los use.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}
