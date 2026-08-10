@@ -1062,6 +1062,9 @@ Alineado a [`APP_FACTORY.md`](APP_FACTORY.md) §5 / §8.
 
 > Profile Seed y Structure Scout pueden **compartir** capa de “Aplicar a destino” (`save_source`); diferencian el origen (definición vs muestra).
 
+> **Siguiente oleada (ops / alrededor del archivo):** no ampliar este inventario con Clean, Diff, Watch, etc. Ver paraguas [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md).  
+> **Ejecución remota (todas las apps):** [`PLATFORM_API.md`](PLATFORM_API.md) — mismo Job que la UI; no es un vertical §2.
+
 ---
 
 ## 14. Criterio de aceptación (familia §2)
@@ -1108,6 +1111,8 @@ Antes de abrir rama de implementación para cualquiera de estos verticales:
 | Documento | Relación |
 |-----------|----------|
 | [`APP_FACTORY.md`](APP_FACTORY.md) | Visión y prioridad; §2 origen de este doc |
+| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Oleada ops: Clean · Diff · Profiler · Watch · … |
+| [`PLATFORM_API.md`](PLATFORM_API.md) | API de ejecución remota de jobs (todas las apps ejecutables) |
 | [`FILE_GATE.md`](FILE_GATE.md) | Primer vertical §2 — **hecho** |
 | [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) | Emisor — **hecho** |
 | [`FILE_MATCH.md`](FILE_MATCH.md) | Conciliador — **hecho** |

@@ -28,6 +28,10 @@
 | [`docs/definition_app_DMS/`](definition_app_DMS/README.md) | **Data Mapping Studio** — ETL acoplado a la plataforma ([integración](definition_app_DMS/dms_integration.md); origen MVP: [source_definition.md](definition_app_DMS/source_definition.md)) |
 | [`docs/ESTRUCTURA_PROYECTO.md`](ESTRUCTURA_PROYECTO.md) | Árbol de carpetas y checklist para nuevos proyectos |
 | [`docs/APP_FACTORY.md`](APP_FACTORY.md) | **APP FACTORY** — propuestas de nuevos desarrollos / verticales sobre el chasis |
+| [`docs/APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) | Familia §2 reutilización alta (Gate · Reverse · Match · Scout · Seed · Catalog) |
+| [`docs/APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Oleada ops de archivo (Clean · Diff · Profiler · Watch · …) |
+| [`docs/FILE_CLEAN.md`](FILE_CLEAN.md) | **File Clean** — limpieza/normalización (en definición) |
+| [`docs/PLATFORM_API.md`](PLATFORM_API.md) | **PLATFORM API** — ejecución remota de jobs (**después** de apps FILE_OPS) |
 | [`docs/FILE_GATE.md`](FILE_GATE.md) | **FILE GATE** — Validador de archivos (prioridad #1 APP_FACTORY) |
 | [`docs/REVERSE_STUDIO.md`](REVERSE_STUDIO.md) | **Reverse Studio** — Emisor de layouts (CSV/Excel → posicional/JSON/XML) |
 | [`docs/FILE_MATCH.md`](FILE_MATCH.md) | **FILE MATCH** — Conciliador de archivos (A vs B por clave) |
