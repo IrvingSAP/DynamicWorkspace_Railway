@@ -21,6 +21,7 @@
     const btnCancel = document.getElementById("btn-cancel-field");
     const btnDelete = document.getElementById("btn-delete-field");
     const btnSaveConfig = document.getElementById("btn-save-json-config");
+    const patternWrap = document.getElementById("field-pattern-wrap");
 
     let config = loadConfig();
     let fields = loadFields();
@@ -55,7 +56,20 @@
             json_path: item.json_path || "",
             content_type: item.content_type || "free_text",
             required: Boolean(item.required),
+            pattern: item.pattern || "",
         };
+    }
+
+    function isCustomType(type) {
+        return type === "custom";
+    }
+
+    function syncPatternField() {
+        if (!patternWrap) {
+            return;
+        }
+        const type = document.getElementById("field-content-type").value;
+        patternWrap.hidden = !isCustomType(type);
     }
 
     function setStatus(message, isError) {
@@ -89,11 +103,13 @@
     }
 
     function readForm() {
+        const patternEl = document.getElementById("field-pattern");
         return {
             name: (document.getElementById("field-name").value || "").trim().toLowerCase(),
             json_path: (document.getElementById("field-json-path").value || "").trim(),
             content_type: document.getElementById("field-content-type").value,
             required: document.getElementById("field-required").checked,
+            pattern: patternEl ? (patternEl.value || "").trim() : "",
         };
     }
 
@@ -102,6 +118,11 @@
         document.getElementById("field-json-path").value = item.json_path;
         document.getElementById("field-content-type").value = item.content_type;
         document.getElementById("field-required").checked = item.required;
+        const patternEl = document.getElementById("field-pattern");
+        if (patternEl) {
+            patternEl.value = item.pattern || "";
+        }
+        syncPatternField();
     }
 
     function blankForm() {
@@ -110,6 +131,7 @@
             json_path: "",
             content_type: "numeric",
             required: true,
+            pattern: "",
         });
     }
 
@@ -146,6 +168,9 @@
             return i !== index && f.json_path === data.json_path;
         })) {
             errors.push("Ya existe un campo con el json_path «" + data.json_path + "».");
+        }
+        if (isCustomType(data.content_type) && !data.pattern) {
+            errors.push("Indique el patrón regex para el tipo custom.");
         }
         return errors;
     }
@@ -360,6 +385,11 @@
         });
     }
 
+    const contentTypeSelect = document.getElementById("field-content-type");
+    if (contentTypeSelect) {
+        contentTypeSelect.addEventListener("change", syncPatternField);
+    }
+
     writeConfigForm();
     renderTable();
     bindWizardNavSave();
@@ -368,5 +398,7 @@
     }
     if (canEdit && form) {
         openCreate();
+    } else {
+        syncPatternField();
     }
 })();

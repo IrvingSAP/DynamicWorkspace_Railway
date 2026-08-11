@@ -65,7 +65,8 @@ No hay endpoint de “crear proyecto” en MVP API. El diseño de listado/hub no
 
 ## Criterio de aceptación del módulo
 
-- [ ] CRUD listado/alta/hub coherente con sidebar Title Case **File Clean**  
-- [ ] Roles PA en alta  
-- [ ] Mensajes según UI_MESSAGES  
-- [ ] Spec lista para prototipo `prototype/file_clean/projects_*.html`
+- [x] CRUD listado/alta/hub coherente con sidebar Title Case **File Clean**  
+- [x] Roles PA en alta  
+- [x] Mensajes según UI_MESSAGES  
+- [x] Spec lista para prototipo `prototype/file_clean/projects_*.html`  
+- [x] Revisión UX de prototipos OK → «Desarrolla el módulo» (M1 implementado)

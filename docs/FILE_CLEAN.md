@@ -184,11 +184,15 @@ Método: **definir → prototipar → revisar → implementar solo con «Desarro
 | `date_normalize` | Parsear fechas a formato canónico del proyecto | Campo |
 | `number_normalize` | Separadores decimales/miles | Campo |
 | `null_tokens` | Mapear `""`, `N/A`, `null` → vacío | Campo / global |
-| `replace_map` | Tabla de reemplazo (reuso DMS/catálogo) | Campo |
+| `replace_map` | Mapa valor completo → valor (match **exacto**; reuso DMS) | Campo |
+| `replace` | Find/replace **dentro** del string (reuso DMS) | Campo |
+| `compose` | Plantilla: literal + `{value}` / `{field:…}` / `{seq}` | Campo |
 | `dedupe_rows` | Eliminar filas duplicadas (clave configurable) | Global |
 | `encoding_normalize` | Forzar UTF-8 / quitar BOM | Archivo |
 
-Fase 2: teléfonos, documentos nacionales, padding posicional fino, etc.
+Detalle de semántica y params: [`definition_app_FILE_CLEAN/clean_rules.md`](definition_app_FILE_CLEAN/clean_rules.md).
+
+**Fase 2:** teléfonos, documentos nacionales, padding posicional fino, `substring` como op de campo, `regex` en `replace`, tokens de porción `{field:name:start,len}` en `compose`.
 
 ---
 

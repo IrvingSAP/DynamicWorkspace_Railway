@@ -1,0 +1,126 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos CSV/delimitado — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">File Clean</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:profile_hub' project_slug=project.slug %}">Perfil</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:profile_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Clean · Paso 4 · <span class="role-badge">{{ file_type_code|default:"csv" }}</span></p>
+        <h2>Ayuda — Campos delimitados (CSV / TXT)</h2>
+        <p>Explica los parámetros del delimitador y cada campo del editor. Tipo actual: <code>{{ file_type_code|default:"csv" }}</code>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_clean:profile_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Parámetros del archivo</h3>
+        <table class="help-table">
+            <thead><tr><th>Campo en pantalla</th><th>Para qué sirve</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Delimitador</strong></td>
+                    <td>Carácter que separa columnas: coma <code>,</code>, punto y coma <code>;</code>, tabulador o pipe <code>|</code>. Debe coincidir con el archivo real.</td>
+                </tr>
+                <tr>
+                    <td><strong>Carácter de comillas</strong></td>
+                    <td>Envuelve valores que contienen el delimitador (normalmente <code>"</code>). Ejemplo: <code>"Calle Sol, 12"</code>.</td>
+                </tr>
+                <tr>
+                    <td><strong>Carácter de escape</strong></td>
+                    <td>Opcional. Escapa comillas dentro del valor (p. ej. <code>\</code>). Déjelo vacío si el archivo no lo usa.</td>
+                </tr>
+                <tr>
+                    <td><strong>Primera fila es encabezado</strong></td>
+                    <td>Si está marcado, la fila de nombres de columna no es un registro de datos. Sirve para mapear por <em>nombre</em> de columna.</td>
+                </tr>
+                <tr>
+                    <td><strong>Fila encabezado</strong></td>
+                    <td>Número de fila (1-based) donde están los títulos. Suele ser <code>1</code>. Visible cuando hay encabezado.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Editor de cada campo</h3>
+        <table class="help-table">
+            <thead><tr><th>Campo en pantalla</th><th>Para qué sirve</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Columna del archivo</strong></td>
+                    <td>Nombre del encabezado en el CSV (ej. <code>DOC_ID</code>). Útil si «Primera fila es encabezado» está activo. Es una etiqueta de referencia; el parseo usa el índice.</td>
+                </tr>
+                <tr>
+                    <td><strong>Nombre interno</strong> <span class="req">*</span></td>
+                    <td>Identificador estable del campo en Clean (<code>telefono</code>, <code>edad</code>). Lo usan las <strong>reglas</strong> y el archivo limpio. Minúsculas, sin espacios raros.</td>
+                </tr>
+                <tr>
+                    <td><strong>Índice (0-based)</strong> <span class="req">*</span></td>
+                    <td>
+                        Posición de la columna empezando en <strong>0</strong>.
+                        Primera columna = <code>0</code>, segunda = <code>1</code>, etc.
+                        Ejemplo: en <code>nombre,edad,direccion</code>, <code>edad</code> es índice <code>1</code>.
+                        Es el dato que el parser usa siempre para extraer el valor.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Tipo contenido</strong></td>
+                    <td>Clasificación del valor (texto, numérico, fecha, custom…). En <strong>Ejecutar</strong> Clean no rechaza filas por este tipo; sirve de documentación y para Gate si valida después.</td>
+                </tr>
+                <tr>
+                    <td><strong>Campo obligatorio</strong></td>
+                    <td>Marca el campo como requerido en el perfil. Clean no bloquea la limpieza por vacío; Gate sí puede usarlo al validar.</td>
+                </tr>
+                <tr>
+                    <td><strong>Patrón regex (custom)</strong></td>
+                    <td>Aparece si el tipo es <code>custom</code>. Expresión regular que describe la forma esperada del valor (ej. <code>^[A-Z0-9]+$</code>). Obligatoria al guardar un campo custom.</td>
+                </tr>
+                <tr>
+                    <td><strong>Formato fecha</strong></td>
+                    <td>Aparece si el tipo es fecha/datetime. Indica cómo interpretar el texto (ej. <code>DD/MM/YYYY</code>).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Ejemplo rápido</h3>
+        <p class="help-intro">Archivo:</p>
+        <pre class="mono" style="padding:10px;background:#f6f4f0;border-radius:8px;overflow:auto">nombre,edad,direccion
+Beatriz Martinez,19,Calle Parque 282</pre>
+        <ul>
+            <li>Delimitador: coma · Encabezado: sí · Fila encabezado: 1</li>
+            <li>Campo <code>nombre</code> → índice <code>0</code></li>
+            <li>Campo <code>edad</code> → índice <code>1</code></li>
+            <li>Campo <code>direccion</code> → índice <code>2</code></li>
+        </ul>
+
+        <h3 class="form-section-title">Relación con captura (pasos 2–3)</h3>
+        <p>El inicio/fin de captura define <em>qué filas</em> se leen. El delimitador e índices definen <em>cómo se parten</em> esas filas en columnas. No confunda «fila encabezado = 1» con «inicio de captura = línea 2» si la línea 1 ya es un dato.</p>
+    </div>
+</div>
+{% endblock %}

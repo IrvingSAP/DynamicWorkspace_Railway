@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "apps.reverse_studio",
     "apps.file_match",
     "apps.structure_scout",
+    "apps.file_clean",
     "apps.profile_seed",
 ]
 

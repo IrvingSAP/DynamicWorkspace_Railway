@@ -1,0 +1,68 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — File Clean{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">File Clean</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Guía de trabajo · <span class="role-badge">UF</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>Cómo funciona File Clean</h2>
+        <p>
+            <strong>File Clean</strong> limpia y normaliza archivos con <strong>reglas explícitas</strong>
+            (trim, mapas de códigos, find/replace, plantillas…) antes de validar o transformar.
+        </p>
+        <p>
+            <strong>No valida contratos de producción</strong> (eso es File Gate).
+            <strong>No mapea a un destino de negocio</strong> (eso es FilePipe).
+            Entrega un archivo limpio + log de cambios.
+        </p>
+    </div>
+    <aside class="guide-hero-aside" aria-label="Ruta rápida">
+        <h3>Ruta rápida</h3>
+        <ol class="guide-quick-path">
+            <li>Cree un proyecto File Clean.</li>
+            <li>Defina el perfil de lectura.</li>
+            <li>Ordene las reglas de limpieza.</li>
+            <li>Publique una versión.</li>
+            <li>Ejecute (preview o job) y descargue salida + log.</li>
+            <li>Consulte el historial de jobs.</li>
+        </ol>
+        <p><a href="{% url 'file_clean:project_list' %}" class="btn btn-primary">Ir a proyectos</a></p>
+    </aside>
+</div>
+
+<div class="panel" style="margin-top:20px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Los 5 pasos del ciclo</h3>
+        <ol>
+            <li><strong>Perfil</strong> — Cómo se lee el archivo (tipo, encoding, campos).</li>
+            <li><strong>Reglas</strong> — Catálogo ordenado; nada se limpia si no hay regla.</li>
+            <li><strong>Publicar</strong> — Congela perfil + reglas; validación P5 de params.</li>
+            <li><strong>Ejecutar</strong> — Solo versión publicada; output + change log.</li>
+            <li><strong>Historial</strong> — Jobs, hashes, artifacts.</li>
+        </ol>
+        <p class="hint" style="margin-top:12px">
+            Disponibles: ciclo de proyecto, perfil, reglas y <strong>publicar</strong>.
+            Ejecutar e historial llegan en entregas siguientes.
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Reglas de limpieza — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_clean_rules.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">File Clean</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Reglas</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Clean · Módulo 3 · <span class="role-badge">CleanRules</span></p>
+        <h2>Reglas de limpieza</h2>
+        <p>Solo reglas explícitas del catálogo. El orden de aplicación forma parte del contrato.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_clean:rules_hub_help' project_slug=project.slug as fc_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=fc_help_url %}
+        <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        {% if can_edit %}
+        <a href="{% url 'file_clean:rules_add' project_slug=project.slug %}" class="btn btn-primary">+ Añadir regla</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="alert alert-info">
+    Motor compartido con FilePipe (operadores). Clean filtra el subset de normalización — no mapeo N:1 ni destino de negocio.
+    Preview del efecto: módulo Ejecutar.
+</div>
+
+{% if not has_profile_fields %}
+<div class="alert alert-warning">
+    Defina al menos un campo en el <a href="{% url 'file_clean:profile_hub' project_slug=project.slug %}">perfil de lectura</a> antes de añadir reglas por campo.
+</div>
+{% endif %}
+
+{% if orphan_rule_ids %}
+<div class="alert alert-warning">
+    Hay reglas que apuntan a campos eliminados o renombrados del perfil. Edítelas o elimínelas antes de publicar.
+</div>
+{% endif %}
+
+<div class="stats-strip" aria-label="Resumen">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Reglas</p>
+        <p class="stat-value">{{ rules_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Habilitadas</p>
+        <p class="stat-value">{{ rules_enabled_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Campos perfil</p>
+        <p class="stat-value">{{ field_names|length }}</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Pipeline (orden de aplicación)</h3>
+        {% if rules %}
+        <div class="fc-rules-list">
+            {% for rule in rules %}
+            <div class="fc-rule-row{% if not rule.enabled %} is-off{% endif %}{% if rule.id in orphan_rule_ids %} is-orphan{% endif %}">
+                <div class="fc-rule-order">
+                    {% if can_edit %}
+                    <form method="post" action="{% url 'file_clean:rules_move' project_slug=project.slug rule_id=rule.id %}" class="fc-order-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="direction" value="up">
+                        <button type="submit" class="btn btn-ghost btn-sm" title="Subir" {% if forloop.first %}disabled{% endif %}>↑</button>
+                    </form>
+                    <form method="post" action="{% url 'file_clean:rules_move' project_slug=project.slug rule_id=rule.id %}" class="fc-order-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="direction" value="down">
+                        <button type="submit" class="btn btn-ghost btn-sm" title="Bajar" {% if forloop.last %}disabled{% endif %}>↓</button>
+                    </form>
+                    {% else %}
+                    <span class="mono">{{ rule.sort_order }}</span>
+                    {% endif %}
+                </div>
+                <div class="fc-rule-body">
+                    <strong class="mono">{{ rule.code }}</strong>
+                    {% if rule.field_name %}
+                    → <span class="mono">{{ rule.field_name }}</span>
+                    {% endif %}
+                    <br>
+                    <span class="fc-rule-summary">{{ rule.params_summary }}</span>
+                </div>
+                <span class="badge">{{ rule.scope_label }}</span>
+                {% if rule.enabled %}
+                <span class="badge badge--ok">ON</span>
+                {% else %}
+                <span class="badge badge--muted">OFF</span>
+                {% endif %}
+                <div class="fc-rule-actions">
+                    {% if can_edit %}
+                    <a href="{% url 'file_clean:rules_edit' project_slug=project.slug rule_id=rule.id %}" class="btn btn-ghost btn-sm">Editar</a>
+                    <form method="post" action="{% url 'file_clean:rules_toggle' project_slug=project.slug rule_id=rule.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-ghost btn-sm">{% if rule.enabled %}Desactivar{% else %}Activar{% endif %}</button>
+                    </form>
+                    <form method="post" action="{% url 'file_clean:rules_delete' project_slug=project.slug rule_id=rule.id %}">
+                        {% csrf_token %}
+                        <button type="button" class="btn btn-ghost btn-sm btn-ghost--danger" data-dw-delete data-dw-delete-message="¿Eliminar la regla «{{ rule.code }}»?">Eliminar</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="hint">Aún no hay reglas. Añada la primera desde el catálogo permitido.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="page-actions" style="margin-top:16px">
+    <a class="btn btn-secondary" href="{% url 'file_clean:profile_hub' project_slug=project.slug %}">← Perfil</a>
+    <a class="btn btn-primary" href="{% url 'file_clean:publish_hub' project_slug=project.slug %}">Siguiente: Publicar →</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-dw-delete]').forEach(function (trigger) {
+        trigger.addEventListener('click', function (e) {
+            e.preventDefault();
+            const form = trigger.closest('form');
+            const message = trigger.dataset.dwDeleteMessage || '¿Confirma que desea continuar?';
+            window.dwConfirmWarning(message, function () {
+                if (form) form.submit();
+            }, { title: 'Eliminar regla', okLabel: 'Eliminar' });
+        });
+    });
+});
+</script>
+{% endblock %}

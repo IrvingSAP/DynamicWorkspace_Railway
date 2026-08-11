@@ -1,0 +1,71 @@
+/* File Clean — lista de reglas */
+
+.fc-rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fc-rule-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid var(--border, #e2e5ea);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+}
+
+.fc-rule-row.is-off {
+  opacity: 0.55;
+}
+
+.fc-rule-row.is-orphan {
+  border-color: #c47b1a;
+}
+
+.fc-rule-order {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fc-order-form {
+  margin: 0;
+}
+
+.fc-rule-summary {
+  font-size: 12px;
+  color: var(--ink-tertiary, #6b7280);
+}
+
+.fc-rule-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.fc-rule-actions form {
+  margin: 0;
+}
+
+.badge--ok {
+  background: #e8f5e9;
+  color: #1b5e20;
+}
+
+.badge--muted {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+@media (max-width: 900px) {
+  .fc-rule-row {
+    grid-template-columns: auto 1fr;
+  }
+  .fc-rule-actions {
+    grid-column: 1 / -1;
+  }
+}

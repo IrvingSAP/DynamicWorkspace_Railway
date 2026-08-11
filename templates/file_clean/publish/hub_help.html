@@ -1,0 +1,23 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Publicar — File Clean{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Publicar versión</h2>
+        <p>Congela el perfil de lectura y las reglas en una versión inmutable.</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'file_clean:publish_hub' project_slug=project.slug %}">← Volver</a></div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li><strong>P1</strong> — Al menos un campo en el perfil.</li>
+    <li><strong>P2</strong> — Al menos una regla habilitada.</li>
+    <li><strong>P5</strong> — Toda regla habilitada debe tener params válidos (replace_map, replace, compose…).</li>
+    <li>Tras publicar se crea un nuevo borrador (copia) para seguir editando.</li>
+    <li>Los jobs usarán solo la versión activa (FC1).</li>
+</ul>
+</div></div>
+{% endblock %}

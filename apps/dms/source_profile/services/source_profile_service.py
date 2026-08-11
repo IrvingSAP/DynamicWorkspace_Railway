@@ -191,6 +191,9 @@ def default_config_for_type(file_type_code: str, current: dict | None = None) ->
     if variant == "delimited":
         for key, value in DEFAULT_DELIMITED_CONFIG.items():
             base.setdefault(key, value)
+        # CSV estándar usa coma; txt_delimited suele usar punto y coma.
+        if (file_type_code or "").strip() == "csv" and "delimiter" not in (current or {}):
+            base["delimiter"] = ","
     elif variant == "xlsx":
         for key, value in DEFAULT_XLSX_CONFIG.items():
             base.setdefault(key, value)

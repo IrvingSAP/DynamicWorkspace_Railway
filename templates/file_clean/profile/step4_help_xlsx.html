@@ -1,0 +1,94 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos Excel — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">File Clean</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:profile_hub' project_slug=project.slug %}">Perfil</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:profile_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Clean · Paso 4 · <span class="role-badge">xlsx</span></p>
+        <h2>Ayuda — Campos Excel (XLSX)</h2>
+        <p>Asocia cada campo a una columna de la hoja. Tipo: <code>{{ file_type_code|default:"xlsx" }}</code>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_clean:profile_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Parámetros de hoja</h3>
+        <table class="help-table">
+            <thead><tr><th>Campo en pantalla</th><th>Para qué sirve</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Nombre de hoja</strong> <span class="req">*</span></td>
+                    <td>Nombre exacto de la pestaña en el libro (ej. <code>Hoja1</code>, <code>Datos</code>). Debe coincidir con el archivo.</td>
+                </tr>
+                <tr>
+                    <td><strong>Fila de encabezados</strong></td>
+                    <td>Fila (1-based) con títulos de columna. Permite referenciar columnas por nombre de encabezado además de por letra.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Editor de cada campo</h3>
+        <table class="help-table">
+            <thead><tr><th>Campo en pantalla</th><th>Para qué sirve</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Columna</strong> <span class="req">*</span></td>
+                    <td>Letra Excel (<code>A</code>, <code>B</code>, <code>AA</code>) o el texto del encabezado en esa fila. Indica de dónde se lee el valor.</td>
+                </tr>
+                <tr>
+                    <td><strong>Nombre interno</strong> <span class="req">*</span></td>
+                    <td>Identificador en Clean / reglas (<code>documento</code>, <code>monto</code>).</td>
+                </tr>
+                <tr>
+                    <td><strong>Tipo contenido</strong></td>
+                    <td>Clasificación del valor. Clean no rechaza filas por esto al ejecutar.</td>
+                </tr>
+                <tr>
+                    <td><strong>Campo obligatorio</strong></td>
+                    <td>Marca de perfil; útil si luego valida Gate.</td>
+                </tr>
+                <tr>
+                    <td><strong>Patrón regex (custom)</strong></td>
+                    <td>Aparece si el tipo es <code>custom</code>. Expresión regular de la forma esperada (ej. <code>^[A-Z0-9]+$</code>). Obligatoria al guardar un campo custom.</td>
+                </tr>
+                <tr>
+                    <td><strong>Formato fecha</strong></td>
+                    <td>Si el tipo es fecha/datetime: cómo interpretar celdas de texto.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Nota</h3>
+        <p>La captura (pasos 2–3) limita filas de la hoja. Aquí solo define <em>qué columnas</em> entran al perfil.</p>
+    </div>
+</div>
+{% endblock %}

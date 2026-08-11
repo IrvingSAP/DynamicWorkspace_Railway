@@ -116,7 +116,12 @@ def serialize_rows(rows: list[dict], target: dict) -> bytes:
 
 
 def _excel_column_index(column) -> int:
-    """Convierte letra (A, B, AA) o índice 1-based a índice 1-based."""
+    """Convierte letra (A, B, AA) o índice 1-based a índice 1-based.
+
+    Nombres de encabezado del perfil origen (p. ej. NOMBRE, EDAD) no son letras
+    Excel: devolver 0 para que el serializador asigne columnas secuenciales.
+    Misma regla que source_parser_service._column_letter_to_index (A..XFD, ≤3 letras).
+    """
     if column in (None, ""):
         return 0
     if isinstance(column, int):
@@ -128,12 +133,12 @@ def _excel_column_index(column) -> int:
         except ValueError:
             return 0
         return value if value >= 1 else 0
+    if len(text) > 3 or not all("A" <= ch <= "Z" for ch in text):
+        return 0
     index = 0
     for ch in text:
-        if not ("A" <= ch <= "Z"):
-            return 0
         index = index * 26 + (ord(ch) - 64)
-    return index
+    return index if index >= 1 else 0
 
 
 def _excel_cell_value(text: str, field: dict, serialization: dict):

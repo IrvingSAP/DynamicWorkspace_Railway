@@ -82,13 +82,16 @@ Seguir [`../definition_app/UI_MESSAGES.md`](../definition_app/UI_MESSAGES.md): s
 
 Prefijo sugerido de códigos: `file_clean_*` o reuso de códigos DMS donde el significado sea idéntico.
 
+Validación de reglas (guardar / publicar P5) — códigos orientativos en [`clean_rules.md`](clean_rules.md) y [`clean_publish.md`](clean_publish.md), p. ej. `file_clean_rule_unknown`, `file_clean_rule_field_missing`, `file_clean_replace_map_invalid`, `file_clean_replace_find_required`, `file_clean_compose_invalid`.
+
 ---
 
 ## 8. Checklist de integración
 
-- [ ] Kind en `Project.KIND_CHOICES` + migraciones  
-- [ ] URLs montadas bajo `/app/`  
-- [ ] Sidebar + `app_nav_active`  
+- [x] Kind en `Project.KIND_CHOICES` + migraciones  
+- [x] URLs montadas bajo `/app/`  
+- [x] Sidebar + `app_nav_active`  
 - [ ] Runner testeable sin vista  
+- [ ] Validación P5 de reglas al publicar  
 - [ ] Documentado en PLATFORM_API inventario de kinds  
 - [ ] Sin desplegar API hasta cierre oleada FILE_OPS

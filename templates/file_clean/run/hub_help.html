@@ -1,0 +1,62 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Ejecutar — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">File Clean</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:run_hub' project_slug=project.slug %}">Ejecutar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Clean · Módulo 5</p>
+        <h2>Ayuda · Ejecutar limpieza</h2>
+        <p>Cómo correr un job con la versión publicada y qué obtiene de salida.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_clean:run_hub' project_slug=project.slug %}" class="btn btn-secondary">← Ejecutar</a>
+    </div>
+</div>
+
+<div class="help-panel panel">
+    <div class="panel-body">
+        <h3>Qué es</h3>
+        <p>Sube un archivo de producción, lo lee con el <strong>perfil publicado</strong> y aplica las <strong>reglas publicadas</strong> en orden. Genera archivo limpio + log de cambios.</p>
+
+        <h3>Vista previa vs ejecución</h3>
+        <table class="issue-table">
+            <thead><tr><th>Acción</th><th>Qué hace</th></tr></thead>
+            <tbody>
+                <tr><td>Vista previa</td><td>Primeras filas antes/después. No guarda salida definitiva (<code>dry_run</code>).</td></tr>
+                <tr><td>Ejecutar limpieza</td><td>Job completo: input + output + change_log + métricas.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Roles</h3>
+        <p>PA, ED y GE pueden ejecutar y descargar. CO no ejecuta.</p>
+
+        <h3>Reglas en runtime</h3>
+        <ul>
+            <li>Solo reglas habilitadas de la versión activa.</li>
+            <li><code>replace_map</code>: match exacto del valor completo; sin match → intacto.</li>
+            <li><code>compose</code> / <code>{seq}</code>: contador por job, reinicia en cada corrida.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

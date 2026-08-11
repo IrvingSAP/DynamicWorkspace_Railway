@@ -1,0 +1,161 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Proyecto — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">File Clean</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span> · Limpieza</p>
+        <h2>Ayuda — Hub del proyecto</h2>
+        <p>Tablero del ciclo: definición (perfil → reglas → publicar) y ejecución (limpiar → historial).</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_clean:project_hub' project_slug=project.slug %}">← Volver al hub</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es este hub</h3>
+        <p class="help-intro">
+            Es el <strong>punto de entrada</strong> del proyecto File Clean. Agrupa el perfil de lectura,
+            las reglas de limpieza, la versión publicada, las ejecuciones (jobs) y el historial.
+            No es File Gate (no valida contrato de producción) ni FilePipe (no transforma a un destino de negocio).
+        </p>
+        <ul>
+            <li><strong>Objetivo:</strong> normalizar un archivo con reglas explícitas y entregar archivo limpio + log auditable.</li>
+            <li><strong>Strip superior:</strong> borrador, versión activa publicada, último job y conteo de miembros.</li>
+            <li><strong>Stepper + paneles:</strong> avance del ciclo y accesos a cada módulo.</li>
+            <li><strong>Miembros:</strong> botón visible solo para el administrador (PA).</li>
+        </ul>
+
+        <h3 class="form-section-title">Fases del ciclo</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Fase</th><th>Qué cubre</th><th>En el hub</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Definición (pasos 1–3)</td>
+                    <td>Perfil → Reglas → Publicar</td>
+                    <td>Primera franja del stepper</td>
+                </tr>
+                <tr>
+                    <td>Ejecución (pasos 4–5)</td>
+                    <td>Ejecutar limpieza → Historial</td>
+                    <td>Segunda franja del stepper</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Stepper — qué hace cada paso</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>#</th><th>Paso</th><th>Para qué sirve</th><th>Cuándo se marca</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="mono">1</td>
+                    <td>Perfil</td>
+                    <td>Cómo se lee el archivo (tipo, encoding, captura, campos). Wizard de 4 pasos.</td>
+                    <td>✓ cuando el borrador tiene los 4 pasos listos.</td>
+                </tr>
+                <tr>
+                    <td class="mono">2</td>
+                    <td>Reglas</td>
+                    <td>Catálogo ordenado: trim, replace_map, replace, compose, dedupe… Solo reglas explícitas.</td>
+                    <td>✓ con al menos una regla habilitada; requiere perfil con campos.</td>
+                </tr>
+                <tr>
+                    <td class="mono">3</td>
+                    <td>Publicar</td>
+                    <td>Congela perfil + reglas en una <strong>versión activa</strong>. Sin publish parcial.</td>
+                    <td>✓ si ya hay versión publicada.</td>
+                </tr>
+                <tr>
+                    <td class="mono">4</td>
+                    <td>Ejecutar</td>
+                    <td>Suba el archivo, preview o job completo; salida limpia + change log.</td>
+                    <td>✓ tras al menos un job completado. Requiere versión publicada.</td>
+                </tr>
+                <tr>
+                    <td class="mono">5</td>
+                    <td>Historial</td>
+                    <td>Auditoría de jobs, hashes, métricas y descargas (TTL 7 días).</td>
+                    <td>Consulta continua: no se marca como «hecho»; queda activo al publicar.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Colores de los botones</h3>
+        <ul>
+            <li><strong>Verde sólido (primary):</strong> siguiente paso pendiente — acción recomendada.</li>
+            <li><strong>Verde suave (info):</strong> paso ya completado — puede seguir editando o revisando.</li>
+            <li><strong>Gris (secondary):</strong> aún no habilitado o acción secundaria.</li>
+        </ul>
+
+        <h3 class="form-section-title">Orden de trabajo recomendado</h3>
+        <ol>
+            <li>Revise <strong>Miembros</strong> (PA) si otras personas deben editar o ejecutar.</li>
+            <li>Complete el <strong>Perfil de lectura</strong> (4 pasos).</li>
+            <li>Defina y habilite <strong>Reglas</strong>.</li>
+            <li><strong>Publique</strong> la versión (perfil + reglas).</li>
+            <li><strong>Ejecute</strong> con un archivo de prueba → revise resultado y descargas.</li>
+            <li>Use el <strong>Historial</strong> para auditar jobs y TTL.</li>
+        </ol>
+        <p class="help-intro">Regla de producto (FC1): <strong>solo se ejecuta la versión publicada activa</strong>, no el borrador.</p>
+
+        <h3 class="form-section-title">Borrador vs versión publicada</h3>
+        <ul>
+            <li>Perfil y reglas se editan en <strong>borrador</strong> hasta publicar.</li>
+            <li>Al publicar se congela una <strong>versión activa</strong> y se crea un nuevo borrador (copia) editable.</li>
+            <li>Si cambia el borrador después de publicar, debe <strong>volver a publicar</strong> para que Ejecutar use esos cambios.</li>
+            <li>Los jobs antiguos no se invalidan solos; siguen asociados a la versión con la que se ejecutaron.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles (resumen)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>En este hub</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">PA</td><td>Ve todo; gestiona miembros; edita, publica y ejecuta.</td></tr>
+                <tr><td class="mono">ED</td><td>Edita definición, publica y ejecuta; no gestiona miembros.</td></tr>
+                <tr><td class="mono">GE</td><td>Ejecuta y descarga artifacts; no edita perfil/reglas ni publica.</td></tr>
+                <tr><td class="mono">CO</td><td>Consulta hub e historial (metadatos); sin descarga de contenido.</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Detalle de invitaciones: pantalla <strong>Miembros</strong> → Ayuda.
+            Guía de producto: menú File Clean → <strong>Ayuda</strong>.
+        </p>
+
+        <h3 class="form-section-title">Qué no hace este hub</h3>
+        <ul>
+            <li>No edita campos del perfil ni reglas (eso está en cada módulo del stepper).</li>
+            <li>No sube archivos de limpieza (eso es <strong>Ejecutar</strong>).</li>
+            <li>No publica automáticamente: hay que entrar a <strong>Publicar</strong> y confirmar.</li>
+            <li>No valida contrato (File Gate) ni genera destino ETL (FilePipe).</li>
+            <li>En Ejecutar, File Clean <strong>lee y limpia</strong>; no rechaza filas por <code>content_type</code> (eso es Gate).</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

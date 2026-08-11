@@ -1,7 +1,7 @@
 # Módulo 6 — Historial (FILE CLEAN)
 
 > **App:** File Clean  
-> **Estado:** borrador de definición
+> **Estado:** implementado
 
 ---
 
@@ -15,7 +15,7 @@ Listar y detallar jobs de limpieza del proyecto: quién, cuándo, versión, hash
 
 Columnas sugeridas: fecha, usuario/servicio, versión, estado, filas, cambios, acciones (detalle / descargas si vigentes).
 
-Filtros: estado, rango de fechas.
+Filtros: estado, rango de fechas, usuario, archivo, hash, versión, tipo (ejecución / preview), TTL.
 
 ---
 
@@ -36,6 +36,15 @@ Filtros: estado, rango de fechas.
 
 ## Criterio de aceptación
 
-- [ ] Listado + detalle  
-- [ ] Respeto TTL artifacts  
-- [ ] Roles CO vs GE/PA
+- [x] Listado + detalle  
+- [x] Respeto TTL artifacts (7 días)  
+- [x] Roles CO vs GE/PA
+
+## Implementación
+
+| Pieza | Ruta |
+|-------|------|
+| Servicio | `apps/file_clean/history/services/clean_history_service.py` |
+| Vistas | `apps/file_clean/history/views.py` |
+| UI | `templates/file_clean/history/` · URLs `/historial/` |
+| TTL | `clean_run_service.ARTIFACT_TTL` (= `DOWNLOAD_TTL`) |

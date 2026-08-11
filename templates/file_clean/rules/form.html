@@ -1,0 +1,205 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{% if mode == 'edit' %}Editar regla{% else %}Nueva regla{% endif %} — File Clean{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_clean_rules.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:rules_hub' project_slug=project.slug %}">Reglas</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{% if mode == 'edit' %}Editar{% else %}Nueva{% endif %}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Clean · Reglas</p>
+        <h2>{% if mode == 'edit' %}Editar regla{% else %}Añadir regla{% endif %}</h2>
+        <p>Elija un código del catálogo. Los parámetros dependen del tipo de regla.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_clean:rules_hub' project_slug=project.slug %}" class="btn btn-secondary">← Lista</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <form method="post" novalidate id="fc-rule-form">
+            {% csrf_token %}
+            <div class="form-section">
+                <h3 class="form-section-title">Regla</h3>
+                <div class="form-grid">
+                    <div class="form-row two-cols">
+                        <div class="field{% if errors.code %} has-error{% endif %}">
+                            <label for="code">Código <span class="req">*</span></label>
+                            <select id="code" name="code" required data-fc-code>
+                                {% for item in catalog_choices %}
+                                <option value="{{ item.code }}" data-scope="{{ item.scope }}"{% if posted.code == item.code %} selected{% endif %}>{{ item.code }} — {{ item.label }} ({{ item.priority }})</option>
+                                {% endfor %}
+                            </select>
+                            {% for msg in errors.code %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                        </div>
+                        <div class="field{% if errors.field_name %} has-error{% endif %}" data-fc-field-wrap>
+                            <label for="field_name">Campo del perfil</label>
+                            <select id="field_name" name="field_name">
+                                <option value="">—</option>
+                                {% for name in field_names %}
+                                <option value="{{ name }}"{% if posted.field_name == name %} selected{% endif %}>{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                            <p class="hint">Obligatorio para reglas de ámbito campo.</p>
+                            {% for msg in errors.field_name %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="field field--checkbox">
+                        <label for="enabled">
+                            <input type="checkbox" id="enabled" name="enabled"{% if posted.enabled %} checked{% endif %}>
+                            Regla habilitada
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="form-section-title">Parámetros</h3>
+                {% if errors.params %}
+                {% for msg in errors.params %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                {% endif %}
+
+                <div class="fc-params" data-fc-params="null_tokens" hidden>
+                    <div class="field">
+                        <label for="tokens">Tokens (separados por coma)</label>
+                        <input type="text" id="tokens" name="tokens" value="{{ params_values.tokens }}">
+                    </div>
+                </div>
+
+                <div class="fc-params" data-fc-params="date_normalize" hidden>
+                    <div class="form-row two-cols">
+                        <div class="field">
+                            <label for="input_formats">Formatos entrada (coma)</label>
+                            <input type="text" id="input_formats" name="input_formats" class="mono" placeholder="%d/%m/%Y,%Y-%m-%d" value="{{ params_values.input_formats }}">
+                        </div>
+                        <div class="field">
+                            <label for="output_format">Formato salida</label>
+                            <input type="text" id="output_format" name="output_format" class="mono" value="{{ params_values.output_format }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fc-params" data-fc-params="number_normalize" hidden>
+                    <div class="form-row two-cols">
+                        <div class="field">
+                            <label for="decimal_sep">Separador decimal</label>
+                            <input type="text" id="decimal_sep" name="decimal_sep" maxlength="2" value="{{ params_values.decimal_sep }}">
+                        </div>
+                        <div class="field">
+                            <label for="thousands_sep">Separador miles</label>
+                            <input type="text" id="thousands_sep" name="thousands_sep" maxlength="2" value="{{ params_values.thousands_sep }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fc-params" data-fc-params="replace_map" hidden>
+                    <div class="field">
+                        <label for="map_text">Mapa (una línea: clave=valor)</label>
+                        <textarea id="map_text" name="map_text" rows="6" class="mono" placeholder="M=Masculino&#10;F=Femenino">{{ params_values.map_text }}</textarea>
+                        <p class="hint">Match <strong>exacto</strong> del valor completo del campo. No busca fragmentos.</p>
+                    </div>
+                    <div class="field field--checkbox">
+                        <label><input type="checkbox" name="case_insensitive"{% if params_values.case_insensitive %} checked{% endif %}> Ignorar mayúsculas/minúsculas</label>
+                    </div>
+                </div>
+
+                <div class="fc-params" data-fc-params="replace" hidden>
+                    <div class="form-row two-cols">
+                        <div class="field">
+                            <label for="find">Buscar (find) <span class="req">*</span></label>
+                            <input type="text" id="find" name="find" class="mono" value="{{ params_values.find }}">
+                        </div>
+                        <div class="field">
+                            <label for="replace">Reemplazar por</label>
+                            <input type="text" id="replace" name="replace" class="mono" value="{{ params_values.replace }}">
+                        </div>
+                    </div>
+                    <div class="form-row two-cols">
+                        <div class="field field--checkbox">
+                            <label><input type="checkbox" name="all"{% if params_values.all %} checked{% endif %}> Todas las ocurrencias</label>
+                        </div>
+                        <div class="field field--checkbox">
+                            <label><input type="checkbox" name="ignore_case"{% if params_values.ignore_case %} checked{% endif %}> Ignorar mayúsculas</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fc-params" data-fc-params="compose" hidden>
+                    <div class="field">
+                        <label for="template">Plantilla <span class="req">*</span></label>
+                        <input type="text" id="template" name="template" class="mono" placeholder="LOT-{seq}" value="{{ params_values.template }}">
+                        <p class="hint">Tokens: <code>{value}</code>, <code>{field:nombre}</code>, <code>{seq}</code> + literales.</p>
+                    </div>
+                    <div class="form-row two-cols">
+                        <div class="field">
+                            <label for="seq_start">seq_start</label>
+                            <input type="number" id="seq_start" name="seq_start" value="{{ params_values.seq_start }}">
+                        </div>
+                        <div class="field">
+                            <label for="seq_step">seq_step</label>
+                            <input type="number" id="seq_step" name="seq_step" value="{{ params_values.seq_step }}">
+                        </div>
+                    </div>
+                    <div class="form-row two-cols">
+                        <div class="field">
+                            <label for="seq_width">seq_width (opcional)</label>
+                            <input type="number" id="seq_width" name="seq_width" value="{{ params_values.seq_width }}">
+                        </div>
+                        <div class="field">
+                            <label for="seq_pad_char">seq_pad_char</label>
+                            <input type="text" id="seq_pad_char" name="seq_pad_char" maxlength="1" value="{{ params_values.seq_pad_char }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fc-params" data-fc-params="dedupe_rows" hidden>
+                    <div class="field">
+                        <label for="key_fields">Campos clave (coma)</label>
+                        <input type="text" id="key_fields" name="key_fields" class="mono" placeholder="documento,fecha_pago" value="{{ params_values.key_fields }}">
+                    </div>
+                </div>
+
+                <div class="fc-params" data-fc-params="encoding_normalize" hidden>
+                    <div class="form-row two-cols">
+                        <div class="field">
+                            <label for="target_encoding">Encoding destino</label>
+                            <input type="text" id="target_encoding" name="target_encoding" value="{{ params_values.target_encoding }}">
+                        </div>
+                        <div class="field field--checkbox">
+                            <label><input type="checkbox" name="strip_bom"{% if params_values.strip_bom %} checked{% endif %}> Quitar BOM</label>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="hint" data-fc-params-empty>Esta regla no requiere parámetros adicionales.</p>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">{% if mode == 'edit' %}Guardar cambios{% else %}Añadir regla{% endif %}</button>
+                <a href="{% url 'file_clean:rules_hub' project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/file_clean-rules.js' %}"></script>
+{% endblock %}

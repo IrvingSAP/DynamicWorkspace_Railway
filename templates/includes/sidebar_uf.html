@@ -76,3 +76,15 @@
         <a href="{% url 'structure_scout:structure_scout_guide' %}" class="sidebar-sublink{% if app_nav_active == 'structure_scout_guide' %} is-active{% endif %}">Ayuda</a>
     </div>
 </div>
+
+<div class="sidebar-nav-group{% if file_clean_nav_open or app_nav_active == 'file_clean' or app_nav_active == 'file_clean_guide' %} is-open{% endif %}{% if app_nav_active == 'file_clean' or app_nav_active == 'file_clean_guide' %} is-active{% endif %}" data-nav-group="file-clean">
+    <button type="button" class="sidebar-nav-group-toggle" title="File Clean" aria-expanded="{% if file_clean_nav_open or app_nav_active == 'file_clean' or app_nav_active == 'file_clean_guide' %}true{% else %}false{% endif %}" aria-controls="file-clean-submenu">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 2.5l.9 2.7h2.8l-2.3 1.7.9 2.7L8 8.9l-2.3 1.7.9-2.7-2.3-1.7h2.8L8 2.5z"/><path d="M3 13h10"/></svg>
+        <span class="sidebar-link-label">File Clean</span>
+        <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="sidebar-nav-submenu" id="file-clean-submenu">
+        <a href="{% url 'file_clean:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_clean' %} is-active{% endif %}">Limpieza</a>
+        <a href="{% url 'file_clean:file_clean_guide' %}" class="sidebar-sublink{% if app_nav_active == 'file_clean_guide' %} is-active{% endif %}">Ayuda</a>
+    </div>
+</div>

@@ -1,0 +1,220 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Detalle job — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<style>
+.meta-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(12rem,1fr)); gap:10px; }
+.meta-item{ padding:10px 12px; background:#f6f4f0; border-radius:8px; }
+.meta-item .label{ font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:#a8a29e; margin:0 0 4px; }
+.meta-item .value{ margin:0; font-size:13px; word-break:break-all; }
+.preview-table{ width:100%; border-collapse:collapse; font-size:12px; }
+.preview-table th,.preview-table td{ padding:6px 8px; border-bottom:1px solid rgba(28,25,23,.08); text-align:left; }
+.preview-table th{ font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:#a8a29e; background:#f6f4f0; }
+.ttl-ok{ font-size:11px; font-weight:600; padding:2px 7px; border-radius:999px; background:rgba(21,128,61,.12); color:#15803d; }
+.ttl-exp{ font-size:11px; font-weight:600; padding:2px 7px; border-radius:999px; background:rgba(180,83,9,.12); color:#b45309; }
+</style>
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">File Clean</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:history_hub' project_slug=project.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ detail.row.short_id }}…</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Job">
+    <span class="label">Job</span>
+    <span class="cell-badge">{{ detail.row.short_id }}…</span>
+    <span class="hint">· v{{ detail.published_version_number }}</span>
+    {% if detail.dry_run %}<span class="hint">· preview</span>{% endif %}
+    <span class="hint">·</span>
+    {% if detail.row.is_expired %}
+    <span class="ttl-exp">TTL expirado</span>
+    {% else %}
+    <span class="ttl-ok">TTL {{ detail.row.ttl_label }}</span>
+    {% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Clean · Módulo 6 · <span class="role-badge">Detail</span></p>
+        <h2>Detalle de limpieza</h2>
+        <p>Metadatos, métricas por regla y descargas si el TTL y su rol lo permiten.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_clean:history_detail_help' project_slug=project.slug job_id=detail.job_id as detail_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=detail_help_url %}
+        <a href="{% url 'file_clean:history_hub' project_slug=project.slug %}" class="btn btn-secondary">← Historial</a>
+        <a href="{{ detail.row.result_url }}" class="btn btn-secondary">Resultado</a>
+        {% if detail.can_download and detail.view.download_urls.output %}
+        <a href="{{ detail.view.download_urls.output }}" class="btn btn-primary">Descargar limpio</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Metadatos</h3>
+        <div class="meta-grid">
+            <div class="meta-item">
+                <p class="label">Estado</p>
+                <p class="value">{{ detail.row.status_label }}{% if detail.dry_run %} · vista previa{% endif %}</p>
+            </div>
+            <div class="meta-item">
+                <p class="label">Archivo</p>
+                <p class="value"><code>{{ detail.row.filename }}</code></p>
+            </div>
+            <div class="meta-item">
+                <p class="label">Versión publicada</p>
+                <p class="value">v{{ detail.published_version_number }}</p>
+            </div>
+            <div class="meta-item">
+                <p class="label">Ejecutado por</p>
+                <p class="value">{{ detail.executed_by|default:"—" }}</p>
+            </div>
+            <div class="meta-item">
+                <p class="label">Finalizado</p>
+                <p class="value">{{ detail.finished_at|date:"d/m/Y H:i"|default:"—" }}</p>
+            </div>
+            <div class="meta-item">
+                <p class="label">Hash entrada</p>
+                <p class="value"><code>{{ detail.input_hash|default:"—" }}</code></p>
+            </div>
+            <div class="meta-item">
+                <p class="label">Hash salida</p>
+                <p class="value"><code>{{ detail.output_hash|default:"—" }}</code></p>
+            </div>
+            <div class="meta-item">
+                <p class="label">TTL artifacts</p>
+                <p class="value">{{ detail.ttl_days }} días · {{ detail.row.ttl_label }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="stats-strip" style="margin-top:14px" aria-label="Métricas">
+    <div class="stat-card">
+        <p class="stat-label">Filas leídas</p>
+        <p class="stat-value">{{ detail.metrics.rows_read|default:0 }}</p>
+    </div>
+    <div class="stat-card is-accent">
+        <p class="stat-label">Filas escritas</p>
+        <p class="stat-value">{{ detail.metrics.rows_written|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Celdas cambiadas</p>
+        <p class="stat-value">{{ detail.metrics.cells_changed|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Dedupe</p>
+        <p class="stat-value">{{ detail.metrics.dedupe_count|default:0 }}</p>
+    </div>
+</div>
+
+{% if detail.view.by_code_rows %}
+<div class="panel" style="margin-top:14px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Cambios por regla (code)</h3>
+        <table class="preview-table">
+            <thead><tr><th>Código</th><th>Cambios</th></tr></thead>
+            <tbody>
+                {% for row in detail.view.by_code_rows %}
+                <tr><td><code>{{ row.code }}</code></td><td>{{ row.count }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if detail.rules_enabled %}
+<div class="panel" style="margin-top:14px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Reglas aplicadas (snapshot)</h3>
+        <table class="preview-table">
+            <thead><tr><th>Orden</th><th>Código</th><th>Campo</th></tr></thead>
+            <tbody>
+                {% for rule in detail.rules_enabled %}
+                <tr>
+                    <td>{{ rule.sort_order }}</td>
+                    <td><code>{{ rule.code }}</code></td>
+                    <td>{{ rule.field_name }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="panel" style="margin-top:14px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Descargas</h3>
+        {% if detail.is_company_viewer %}
+        <div class="note-box">Su rol (CO) permite ver metadatos. Las descargas de contenido están reservadas a PA, ED y GE.</div>
+        {% elif detail.dry_run %}
+        <div class="note-box">Vista previa: no hay artifacts definitivos de salida.</div>
+        {% elif detail.row.is_expired %}
+        <div class="note-box">Los artifacts expiraron (TTL {{ detail.ttl_days }} días). Los metadatos siguen disponibles.</div>
+        {% elif detail.can_download %}
+        <div class="page-actions" style="margin-top:8px">
+            {% if detail.view.download_urls.output %}
+            <a href="{{ detail.view.download_urls.output }}" class="btn btn-primary">Archivo limpio</a>
+            {% endif %}
+            {% if detail.view.download_urls.change_log %}
+            <a href="{{ detail.view.download_urls.change_log }}" class="btn btn-secondary">Log JSON</a>
+            {% endif %}
+            {% if detail.view.download_urls.change_log_csv %}
+            <a href="{{ detail.view.download_urls.change_log_csv }}" class="btn btn-secondary">Log CSV</a>
+            {% endif %}
+        </div>
+        {% else %}
+        <p class="hint">No hay descargas disponibles para este job.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if detail.can_delete %}
+<div class="panel" style="margin-top:14px">
+    <div class="panel-body">
+        <form method="post" action="{% url 'file_clean:history_delete_job' project_slug=project.slug job_id=detail.job_id %}" class="js-history-delete-form" data-confirm="¿Eliminar esta corrida? Se borrarán el registro y los artifacts.">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">Eliminar esta corrida</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("form.js-history-delete-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            if (typeof dwConfirmWarning !== "function") { return; }
+            e.preventDefault();
+            var message = form.getAttribute("data-confirm") || "¿Eliminar?";
+            dwConfirmWarning(message, function () {
+                HTMLFormElement.prototype.submit.call(form);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
