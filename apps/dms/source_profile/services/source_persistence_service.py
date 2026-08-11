@@ -576,9 +576,12 @@ def save_source(
     is_file_gate = project.project_kind == Project.KIND_FILE_GATE
     is_reverse = project.project_kind == Project.KIND_REVERSE
     is_file_match = project.project_kind == Project.KIND_FILE_MATCH
+    is_file_clean = project.project_kind == Project.KIND_FILE_CLEAN
     if not user_can_edit_source(user, project):
-        if is_file_gate or is_reverse or is_file_match:
+        if is_file_gate or is_reverse or is_file_match or is_file_clean:
             forbidden_msg = "No tiene permiso para editar el contrato de este proyecto."
+            if is_file_clean:
+                forbidden_msg = "No tiene permiso para editar el perfil de lectura de este proyecto."
         else:
             forbidden_msg = "No tiene permiso para editar la definición de origen."
         return OperationResult.failure("forbidden", forbidden_msg)
@@ -642,6 +645,8 @@ def save_source(
             validation_msg = "Revise los datos del contrato de entrada."
         elif is_file_match:
             validation_msg = "Revise los datos del perfil A."
+        elif is_file_clean:
+            validation_msg = "Revise los datos del perfil de lectura."
         else:
             validation_msg = "Revise los datos del perfil de origen."
         return OperationResult.failure(
@@ -669,6 +674,8 @@ def save_source(
         success_msg = "Contrato de entrada guardado correctamente."
     elif is_file_match:
         success_msg = "Perfil A guardado correctamente."
+    elif is_file_clean:
+        success_msg = "Perfil de lectura guardado correctamente."
     else:
         success_msg = "Perfil de origen guardado correctamente."
 

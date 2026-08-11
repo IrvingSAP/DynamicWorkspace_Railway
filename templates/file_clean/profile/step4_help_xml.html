@@ -1,0 +1,90 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos XML — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">File Clean</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:profile_hub' project_slug=project.slug %}">Perfil</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:profile_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Clean · Paso 4 · <span class="role-badge">xml</span></p>
+        <h2>Ayuda — Campos XML</h2>
+        <p>Indica el elemento repetido y la etiqueta de cada campo. Tipo: <code>{{ file_type_code|default:"xml" }}</code>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_clean:profile_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Parámetros XML</h3>
+        <table class="help-table">
+            <thead><tr><th>Campo en pantalla</th><th>Para qué sirve</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Elemento repetido</strong> (<code>record_element</code>) <span class="req">*</span></td>
+                    <td>
+                        Nombre local del nodo que se repite por registro (sin namespace).
+                        Ej.: <code>empleado</code>, <code>item</code>. Cada ocurrencia es una fila a limpiar.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Editor de cada campo</h3>
+        <table class="help-table">
+            <thead><tr><th>Campo en pantalla</th><th>Para qué sirve</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Nombre interno</strong> <span class="req">*</span></td>
+                    <td>Identificador en Clean / reglas.</td>
+                </tr>
+                <tr>
+                    <td><strong>element</strong> <span class="req">*</span></td>
+                    <td>
+                        Etiqueta hijo (o ruta simple) dentro del registro de donde se toma el texto.
+                        Si el registro es <code>&lt;empleado&gt;&lt;documento&gt;A1&lt;/documento&gt;…</code>,
+                        use <code>documento</code>.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Tipo contenido</strong></td>
+                    <td>Clasificación del valor. Clean no rechaza por content_type al ejecutar.</td>
+                </tr>
+                <tr>
+                    <td><strong>Campo obligatorio</strong></td>
+                    <td>Marca de perfil; Gate puede usarlo después.</td>
+                </tr>
+                <tr>
+                    <td><strong>Patrón regex (custom)</strong></td>
+                    <td>Aparece si el tipo es <code>custom</code>. Expresión regular de la forma esperada (ej. <code>^[A-Z0-9]+$</code>). Obligatoria al guardar un campo custom.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

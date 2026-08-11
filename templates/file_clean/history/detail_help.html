@@ -1,0 +1,51 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Detalle — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">File Clean</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:history_hub' project_slug=project.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:history_detail' project_slug=project.slug job_id=detail.job_id %}">Detalle</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Clean · Módulo 6</p>
+        <h2>Ayuda · Detalle del job</h2>
+        <p>Lectura de metadatos, snapshot de reglas y descargas.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_clean:history_detail' project_slug=project.slug job_id=detail.job_id %}" class="btn btn-secondary">← Detalle</a>
+    </div>
+</div>
+
+<div class="help-panel panel">
+    <div class="panel-body">
+        <h3>Contenido</h3>
+        <ul>
+            <li>Hashes de entrada/salida y versión publicada.</li>
+            <li>Métricas y conteo por <code>code</code> de regla.</li>
+            <li>Snapshot de reglas habilitadas en esa corrida.</li>
+            <li>Descargas solo si TTL vigente y rol PA/ED/GE.</li>
+        </ul>
+        <p>TTL de artifacts: <strong>{{ ttl_days }} días</strong> desde la finalización del job.</p>
+    </div>
+</div>
+{% endblock %}

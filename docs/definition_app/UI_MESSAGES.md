@@ -40,6 +40,7 @@ flowchart LR
 | FILE MATCH (perfil A, …) | `UI_MESSAGES.md` §3.11 · [`../FILE_MATCH.md`](../FILE_MATCH.md) · [`../definition_app_FILE_MATCH/`](../definition_app_FILE_MATCH/) |
 | STRUCTURE SCOUT (ciclo proyecto, …) | `UI_MESSAGES.md` §3.12 · [`../STRUCTURE_SCOUT.md`](../STRUCTURE_SCOUT.md) · [`../definition_app_STRUCTURE_SCOUT/`](../definition_app_STRUCTURE_SCOUT/) |
 | PROFILE_SEED (Importar estructura, …) | `UI_MESSAGES.md` §3.13 · [`../PROFILE_SEED.md`](../PROFILE_SEED.md) · [`../definition_app_PROFILE_SEED/`](../definition_app_PROFILE_SEED/) |
+| FILE CLEAN (ciclo proyecto, …) | `UI_MESSAGES.md` §3.14 · [`../FILE_CLEAN.md`](../FILE_CLEAN.md) · [`../definition_app_FILE_CLEAN/`](../definition_app_FILE_CLEAN/) |
 
 ---
 
@@ -800,6 +801,108 @@ Mensajes de usuario para el Sembrador de perfiles. Alineados a [`../PROFILE_SEED
 | Origen ya no disponible | hint UI | El proyecto origen ya no está disponible; se muestra el slug guardado. |
 
 > Motor M4: `seed_history_service` (solo lectura). URLs: `profile_a_seed_history` / `_detail` / `_help`. Enlace en hub Perfil A.
+
+### 3.14 Mensajes específicos — `apps.file_clean` (FILE CLEAN)
+
+Mensajes de usuario para File Clean. Alineados a [`../FILE_CLEAN.md`](../FILE_CLEAN.md) y [`../definition_app_FILE_CLEAN/`](../definition_app_FILE_CLEAN/).
+
+#### Proyectos / miembros (Módulo 1 — lifecycle)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin acceso al proyecto | `error` | No tiene acceso a este proyecto File Clean. |
+| Solo UF crea proyectos | `error` | Solo usuarios UF pueden crear proyectos File Clean. |
+| Proyecto creado | `success` | Proyecto File Clean creado correctamente. |
+| Solo PA gestiona miembros | `error` | Solo el administrador del proyecto (PA) puede gestionar miembros. |
+| Validación formulario | `error` + inline | Revise los datos marcados; no se pudo guardar. |
+
+> Motor M1: `clean_project_service`. Visibilidad vía `DmsProjectConfig`. Miembros: `invite_member` / `update_member_role` / `set_member_active` de `apps.projects`. URLs: `/app/file-clean/proyectos/…`.
+
+#### Módulo 2 — Perfil de lectura
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Perfil guardado | `success` / JSON | Perfil de lectura guardado correctamente. |
+| Validación perfil | `error` + inline / JSON | Revise los datos del perfil de lectura. |
+| Sin permiso editar | `error` / JSON 403 | No tiene permiso para editar el perfil de lectura de este proyecto. |
+| JSON inválido | `error` / JSON | JSON de perfil inválido. |
+| Tipo sin editor de campos | `warning` | El tipo de archivo seleccionado aún no tiene editor de campos. Elija txt_fixed, csv, txt_delimited, xlsx, json o xml en el paso 1. |
+
+> Motor M2: `source_persistence_service.save_source` + `profile_wizard_service` (4 pasos). URLs: `/app/file-clean/proyectos/<slug>/perfil/…`.
+
+#### Módulo 3 — Reglas de limpieza
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Reglas guardadas | `success` | Reglas de limpieza guardadas correctamente. |
+| Regla añadida | `success` | Regla añadida correctamente. |
+| Regla actualizada | `success` | Regla actualizada correctamente. |
+| Regla eliminada | `success` | Regla eliminada. |
+| Toggle / orden | `success` | Estado de la regla actualizado. / Orden de reglas guardado. |
+| Código desconocido | `error` + inline | Código de regla no permitido en File Clean. |
+| Campo faltante | `error` + inline | Indique un campo del perfil válido para esta regla. |
+| replace_map inválido | `error` + inline | El mapa de reemplazo debe ser un objeto no vacío. |
+| replace sin find | `error` + inline | Indique el texto a buscar (find) en replace. |
+| regex no soportado | `error` + inline | Regex en replace no está disponible en File Clean MVP. |
+| compose inválido | `error` + inline | Plantilla compose inválida o con tokens no permitidos. |
+| Sin permiso | `error` | No tiene permiso para editar las reglas de este proyecto. |
+| Regla no encontrada | `error` | Regla no encontrada. |
+
+> Motor M3: `clean_rules_persistence_service` → `DmsSourceProfile.config["clean_rules"]`. URLs: `/app/file-clean/proyectos/<slug>/reglas/…`.
+
+#### Módulo 4 — Publicar versión
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Publicada OK | `success` / JSON | Versión v{N} publicada correctamente. Nuevo borrador v{N+1} listo para edición. |
+| Sin campos (P1) | `error` / JSON | Complete el perfil de lectura con al menos un campo antes de publicar. |
+| Sin reglas ON (P2) | `error` / JSON | Habilite al menos una regla de limpieza antes de publicar. |
+| Reglas inválidas (P5) | `error` + detalle | Corrija las reglas habilitadas antes de publicar. |
+| Perfil inválido | `error` | Complete y corrija el perfil de lectura antes de publicar. |
+| Sin permiso | `error` | No tiene permiso para publicar la versión de este proyecto. |
+| Sin borrador | `error` | No hay borrador disponible para publicar. |
+| Kind incorrecto | `error` | Este proyecto no es de tipo File Clean. |
+| Inesperado | `error` | Ocurrió un error al publicar. Si persiste, contacte al administrador. |
+
+> Motor M4: `clean_publish_service.publish_clean_definition`. Congela `DmsMappingVersion` + `config.clean_rules`; `DmsProjectConfig.current_version`. URLs: `/app/file-clean/proyectos/<slug>/publicar/…`.
+
+#### Módulo 5 — Ejecutar / Job
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Limpieza OK | `success` | Limpieza finalizada correctamente. |
+| Vista previa OK | `success` | Vista previa generada. No se guardó archivo de salida definitivo. |
+| Sin versión publicada | `error` + inline | Publique una versión antes de ejecutar la limpieza. |
+| Sin permiso | `error` | No tiene permiso para ejecutar limpiezas en este proyecto. |
+| Extensión inválida | `error` + inline | La extensión del archivo no coincide con el perfil publicado. |
+| Archivo vacío / tamaño | `error` + inline | El archivo está vacío. / El archivo supera el límite de … |
+| Parseo fallido | `error` | No se pudo leer el archivo con el perfil publicado. |
+| Sin filas leídas | `error` | No se obtuvo ninguna fila válida al leer el archivo. Revise captura (inicio/fin) y el layout del perfil publicado. |
+| Sin filas (delimitador) | `error` | No se obtuvo ninguna fila válida: el delimitador del perfil no coincide con el archivo (p. ej. perfil con «;» y CSV con comas «,»). En Perfil → Paso 4 cambie el delimitador, guarde, publique de nuevo y reintente. |
+| Regla runtime | `error` | Error al aplicar una regla de limpieza. Revise la definición publicada. |
+| Job no encontrado | `error` | No se encontró la ejecución solicitada. |
+| Enlace descarga inválido | `error` | Enlace de descarga inválido o expirado. |
+| Archivo expirado | `error` | Archivo expirado. |
+| Kind incorrecto | `error` | Este proyecto no es de tipo File Clean. |
+| Inesperado | `error` | Ocurrió un error al limpiar. Si persiste, contacte al administrador. |
+
+> Motor M5: `run_clean_job` → `CleanJob` + artifacts (input/output/change_log). Preview = `dry_run`. URLs: `/app/file-clean/proyectos/<slug>/ejecutar/…`.
+
+#### Módulo 6 — Historial
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin permiso | `error` | No tiene permiso para ver el historial de este proyecto. |
+| Job no encontrado | `error` | No se encontró la corrida en este proyecto. |
+| Corrida eliminada | `success` | Corrida eliminada del historial. |
+| Varias eliminadas | `success` | Se eliminaron {n} corridas propias del historial. |
+| Sin corridas propias | `error` | No tiene corridas propias para eliminar en este proyecto. |
+| Solo propias | `error` | Solo puede eliminar corridas que usted ejecutó. |
+| TTL vencido | `error` | La evidencia expiró (TTL de 7 días). Los metadatos del job siguen disponibles. |
+| Fecha inválida | inline | Fecha inválida (formato AAAA-MM-DD). / «Hasta» no puede ser anterior a «Desde». |
+| Borrado inesperado | `error` | No se pudo eliminar la corrida. Si el problema continúa, contacte al administrador. |
+
+> Motor M6: `clean_history_service` — filtros, paginación 25, badges TTL vía `clean_run_service`. Reusa `CleanJob`. Detalle + descargas (PA/ED/GE; CO solo metadatos). Borrado solo de jobs con `executed_by` = usuario actual. URLs: `/app/file-clean/proyectos/<slug>/historial/…`.
 
 ---
 

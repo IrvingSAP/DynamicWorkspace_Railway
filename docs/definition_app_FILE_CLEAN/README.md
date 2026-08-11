@@ -39,13 +39,35 @@ flowchart LR
 | Archivo | Módulo | Contenido | Estado |
 |---------|--------|-----------|--------|
 | [`../FILE_CLEAN.md`](../FILE_CLEAN.md) | Producto | Visión, alcance, reglas FC*, API-ready | **Lineamientos** |
-| [`project_lifecycle.md`](project_lifecycle.md) | **1** | Alta, listado, hub, miembros | **Borrador** |
-| [`clean_profile.md`](clean_profile.md) | **2** | Perfil de lectura (source-like) | **Borrador** |
-| [`clean_rules.md`](clean_rules.md) | **3** | Catálogo y orden de reglas | **Borrador** |
-| [`clean_publish.md`](clean_publish.md) | **4** | Publicar versión | **Borrador** |
-| [`clean_run.md`](clean_run.md) | **5** | Upload, preview, job, artifacts | **Borrador** |
-| [`clean_history.md`](clean_history.md) | **6** | Historial de jobs | **Borrador** |
+| [`project_lifecycle.md`](project_lifecycle.md) | **1** | Alta, listado, hub, miembros | **Implementado** · prototipo listo |
+| [`clean_profile.md`](clean_profile.md) | **2** | Perfil de lectura (source-like) | **Implementado** · prototipo listo |
+| [`clean_rules.md`](clean_rules.md) | **3** | Catálogo y orden de reglas | **Implementado** · prototipo listo |
+| [`clean_publish.md`](clean_publish.md) | **4** | Publicar versión | **Implementado** · prototipo listo |
+| [`clean_run.md`](clean_run.md) | **5** | Upload, preview, job, artifacts | **Implementado** · prototipo listo |
+| [`clean_history.md`](clean_history.md) | **6** | Historial de jobs | **Implementado** · prototipo listo |
 | [`fc_integration.md`](fc_integration.md) | Transversal | Kind, URLs, roles, reuso DMS, PLATFORM_API | **Borrador** |
+
+---
+
+## Prototipos
+
+| Carpeta | Contenido |
+|---------|-----------|
+| [`../../prototype/file_clean/`](../../prototype/file_clean/) | HTML estáticos por pantalla (revisión de flujo / UX) |
+
+Abrir: [`prototype/file_clean/index.html`](../../prototype/file_clean/index.html)
+
+| Prototipo | Módulo | Destino futuro (tras OK + «Desarrolla el módulo») |
+|-----------|--------|-----------------------------------------------------|
+| `projects_list.html` | 1 | `templates/file_clean/projects/list.html` |
+| `projects_create.html` | 1 | `templates/file_clean/projects/create.html` |
+| `projects_hub.html` | 1 | `templates/file_clean/projects/hub.html` |
+| `projects_members.html` | 1 | `templates/file_clean/projects/members.html` |
+| `profile_hub.html` | 2 | `templates/file_clean/profile/hub.html` |
+| `rules_hub.html` | 3 | `templates/file_clean/rules/hub.html` |
+| `publish_hub.html` | 4 | `templates/file_clean/publish/hub.html` |
+| `run_hub.html` / `run_result.html` | 5 | `templates/file_clean/run/…` |
+| `history_hub.html` / `history_detail.html` | 6 | `templates/file_clean/history/…` |
 
 ---
 

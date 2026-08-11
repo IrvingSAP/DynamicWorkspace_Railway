@@ -1,0 +1,22 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Listado — File Clean{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Proyectos File Clean</h2>
+        <p>Proyectos para limpiar y normalizar archivos con reglas explícitas.</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'file_clean:project_list' %}">← Volver</a></div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li>Cada proyecto es de tipo File Clean (aislado de FilePipe, Gate, Match y Scout).</li>
+    <li>Flujo: crear → (miembros) → perfil → reglas → publicar → ejecutar → historial.</li>
+    <li>No valida contrato de producción (eso es File Gate) ni mapea a destino de negocio (FilePipe).</li>
+    <li>Guía completa: File Clean → <strong>Ayuda</strong> en el menú lateral.</li>
+</ul>
+</div></div>
+{% endblock %}

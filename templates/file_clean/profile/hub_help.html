@@ -1,0 +1,83 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Perfil de lectura — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">File Clean</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:profile_hub' project_slug=project.slug %}">Perfil</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Clean · Módulo 2 · <span class="role-badge">CleanProfile</span></p>
+        <h2>Ayuda — Perfil de lectura</h2>
+        <p>Define cómo se parsea el archivo a limpiar. Reutiliza el motor SourceProfile (mismo parser que Pipe/Gate), con foco en lectura, no en validación.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_clean:profile_hub' project_slug=project.slug %}">← Volver al perfil</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es</h3>
+        <p class="help-intro">
+            El perfil de lectura describe <strong>tipo, encoding, captura y campos</strong> del archivo de entrada.
+            Se edita en <strong>borrador</strong>; al publicar (módulo 4) se congela junto con las reglas.
+        </p>
+        <ul>
+            <li>Los nombres internos de campo son los que usan las <strong>reglas</strong> (<code>field_name</code>, tokens <code>{field:X}</code>).</li>
+            <li>No incluye políticas de umbral ni informe Gate: Clean lee y limpia; Gate valida después.</li>
+            <li>Al ejecutar, File Clean <strong>no rechaza filas por content_type</strong>; el layout sí debe coincidir.</li>
+        </ul>
+
+        <h3 class="form-section-title">Wizard (4 pasos)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>#</th><th>Paso</th><th>Qué define</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">1</td><td>Tipo</td><td>Formato, encoding y fin de línea.</td></tr>
+                <tr><td class="mono">2</td><td>Inicio</td><td>Desde qué línea / patrón empiezan los datos útiles.</td></tr>
+                <tr><td class="mono">3</td><td>Fin</td><td>Dónde deja de leer (EOF, línea, patrón…).</td></tr>
+                <tr><td class="mono">4</td><td>Campos</td><td>Estructura: posiciones, columnas, hoja, rutas JSON/XML.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Orden recomendado</h3>
+        <ol>
+            <li>Complete los 4 pasos del perfil.</li>
+            <li>Defina reglas (módulo 3) usando los nombres de campo.</li>
+            <li>Publique (módulo 4) antes de Ejecutar.</li>
+        </ol>
+        <p class="help-intro">Si renombra o borra un campo, revise las reglas que lo referencian antes de publicar.</p>
+
+        <h3 class="form-section-title">Roles</h3>
+        <p><code>PA</code> y <code>ED</code> editan el borrador. <code>GE</code> / <code>CO</code> pueden consultar según membresía, sin guardar.</p>
+
+        <h3 class="form-section-title">Qué no hace este hub</h3>
+        <ul>
+            <li>No publica la versión (eso es <strong>Publicar</strong>).</li>
+            <li>No sube archivos de producción (eso es <strong>Ejecutar</strong>).</li>
+            <li>No define reglas de limpieza (módulo <strong>Reglas</strong>).</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

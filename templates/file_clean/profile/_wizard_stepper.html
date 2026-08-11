@@ -1,0 +1,7 @@
+﻿{# Contexto: project, current_step (1-4) #}
+<nav class="wizard-stepper" aria-label="Pasos del perfil de lectura">
+    <a href="{% url 'file_clean:profile_step1' project_slug=project.slug %}" class="wizard-step{% if current_step == 1 %} is-active{% elif current_step > 1 %} is-done{% endif %}"><span class="wizard-step-num">{% if current_step > 1 %}✓{% else %}1{% endif %}</span> Tipo archivo</a>
+    <a href="{% url 'file_clean:profile_step2' project_slug=project.slug %}" class="wizard-step{% if current_step == 2 %} is-active{% elif current_step > 2 %} is-done{% endif %}"><span class="wizard-step-num">{% if current_step > 2 %}✓{% else %}2{% endif %}</span> Inicio</a>
+    <a href="{% url 'file_clean:profile_step3' project_slug=project.slug %}" class="wizard-step{% if current_step == 3 %} is-active{% elif current_step > 3 %} is-done{% endif %}"><span class="wizard-step-num">{% if current_step > 3 %}✓{% else %}3{% endif %}</span> Fin</a>
+    <a href="{% url 'file_clean:profile_step4' project_slug=project.slug %}" class="wizard-step{% if current_step == 4 %} is-active{% endif %}"><span class="wizard-step-num">4</span> Campos</a>
+</nav>

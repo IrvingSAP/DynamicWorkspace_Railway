@@ -35,8 +35,11 @@ Elegir tipo de archivo
 
 ## Relación con reglas (M3)
 
-- Las reglas por campo referencian el **nombre interno** del perfil.  
-- Reglas globales (dedupe, encoding file-level) no requieren campo.
+- Las reglas por campo referencian el **nombre interno** del perfil (`field_name`).  
+- Reglas globales (`dedupe_rows`, `encoding_normalize` a nivel archivo) no requieren campo.  
+- Renombrar o eliminar un campo del perfil **invalida** reglas que lo referencian hasta corregirlas (bloqueo al guardar perfil y/o al publicar — P5 en [`clean_publish.md`](clean_publish.md)).  
+- `compose` con token `{field:X}` exige que `X` exista en el perfil (misma fila).  
+- Detalle de ops: [`clean_rules.md`](clean_rules.md).
 
 ---
 
@@ -48,6 +51,7 @@ El perfil publicado viaja dentro de la **versión** del proyecto. La API futura 
 
 ## Criterio de aceptación
 
-- [ ] Reuso máximo de UI/servicios source (skin Clean)  
-- [ ] Guardado en borrador sin publicar  
-- [ ] Validación de tipo/extensión alineada a catálogo DMS
+- [x] Reuso máximo de UI/servicios source (skin Clean)  
+- [x] Guardado en borrador sin publicar  
+- [x] Validación de tipo/extensión alineada a catálogo DMS  
+- [ ] Guardar/avisar si hay reglas que apuntan a campos borrados o renombrados (cuando exista M3)

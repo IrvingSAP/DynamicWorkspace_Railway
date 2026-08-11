@@ -1,0 +1,218 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Resultado — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<style>
+.verdict-banner{
+  display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+  padding:14px 16px; border-radius:10px; margin-bottom:14px;
+  border:1px solid rgba(28,25,23,.1); background:#f6f4f0;
+}
+.verdict-banner.is-passed{ background:rgba(21,128,61,.08); border-color:rgba(21,128,61,.25); }
+.verdict-banner.is-failed{ background:rgba(185,28,28,.08); border-color:rgba(185,28,28,.2); }
+.preview-table{ width:100%; border-collapse:collapse; font-size:12px; }
+.preview-table th,.preview-table td{ padding:6px 8px; border-bottom:1px solid rgba(28,25,23,.08); text-align:left; max-width:10rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.preview-table th{ font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:#a8a29e; background:#f6f4f0; }
+.preview-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:900px){ .preview-grid{ grid-template-columns:1fr; } }
+</style>
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">File Clean</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:run_hub' project_slug=project.slug %}">Ejecutar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Resultado</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Job">
+    <span class="label">Job</span>
+    <span class="cell-badge">{{ view.id|slice:":8" }}…</span>
+    <span class="hint">· definición v{{ view.published_version_number }}</span>
+    {% if view.dry_run %}<span class="hint">· preview</span>{% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Clean · Módulo 5 · <span class="role-badge">Result</span></p>
+        <h2>Resultado de limpieza</h2>
+        <p>Métricas, vista previa y descargas del archivo limpio y del log de cambios.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_clean:run_result_help' project_slug=project.slug job_id=view.id as result_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=result_help_url %}
+        <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub Proyecto</a>
+        <a href="{% url 'file_clean:run_hub' project_slug=project.slug %}" class="btn btn-secondary">Nueva corrida</a>
+        {% if run.can_download and view.download_urls.output %}
+        <a href="{{ view.download_urls.output }}" class="btn btn-primary">Descargar limpio</a>
+        {% endif %}
+        {% if run.can_download and view.download_urls.change_log_csv %}
+        <a href="{{ view.download_urls.change_log_csv }}" class="btn btn-secondary">Log CSV</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="verdict-banner {% if view.is_success %}is-passed{% else %}is-failed{% endif %}">
+    <div>
+        <h3>{{ view.status_label }}{% if view.dry_run %} · vista previa{% endif %}</h3>
+        <p>
+            {% if view.error_message %}{{ view.error_message }}{% else %}
+            {{ view.input_filename }} · {{ view.metrics.rows_read|default:0 }} filas leídas → {{ view.metrics.rows_written|default:0 }} escritas · {{ view.metrics.cells_changed|default:0 }} celdas cambiadas.
+            {% endif %}
+        </p>
+    </div>
+    <div class="hint">
+        {% if view.duration_ms %}{{ view.duration_ms }} ms · {% endif %}
+        hash {{ view.input_hash_short }}{% if view.output_hash_short %} → {{ view.output_hash_short }}{% endif %}
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Métricas">
+    <div class="stat-card">
+        <p class="stat-label">Filas leídas</p>
+        <p class="stat-value">{{ view.metrics.rows_read|default:0 }}</p>
+    </div>
+    <div class="stat-card is-accent">
+        <p class="stat-label">Filas escritas</p>
+        <p class="stat-value">{{ view.metrics.rows_written|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Celdas cambiadas</p>
+        <p class="stat-value">{{ view.metrics.cells_changed|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Dedupe</p>
+        <p class="stat-value">{{ view.metrics.dedupe_count|default:0 }}</p>
+    </div>
+</div>
+
+{% if view.parse_errors_count %}
+<div class="panel" style="margin-top:14px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Avisos de lectura</h3>
+        <p class="hint">{{ view.parse_errors_count }} incidencia(s) al leer el archivo (layout / captura). File Clean no rechaza filas por content_type; eso corresponde a File Gate.</p>
+        <table class="preview-table">
+            <thead>
+                <tr><th>Línea</th><th>Campo</th><th>Código</th><th>Mensaje</th><th>Valor</th></tr>
+            </thead>
+            <tbody>
+                {% for issue in view.parse_issues %}
+                <tr>
+                    <td>{{ issue.line|default:"—" }}</td>
+                    <td>{% if issue.field %}<code>{{ issue.field }}</code>{% else %}—{% endif %}</td>
+                    <td><code>{{ issue.code|default:"—" }}</code></td>
+                    <td>{{ issue.message }}</td>
+                    <td class="mono" style="max-width:10rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ issue.value }}">{{ issue.value|default:"—" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">Sin detalle en pantalla.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if view.by_code_rows %}
+<div class="panel" style="margin-top:14px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Cambios por regla</h3>
+        <table class="preview-table">
+            <thead><tr><th>Código</th><th>Cambios</th></tr></thead>
+            <tbody>
+                {% for row in view.by_code_rows %}
+                <tr><td><code>{{ row.code }}</code></td><td>{{ row.count }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if view.preview_fields %}
+<div class="panel" style="margin-top:14px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Vista previa (primeras filas)</h3>
+        <p class="hint">Antes / después según las reglas publicadas. En preview, <code>{seq}</code> arranca en <code>seq_start</code>.</p>
+        <div class="preview-grid" style="margin-top:12px">
+            <div>
+                <h4 style="margin:0 0 8px;font-size:13px">Antes</h4>
+                <div style="overflow:auto">
+                <table class="preview-table">
+                    <thead>
+                        <tr>{% for f in view.preview_fields %}<th>{{ f }}</th>{% endfor %}</tr>
+                    </thead>
+                    <tbody>
+                        {% for cells in view.preview_before_rows %}
+                        <tr>{% for cell in cells %}<td title="{{ cell }}">{{ cell }}</td>{% endfor %}</tr>
+                        {% empty %}
+                        <tr><td colspan="{{ view.preview_fields|length }}">Sin filas</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+            <div>
+                <h4 style="margin:0 0 8px;font-size:13px">Después</h4>
+                <div style="overflow:auto">
+                <table class="preview-table">
+                    <thead>
+                        <tr>{% for f in view.preview_fields %}<th>{{ f }}</th>{% endfor %}</tr>
+                    </thead>
+                    <tbody>
+                        {% for cells in view.preview_after_rows %}
+                        <tr>{% for cell in cells %}<td title="{{ cell }}">{{ cell }}</td>{% endfor %}</tr>
+                        {% empty %}
+                        <tr><td colspan="{{ view.preview_fields|length }}">Sin filas</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if not view.dry_run and view.is_success %}
+<div class="panel" style="margin-top:14px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Descargas</h3>
+        <p class="hint">Salida: <code>{{ view.output_filename }}</code> ({{ view.output_size_label }})</p>
+        <div class="page-actions" style="margin-top:12px">
+            {% if run.can_download and view.download_urls.output %}
+            <a href="{{ view.download_urls.output }}" class="btn btn-primary">Archivo limpio</a>
+            {% endif %}
+            {% if run.can_download and view.download_urls.change_log %}
+            <a href="{{ view.download_urls.change_log }}" class="btn btn-secondary">Log JSON</a>
+            {% endif %}
+            {% if run.can_download and view.download_urls.change_log_csv %}
+            <a href="{{ view.download_urls.change_log_csv }}" class="btn btn-secondary">Log CSV</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% elif view.dry_run and view.is_success %}
+<div class="panel" style="margin-top:14px">
+    <div class="panel-body">
+        <div class="note-box">Vista previa: no se generó archivo de salida ni log descargable. Use «Ejecutar limpieza» para artifacts definitivos.</div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

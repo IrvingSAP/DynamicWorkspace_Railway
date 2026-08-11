@@ -481,6 +481,17 @@ body {
     color: var(--ink);
 }
 
+.btn-info {
+    background: var(--info-subtle);
+    color: var(--accent-hover);
+    border-color: rgba(15, 92, 76, 0.2);
+}
+
+.btn-info:hover {
+    background: rgba(15, 92, 76, 0.12);
+    color: var(--accent);
+}
+
 .btn-ghost {
     background: transparent;
     color: var(--ink-tertiary);

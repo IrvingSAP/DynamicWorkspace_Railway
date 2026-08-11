@@ -1,0 +1,151 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ejecutar — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<style>
+.upload-card{ padding:14px; border:1px dashed rgba(28,25,23,.2); border-radius:8px; background:#f6f4f0; }
+.upload-card h4{ margin:0 0 6px; font-size:14px; }
+.upload-card p{ margin:0 0 10px; font-size:12px; color:#78716c; }
+.status-tone--completed{ color:#15803d; font-weight:600; }
+.status-tone--failed{ color:#b91c1c; font-weight:600; }
+.status-tone--running{ color:#b45309; font-weight:600; }
+</style>
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">File Clean</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ejecutar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    {% if membership %}
+    <span class="hint">·</span>
+    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    {% endif %}
+    {% if run.has_published_version %}
+    <span class="hint">· activa v{{ run.published_version_number }}</span>
+    {% else %}
+    <span class="hint">· sin versión activa</span>
+    {% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Clean · Módulo 5 · <span class="role-badge">CleanRun</span></p>
+        <h2>Ejecutar limpieza</h2>
+        <p>Suba un archivo. Se aplica solo la versión publicada (perfil + reglas). Opcional: vista previa sin artifact definitivo.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_clean:run_hub_help' project_slug=project.slug as run_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=run_help_url %}
+        <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub Proyecto</a>
+        {% if run.has_published_version %}
+        <a href="{% url 'file_clean:publish_hub' project_slug=project.slug %}" class="btn btn-secondary">Ver publicar</a>
+        {% else %}
+        <a href="{% url 'file_clean:publish_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a Publicar</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if not run.has_published_version %}
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <div class="note-box">
+            <strong>Publique una versión antes de limpiar.</strong>
+            Complete Perfil y Reglas, luego publique. Solo se ejecuta lo congelado (FC1).
+        </div>
+    </div>
+</div>
+{% elif not run.can_execute %}
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <div class="note-box">No tiene permiso para ejecutar limpiezas en este proyecto. Se requiere rol PA, ED o GE.</div>
+    </div>
+</div>
+{% else %}
+
+<div class="stats-strip" aria-label="Definición activa">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Versión activa</p>
+        <p class="stat-value" style="font-size:16px">v{{ run.published_version_number }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Tipo</p>
+        <p class="stat-value" style="font-size:14px">{{ run.file_type_label }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Campos</p>
+        <p class="stat-value">{{ run.fields_count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Reglas ON</p>
+        <p class="stat-value">{{ run.rules_enabled_count }}</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Archivo de esta corrida</h3>
+        <p class="hint">Máximo {{ run.max_size_label }}. Extensiones: {{ run.allowed_extensions_label }}. Vista previa usa las primeras {{ run.preview_rows }} filas.</p>
+        <div class="upload-card" style="margin-top:12px">
+            <h4>Entrada · {{ run.file_type_label }}</h4>
+            <p>Permitidas: {{ run.allowed_extensions_label }}</p>
+            <form id="fc-run-form" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" name="file" required{% if run.allowed_extensions %} accept="{{ run.allowed_extensions|join:',' }}"{% endif %}>
+                <div class="form-actions" style="margin-top:16px">
+                    <div></div>
+                    <div class="page-actions">
+                        <button type="submit" formaction="{% url 'file_clean:run_preview' project_slug=project.slug %}" class="btn btn-secondary">Vista previa</button>
+                        <button type="submit" formaction="{% url 'file_clean:run_execute' project_slug=project.slug %}" class="btn btn-primary">Ejecutar limpieza</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if run.recent_jobs %}
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Corridas recientes</h3>
+        <div class="step-summary-list">
+            {% for item in run.recent_jobs %}
+            <a href="{% url 'file_clean:run_result' project_slug=project.slug job_id=item.id %}" class="step-summary-card">
+                <div>
+                    <h4 class="status-tone--{% if item.is_success %}completed{% elif item.is_failed %}failed{% else %}running{% endif %}">{{ item.status_label }}{% if item.dry_run %} · preview{% endif %}</h4>
+                    <p>{{ item.filename }} · v{{ item.published_version_number }}
+                        {% if item.cells_changed != None %} · {{ item.cells_changed }} cambios{% endif %}
+                    </p>
+                </div>
+                <span class="flow-card-status flow-card-status--draft">{{ item.created_at|date:"d/m H:i" }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        <p class="hint" style="margin-top:10px">
+            <a href="{% url 'file_clean:history_hub' project_slug=project.slug %}">Ver historial completo →</a>
+        </p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

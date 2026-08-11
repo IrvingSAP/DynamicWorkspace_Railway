@@ -1,0 +1,57 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Resultado — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">File Clean</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:run_hub' project_slug=project.slug %}">Ejecutar</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:run_result' project_slug=project.slug job_id=view.id %}">Resultado</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Clean · Módulo 5</p>
+        <h2>Ayuda · Resultado</h2>
+        <p>Cómo leer métricas, preview y descargas de un job.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_clean:run_result' project_slug=project.slug job_id=view.id %}" class="btn btn-secondary">← Resultado</a>
+    </div>
+</div>
+
+<div class="help-panel panel">
+    <div class="panel-body">
+        <h3>Estado</h3>
+        <p><strong>Completado</strong> = limpieza OK. <strong>Fallido</strong> = parseo / serialización / regla; no hay output engañoso.</p>
+
+        <h3>Artifacts</h3>
+        <table class="issue-table">
+            <thead><tr><th>Archivo</th><th>Contenido</th></tr></thead>
+            <tbody>
+                <tr><td>Archivo limpio</td><td>Mismo tipo que el perfil, con reglas aplicadas.</td></tr>
+                <tr><td>Log JSON / CSV</td><td>Fila, campo, código de regla, before, after.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Preview</h3>
+        <p>En corridas <code>dry_run</code> no hay descargas; use Ejecutar para artifacts.</p>
+    </div>
+</div>
+{% endblock %}

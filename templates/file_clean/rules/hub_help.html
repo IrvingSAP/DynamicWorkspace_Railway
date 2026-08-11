@@ -1,0 +1,23 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Reglas — File Clean{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Reglas de limpieza</h2>
+        <p>Catálogo ordenado y explícito. Nada se limpia si no hay regla.</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'file_clean:rules_hub' project_slug=project.slug %}">← Volver</a></div>
+</div>
+<div class="panel"><div class="panel-body">
+<ul>
+    <li><code>replace_map</code> — match <strong>exacto</strong> del valor completo.</li>
+    <li><code>replace</code> — find/replace <strong>dentro</strong> del string (<code>find</code> obligatorio).</li>
+    <li><code>compose</code> — plantilla con <code>{value}</code>, <code>{field:nombre}</code>, <code>{seq}</code>.</li>
+    <li>El orden (↑↓) es el orden de aplicación en el job.</li>
+    <li>Al publicar (M4) se revalidan todas las reglas habilitadas (P5).</li>
+</ul>
+</div></div>
+{% endblock %}

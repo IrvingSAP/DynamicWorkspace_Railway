@@ -1,0 +1,55 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Historial — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">File Clean</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:history_hub' project_slug=project.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Clean · Módulo 6</p>
+        <h2>Ayuda · Historial</h2>
+        <p>Cómo filtrar, auditar y descargar jobs de limpieza.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_clean:history_hub' project_slug=project.slug %}" class="btn btn-secondary">← Historial</a>
+    </div>
+</div>
+
+<div class="help-panel panel">
+    <div class="panel-body">
+        <h3>Qué es</h3>
+        <p>Listado filtrable de limpiezas del proyecto. Los metadatos permanecen; las descargas caducan a los <strong>{{ ttl_days }} días</strong>.</p>
+
+        <h3>Roles</h3>
+        <table class="issue-table">
+            <thead><tr><th>Rol</th><th>Puede</th></tr></thead>
+            <tbody>
+                <tr><td>PA / ED / GE</td><td>Ver historial, detalle y descargar artifacts vigentes.</td></tr>
+                <tr><td>CO</td><td>Ver metadatos; no descarga contenido.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Borrado</h3>
+        <p>Solo puede eliminar corridas que usted ejecutó (fila o «Eliminar mis corridas»).</p>
+    </div>
+</div>
+{% endblock %}

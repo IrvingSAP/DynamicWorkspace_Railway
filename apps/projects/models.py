@@ -13,6 +13,7 @@ class Project(models.Model):
     KIND_REVERSE = "reverse"
     KIND_FILE_MATCH = "file_match"
     KIND_STRUCTURE_SCOUT = "structure_scout"
+    KIND_FILE_CLEAN = "file_clean"
     KIND_CHOICES = [
         (KIND_WORKSPACE, "Workspace (tabla)"),
         (KIND_DMS, "DMS (FilePipe)"),
@@ -20,6 +21,7 @@ class Project(models.Model):
         (KIND_REVERSE, "Reverse Studio (Emisor)"),
         (KIND_FILE_MATCH, "FILE MATCH (Conciliador)"),
         (KIND_STRUCTURE_SCOUT, "STRUCTURE SCOUT (Explorador)"),
+        (KIND_FILE_CLEAN, "FILE CLEAN (Limpieza)"),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

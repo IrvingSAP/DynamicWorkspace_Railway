@@ -1,0 +1,74 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Paso 2 — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">File Clean</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:profile_hub' project_slug=project.slug %}">Perfil</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:profile_step2' project_slug=project.slug %}">Paso 2</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Clean · Módulo 2 · paso 2 · ayuda</p>
+        <h2>Inicio de captura</h2>
+        <p>Indica desde qué punto del archivo empiezan los datos a limpiar. Todo lo anterior (títulos, banners, metadatos) se ignora.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_clean:profile_step2' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 2</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Muchos archivos traen cabeceras o líneas de control antes del detalle.
+            Si el inicio está mal, Clean leerá basura como si fueran registros (o saltará filas de datos reales).
+        </p>
+        <table class="help-table">
+            <thead><tr><th>Elemento</th><th>Uso típico</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Modo de inicio</td>
+                    <td>Primera línea, número de línea, tras un patrón / bloque de encabezado, etc.</td>
+                </tr>
+                <tr>
+                    <td>Parámetros</td>
+                    <td>Valor del modo: número de línea, texto del patrón, líneas a saltar…</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Casos frecuentes</h3>
+        <ul>
+            <li><strong>Archivo solo de datos (sin encabezado):</strong> use <em>primera línea</em> o línea <code>1</code>. Si pone línea <code>2</code>, perderá el primer registro.</li>
+            <li><strong>CSV con encabezado:</strong> el inicio de captura suele ser la primera fila de datos; el encabezado se configura también en el paso 4 (has_header / fila de header).</li>
+            <li><strong>TXT fijo con título:</strong> número de línea posterior al título, o patrón que marca el inicio del detalle.</li>
+        </ul>
+
+        <h3 class="form-section-title">Coherencia con el paso 3</h3>
+        <p>La unidad es <strong>líneas</strong>. El fin de captura no puede quedar “antes” del inicio. Con Excel, la lógica análoga usa filas de hoja.</p>
+    </div>
+</div>
+{% endblock %}

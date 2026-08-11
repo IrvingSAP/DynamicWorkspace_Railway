@@ -28,6 +28,9 @@ KIND_APP_LABELS = {
     Project.KIND_DMS: "FilePipe (Data Mapping)",
     Project.KIND_FILE_GATE: "FILE GATE (Validador)",
     Project.KIND_REVERSE: "Reverse Studio (Emisor)",
+    Project.KIND_FILE_MATCH: "FILE MATCH (Conciliador)",
+    Project.KIND_STRUCTURE_SCOUT: "STRUCTURE SCOUT (Explorador)",
+    Project.KIND_FILE_CLEAN: "FILE CLEAN (Limpieza)",
 }
 
 
