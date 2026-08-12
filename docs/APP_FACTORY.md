@@ -56,7 +56,7 @@ Cada aplicativo nuevo ≈ un nuevo `project_kind` (o un módulo sobre un kind ex
 ## 2. Reutilización alta (mismo motor, poca obra nueva)
 
 > **Propuesta detallada:** [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) (Reverse · Match · Profile Seed · Structure Scout · Catalog · referencia FILE GATE).  
-> **Oleada ops / alrededor del archivo:** [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) (Clean · Diff · Profiler · Split/Merge · Watch · …).
+> **Oleada ops / alrededor del archivo:** [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) (Clean · Profiler · Split/Merge · Watch · …; Diff **no app** → Match).
 
 | Aplicativo | Qué reutiliza | Valor |
 |------------|---------------|-------|
@@ -96,10 +96,11 @@ Detalle y prioridad: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md).
 
 | Prioridad | Idea | Nota |
 |-----------|------|------|
-| ⭐⭐⭐⭐⭐ | File Clean | Limpieza pre-Gate; reuso de reglas DMS |
-| ⭐⭐⭐⭐⭐ | File Watch | Ingestión automática (después de Clean/Diff) |
-| ⭐⭐⭐⭐ | Data Profiler · File Diff · Split/Merge | Complementan Scout / Match / lotes |
+| ⭐⭐⭐⭐⭐ | File Clean | Limpieza pre-Gate; reuso de reglas DMS · **hecho** |
+| ⭐⭐⭐⭐⭐ | File Watch | Ingestión automática (después de Clean/Split·Merge) |
+| ⭐⭐⭐⭐ | Data Profiler · Split/Merge | Complementan Scout / lotes |
 | — | File Convert | **No** como app; modo simple en FilePipe |
+| — | File Diff | **No** como app; cubierto por File Match |
 
 ### 4.2 PLATFORM API — ejecución remota
 
@@ -119,7 +120,7 @@ Capa HTTP alineada a **todas las apps ejecutables** (Gate, Pipe, Reverse, Match,
 | — | **Explorador de estructura** | **Hecho** — [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) |
 | **1 (en curso)** | **Sembrador de perfiles** | MVP P0 M1–M4 · `feature/profile-seed` — [`PROFILE_SEED.md`](PROFILE_SEED.md) · [`ps_integration.md`](definition_app_PROFILE_SEED/ps_integration.md) |
 | 2 | **Catálogos / maestros** | Propuesta — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §5 |
-| 3 | **File Clean** (FILE_OPS) | **En definición** — [`FILE_CLEAN.md`](FILE_CLEAN.md) · [`definition_app_FILE_CLEAN/`](definition_app_FILE_CLEAN/) |
+| 3 | **File Clean** (FILE_OPS) | **Hecho** — [`FILE_CLEAN.md`](FILE_CLEAN.md) · [`definition_app_FILE_CLEAN/`](definition_app_FILE_CLEAN/) |
 | 4 | **Formularios de captura** | Abre el producto a usuarios que no manejan archivos |
 | 5 | **Scheduling / Watch / API** | Roadmap + [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) · [`PLATFORM_API.md`](PLATFORM_API.md) |
 
@@ -162,7 +163,7 @@ Si la respuesta es “sí” a 1–4, conviene un doc hermano al estilo `DataMap
 | Explorador de estructura | **Hecho (MVP M1–M7)** — [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) · `apps/structure_scout/` · `main` |
 | Sembrador de perfiles | **MVP P0 en código** — [`PROFILE_SEED.md`](PROFILE_SEED.md) · [`ps_integration.md`](definition_app_PROFILE_SEED/ps_integration.md) · rama `feature/profile-seed` |
 | Catálogos / maestros | **Propuesta detallada** — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §5 (`MASTER_CATALOG`) |
-| File Clean / Diff / Profiler / Split·Merge | Clean: **en definición** [`FILE_CLEAN.md`](FILE_CLEAN.md); resto propuesta — [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) |
+| File Clean / Profiler / Split·Merge | Clean: **hecho** [`FILE_CLEAN.md`](FILE_CLEAN.md); Diff **retirado** (→ Match); resto propuesta — [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) |
 | File Watch / Scheduler / Archive / Schema Registry | **Propuesta (plataforma)** — [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) |
 | **PLATFORM API** (ejecución remota de jobs) | **Propuesta — diferida** hasta cerrar apps FILE_OPS — [`PLATFORM_API.md`](PLATFORM_API.md) |
 | File Convert (app) | **Descartado** como app — modo simple en FilePipe |
