@@ -1,0 +1,81 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Nuevo — File Split/Merge{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_create' %}">Nuevo</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Módulo 1 · <span class="role-badge">Create</span></p>
+        <h2>Ayuda — Nuevo proyecto</h2>
+        <p>Alta del contenedor: perfil vacío, sin reglas ni versión publicada. Usted queda como administrador (PA).</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_split_merge:project_create' %}">← Nuevo proyecto</a>
+    </div>
+</div>
+
+<div class="help-panel panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Quién puede crear</h3>
+        <p>Solo usuarios <strong>UF</strong> con seguridad completa. Al crear: proyecto tipo File Split/Merge, configuración DMS y membresía <strong>PA</strong> del creador.</p>
+
+        <h3 class="form-section-title">Campos</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>Campo</th><th>Notas</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Nombre</strong></td><td>Obligatorio. Título visible en listados y hub.</td></tr>
+                <tr>
+                    <td><strong>Código (slug)</strong></td>
+                    <td>Obligatorio. Único por compañía entre <em>todas</em> las apps. Minúsculas y guiones (p. ej. <code>prueba-03-xls</code>).</td>
+                </tr>
+                <tr><td><strong>Descripción</strong></td><td>Opcional. Contexto para el equipo.</td></tr>
+                <tr>
+                    <td><strong>Visibilidad</strong></td>
+                    <td>
+                        <strong>Privado</strong> (default): solo miembros.
+                        <strong>Público</strong>: UF de la compañía pueden ver el hub en consulta.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no se elige aquí</h3>
+        <ul>
+            <li>La operación <strong>Split o Merge</strong> se define en Reglas (M3), no al crear.</li>
+            <li>Tipo de archivo y campos van en Perfil (M2).</li>
+            <li>No se publica ni se ejecuta en este paso.</li>
+        </ul>
+
+        <h3 class="form-section-title">Después de crear</h3>
+        <ol>
+            <li>Redirección al <strong>hub</strong> del proyecto.</li>
+            <li><strong>Perfil</strong> → <strong>Reglas</strong> → <strong>Publicar</strong> → <strong>Ejecutar</strong> → <strong>Historial</strong>.</li>
+            <li>Como PA puede invitar miembros desde el hub.</li>
+        </ol>
+        <p>
+            Recuerde: cada proyecto tiene su propio historial de jobs.
+            Use un proyecto por escenario de prueba si quiere aislar CSV, TXT, XLSX, etc.
+        </p>
+    </div>
+</div>
+{% endblock %}

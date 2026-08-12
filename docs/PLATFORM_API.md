@@ -4,7 +4,7 @@
 > Alias: *API de jobs* · *API de integración* · *Ejecución remota*  
 > Archivo: [`docs/PLATFORM_API.md`](PLATFORM_API.md)  
 > Estado: **propuesta de producto / diseño** (sin implementación)  
-> **Cuándo implementar:** **después** de finalizar el desarrollo de las apps FILE_OPS (Clean, Diff, Split/Merge, Profiler, …). Las apps nacen API-ready; la capa HTTP se unifica al cierre.  
+> **Cuándo implementar:** **después** de finalizar el desarrollo de las apps FILE_OPS (Clean, Split/Merge, Profiler, …). Las apps nacen API-ready; la capa HTTP se unifica al cierre.  
 > Padres: [`APP_FACTORY.md`](APP_FACTORY.md) §4 · [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) (disparadores)  
 > Alcance: **todas las apps ejecutables** que el sistema pueda manejar vía Job (Gate, Pipe, Reverse, Match, Scout, y FILE_OPS)  
 > Primer kind FILE_OPS en diseño: [`FILE_CLEAN.md`](FILE_CLEAN.md) (`kind=file_clean`)
@@ -92,7 +92,7 @@ Disparadores
    Job común (archivo + versión + resultado + auditoría)
         ↓
    Apps: Gate · Pipe · Reverse · Match · Scout
-         (+ Clean · Diff · Split/Merge · Repair cuando existan)
+         (+ Clean · Split/Merge · Repair cuando existan)
 ```
 
 | Documento | Relación |
@@ -117,10 +117,11 @@ La API debe estar **alineada y disponible** para toda app que el sistema pueda e
 | `file_match` | File Match | Sí | Informe conciliación (2 entradas) |
 | `structure_scout` | Structure Scout | Sí (explorar muestra) | Borrador estructura (JSON) |
 | `workspace` | Worksheets | **Fuera de MVP API de archivos** | (otro dominio: records) |
-| `file_clean` | File Clean (propuesto) | Sí, cuando exista | Archivo limpio + log reglas |
-| `file_diff` | File Diff (propuesto) | Sí | Informe diff |
+| `file_clean` | File Clean | Sí | Archivo limpio + log reglas |
 | `file_split` / `file_merge` | Split/Merge | Sí | Uno o N archivos |
 | `file_repair` | File Repair | Sí | Archivo reparado + auditoría |
+
+> **File Diff:** no hay `kind` `file_diff`. Comparación A vs B → `file_match`. Ver [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §8.
 
 > Worksheets puede tener API de registros en otra fase; **este documento** se centra en el **Job de archivo** común a la suite de archivos.
 
@@ -163,7 +164,6 @@ Sin auth de máquina + scope por compañía/proyecto, **no** debe ir a producci�
 |------|----------|
 | Gate, Pipe, Reverse, Scout, Clean… | 1 archivo (`file`) |
 | Match | 2 archivos (`file_a`, `file_b`) |
-| Diff | 2 archivos (`file_left`, `file_right` o v1/v2) |
 | Merge | N archivos (`files[]`) |
 
 ### 5.2 Ejemplo de llamada (conceptual)
@@ -330,10 +330,11 @@ En Gate **no** hay archivo de negocio nuevo: la salida es **estado + informe**.
 | **File Match** | 2 archivos (A, B) | Cruce por clave / reglas | Informe conciliación |
 | **Structure Scout** | 1 muestra | Detectar / proponer | JSON borrador estructura (no prod) |
 | **File Clean** | 1 archivo | Reglas de limpieza | Archivo limpio + log |
-| **File Diff** | 2 archivos | Diff técnico/versión | Informe diff |
 | **File Split** | 1 archivo | Partición | N archivos |
 | **File Merge** | N archivos | Consolidación | 1 archivo |
 | **File Repair** | 1 archivo (+ contexto job Gate) | Correcciones auditadas | Archivo reparado + log |
+
+> Comparar dos versiones / A vs B: usar **File Match**, no un kind Diff.
 
 ### Ejemplo mental FilePipe
 

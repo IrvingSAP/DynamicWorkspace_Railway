@@ -14,14 +14,14 @@
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
-    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <a href="{% url seed_host.app_list_url_name %}">{{ seed_host.app_label }}</a>
     <span class="breadcrumb-sep">/</span>
-    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <a href="{% url seed_host.project_hub_url_name project_slug=project.slug %}">{{ project.slug }}</a>
     <span class="breadcrumb-sep">/</span>
-    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
+    <a href="{% url seed_host.profile_hub_url_name project_slug=project.slug %}">{{ seed_host.profile_hub_label }}</a>
     {% if not help_from_hub and can_seed_import %}
     <span class="breadcrumb-sep">/</span>
-    <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}">Importar</a>
+    <a href="{% url seed_host.seed_hub_url_name project_slug=project.slug %}">Importar</a>
     {% endif %}
     <span class="breadcrumb-sep">/</span>
     <span>Ayuda</span>
@@ -31,9 +31,9 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Referencia · PROFILE SEED · <span class="cell-badge">{{ project.slug }}</span> · Perfil A</p>
+        <p class="page-eyebrow">Referencia · PROFILE SEED · <span class="cell-badge">{{ project.slug }}</span> · {{ seed_host.profile_hub_label }}</p>
         <h2>Ayuda — Importar estructura</h2>
-        <p>Puerta de entrada del Sembrador: copiar un perfil o contrato ya publicado al borrador de este Perfil A.</p>
+        <p>Puerta de entrada del Sembrador: copiar un perfil o contrato ya publicado al borrador de este {{ seed_host.profile_hub_label }}.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-secondary" href="{% url help_back_url_name project_slug=project.slug %}">{{ help_back_label }}</a>
@@ -45,13 +45,13 @@
         <h3 class="form-section-title">Qué es este paso</h3>
         <p class="help-intro">
             Es el <strong>Módulo 1</strong> de PROFILE SEED (Sembrador de perfiles). Confirma el
-            <strong>destino</strong> de la siembra: este proyecto FILE MATCH · slot <strong>Perfil A</strong>.
+            <strong>destino</strong> de la siembra: este proyecto {{ seed_host.app_label }} · slot <strong>{{ seed_host.profile_hub_label }}</strong>.
             Aún no elige origen ni escribe el borrador.
         </p>
         <ul>
             <li><strong>Copy correcto:</strong> “Importar estructura”. No es “sincronizar”, “vincular”, “bridge” ni “aplicar Scout”.</li>
-            <li><strong>Efecto futuro:</strong> solo borrador del Perfil A. La publicación Match sigue siendo el Módulo 4 del Conciliador.</li>
-            <li><strong>Prioridad P0:</strong> origen típico FILE GATE (esquema publicado) → este Perfil A.</li>
+            <li><strong>Efecto futuro:</strong> solo borrador del {{ seed_host.profile_hub_label }}. La publicación Match sigue siendo el Módulo 4 del Conciliador.</li>
+            <li><strong>Prioridad P0:</strong> origen típico FILE GATE (esquema publicado) → este {{ seed_host.profile_hub_label }}.</li>
         </ul>
 
         <h3 class="form-section-title">Flujo completo (3 pasos)</h3>
@@ -63,7 +63,7 @@
                 <tr>
                     <td class="mono">1</td>
                     <td>Entrada (esta pantalla)</td>
-                    <td>Confirma destino Match · Perfil A y permisos. Continuar abre el selector de origen.</td>
+                    <td>Confirma destino Match · {{ seed_host.profile_hub_label }} y permisos. Continuar abre el selector de origen.</td>
                 </tr>
                 <tr>
                     <td class="mono">2</td>
@@ -84,10 +84,10 @@
                 <tr><th>Campo</th><th>Valor en este flujo</th></tr>
             </thead>
             <tbody>
-                <tr><td>App</td><td>FILE MATCH (Conciliador)</td></tr>
+                <tr><td>App</td><td>{{ seed_host.app_label }} (Conciliador)</td></tr>
                 <tr><td>Proyecto</td><td><span class="mono">{{ project.slug }}</span> — {{ project.name }}</td></tr>
-                <tr><td>Slot</td><td>Perfil A (archivo A / referencia)</td></tr>
-                <tr><td>Escritura</td><td>Solo borrador del Perfil A — nunca publica la definición Match</td></tr>
+                <tr><td>Slot</td><td>{{ seed_host.profile_hub_label }} (archivo A / referencia)</td></tr>
+                <tr><td>Escritura</td><td>Solo borrador del {{ seed_host.profile_hub_label }} — nunca publica la definición Match</td></tr>
             </tbody>
         </table>
 
@@ -96,7 +96,7 @@
             <li>Pulse <strong>Continuar a elegir origen</strong> (Módulo 2).</li>
             <li>Seleccione un origen publicado que pueda ver (misma compañía).</li>
             <li>Revise el preview y confirme (Módulo 3): se siembra el borrador; si ya había campos, verá aviso de overwrite.</li>
-            <li>Revise o ajuste el Perfil A en el wizard de 6 pasos; publique Match cuando la definición esté lista.</li>
+            <li>Revise o ajuste el {{ seed_host.profile_hub_label }} en el wizard de 6 pasos; publique Match cuando la definición esté lista.</li>
         </ol>
 
         <h3 class="form-section-title">Fronteras (no confundir)</h3>
@@ -126,7 +126,7 @@
                 <tr><th>Rol</th><th>En Importar estructura</th></tr>
             </thead>
             <tbody>
-                <tr><td class="mono">PA / ED</td><td>Ven el CTA en Perfil A, abren el shell y continúan a origen / confirmar.</td></tr>
+                <tr><td class="mono">PA / ED</td><td>Ven el CTA en {{ seed_host.profile_hub_label }}, abren el shell y continúan a origen / confirmar.</td></tr>
                 <tr><td class="mono">GE / CO</td><td>No ven el CTA activo; no inician el flujo de importación.</td></tr>
             </tbody>
         </table>

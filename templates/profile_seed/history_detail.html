@@ -16,20 +16,20 @@
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
-    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <a href="{% url seed_host.app_list_url_name %}">{{ seed_host.app_label }}</a>
     <span class="breadcrumb-sep">/</span>
-    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <a href="{% url seed_host.project_hub_url_name project_slug=project.slug %}">{{ project.slug }}</a>
     <span class="breadcrumb-sep">/</span>
-    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
+    <a href="{% url seed_host.profile_hub_url_name project_slug=project.slug %}">{{ seed_host.profile_hub_label }}</a>
     <span class="breadcrumb-sep">/</span>
-    <a href="{% url 'file_match:profile_a_seed_history' project_slug=project.slug %}">Historial</a>
+    <a href="{% url seed_host.seed_history_url_name project_slug=project.slug %}">Historial</a>
     <span class="breadcrumb-sep">/</span>
     <span>Detalle</span>
 </nav>
 {% endblock %}
 
 {% block content %}
-{% include "file_match/profile_a/_project_scope.html" %}
+{% include seed_host.scope_include %}
 
 <div class="page-header">
     <div>
@@ -44,7 +44,7 @@
         </p>
     </div>
     <div class="page-actions">
-        <a href="{% url 'file_match:profile_a_seed_history' project_slug=project.slug %}" class="btn btn-secondary">← Historial</a>
+        <a href="{% url seed_host.seed_history_url_name project_slug=project.slug %}" class="btn btn-secondary">← Historial</a>
     </div>
 </div>
 
@@ -101,13 +101,13 @@
 </div>
 
 <div class="page-actions">
-    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-primary">Abrir Perfil A</a>
+    <a href="{% url seed_host.profile_hub_url_name project_slug=project.slug %}" class="btn btn-primary">Abrir {{ seed_host.profile_hub_label }}</a>
     {% if can_seed_import %}
-    <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}" class="btn btn-secondary">Importar de nuevo</a>
+    <a href="{% url seed_host.seed_hub_url_name project_slug=project.slug %}" class="btn btn-secondary">Importar de nuevo</a>
     {% if event.status != "ok" %}
-    <a href="{% url 'file_match:profile_a_seed_picker' project_slug=project.slug %}" class="btn btn-secondary">Elegir otro origen</a>
+    <a href="{% url seed_host.seed_picker_url_name project_slug=project.slug %}" class="btn btn-secondary">Elegir otro origen</a>
     {% endif %}
     {% endif %}
-    <a href="{% url 'file_match:profile_a_seed_history' project_slug=project.slug %}" class="btn btn-secondary">← Historial</a>
+    <a href="{% url seed_host.seed_history_url_name project_slug=project.slug %}" class="btn btn-secondary">← Historial</a>
 </div>
 {% endblock %}

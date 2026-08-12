@@ -1,0 +1,199 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ project.name }} — File Split/Merge{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Proyectos</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ project.slug }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">
+            <span class="cell-badge">{{ project.slug }}</span>
+            {% if hub.visibility == 'company' %}
+            <span class="visibility-badge visibility-badge--public">{{ hub.visibility_label }}</span>
+            {% else %}
+            <span class="visibility-badge visibility-badge--private">{{ hub.visibility_label }}</span>
+            {% endif %}
+            {% if hub.is_pa %}
+            <span class="perm-badge perm-badge--admin">{{ hub.role_label }}</span>
+            {% else %}
+            <span class="perm-badge">{{ hub.role_label }}</span>
+            {% endif %}
+        </p>
+        <h2>{{ project.name }}</h2>
+        {% if project.description %}
+        <p>{{ project.description }}</p>
+        {% else %}
+        <p>Parta o una archivos según reglas versionadas. No valida contrato (File Gate) ni transforma a destino de negocio (FilePipe).</p>
+        {% endif %}
+    </div>
+    <div class="page-actions">
+        {% url 'file_split_merge:project_hub_help' project_slug=project.slug as sm_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=sm_help_url %}
+        {% if hub.can_manage_members %}
+        <a href="{% url 'file_split_merge:project_members' project_slug=project.slug %}" class="btn btn-secondary">Miembros</a>
+        {% endif %}
+        <a href="{% url 'file_split_merge:project_list' %}" class="btn btn-secondary">← Proyectos</a>
+    </div>
+</div>
+
+<div class="version-strip">
+    <strong>Borrador:</strong> {{ hub.draft_label }}
+    · <strong>Versión activa:</strong> {{ hub.published_label }}
+    · <strong>Operación:</strong> {{ hub.operation_label }}
+    · <strong>Último job:</strong> {{ hub.last_job_label }}
+    · <strong>Miembros:</strong> {{ hub.member_count }}
+</div>
+
+<div class="lifecycle-stepper" aria-label="Ciclo del proyecto">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Definición · pasos 1–3</p>
+        <ol class="lifecycle-steps">
+            <li><span class="lifecycle-step {{ hub.profile_step_class }}"><span class="lifecycle-step-num">{% if hub.profile_step_class == 'is-done' %}✓{% else %}1{% endif %}</span> Perfil</span></li>
+            <li><span class="lifecycle-step {{ hub.rules_step_class }}"><span class="lifecycle-step-num">{% if hub.rules_step_class == 'is-done' %}✓{% else %}2{% endif %}</span> Reglas</span></li>
+            <li><span class="lifecycle-step {{ hub.publish_step_class }}"><span class="lifecycle-step-num">{% if hub.publish_step_class == 'is-done' %}✓{% else %}3{% endif %}</span> Publicar</span></li>
+        </ol>
+    </div>
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Ejecución · pasos 4–5</p>
+        <ol class="lifecycle-steps">
+            <li><span class="lifecycle-step {{ hub.run_step_class }}"><span class="lifecycle-step-num">{% if hub.run_step_class == 'is-done' %}✓{% else %}4{% endif %}</span> Ejecutar</span></li>
+            <li><span class="lifecycle-step {{ hub.history_step_class }}"><span class="lifecycle-step-num">{% if hub.history_step_class == 'is-done' %}✓{% else %}5{% endif %}</span> Historial</span></li>
+        </ol>
+    </div>
+</div>
+
+{% if hub.modules_pending_note %}
+<div class="alert alert-info">
+    {{ hub.modules_pending_note }}
+</div>
+{% endif %}
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">1 · Perfil de lectura</h3>
+        <p class="hint">
+            {% if hub.profile_complete %}
+            {{ hub.file_type_label }} · {{ hub.fields_count }} campos. Puede seguir editando el borrador.
+            {% else %}
+            Tipo de archivo, encoding, captura y campos. Reuso de parsers DMS.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'file_split_merge:profile_hub' project_slug=project.slug %}" class="btn {% if hub.profile_complete %}btn-info{% else %}btn-primary{% endif %}">
+                {% if hub.profile_complete %}Ver / editar perfil{% else %}Definir perfil de lectura{% endif %}
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">2 · Reglas Split / Merge</h3>
+        <p class="hint">
+            {% if hub.rules_complete %}
+            {{ hub.operation_label }} · {{ hub.rules_enabled_count }}/{{ hub.rules_count }} reglas ON.
+            {% elif hub.profile_complete %}
+            Elija operación (partir o unir) y el catálogo de reglas.
+            {% else %}
+            Disponible cuando el perfil de lectura tenga campos.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            {% if hub.profile_complete %}
+            <a href="{% url 'file_split_merge:rules_hub' project_slug=project.slug %}" class="btn {% if hub.rules_complete %}btn-info{% else %}btn-primary{% endif %}">
+                {% if hub.rules_complete %}Ver / editar reglas{% else %}Definir reglas Split / Merge{% endif %}
+            </a>
+            {% else %}
+            <span class="btn btn-secondary" aria-disabled="true">Reglas Split / Merge</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">3 · Publicar</h3>
+        <p class="hint">
+            {% if hub.has_published_version %}
+            Activa: {{ hub.published_label }}. Puede publicar de nuevo el borrador actual.
+            {% elif hub.rules_complete %}
+            Siguiente paso: congela perfil + operación + reglas. Solo se ejecuta lo publicado (SM1).
+            {% else %}
+            Disponible cuando el perfil esté completo (checklist de reglas al publicar).
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            {% if hub.can_open_publish %}
+            <a href="{% url 'file_split_merge:publish_hub' project_slug=project.slug %}" class="btn {% if hub.has_published_version %}btn-info{% elif hub.rules_complete %}btn-primary{% else %}btn-secondary{% endif %}">
+                {% if hub.has_published_version %}Ver / publicar{% else %}Publicar versión{% endif %}
+            </a>
+            {% else %}
+            <span class="btn btn-secondary" aria-disabled="true">Publicar</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">4 · Ejecutar</h3>
+        <p class="hint">
+            {% if hub.has_published_version %}
+            {% if hub.run_complete %}Último: {{ hub.last_job_label }}. {% endif %}
+            Split: 1 archivo → N partes. Merge: N archivos → 1.
+            {% else %}
+            Split: 1 archivo → N partes. Merge: N archivos → 1. Requiere versión publicada.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            {% if hub.can_open_run %}
+            <a href="{% url 'file_split_merge:run_hub' project_slug=project.slug %}" class="btn {% if hub.run_complete %}btn-info{% else %}btn-primary{% endif %}">Ejecutar</a>
+            {% else %}
+            <span class="btn btn-secondary" aria-disabled="true">Ejecutar</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">5 · Historial</h3>
+        <p class="hint">
+            {% if hub.has_published_version %}
+            Jobs, hashes y artifacts según TTL. Último: {{ hub.last_job_label }}.
+            {% else %}
+            Jobs, hashes y artifacts según TTL. Tras la primera ejecución.
+            {% endif %}
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            {% if hub.can_open_history %}
+            <a href="{% url 'file_split_merge:history_hub' project_slug=project.slug %}" class="btn {% if hub.run_complete %}btn-info{% else %}btn-secondary{% endif %}">Historial</a>
+            {% else %}
+            <span class="btn btn-secondary" aria-disabled="true">Historial</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

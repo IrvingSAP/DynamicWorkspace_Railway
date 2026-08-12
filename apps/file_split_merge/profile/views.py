@@ -1,0 +1,514 @@
+import json
+
+from django.contrib import messages
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.views.decorators.http import require_http_methods
+
+from apps.core.decorators import security_complete_required, user_type_required
+from apps.dms.source_profile.services import (
+    source_persistence_service,
+    source_profile_catalog_service,
+    source_profile_service,
+)
+from apps.file_split_merge.profile.services import profile_wizard_service
+from apps.file_split_merge.projects.services import split_merge_project_service
+from apps.profile_seed.services import (
+    apply_seed_service,
+    profile_seed_service,
+    seed_history_service,
+)
+from apps.projects.services import project_service
+
+STEP4_TEMPLATES = {
+    "fixed": "file_split_merge/profile/step4_fields.html",
+    "delimited": "file_split_merge/profile/step4_fields_delimited.html",
+    "xlsx": "file_split_merge/profile/step4_fields_xlsx.html",
+    "json": "file_split_merge/profile/step4_fields_json.html",
+    "xml": "file_split_merge/profile/step4_fields_xml.html",
+}
+
+STEP4_HELP_TEMPLATES = {
+    "fixed": "file_split_merge/profile/step4_help_fixed.html",
+    "delimited": "file_split_merge/profile/step4_help_delimited.html",
+    "xlsx": "file_split_merge/profile/step4_help_xlsx.html",
+    "json": "file_split_merge/profile/step4_help_json.html",
+    "xml": "file_split_merge/profile/step4_help_xml.html",
+}
+
+MSG_NO_ACCESS = split_merge_project_service.MSG_NO_ACCESS
+
+
+def _profile_view(view_func):
+    return security_complete_required(user_type_required("UF")(view_func))
+
+
+def _get_project_or_redirect(request, project_slug: str):
+    project = split_merge_project_service.get_project_for_user(request.user, project_slug)
+    if project is None:
+        messages.error(request, MSG_NO_ACCESS)
+        return None
+    return project
+
+
+def _base_context(request, project, current_step: int | None = None) -> dict:
+    membership = project_service.get_membership(request.user, project)
+    wizard = profile_wizard_service.get_wizard_context(project, membership)
+    source = source_persistence_service.get_source_dict(project)
+    seed_ctx = profile_seed_service.get_split_merge_seed_context(request.user, project)
+    return {
+        "project": project,
+        "wizard": wizard,
+        "membership": membership,
+        "current_step": current_step,
+        "app_nav_active": "file_split_merge",
+        "file_split_merge_nav_open": True,
+        "source": source,
+        "source_json": source_profile_service.source_context(project)["source_json"],
+        "can_edit_source": source_persistence_service.user_can_edit_source(
+            request.user, project
+        ),
+        "source_save_url": reverse(
+            "file_split_merge:profile_save", kwargs={"project_slug": project.slug}
+        ),
+        **seed_ctx,
+    }
+
+
+def _render(request, project_slug: str, template: str, current_step: int | None = None, **extra):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_split_merge:project_list")
+    ctx = _base_context(request, project, current_step)
+    ctx.update(extra)
+    return render(request, template, ctx)
+
+
+@_profile_view
+def hub(request, project_slug: str):
+    return _render(request, project_slug, "file_split_merge/profile/hub.html")
+
+
+@_profile_view
+def hub_help(request, project_slug: str):
+    return _render(request, project_slug, "file_split_merge/profile/hub_help.html")
+
+
+@_profile_view
+def step1_help(request, project_slug: str):
+    return _render(request, project_slug, "file_split_merge/profile/step1_help.html", current_step=1)
+
+
+@_profile_view
+def step2_help(request, project_slug: str):
+    return _render(request, project_slug, "file_split_merge/profile/step2_help.html", current_step=2)
+
+
+@_profile_view
+def step3_help(request, project_slug: str):
+    return _render(request, project_slug, "file_split_merge/profile/step3_help.html", current_step=3)
+
+
+@_profile_view
+def step4_help(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_split_merge:project_list")
+    source = source_persistence_service.get_source_dict(project)
+    file_type = (source.get("file_type_code") or "").strip()
+    variant = source_profile_service.get_step4_variant(file_type)
+    template = STEP4_HELP_TEMPLATES.get(variant)
+    if not template:
+        messages.warning(
+            request,
+            "Seleccione un tipo de archivo en el paso 1 para ver la ayuda de campos.",
+        )
+        return redirect("file_split_merge:profile_step1", project_slug=project_slug)
+    return _render(
+        request,
+        project_slug,
+        template,
+        current_step=4,
+        file_type_code=file_type or variant,
+        step4_variant=variant,
+    )
+
+
+@_profile_view
+def step1_file_type(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_split_merge:project_list")
+    ctx = _base_context(request, project, current_step=1)
+    ctx.update(source_profile_catalog_service.get_step1_catalog_context())
+    return render(request, "file_split_merge/profile/step1_file_type.html", ctx)
+
+
+@_profile_view
+def step2_capture_start(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_split_merge:project_list")
+    ctx = _base_context(request, project, current_step=2)
+    ctx.update(source_profile_catalog_service.get_step2_catalog_context())
+    return render(request, "file_split_merge/profile/step2_capture_start.html", ctx)
+
+
+@_profile_view
+def step3_capture_end(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_split_merge:project_list")
+    ctx = _base_context(request, project, current_step=3)
+    ctx.update(source_profile_catalog_service.get_step3_catalog_context())
+    return render(request, "file_split_merge/profile/step3_capture_end.html", ctx)
+
+
+@_profile_view
+def step4_fields(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_split_merge:project_list")
+
+    source = source_persistence_service.get_source_dict(project)
+    variant = source_profile_service.get_step4_variant(source.get("file_type_code", ""))
+    if variant == "unsupported":
+        messages.warning(
+            request,
+            "El tipo de archivo seleccionado aún no tiene editor de campos. "
+            "Elija txt_fixed, csv, txt_delimited, xlsx, json o xml en el paso 1.",
+        )
+        return redirect("file_split_merge:profile_step1", project_slug=project_slug)
+
+    ctx = _base_context(request, project, current_step=4)
+    ctx.update(source_profile_service.get_step4_context(project, variant))
+    ctx["source"] = source_persistence_service.get_source_dict(project)
+    ctx["source_json"] = json.dumps(ctx["source"])
+    return render(request, STEP4_TEMPLATES[variant], ctx)
+
+
+@_profile_view
+def step4_fields_delimited(request, project_slug: str):
+    return redirect("file_split_merge:profile_step4", project_slug=project_slug)
+
+
+@_profile_view
+@require_http_methods(["POST"])
+def profile_save(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"ok": False, "message": MSG_NO_ACCESS}, status=403)
+        return redirect("file_split_merge:project_list")
+
+    payload: dict = {}
+    raw = request.POST.get("source_payload", "").strip()
+    if raw:
+        try:
+            payload = json.loads(raw)
+        except json.JSONDecodeError:
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                return JsonResponse(
+                    {"ok": False, "message": "JSON de perfil inválido."},
+                    status=400,
+                )
+            messages.error(request, "JSON de perfil inválido.")
+            return redirect("file_split_merge:profile_hub", project_slug=project_slug)
+    else:
+        for key in (
+            "file_type_code",
+            "encoding_code",
+            "encoding_custom",
+            "line_ending_code",
+            "line_ending_custom",
+        ):
+            if key in request.POST:
+                payload[key] = request.POST.get(key, "").strip()
+        if "capture_start_mode" in request.POST:
+            mode = request.POST.get("capture_start_mode", "").strip()
+            capture_start = {"mode": mode}
+            if mode == "line_number":
+                capture_start["line"] = int(request.POST.get("start_line", "1") or 1)
+            elif mode == "after_header_block":
+                capture_start["skip_lines"] = int(request.POST.get("skip_lines", "0") or 0)
+            elif mode == "marker_start":
+                capture_start["marker"] = request.POST.get("marker_start", "").strip()
+            elif mode == "after_pattern":
+                capture_start["pattern"] = request.POST.get("start_pattern", "").strip()
+            elif mode == "after_blank_run":
+                try:
+                    capture_start["blank_count"] = int(
+                        request.POST.get("start_blank_count", "1") or 1
+                    )
+                except (TypeError, ValueError):
+                    capture_start["blank_count"] = 1
+            payload["capture_start"] = capture_start
+        if "capture_end_mode" in request.POST:
+            mode = request.POST.get("capture_end_mode", "").strip()
+            capture_end = {"mode": mode}
+            if mode == "line_number":
+                capture_end["line"] = int(request.POST.get("end_line", "1") or 1)
+            elif mode == "percent":
+                capture_end["value"] = int(request.POST.get("percent_value", "80") or 80)
+            elif mode == "max_rows":
+                capture_end["max_rows"] = int(request.POST.get("max_rows", "1000") or 1000)
+            elif mode == "marker_end":
+                capture_end["marker"] = request.POST.get("marker_end", "").strip()
+            elif mode == "line_or_eof":
+                capture_end["line"] = int(request.POST.get("line_or_eof", "1") or 1)
+            elif mode == "before_pattern":
+                capture_end["pattern"] = request.POST.get("end_pattern", "").strip()
+            elif mode == "blank_run":
+                try:
+                    capture_end["blank_count"] = int(
+                        request.POST.get("end_blank_count", "1") or 1
+                    )
+                except (TypeError, ValueError):
+                    capture_end["blank_count"] = 1
+            payload["capture_end"] = capture_end
+
+    strict = request.POST.get("strict", "") == "1"
+    result = source_persistence_service.save_source(
+        request.user,
+        project,
+        payload,
+        strict=strict,
+    )
+
+    redirect_to = request.POST.get("next", "").strip()
+    if not redirect_to:
+        redirect_to = reverse(
+            "file_split_merge:profile_hub", kwargs={"project_slug": project_slug}
+        )
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        if result.ok:
+            return JsonResponse(
+                {
+                    "ok": True,
+                    "message": result.user_message,
+                    "source": result.payload.get("source", {}),
+                    "warnings": result.payload.get("warning_messages") or [],
+                }
+            )
+        return JsonResponse(
+            {
+                "ok": False,
+                "message": result.user_message,
+                "errors": result.errors or {},
+                "warnings": source_persistence_service.flatten_validation_messages(
+                    (result.payload or {}).get("warnings")
+                ),
+            },
+            status=400,
+        )
+
+    if result.ok:
+        messages.success(request, result.user_message)
+        for warning in result.payload.get("warning_messages") or []:
+            messages.warning(request, warning)
+    else:
+        messages.error(request, result.user_message)
+    return redirect(redirect_to)
+
+
+@_profile_view
+def profile_seed_hub(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_split_merge:project_list")
+    if not profile_seed_service.user_can_import(request.user, project):
+        messages.error(request, profile_seed_service.MSG_NO_IMPORT)
+        return redirect("file_split_merge:profile_hub", project_slug=project_slug)
+    return _render(request, project_slug, "profile_seed/seed_entry.html")
+
+
+@_profile_view
+def profile_seed_hub_help(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_split_merge:project_list")
+    from_key = (request.GET.get("from") or "").strip().lower()
+    if from_key == "hub":
+        help_back_url_name = "file_split_merge:profile_hub"
+        help_back_label = "← Perfil"
+        help_from_hub = True
+    else:
+        can_import = profile_seed_service.user_can_import(request.user, project)
+        if can_import:
+            help_back_url_name = "file_split_merge:profile_seed_hub"
+            help_back_label = "← Volver a Importar"
+            help_from_hub = False
+        else:
+            help_back_url_name = "file_split_merge:profile_hub"
+            help_back_label = "← Perfil"
+            help_from_hub = True
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/seed_entry_help.html",
+        help_back_url_name=help_back_url_name,
+        help_back_label=help_back_label,
+        help_from_hub=help_from_hub,
+    )
+
+
+@_profile_view
+def profile_seed_picker(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_split_merge:project_list")
+    if not profile_seed_service.user_can_import(request.user, project):
+        messages.error(request, profile_seed_service.MSG_NO_IMPORT)
+        return redirect("file_split_merge:profile_hub", project_slug=project_slug)
+
+    source_kind = (request.GET.get("kind") or "").strip() or None
+    source_id_raw = (request.GET.get("source_id") or "").strip()
+    source_id = None
+    if source_id_raw:
+        source_id = profile_seed_service.parse_source_project_id(source_id_raw)
+        if source_id is None:
+            # Force invalid selection path in picker context
+            from uuid import UUID
+
+            source_id = UUID("00000000-0000-0000-0000-000000000000")
+
+    picker = profile_seed_service.get_source_picker_context(
+        request.user,
+        project,
+        source_kind=source_kind,
+        source_id=source_id,
+    )
+    if picker.get("invalid_source") or (
+        source_id_raw and profile_seed_service.parse_source_project_id(source_id_raw) is None
+    ):
+        messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
+        picker["invalid_source"] = True
+        picker["selected_source"] = None
+        picker["selected_source_id"] = None
+    if not picker.get("source_kind_supported"):
+        messages.warning(request, profile_seed_service.MSG_KIND_UNSUPPORTED)
+
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/source_picker.html",
+        **picker,
+    )
+
+
+@_profile_view
+def profile_seed_picker_help(request, project_slug: str):
+    return _render(request, project_slug, "profile_seed/source_picker_help.html")
+
+
+def _parse_source_id(raw: str | None):
+    return profile_seed_service.parse_source_project_id(raw)
+
+
+@_profile_view
+@require_http_methods(["GET", "POST"])
+def profile_seed_apply(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_split_merge:project_list")
+    if not profile_seed_service.user_can_import(request.user, project):
+        messages.error(request, profile_seed_service.MSG_NO_IMPORT)
+        return redirect("file_split_merge:profile_hub", project_slug=project_slug)
+
+    if request.method == "POST":
+        source_id = _parse_source_id(request.POST.get("source_id"))
+        action = (request.POST.get("action") or "").strip()
+        if action != "apply":
+            messages.error(request, apply_seed_service.MSG_APPLY_FAIL)
+            return redirect(
+                "file_split_merge:profile_seed_picker", project_slug=project_slug
+            )
+        result = apply_seed_service.apply_seed_to_split_merge(
+            request.user, project, source_id=source_id
+        )
+        if result.ok:
+            messages.success(request, result.user_message)
+            return redirect("file_split_merge:profile_hub", project_slug=project_slug)
+        messages.error(request, result.user_message)
+        if source_id:
+            return redirect(
+                reverse(
+                    "file_split_merge:profile_seed_apply",
+                    kwargs={"project_slug": project_slug},
+                )
+                + f"?source_id={source_id}"
+            )
+        return redirect(
+            "file_split_merge:profile_seed_picker", project_slug=project_slug
+        )
+
+    source_id = _parse_source_id(request.GET.get("source_id"))
+    if source_id is None:
+        messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
+        return redirect(
+            "file_split_merge:profile_seed_picker", project_slug=project_slug
+        )
+
+    preview = apply_seed_service.get_apply_preview(request.user, project, source_id)
+    if preview is None:
+        messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
+        return redirect(
+            "file_split_merge:profile_seed_picker", project_slug=project_slug
+        )
+
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/apply_confirm.html",
+        **preview,
+    )
+
+
+@_profile_view
+def profile_seed_apply_help(request, project_slug: str):
+    return _render(request, project_slug, "profile_seed/apply_confirm_help.html")
+
+
+@_profile_view
+def profile_seed_history(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_split_merge:project_list")
+    status = (request.GET.get("status") or "").strip()
+    history = seed_history_service.get_history_hub_context(
+        request.user, project, status=status
+    )
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/history_hub.html",
+        **history,
+    )
+
+
+@_profile_view
+def profile_seed_history_detail(request, project_slug: str, event_id):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_split_merge:project_list")
+    detail = seed_history_service.get_history_detail_context(
+        request.user, project, event_id
+    )
+    if detail is None:
+        messages.error(request, seed_history_service.MSG_EVENT_NOT_FOUND)
+        return redirect(
+            "file_split_merge:profile_seed_history", project_slug=project_slug
+        )
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/history_detail.html",
+        **detail,
+    )
+
+
+@_profile_view
+def profile_seed_history_help(request, project_slug: str):
+    return _render(request, project_slug, "profile_seed/history_help.html")

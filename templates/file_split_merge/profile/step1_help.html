@@ -1,0 +1,76 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Paso 1 — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:profile_hub' project_slug=project.slug %}">Perfil</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:profile_step1' project_slug=project.slug %}">Paso 1</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Módulo 2 · paso 1 · ayuda</p>
+        <h2>Tipo de archivo a partir o unir</h2>
+        <p>Fija el formato, la codificación y el fin de línea con los que File Split/Merge interpretará cada archivo.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_split_merge:profile_step1' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 1</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué decide este paso</h3>
+        <p class="help-intro">Sin tipo de archivo no se puede completar el perfil ni publicar. La elección condiciona el paso 4 (posiciones, columnas, hoja, JSON o XML) y las extensiones permitidas al Ejecutar.</p>
+        <table class="help-table">
+            <thead><tr><th>Elemento</th><th>Efecto en File Split/Merge</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Tipo de archivo</td>
+                    <td>Formato esperado (<code>txt_fixed</code>, <code>csv</code>, <code>txt_delimited</code>, <code>xlsx</code>, <code>json</code>, <code>xml</code>). Condiciona el parseo al procesar.</td>
+                </tr>
+                <tr>
+                    <td>Encoding</td>
+                    <td>Cómo se leen los bytes. Un encoding incorrecto suele producir caracteres raros o basura en los campos.</td>
+                </tr>
+                <tr>
+                    <td>Fin de línea</td>
+                    <td>Cómo se parten las líneas (<code>LF</code>, <code>CRLF</code> o auto). Debe coincidir con el archivo del proveedor.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Buenas prácticas</h3>
+        <ul>
+            <li>Elija el tipo que usa el proveedor; no “el más flexible”.</li>
+            <li>Si ya hay campos definidos y cambia el tipo, revise el <strong>paso 4</strong>: la estructura anterior puede quedar inválida.</li>
+            <li>Los cambios se guardan en el <strong>borrador</strong>; Ejecutar solo usa lo publicado.</li>
+            <li>Solo <code>PA</code> y <code>ED</code> pueden guardar. El resto ve el paso en solo lectura.</li>
+        </ul>
+
+        <h3 class="form-section-title">Navegación</h3>
+        <p><strong>← Anterior</strong> vuelve al hub del perfil. <strong>Siguiente</strong> guarda (si puede editar) y avanza al inicio de captura.</p>
+    </div>
+</div>
+{% endblock %}

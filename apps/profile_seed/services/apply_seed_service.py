@@ -1,14 +1,16 @@
-"""PROFILE_SEED M3 — preview y apply borrador (apply_draft.md)."""
+"""PROFILE_SEED — preview y apply borrador (Match Perfil A + Split/Merge)."""
 
 from __future__ import annotations
 
 import logging
+from uuid import UUID
 
 from django.db import transaction
 
 from apps.core.services.operation_result import OperationResult
 from apps.dms.file_intake.services import file_intake_persistence_service
 from apps.dms.source_profile.services import source_persistence_service
+from apps.dms.source_profile.services.source_profile_service import get_step4_variant
 from apps.file_match.profile_a.services.profile_a_whitelist import (
     WHITELIST_REJECT_MESSAGE,
     reject_non_whitelist_file_type,
@@ -19,23 +21,33 @@ from apps.projects.models import Project
 
 logger = logging.getLogger(__name__)
 
-MSG_APPLY_OK = (
+MSG_APPLY_OK_MATCH = (
     "Estructura importada al borrador del Perfil A. "
     "Revise y publique la definición Match cuando corresponda."
 )
+MSG_APPLY_OK_SPLIT_MERGE = (
+    "Estructura importada al borrador del perfil de lectura. "
+    "Revise los pasos del wizard y continue con reglas Split/Merge cuando corresponda."
+)
+MSG_APPLY_OK = MSG_APPLY_OK_MATCH  # compat
 MSG_APPLY_FAIL = (
     "No se pudo importar la estructura. Si persiste, contacte al administrador."
 )
 MSG_NO_SOURCE_ID = "Seleccione un origen publicado antes de confirmar."
+MSG_TYPE_UNSUPPORTED_SM = (
+    "El tipo de archivo seleccionado aún no tiene editor de campos en "
+    "File Split/Merge. Elija txt_fixed, csv, txt_delimited, xlsx, json o xml."
+)
 
 FIELD_NAMES_SAMPLE_LIMIT = 8
 
 
 def _clean_published_source(raw: dict) -> dict:
-    """Clone snapshot without GATE policy / live links (PS1 / PS7)."""
+    """Clone snapshot without app-specific policies / live links (PS1 / PS7)."""
     source = dict(raw or {})
     config = dict(source.get("config") or {})
-    config.pop("gate_policy", None)
+    for key in ("gate_policy", "clean_rules", "match_side", "sm_rules", "split_merge_rules"):
+        config.pop(key, None)
     source["config"] = config
     return source
 
@@ -60,17 +72,32 @@ def map_published_source_to_partials(source: dict) -> tuple[dict, dict]:
 
 
 def _resolve_source_project(
-    user, target_project: Project, source_id: int | None
+    user,
+    target_project: Project,
+    source_id: UUID | None,
+    *,
+    source_kind: str | None = None,
 ) -> Project | None:
     if source_id is None:
         return None
-    rows = profile_seed_service.list_eligible_sources(user, target_project)
-    if not any(row["id"] == source_id for row in rows):
-        return None
-    try:
-        return Project.objects.get(pk=source_id, is_archived=False)
-    except Project.DoesNotExist:
-        return None
+    kinds = []
+    if source_kind:
+        kinds = [source_kind]
+    else:
+        kinds = [
+            code
+            for code, _ in profile_seed_service._source_kind_choices_for(target_project)
+        ]
+    for kind in kinds:
+        rows = profile_seed_service.list_eligible_sources(
+            user, target_project, source_kind=kind
+        )
+        if any(row["id"] == source_id for row in rows):
+            try:
+                return Project.objects.get(pk=source_id, is_archived=False)
+            except Project.DoesNotExist:
+                return None
+    return None
 
 
 def _load_published_source(source_project: Project) -> tuple[object | None, dict]:
@@ -100,8 +127,56 @@ def _delimiter_label(source: dict) -> str:
     return str(delim)
 
 
+def _source_meta_for_project(source_project: Project, published) -> dict:
+    if source_project.project_kind == Project.KIND_FILE_CLEAN:
+        return {
+            "kind": profile_seed_service.SOURCE_KIND_FILE_CLEAN,
+            "kind_label": "FILE CLEAN",
+            "slot": profile_seed_service.SOURCE_SLOT_READ_PROFILE,
+            "slot_label": profile_seed_service.SOURCE_SLOT_LABEL_READ_PROFILE,
+            "version": published.version_number,
+            "slug": source_project.slug,
+        }
+    return {
+        "kind": profile_seed_service.SOURCE_KIND_FILE_GATE,
+        "kind_label": "FILE GATE",
+        "slot": profile_seed_service.SOURCE_SLOT_SCHEMA,
+        "slot_label": profile_seed_service.SOURCE_SLOT_LABEL_SCHEMA,
+        "version": published.version_number,
+        "slug": source_project.slug,
+    }
+
+
+def _target_meta(target_project: Project) -> dict:
+    _, slot, slot_label, _ = profile_seed_service._target_slot_meta(target_project)
+    return {"slot": slot, "slot_label": slot_label}
+
+
+def _apply_ok_message(target_project: Project) -> str:
+    if target_project.project_kind == Project.KIND_FILE_SPLIT_MERGE:
+        return MSG_APPLY_OK_SPLIT_MERGE
+    return MSG_APPLY_OK_MATCH
+
+
+def _check_file_type_for_target(
+    target_project: Project, file_type: str
+) -> OperationResult | None:
+    """Return failure OperationResult if type rejected; None if OK."""
+    if target_project.project_kind == Project.KIND_FILE_MATCH:
+        whitelist_result = reject_non_whitelist_file_type(file_type)
+        if whitelist_result is not None and not whitelist_result.ok:
+            return whitelist_result
+        return None
+    if target_project.project_kind == Project.KIND_FILE_SPLIT_MERGE:
+        variant = get_step4_variant(file_type)
+        if variant == "unsupported" or not file_type:
+            return OperationResult.failure("validation_form", MSG_TYPE_UNSUPPORTED_SM)
+        return None
+    return None
+
+
 def get_apply_preview(
-    user, target_project: Project, source_id: int | None
+    user, target_project: Project, source_id: UUID | None
 ) -> dict | None:
     """Preview context for confirm screen; None if source not eligible."""
     if not profile_seed_service.user_can_import(user, target_project):
@@ -117,22 +192,24 @@ def get_apply_preview(
 
     fields = source.get("fields") or []
     file_type = (source.get("file_type_code") or "").strip()
-    whitelist_result = reject_non_whitelist_file_type(file_type)
+    type_check = _check_file_type_for_target(target_project, file_type)
     whitelist_error = None
-    if whitelist_result is not None and not whitelist_result.ok:
-        whitelist_error = whitelist_result.user_message or WHITELIST_REJECT_MESSAGE
+    if type_check is not None and not type_check.ok:
+        whitelist_error = type_check.user_message
 
     target_current = source_persistence_service.get_source_dict(target_project)
     target_field_count = len(target_current.get("fields") or [])
+    source_meta = _source_meta_for_project(source_project, published)
+    target_meta = _target_meta(target_project)
 
     source_row = {
         "id": source_project.id,
         "slug": source_project.slug,
         "name": source_project.name,
-        "kind": profile_seed_service.SOURCE_KIND_FILE_GATE,
-        "kind_label": "FILE GATE",
-        "slot": profile_seed_service.SOURCE_SLOT_SCHEMA,
-        "slot_label": profile_seed_service.SOURCE_SLOT_LABEL_SCHEMA,
+        "kind": source_meta["kind"],
+        "kind_label": source_meta["kind_label"],
+        "slot": source_meta["slot"],
+        "slot_label": source_meta["slot_label"],
         "version_number": published.version_number,
         "version_label": f"v{published.version_number}",
         "file_type_code": file_type or "—",
@@ -145,8 +222,8 @@ def get_apply_preview(
     target_info = {
         "slug": target_project.slug,
         "name": target_project.name,
-        "slot": profile_seed_service.TARGET_SLOT_PROFILE_A,
-        "slot_label": profile_seed_service.TARGET_SLOT_LABEL_PROFILE_A,
+        "slot": target_meta["slot"],
+        "slot_label": target_meta["slot_label"],
         "field_count": target_field_count,
         "file_type_code": target_current.get("file_type_code") or "",
     }
@@ -160,6 +237,8 @@ def get_apply_preview(
         "whitelist_error": whitelist_error,
         "seed_step": 3,
         "seed_steps_total": 3,
+        "seed_host": profile_seed_service.get_seed_host(target_project),
+        **profile_seed_service.get_seed_context(user, target_project),
     }
 
 
@@ -175,9 +254,10 @@ def _record_event(
     status: str,
     message: str,
 ) -> ProfileSeedEvent:
+    target_meta = _target_meta(target_project)
     return ProfileSeedEvent.objects.create(
         target_project=target_project,
-        target_slot=profile_seed_service.TARGET_SLOT_PROFILE_A,
+        target_slot=target_meta["slot"],
         source_project=source_project,
         source_kind=source_kind,
         source_slot=source_slot,
@@ -191,12 +271,13 @@ def _record_event(
 
 
 @transaction.atomic
-def apply_seed_to_profile_a(
+def apply_seed_to_draft(
     user,
     target_project: Project,
     *,
-    source_id: int | None,
+    source_id: UUID | None,
 ) -> OperationResult:
+    """Clone published Gate/Clean (etc.) structure into destination draft."""
     if not profile_seed_service.user_can_import(user, target_project):
         return OperationResult.failure("forbidden", profile_seed_service.MSG_NO_IMPORT)
 
@@ -217,16 +298,12 @@ def apply_seed_to_profile_a(
 
     file_type = (source.get("file_type_code") or "").strip()
     fields = source.get("fields") or []
-    source_meta = {
-        "kind": profile_seed_service.SOURCE_KIND_FILE_GATE,
-        "slot": profile_seed_service.SOURCE_SLOT_SCHEMA,
-        "version": published.version_number,
-        "slug": source_project.slug,
-    }
+    source_meta = _source_meta_for_project(source_project, published)
+    ok_msg = _apply_ok_message(target_project)
 
-    whitelist_result = reject_non_whitelist_file_type(file_type)
-    if whitelist_result is not None and not whitelist_result.ok:
-        msg = whitelist_result.user_message or WHITELIST_REJECT_MESSAGE
+    type_check = _check_file_type_for_target(target_project, file_type)
+    if type_check is not None and not type_check.ok:
+        msg = type_check.user_message or MSG_APPLY_FAIL
         _record_event(
             user=user,
             target_project=target_project,
@@ -239,9 +316,9 @@ def apply_seed_to_profile_a(
             message=msg,
         )
         return OperationResult.failure(
-            whitelist_result.error_code or "validation_form",
+            type_check.error_code or "validation_form",
             msg,
-            errors=whitelist_result.errors,
+            errors=type_check.errors,
         )
 
     if not file_type or not fields:
@@ -304,7 +381,7 @@ def apply_seed_to_profile_a(
             )
     except Exception:
         logger.exception(
-            "apply_seed_to_profile_a unexpected target=%s source=%s",
+            "apply_seed_to_draft unexpected target=%s source=%s",
             target_project.slug,
             source_project.slug,
         )
@@ -330,10 +407,29 @@ def apply_seed_to_profile_a(
         source_version=source_meta["version"],
         source_slug=source_meta["slug"],
         status=ProfileSeedEvent.STATUS_OK,
-        message=MSG_APPLY_OK,
+        message=ok_msg,
     )
     target_project.save(update_fields=["updated_at"])
     return OperationResult.success(
-        user_message=MSG_APPLY_OK,
+        user_message=ok_msg,
         payload={"event_id": str(event.id)},
     )
+
+
+def apply_seed_to_profile_a(
+    user,
+    target_project: Project,
+    *,
+    source_id: UUID | None,
+) -> OperationResult:
+    """Compat wrapper — Match Perfil A."""
+    return apply_seed_to_draft(user, target_project, source_id=source_id)
+
+
+def apply_seed_to_split_merge(
+    user,
+    target_project: Project,
+    *,
+    source_id: UUID | None,
+) -> OperationResult:
+    return apply_seed_to_draft(user, target_project, source_id=source_id)

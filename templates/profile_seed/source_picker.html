@@ -17,20 +17,20 @@
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
-    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <a href="{% url seed_host.app_list_url_name %}">{{ seed_host.app_label }}</a>
     <span class="breadcrumb-sep">/</span>
-    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <a href="{% url seed_host.project_hub_url_name project_slug=project.slug %}">{{ project.slug }}</a>
     <span class="breadcrumb-sep">/</span>
-    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
+    <a href="{% url seed_host.profile_hub_url_name project_slug=project.slug %}">{{ seed_host.profile_hub_label }}</a>
     <span class="breadcrumb-sep">/</span>
-    <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}">Importar</a>
+    <a href="{% url seed_host.seed_hub_url_name project_slug=project.slug %}">Importar</a>
     <span class="breadcrumb-sep">/</span>
     <span>Origen</span>
 </nav>
 {% endblock %}
 
 {% block content %}
-{% include "file_match/profile_a/_project_scope.html" %}
+{% include seed_host.scope_include %}
 
 <div class="page-header">
     <div>
@@ -39,9 +39,9 @@
         <p>Seleccione un contrato o perfil <strong>publicado</strong> de la misma compañía. No publica el destino.</p>
     </div>
     <div class="page-actions">
-        {% url 'file_match:profile_a_seed_picker_help' project_slug=project.slug as seed_help_url %}
+        {% url seed_host.seed_picker_help_url_name project_slug=project.slug as seed_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=seed_help_url %}
-        <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}" class="btn btn-secondary">← Entrada</a>
+        <a href="{% url seed_host.seed_hub_url_name project_slug=project.slug %}" class="btn btn-secondary">← Entrada</a>
     </div>
 </div>
 
@@ -70,7 +70,7 @@
 <div class="panel">
     <div class="panel-body">
         <h3 class="form-section-title">Origen</h3>
-        <p class="hint">P0: FILE GATE con esquema publicado. Misma compañía · proyectos visibles para usted.</p>
+        <p class="hint">{{ picker_hint }}</p>
 
         <form method="get" class="form-grid" style="margin-top:12px">
             <div class="field" style="max-width:280px">
@@ -92,8 +92,8 @@
         <div class="empty-state" style="margin-top:16px">
             <h3>Sin orígenes publicados</h3>
             <p>{{ msg_no_sources }}</p>
-            <a href="{% url 'file_gate:project_list' %}" class="btn btn-primary">Ir a FILE GATE</a>
-            <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver</a>
+            <a href="{% url empty_origins_cta.url_name %}" class="btn btn-primary">{{ empty_origins_cta.label }}</a>
+            <a href="{% url seed_host.seed_hub_url_name project_slug=project.slug %}" class="btn btn-secondary">← Volver</a>
         </div>
         {% else %}
         <form method="get" style="margin-top:12px">
@@ -148,21 +148,21 @@
             · {{ selected_source.file_type_code }}
             · {{ selected_source.fields_count }} campos
             · slot {{ selected_source.slot_label }}.
-            En el siguiente paso verá el preview y confirmará el borrador Perfil A.
+            En el siguiente paso verá el preview y confirmará el borrador {{ seed_host.profile_hub_label }}.
         </div>
         {% endif %}
 
         <div class="page-actions" style="margin-top:14px">
             {% if selected_source %}
             <a
-                href="{% url 'file_match:profile_a_seed_apply' project_slug=project.slug %}?source_id={{ selected_source.id }}"
+                href="{% url seed_host.seed_apply_url_name project_slug=project.slug %}?source_id={{ selected_source.id }}"
                 class="btn btn-primary"
             >Continuar a confirmar</a>
             {% else %}
             <span class="btn btn-primary" aria-disabled="true" title="Seleccione un origen">Continuar a confirmar</span>
             {% endif %}
-            <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver</a>
-            <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
+            <a href="{% url seed_host.seed_hub_url_name project_slug=project.slug %}" class="btn btn-secondary">← Volver</a>
+            <a href="{% url seed_host.profile_hub_url_name project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
         </div>
         <p class="hint" style="margin-top:10px">M2 solo elige el origen. La escritura del borrador es el Módulo 3.</p>
         {% endif %}

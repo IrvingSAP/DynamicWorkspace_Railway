@@ -88,3 +88,15 @@
         <a href="{% url 'file_clean:file_clean_guide' %}" class="sidebar-sublink{% if app_nav_active == 'file_clean_guide' %} is-active{% endif %}">Ayuda</a>
     </div>
 </div>
+
+<div class="sidebar-nav-group{% if file_split_merge_nav_open or app_nav_active == 'file_split_merge' or app_nav_active == 'file_split_merge_guide' %} is-open{% endif %}{% if app_nav_active == 'file_split_merge' or app_nav_active == 'file_split_merge_guide' %} is-active{% endif %}" data-nav-group="file-split-merge">
+    <button type="button" class="sidebar-nav-group-toggle" title="File Split/Merge" aria-expanded="{% if file_split_merge_nav_open or app_nav_active == 'file_split_merge' or app_nav_active == 'file_split_merge_guide' %}true{% else %}false{% endif %}" aria-controls="file-split-merge-submenu">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 4h4v3H3V4zm6 0h4v3H9V4zM3 9h10v3H3V9z"/></svg>
+        <span class="sidebar-link-label">File Split/Merge</span>
+        <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="sidebar-nav-submenu" id="file-split-merge-submenu">
+        <a href="{% url 'file_split_merge:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_split_merge' %} is-active{% endif %}">Partición</a>
+        <a href="{% url 'file_split_merge:file_split_merge_guide' %}" class="sidebar-sublink{% if app_nav_active == 'file_split_merge_guide' %} is-active{% endif %}">Ayuda</a>
+    </div>
+</div>

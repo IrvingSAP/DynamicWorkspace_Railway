@@ -1,0 +1,149 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Reglas — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:rules_hub' project_slug=project.slug %}">Reglas</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Módulo 3 · <span class="role-badge">SmRules</span></p>
+        <h2>Ayuda — Reglas Split / Merge</h2>
+        <p>Defina la operación (partir o unir) y el catálogo de reglas del borrador. No limpia celdas ni concilia.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_split_merge:rules_hub' project_slug=project.slug %}">← Reglas</a>
+    </div>
+</div>
+
+<div class="help-panel panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Alcance: este proyecto</h3>
+        <p>
+            Las reglas pertenecen al borrador de
+            <span class="cell-badge">{{ project.slug }}</span>.
+            Hay <strong>una sola operación</strong> por borrador: Split <em>o</em> Merge.
+            Primero complete el <a href="{% url 'file_split_merge:profile_hub' project_slug=project.slug %}">perfil de lectura</a>
+            (tipo, captura y ≥1 campo); sin eso el hub no permite configurar reglas.
+        </p>
+
+        <h3 class="form-section-title">Operación</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>Modo</th><th>Entrada (en Ejecutar)</th><th>Salida</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Split (partir)</strong></td>
+                    <td>1 archivo</td>
+                    <td>N partes + manifiesto + ZIP</td>
+                </tr>
+                <tr>
+                    <td><strong>Merge (unir)</strong></td>
+                    <td>≥2 archivos</td>
+                    <td>1 consolidado</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>
+            Al <strong>cambiar de operación</strong> aparece un aviso: debe confirmar
+            «Confirmar cambio y limpiar reglas». Se borran las reglas del modo anterior
+            (no publica). En Merge, al elegir la operación se crea automáticamente
+            <code>missing_columns</code> con modo <code>error</code>.
+        </p>
+
+        <h3 class="form-section-title">Catálogo Split</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>Código</th><th>Para qué</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>max_rows</code></td><td>Partir cada N filas de datos.</td></tr>
+                <tr><td><code>max_bytes</code></td><td>Partir por tamaño aproximado (corte en límite de fila).</td></tr>
+                <tr><td><code>split_by_column</code></td><td>Una parte por valor distinto de un campo del perfil.</td></tr>
+                <tr><td><code>keep_header</code></td><td>Repetir encabezado en cada parte (opcional; sola no completa).</td></tr>
+            </tbody>
+        </table>
+        <p>
+            <strong>Completitud Split:</strong> al menos una regla de partición
+            <strong>ON</strong> entre <code>max_rows</code>, <code>max_bytes</code> o <code>split_by_column</code>.
+            Puede activar varias a la vez; el motor las aplica en el orden de la lista.
+        </p>
+
+        <h3 class="form-section-title">Catálogo Merge</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>Código</th><th>Para qué</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>missing_columns</code></td><td>Si falta una columna del perfil: <code>error</code> o <code>fill_empty</code> (requerida).</td></tr>
+                <tr><td><code>append</code></td><td>Marca explícita de concatenar (el merge siempre une filas en orden de subida).</td></tr>
+                <tr><td><code>dedupe_rows</code></td><td>Deduplicar tras unir por claves del perfil (opcional).</td></tr>
+                <tr><td><code>include_header</code></td><td>Incluir fila de encabezado en la salida (opcional).</td></tr>
+            </tbody>
+        </table>
+        <p>
+            <strong>Completitud Merge:</strong> operación Merge y
+            <code>missing_columns</code> habilitada (se crea al elegir Merge si aún no existe).
+        </p>
+
+        <h3 class="form-section-title">Campos del perfil</h3>
+        <p>
+            <code>split_by_column.field_name</code> y <code>dedupe_rows.keys</code> usan
+            <strong>nombres internos</strong> del perfil (M2), no etiquetas libres.
+            Si renombra o elimina un campo, revise las reglas que lo referencian antes de publicar.
+        </p>
+
+        <h3 class="form-section-title">Guardar y publicar</h3>
+        <ul>
+            <li>Todo se guarda en el <strong>borrador</strong> (<code>sm_rules</code>); no congela versión.</li>
+            <li>Cuando la completitud diga «Lista», puede continuar a
+                <a href="{% url 'file_split_merge:publish_hub' project_slug=project.slug %}">Publicar</a>
+                (M4) para congelar perfil + operación + reglas.</li>
+            <li>La ejecución (M5) usa solo la versión publicada activa, no este borrador.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>Rol</th><th>Puede</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PA / ED</td>
+                    <td>Elegir operación, agregar/editar/reordenar/activar reglas del borrador.</td>
+                </tr>
+                <tr>
+                    <td>GE / CO</td>
+                    <td>Ver el hub; no editan el borrador de reglas.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no hace</h3>
+        <ul>
+            <li>No define el perfil de lectura (M2) ni publica (M4) ni sube archivos (M5).</li>
+            <li>No limpia celdas (File Clean) ni concilia / mapea destino (File Match / FilePipe).</li>
+            <li>No permite Split y Merge activos a la vez en la misma versión.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

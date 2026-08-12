@@ -1,0 +1,98 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Miembros — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_members' project_slug=project.slug %}">Miembros</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Módulo 1 · <span class="role-badge">Members</span></p>
+        <h2>Ayuda — Miembros</h2>
+        <p>Quién puede ver, editar, publicar o ejecutar en este proyecto. Solo el administrador (PA) gestiona el acceso.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_split_merge:project_members' project_slug=project.slug %}">← Miembros</a>
+        <a class="btn btn-secondary" href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">Hub</a>
+    </div>
+</div>
+
+<div class="help-panel panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Quién gestiona</h3>
+        <p>
+            Solo el <strong>PA</strong> de
+            <span class="cell-badge">{{ project.slug }}</span>
+            puede invitar, cambiar rol, reactivar o revocar.
+            Si un no-PA abre esta URL, se redirige al hub con aviso de denegación.
+        </p>
+
+        <h3 class="form-section-title">Acciones</h3>
+        <ul>
+            <li><strong>Invitar</strong> — usuario UF de la misma compañía + rol inicial.</li>
+            <li><strong>Cambiar rol</strong> — PA, ED, GE o CO.</li>
+            <li><strong>Revocar / reactivar</strong> — membresía inactiva deja de contar como acceso de miembro.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles en File Split/Merge</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>Rol</th><th>Puede</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>PA</strong></td>
+                    <td>Administrar miembros; editar perfil/reglas; publicar; ejecutar; ver historial.</td>
+                </tr>
+                <tr>
+                    <td><strong>ED</strong></td>
+                    <td>Editar borrador, publicar y ejecutar; no gestiona miembros.</td>
+                </tr>
+                <tr>
+                    <td><strong>GE</strong></td>
+                    <td>Ejecutar y descargar artifacts; no edita definición ni publica.</td>
+                </tr>
+                <tr>
+                    <td><strong>CO</strong></td>
+                    <td>Consulta de metadatos (hub, historial); sin descarga de contenido ni edición.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>
+            Si el proyecto es <strong>público</strong> (visibilidad compañía), otros UF pueden ver el hub
+            sin ser miembros; eso no sustituye una membresía para editar o ejecutar.
+        </p>
+
+        <h3 class="form-section-title">Propietario</h3>
+        <p>
+            El <strong>propietario</strong> del proyecto no se revoca ni cambia de rol desde esta pantalla.
+            Es la ancla de administración del contenedor.
+        </p>
+
+        <h3 class="form-section-title">Qué no hace</h3>
+        <ul>
+            <li>No cambia la visibilidad Privado/Público (eso se define al crear / config del proyecto).</li>
+            <li>No publica versiones ni ejecuta jobs.</li>
+            <li>No invita usuarios de otra compañía.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -17,31 +17,31 @@
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
-    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <a href="{% url seed_host.app_list_url_name %}">{{ seed_host.app_label }}</a>
     <span class="breadcrumb-sep">/</span>
-    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <a href="{% url seed_host.project_hub_url_name project_slug=project.slug %}">{{ project.slug }}</a>
     <span class="breadcrumb-sep">/</span>
-    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
+    <a href="{% url seed_host.profile_hub_url_name project_slug=project.slug %}">{{ seed_host.profile_hub_label }}</a>
     <span class="breadcrumb-sep">/</span>
     <span>Importar</span>
 </nav>
 {% endblock %}
 
 {% block content %}
-{% include "file_match/profile_a/_project_scope.html" %}
+{% include seed_host.scope_include %}
 
 <div class="page-header">
     <div>
         <p class="page-eyebrow">PROFILE SEED · Importar estructura</p>
         <h2>Importar estructura</h2>
-        <p>Copiar un perfil o contrato <strong>publicado</strong> de otro proyecto a este borrador Perfil A. No publica.</p>
+        <p>Copiar un perfil o contrato <strong>publicado</strong> de otro proyecto a este borrador {{ seed_host.profile_hub_label }}. No publica.</p>
     </div>
     <div class="page-actions">
-        {% url 'file_match:profile_a_seed_hub_help' project_slug=project.slug as seed_help_base %}
+        {% url seed_host.seed_hub_help_url_name project_slug=project.slug as seed_help_base %}
         {% with seed_help_url=seed_help_base|add:"?from=import" %}
         {% include "projects/includes/project_help_link.html" with help_url=seed_help_url %}
         {% endwith %}
-        <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-secondary">← Perfil A</a>
+        <a href="{% url seed_host.profile_hub_url_name project_slug=project.slug %}" class="btn btn-secondary">← {{ seed_host.profile_hub_label }}</a>
     </div>
 </div>
 
@@ -67,7 +67,7 @@
             <dt class="hint">Slot</dt>
             <dd style="margin:0">{{ target_slot_label }}</dd>
             <dt class="hint">Efecto</dt>
-            <dd style="margin:0">Solo <strong>borrador</strong> del Perfil A — la publicación Match sigue siendo el Módulo 4</dd>
+            <dd style="margin:0">{{ target_effect_copy }}</dd>
         </dl>
     </div>
 </div>
@@ -76,14 +76,14 @@
     <div class="panel-body">
         <h3 class="form-section-title">Qué hará a continuación</h3>
         <ul>
-            <li>Elegirá un origen <strong>publicado</strong> (p. ej. FILE GATE esquema) — Módulo 2.</li>
+            <li>Elegirá un origen <strong>publicado</strong> (FILE GATE y, según la app destino, FILE CLEAN) — Módulo 2.</li>
             <li>Verá un preview y confirmará — Módulo 3.</li>
-            <li>Se sembrará el borrador A (overwrite con aviso si ya hay campos).</li>
+            <li>Se sembrará el borrador del {{ seed_host.profile_hub_label }} (overwrite con aviso si ya hay campos).</li>
         </ul>
         <p class="hint">Esto no es STRUCTURE SCOUT (muestra) ni el bridge FILE GATE (hash de job).</p>
         <div class="page-actions" style="margin-top:14px">
-            <a href="{% url 'file_match:profile_a_seed_picker' project_slug=project.slug %}" class="btn btn-primary">Continuar a elegir origen</a>
-            <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
+            <a href="{% url seed_host.seed_picker_url_name project_slug=project.slug %}" class="btn btn-primary">Continuar a elegir origen</a>
+            <a href="{% url seed_host.profile_hub_url_name project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
         </div>
     </div>
 </div>

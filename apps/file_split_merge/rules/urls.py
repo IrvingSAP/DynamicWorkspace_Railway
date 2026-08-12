@@ -1,0 +1,14 @@
+from django.urls import path
+
+from apps.file_split_merge.rules import views
+
+urlpatterns = [
+    path("", views.rules_hub, name="rules_hub"),
+    path("ayuda/", views.rules_hub_help, name="rules_hub_help"),
+    path("operacion/", views.rules_set_operation, name="rules_set_operation"),
+    path("nueva/", views.rules_add, name="rules_add"),
+    path("<str:rule_id>/editar/", views.rules_edit, name="rules_edit"),
+    path("<str:rule_id>/toggle/", views.rules_toggle, name="rules_toggle"),
+    path("<str:rule_id>/eliminar/", views.rules_delete, name="rules_delete"),
+    path("<str:rule_id>/mover/", views.rules_move, name="rules_move"),
+]

@@ -31,6 +31,7 @@ KIND_APP_LABELS = {
     Project.KIND_FILE_MATCH: "FILE MATCH (Conciliador)",
     Project.KIND_STRUCTURE_SCOUT: "STRUCTURE SCOUT (Explorador)",
     Project.KIND_FILE_CLEAN: "FILE CLEAN (Limpieza)",
+    Project.KIND_FILE_SPLIT_MERGE: "FILE SPLIT/MERGE (Partición)",
 }
 
 

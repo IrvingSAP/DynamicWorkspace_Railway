@@ -1,0 +1,151 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{% if mode == 'edit' %}Editar regla{% else %}Nueva regla{% endif %} — File Split/Merge{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_split_merge_rules.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:rules_hub' project_slug=project.slug %}">Reglas</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{% if mode == 'edit' %}Editar{% else %}Nueva{% endif %}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Reglas · {{ operation_label }}</p>
+        <h2>{% if mode == 'edit' %}Editar regla{% else %}Agregar regla{% endif %}</h2>
+        <p>Catálogo filtrado por la operación actual. Params según código.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_split_merge:rules_hub' project_slug=project.slug %}" class="btn btn-secondary">← Lista</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <form method="post" novalidate id="sm-rule-form">
+            {% csrf_token %}
+            <div class="form-section">
+                <h3 class="form-section-title">Regla</h3>
+                <div class="field{% if errors.code %} has-error{% endif %}">
+                    <label for="code">Código <span class="req">*</span></label>
+                    <select id="code" name="code" required data-sm-code>
+                        {% for item in catalog_choices %}
+                        <option value="{{ item.code }}"{% if posted.code == item.code %} selected{% endif %}>{{ item.code }} — {{ item.label }}</option>
+                        {% endfor %}
+                    </select>
+                    {% for msg in errors.code %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+                <div class="field field--checkbox" style="margin-top:12px">
+                    <label for="enabled">
+                        <input type="checkbox" id="enabled" name="enabled"{% if posted.enabled %} checked{% endif %}>
+                        Regla habilitada
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="form-section-title">Parámetros</h3>
+                {% if errors.params %}
+                {% for msg in errors.params %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                {% endif %}
+
+                <div class="sm-params" data-sm-params="max_rows" hidden>
+                    <div class="field">
+                        <label for="n">Filas por parte (n) <span class="req">*</span></label>
+                        <input id="n" name="n" class="mono" type="number" min="1" value="{{ param_values.n }}">
+                    </div>
+                </div>
+
+                <div class="sm-params" data-sm-params="max_bytes" hidden>
+                    <div class="field">
+                        <label for="bytes">Bytes (aprox.) <span class="req">*</span></label>
+                        <input id="bytes" name="bytes" class="mono" type="number" min="1" value="{{ param_values.bytes }}">
+                    </div>
+                </div>
+
+                <div class="sm-params" data-sm-params="split_by_column" hidden>
+                    <div class="field">
+                        <label for="field_name">Campo <span class="req">*</span></label>
+                        <select id="field_name" name="field_name">
+                            <option value="">—</option>
+                            {% for name in field_names %}
+                            <option value="{{ name }}"{% if param_values.field_name == name %} selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="field field--checkbox">
+                        <label><input type="checkbox" name="include_empty"{% if param_values.include_empty %} checked{% endif %}> Incluir valor vacío como parte</label>
+                    </div>
+                </div>
+
+                <div class="sm-params" data-sm-params="keep_header" hidden>
+                    <div class="field field--checkbox">
+                        <label><input type="checkbox" name="value"{% if param_values.value %} checked{% endif %}> Repetir encabezado en cada parte</label>
+                    </div>
+                </div>
+
+                <div class="sm-params" data-sm-params="include_header" hidden>
+                    <div class="field field--checkbox">
+                        <label><input type="checkbox" name="value"{% if param_values.value %} checked{% endif %}> Incluir fila de encabezado en la salida</label>
+                    </div>
+                </div>
+
+                <div class="sm-params" data-sm-params="missing_columns" hidden>
+                    <div class="field">
+                        <label for="mode">Política <span class="req">*</span></label>
+                        <select id="mode" name="mode">
+                            <option value="error"{% if param_values.mode == 'error' %} selected{% endif %}>error — fallar el job</option>
+                            <option value="fill_empty"{% if param_values.mode == 'fill_empty' %} selected{% endif %}>fill_empty — rellenar vacío</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="sm-params" data-sm-params="dedupe_rows" hidden>
+                    <div class="field">
+                        <label>Claves <span class="req">*</span></label>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+                            {% for name in field_names %}
+                            <label><input type="checkbox" name="keys" value="{{ name }}"{% if name in param_values.keys %} checked{% endif %}> {{ name }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="field" style="max-width:240px">
+                        <label for="keep">Conservar</label>
+                        <select id="keep" name="keep">
+                            <option value="first"{% if param_values.keep == 'first' %} selected{% endif %}>first</option>
+                            <option value="last"{% if param_values.keep == 'last' %} selected{% endif %}>last</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="sm-params" data-sm-params="append" hidden>
+                    <p class="hint">Sin parámetros. Marca concatenación explícita (el merge siempre concatena).</p>
+                </div>
+
+                <p class="hint" data-sm-params-empty hidden>Este código no requiere parámetros adicionales.</p>
+            </div>
+
+            <div class="form-actions form-actions--flush">
+                <button type="submit" class="btn btn-primary">Guardar regla</button>
+                <a href="{% url 'file_split_merge:rules_hub' project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/file_split_merge-rules.js' %}"></script>
+{% endblock %}

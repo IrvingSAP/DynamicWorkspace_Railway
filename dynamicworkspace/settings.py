@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "apps.file_match",
     "apps.structure_scout",
     "apps.file_clean",
+    "apps.file_split_merge",
     "apps.profile_seed",
 ]
 

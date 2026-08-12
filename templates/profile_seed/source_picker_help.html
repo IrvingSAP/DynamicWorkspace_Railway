@@ -20,9 +20,9 @@
     </div>
     <div class="page-actions">
         {% if can_seed_import %}
-        <a class="btn btn-secondary" href="{% url 'file_match:profile_a_seed_picker' project_slug=project.slug %}">← Volver</a>
+        <a class="btn btn-secondary" href="{% url seed_host.seed_picker_url_name project_slug=project.slug %}">← Volver</a>
         {% else %}
-        <a class="btn btn-secondary" href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">← Perfil A</a>
+        <a class="btn btn-secondary" href="{% url seed_host.profile_hub_url_name project_slug=project.slug %}">← {{ seed_host.profile_hub_label }}</a>
         {% endif %}
     </div>
 </div>
@@ -32,7 +32,7 @@
     <li>Solo se listan proyectos que puede <em>ver</em> y que tienen versión publicada — no borradores.</li>
     <li>No publica nada. No es el bridge FILE GATE (hash) ni STRUCTURE SCOUT (muestra).</li>
     <li>Roles: PA / ED del <strong>destino</strong> Match abren el flujo; en el origen basta visibilidad.</li>
-    <li>El siguiente paso (Módulo 3) mostrará preview y sembrará el borrador Perfil A.</li>
+    <li>El siguiente paso (Módulo 3) mostrará preview y sembrará el borrador {{ seed_host.profile_hub_label }}.</li>
 </ul>
 </div></div>
 {% endblock %}

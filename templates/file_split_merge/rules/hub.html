@@ -1,0 +1,196 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Reglas Split/Merge — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_split_merge_rules.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Reglas</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Módulo 3 · <span class="role-badge">SmRules</span></p>
+        <h2>Reglas Split / Merge</h2>
+        <p>Elija si el proyecto parte (1→N) o une (N→1) y configure el catálogo. Se guarda en borrador.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_split_merge:rules_hub_help' project_slug=project.slug as sm_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=sm_help_url %}
+        <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        {% if can_edit and operation %}
+        <a href="{% url 'file_split_merge:rules_add' project_slug=project.slug %}" class="btn btn-primary">+ Agregar regla</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if not profile_complete %}
+<div class="alert alert-warning">
+    Complete el <a href="{% url 'file_split_merge:profile_hub' project_slug=project.slug %}">perfil de lectura</a> (tipo, captura y ≥1 campo) antes de definir reglas.
+</div>
+{% endif %}
+
+{% if pending_operation %}
+<div class="alert alert-warning">
+    <p style="margin:0 0 10px">
+        Cambiar a <strong>{% if pending_operation == 'merge' %}Merge (unir){% else %}Split (partir){% endif %}</strong>
+        eliminará las reglas actuales del borrador. Esta acción no publica.
+    </p>
+    {% if can_edit %}
+    <form method="post" action="{% url 'file_split_merge:rules_set_operation' project_slug=project.slug %}" style="display:inline-flex;gap:8px;flex-wrap:wrap;align-items:center">
+        {% csrf_token %}
+        <input type="hidden" name="operation" value="{{ pending_operation }}">
+        <input type="hidden" name="confirm_clear" value="1">
+        <button type="submit" class="btn btn-primary">Confirmar cambio y limpiar reglas</button>
+    </form>
+    <a href="{% url 'file_split_merge:rules_hub' project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="stats-strip" aria-label="Resumen">
+    <div class="stat-card{% if rules_complete %} is-done{% else %} is-accent{% endif %}">
+        <p class="stat-label">Operación</p>
+        <p class="stat-value" style="font-size:16px">{{ operation_label }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Reglas ON</p>
+        <p class="stat-value">{{ rules_enabled_count }} / {{ rules_count }}</p>
+    </div>
+    <div class="stat-card{% if rules_complete %} is-done{% endif %}">
+        <p class="stat-label">Completitud</p>
+        <p class="stat-value" style="font-size:16px">{% if rules_complete %}Lista{% else %}Pendiente{% endif %}</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Operación</h3>
+        <p class="hint">Una sola por borrador. Cambiar limpia las reglas del modo anterior. En Merge se crea <code>missing_columns=error</code>.</p>
+        {% if can_edit and profile_complete %}
+        <div class="form-row two-cols" style="margin-top:12px">
+            <form method="post" action="{% url 'file_split_merge:rules_set_operation' project_slug=project.slug %}">
+                {% csrf_token %}
+                <input type="hidden" name="operation" value="split">
+                {% if pending_operation == 'split' %}
+                <input type="hidden" name="confirm_clear" value="1">
+                {% endif %}
+                <button type="submit" class="btn {% if operation == 'split' %}btn-primary{% else %}btn-secondary{% endif %}" style="width:100%;text-align:left;padding:12px">
+                    <strong>Partir (Split)</strong><br>
+                    <span class="hint">1 archivo → N partes{% if pending_operation == 'split' %} · confirmar cambio{% endif %}</span>
+                </button>
+            </form>
+            <form method="post" action="{% url 'file_split_merge:rules_set_operation' project_slug=project.slug %}">
+                {% csrf_token %}
+                <input type="hidden" name="operation" value="merge">
+                {% if pending_operation == 'merge' %}
+                <input type="hidden" name="confirm_clear" value="1">
+                {% endif %}
+                <button type="submit" class="btn {% if operation == 'merge' %}btn-primary{% else %}btn-secondary{% endif %}" style="width:100%;text-align:left;padding:12px">
+                    <strong>Unir (Merge)</strong><br>
+                    <span class="hint">N archivos → 1 consolidado{% if pending_operation == 'merge' %} · confirmar cambio{% endif %}</span>
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Reglas (orden de aplicación)</h3>
+        {% if not operation %}
+        <p class="hint">Seleccione Split o Merge para ver el catálogo.</p>
+        {% elif rules %}
+        <div class="sm-rules-list">
+            {% for rule in rules %}
+            <div class="sm-rule-row{% if not rule.enabled %} is-off{% endif %}{% if rule.field_missing %} is-orphan{% endif %}">
+                <div class="sm-rule-order">
+                    {% if can_edit %}
+                    <form method="post" action="{% url 'file_split_merge:rules_move' project_slug=project.slug rule_id=rule.id %}" class="sm-order-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="direction" value="up">
+                        <button type="submit" class="btn btn-ghost btn-sm" title="Subir" {% if forloop.first %}disabled{% endif %}>↑</button>
+                    </form>
+                    <form method="post" action="{% url 'file_split_merge:rules_move' project_slug=project.slug rule_id=rule.id %}" class="sm-order-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="direction" value="down">
+                        <button type="submit" class="btn btn-ghost btn-sm" title="Bajar" {% if forloop.last %}disabled{% endif %}>↓</button>
+                    </form>
+                    {% else %}
+                    <span class="mono">{{ rule.sort_order }}</span>
+                    {% endif %}
+                </div>
+                <div class="sm-rule-body">
+                    <strong><code>{{ rule.code }}</code></strong> — {{ rule.label }}
+                    <p class="hint" style="margin:4px 0 0">{{ rule.params_summary }}</p>
+                    {% if rule.field_missing %}<p class="field-error">Campo del perfil faltante o renombrado.</p>{% endif %}
+                </div>
+                <span class="sm-rule-badge">{% if rule.enabled %}ON{% else %}OFF{% endif %}</span>
+                <div class="sm-rule-actions">
+                    {% if can_edit %}
+                    <a href="{% url 'file_split_merge:rules_edit' project_slug=project.slug rule_id=rule.id %}" class="btn btn-ghost btn-sm">Editar</a>
+                    <form method="post" action="{% url 'file_split_merge:rules_toggle' project_slug=project.slug rule_id=rule.id %}" style="display:inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-ghost btn-sm">{% if rule.enabled %}Off{% else %}On{% endif %}</button>
+                    </form>
+                    <form method="post" action="{% url 'file_split_merge:rules_delete' project_slug=project.slug rule_id=rule.id %}" style="display:inline" data-dw-delete>
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-ghost btn-sm">Eliminar</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="hint">Sin reglas aún. {% if can_edit %}<a href="{% url 'file_split_merge:rules_add' project_slug=project.slug %}">Agregar la primera</a>.{% endif %}</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if operation == 'split' and not rules_complete %}
+<div class="alert alert-info" style="margin-top:16px">
+    Completitud Split: habilite al menos <code>max_rows</code>, <code>max_bytes</code> o <code>split_by_column</code>.
+</div>
+{% elif operation == 'merge' and not rules_complete %}
+<div class="alert alert-info" style="margin-top:16px">
+    Completitud Merge: se requiere <code>missing_columns</code> habilitada.
+</div>
+{% elif rules_complete %}
+<div class="page-actions" style="margin-top:16px">
+    <a class="btn btn-primary" href="{% url 'file_split_merge:publish_hub' project_slug=project.slug %}">Siguiente: Publicar →</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll("form[data-dw-delete]").forEach(function (form) {
+  form.addEventListener("submit", function (e) {
+    if (window.dwConfirmWarning) {
+      e.preventDefault();
+      window.dwConfirmWarning("Eliminar esta regla del borrador?", function () { form.submit(); });
+    }
+  });
+});
+</script>
+{% endblock %}

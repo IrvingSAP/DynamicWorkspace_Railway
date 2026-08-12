@@ -1,0 +1,121 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Resultado — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:run_hub' project_slug=project.slug %}">Ejecutar</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:run_result' project_slug=project.slug job_id=view.id %}">Resultado</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Módulo 5 · <span class="role-badge">Result</span></p>
+        <h2>Ayuda — Resultado</h2>
+        <p>Estado, métricas y descargas de una corrida Split/Merge de este proyecto.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_split_merge:run_result' project_slug=project.slug job_id=view.id %}">← Resultado</a>
+        <a class="btn btn-secondary" href="{% url 'file_split_merge:run_hub' project_slug=project.slug %}">Ejecutar</a>
+    </div>
+</div>
+
+<div class="help-panel panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Alcance</h3>
+        <p>
+            El resultado pertenece al proyecto
+            <span class="cell-badge">{{ project.slug }}</span>
+            y a un job concreto. Otras corridas (otros proyectos o formatos) se ven en su propio
+            <a href="{% url 'file_split_merge:history_hub' project_slug=project.slug %}">historial</a>
+            o en el del proyecto donde se ejecutaron.
+        </p>
+
+        <h3 class="form-section-title">Qué muestra</h3>
+        <ul>
+            <li><strong>Estado</strong> — completado o fallido; si fue vista previa, queda marcado como preview.</li>
+            <li><strong>Versión</strong> — número de la definición publicada usada (congelada al correr).</li>
+            <li><strong>Métricas</strong> — filas leídas, partes o filas escritas, dedupe (Merge), duración.</li>
+            <li><strong>Vista previa de datos</strong> — muestra de filas cuando la corrida lo permite.</li>
+            <li><strong>Descargas</strong> — según operación, TTL y rol.</li>
+        </ul>
+
+        <h3 class="form-section-title">Descargas por operación</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>Operación</th><th>Artifacts</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Split</td>
+                    <td>ZIP (todas las partes + manifiesto) y, si aplica, partes individuales.</td>
+                </tr>
+                <tr>
+                    <td>Merge</td>
+                    <td>Archivo consolidado (<code>merged</code> con la extensión del perfil).</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>
+            La <strong>vista previa</strong> no genera archivos definitivos descargables.
+            Use <strong>Ejecutar</strong> (no preview) cuando necesite el ZIP o el consolidado.
+        </p>
+
+        <h3 class="form-section-title">TTL</h3>
+        <p>
+            Las descargas están disponibles durante <strong>{{ ttl_days }} días</strong> desde la finalización.
+            Después dejan de ofrecerse; el job y sus metadatos siguen en el historial del proyecto.
+        </p>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>Rol</th><th>Puede</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PA / ED / GE</td>
+                    <td>Ver resultado completo y descargar artifacts con TTL vigente.</td>
+                </tr>
+                <tr>
+                    <td>CO</td>
+                    <td>Ver metadatos / métricas; no descarga contenido.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Siguientes pasos</h3>
+        <ul>
+            <li><strong>Nueva corrida</strong> — vuelve a Ejecutar con la misma versión publicada.</li>
+            <li><strong>Historial</strong> — auditoría, filtros y detalle a largo plazo (mismo proyecto).</li>
+            <li>Si el job falló, revise el mensaje de error, el archivo de entrada y que el perfil publicado coincida con el formato.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace</h3>
+        <ul>
+            <li>No re-ejecuta ni cambia reglas; para eso use Ejecutar / Reglas / Publicar.</li>
+            <li>No mezcla resultados de otros proyectos.</li>
+            <li>No sustituye al historial: el resultado es la vista inmediata tras la corrida; el historial es la auditoría persistente.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
