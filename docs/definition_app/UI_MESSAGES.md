@@ -41,6 +41,7 @@ flowchart LR
 | STRUCTURE SCOUT (ciclo proyecto, …) | `UI_MESSAGES.md` §3.12 · [`../STRUCTURE_SCOUT.md`](../STRUCTURE_SCOUT.md) · [`../definition_app_STRUCTURE_SCOUT/`](../definition_app_STRUCTURE_SCOUT/) |
 | PROFILE_SEED (Importar estructura, …) | `UI_MESSAGES.md` §3.13 · [`../PROFILE_SEED.md`](../PROFILE_SEED.md) · [`../definition_app_PROFILE_SEED/`](../definition_app_PROFILE_SEED/) |
 | FILE CLEAN (ciclo proyecto, …) | `UI_MESSAGES.md` §3.14 · [`../FILE_CLEAN.md`](../FILE_CLEAN.md) · [`../definition_app_FILE_CLEAN/`](../definition_app_FILE_CLEAN/) |
+| FILE SPLIT/MERGE (ciclo proyecto, …) | `UI_MESSAGES.md` §3.15 · [`../FILE_SPLIT_MERGE.md`](../FILE_SPLIT_MERGE.md) · [`../definition_app_FILE_SPLIT_MERGE/`](../definition_app_FILE_SPLIT_MERGE/) |
 
 ---
 
@@ -903,6 +904,118 @@ Mensajes de usuario para File Clean. Alineados a [`../FILE_CLEAN.md`](../FILE_CL
 | Borrado inesperado | `error` | No se pudo eliminar la corrida. Si el problema continúa, contacte al administrador. |
 
 > Motor M6: `clean_history_service` — filtros, paginación 25, badges TTL vía `clean_run_service`. Reusa `CleanJob`. Detalle + descargas (PA/ED/GE; CO solo metadatos). Borrado solo de jobs con `executed_by` = usuario actual. URLs: `/app/file-clean/proyectos/<slug>/historial/…`.
+
+### 3.15 Mensajes específicos — `apps.file_split_merge` (FILE SPLIT/MERGE)
+
+Mensajes de usuario para File Split/Merge. Alineados a [`../FILE_SPLIT_MERGE.md`](../FILE_SPLIT_MERGE.md) y [`../definition_app_FILE_SPLIT_MERGE/`](../definition_app_FILE_SPLIT_MERGE/).
+
+#### Proyectos / miembros (Módulo 1 — lifecycle)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin acceso al proyecto | `error` | No tiene acceso a este proyecto File Split/Merge. |
+| Solo UF crea proyectos | `error` | Solo usuarios UF pueden crear proyectos File Split/Merge. |
+| Proyecto creado | `success` | Proyecto File Split/Merge creado correctamente. |
+| Solo PA gestiona miembros | `error` | Solo el administrador del proyecto (PA) puede gestionar miembros. |
+| Kind incorrecto | `error` | Este proyecto no es de tipo File Split/Merge. |
+| Validación formulario | `error` + inline | Revise los datos marcados; no se pudo guardar. |
+| Inesperado | `error` | Ocurrió un error al guardar. Si persiste, contacte al administrador. |
+
+> Motor M1: `split_merge_project_service`. Visibilidad vía `DmsProjectConfig`. Miembros: `invite_member` / `update_member_role` / `set_member_active` de `apps.projects`. URLs: `/app/file-split-merge/proyectos/…`.
+
+#### Perfil de lectura (Módulo 2)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Perfil guardado | `success` / JSON | Perfil de lectura guardado correctamente. |
+| Validación perfil | `error` + inline / JSON | Revise los datos del perfil de lectura. |
+| Sin permiso editar | `error` / JSON 403 | No tiene permiso para editar el perfil de lectura de este proyecto. |
+| JSON inválido | `error` / JSON | JSON de perfil inválido. |
+| Tipo sin editor | `warning` | El tipo de archivo seleccionado aún no tiene editor de campos. Elija txt_fixed, csv, txt_delimited, xlsx, json o xml en el paso 1. |
+
+> Motor M2: `source_persistence_service.save_source` + `profile_wizard_service` (4 pasos). URLs: `/app/file-split-merge/proyectos/<slug>/perfil/…`. Soft-parse (sin rechazo por `content_type`) aplica en M5 run, no en este módulo.
+
+#### Importar estructura / Profile Seed (M2 — Gate/Clean → Split/Merge)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin permiso importar | `error` | No tiene permiso para importar estructuras en este proyecto. |
+| Origen no disponible | `error` | El origen seleccionado no está disponible o no tiene versión publicada. |
+| Kind origen no soportado | `warning` | Este tipo de origen aún no está disponible para importar. |
+| Sin orígenes GATE | empty | No hay orígenes FILE GATE publicados visibles. Publique un esquema en FILE GATE o pida acceso a un proyecto GATE. |
+| Sin orígenes CLEAN | empty | No hay orígenes FILE CLEAN publicados visibles. Publique un perfil en FILE CLEAN o pida acceso a un proyecto Clean. |
+| Import OK | `success` | Estructura importada al borrador del perfil de lectura. Revise los pasos del wizard y continue con reglas Split/Merge cuando corresponda. |
+| Import fallido | `error` | No se pudo importar la estructura. Si persiste, contacte al administrador. |
+| Tipo no editable en SM | `error` | El tipo de archivo seleccionado aún no tiene editor de campos en File Split/Merge. Elija txt_fixed, csv, txt_delimited, xlsx, json o xml. |
+
+> Motor: `apps.profile_seed` (`list_eligible_sources` Gate+Clean · `apply_seed_to_draft`). Host URLs: `/app/file-split-merge/proyectos/<slug>/perfil/importar/…`. Solo versión **publicada** del origen → borrador destino (nunca auto-publica).
+
+#### Reglas Split / Merge (Módulo 3)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Reglas / operación guardadas | `success` | Reglas Split/Merge guardadas correctamente. / Operación actualizada… |
+| Operación cambiada (limpia) | `success` | Operación cambiada. Se eliminaron las reglas anteriores. |
+| Confirmación requerida | `warning` | Cambiar de operación eliminará las reglas actuales. Confirme para continuar. |
+| Regla añadida / actualizada / eliminada | `success` | Regla añadida correctamente. / Regla actualizada correctamente. / Regla eliminada. |
+| Toggle / orden | `success` | Estado de la regla actualizado. / Orden de reglas guardado. |
+| Perfil incompleto | `error` | Complete el perfil de lectura antes de definir reglas. |
+| Sin operación | `error` | Seleccione Split o Merge antes de añadir reglas. |
+| Código desconocido / mismatch | `error` + inline | Código de regla no permitido… / Esta regla no corresponde a la operación actual. |
+| Params inválidos | `error` + inline | Revise los parámetros de la regla. (n, bytes, campo, keys, mode…) |
+| Sin permiso | `error` | No tiene permiso para editar las reglas de este proyecto. |
+| Regla no encontrada | `error` | Regla no encontrada. |
+
+> Motor M3: `split_merge_rules_persistence_service` → `config["sm_rules"]` (`operation` + `rules[]`). URLs: `/app/file-split-merge/proyectos/<slug>/reglas/…`.
+
+#### Publicar versión (Módulo 4)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Versión publicada | `success` / JSON | Versión v{N} publicada correctamente. Nuevo borrador v{N+1} listo para edición. |
+| Sin permiso publicar | `error` / JSON 403 | No tiene permiso para publicar la versión de este proyecto. |
+| Kind incorrecto | `error` | Este proyecto no es de tipo File Split/Merge. |
+| Sin borrador | `error` | No hay borrador disponible para publicar. |
+| Sin perfil | `error` | El borrador no tiene perfil de lectura. |
+| Perfil incompleto / inválido | `error` | Complete y corrija el perfil de lectura antes de publicar. |
+| Sin campos | `error` | Complete el perfil de lectura con al menos un campo antes de publicar. |
+| Reglas incompletas | `error` | Complete la operación y las reglas Split/Merge antes de publicar. |
+| Reglas ON inválidas (P5) | `error` + detalle | Corrija las reglas habilitadas antes de publicar. |
+| Inesperado | `error` | Ocurrió un error al publicar. Si persiste, contacte al administrador. |
+
+> Motor M4: `split_merge_publish_service` → congela `DmsMappingVersion` + `config.sm_rules`; `DmsProjectConfig.current_version`. URLs: `/app/file-split-merge/proyectos/<slug>/publicar/…`.
+
+#### Ejecutar / Job (Módulo 5)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Job completado | `success` | Partición/consolidación finalizada correctamente. / Vista previa generada… |
+| Sin versión publicada | `error` | Publique una versión antes de ejecutar. |
+| Sin permiso ejecutar | `error` | No tiene permiso para ejecutar en este proyecto. |
+| Kind incorrecto | `error` | Este proyecto no es de tipo File Split/Merge. |
+| Archivo(s) inválidos | `error` + inline | Seleccione 1 archivo (Split) o ≥2 (Merge); extensión/tamaño. |
+| Parseo fallido | `error` | No se pudo leer el archivo con el perfil publicado. (`file_sm_parse`) |
+| Sin filas | `error` | No se obtuvo ninguna fila válida… (`file_sm_parse_empty`) |
+| Columnas incompatibles | `error` | Columnas incompatibles con el perfil / política missing_columns. (`file_sm_merge_columns`) |
+| Demasiadas partes | `error` | Demasiadas partes (límite de seguridad). (`file_sm_split_limit`) |
+| Descarga expirada / inválida | `error` | La evidencia expiró (TTL) / enlace inválido. |
+| Job no encontrado | `error` | No se encontró la ejecución solicitada. |
+| Inesperado | `error` | Ocurrió un error al ejecutar. Si persiste, contacte al administrador. |
+
+> Motor M5: `sm_run_service.run_sm_job` + `sm_engine_service` + `SplitMergeJob`. URLs: `/app/file-split-merge/proyectos/<slug>/ejecutar/…`. Soft-parse (sin rechazo content_type).
+
+#### Historial (Módulo 6)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Corrida eliminada | `success` | Corrida eliminada del historial. / Se eliminaron {n} corridas propias… |
+| Sin corridas propias | `error` | No tiene corridas propias para eliminar en este proyecto. |
+| No encontrada | `error` | No se encontró la corrida en este proyecto. |
+| No es el ejecutor | `error` | Solo puede eliminar corridas que usted ejecutó. |
+| Sin permiso historial | `error` | No tiene permiso para ver el historial de este proyecto. |
+| Error al eliminar | `error` | No se pudo eliminar la corrida. Si el problema continúa, contacte al administrador. |
+
+> Motor M6: `sm_history_service` sobre `SplitMergeJob`. URLs: `/app/file-split-merge/proyectos/<slug>/historial/…`. Descargas vía M5 `run_download` (TTL + rol).
 
 ---
 

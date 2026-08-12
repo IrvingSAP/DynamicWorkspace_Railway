@@ -129,6 +129,7 @@ Escenarios típicos:
 | Incluido | Nota |
 |----------|------|
 | GATE publicado → Match Perfil A | **P0** |
+| GATE / CLEAN publicados → File Split/Merge (perfil lectura) | **Implementado** (host SM) |
 | GATE → Match Perfil B | P1 |
 | GATE → Reverse entrada | P2 |
 | Match A ↔ Match B / otro Match | P3 — **parcial:** A→B mismo proyecto en hub Perfil B |
@@ -157,10 +158,12 @@ Escenarios típicos:
 | Vertical | Relación |
 |----------|----------|
 | **FILE GATE** | Origen típico (esquema publicado) o destino (sembrar contrato) |
-| **FILE MATCH** | Destino prioritario (Perfil A/B); origen posible |
+| **FILE CLEAN** | Origen (perfil de lectura publicado) → Split/Merge u otros hosts |
+| **FILE MATCH** | Destino prioritario (Perfil A/B); origen posible (Fase 2 hacia SM) |
+| **FILE SPLIT/MERGE** | Destino (perfil de lectura); orígenes P0: Gate + Clean |
 | **Reverse Studio** | Destino: contrato de entrada; origen: entrada publicada |
-| **FilePipe** | Origen/destino SourceProfile (prioridad baja en MVP) |
-| **STRUCTURE SCOUT** | Complemento (muestra vs definición) |
+| **FilePipe** | Origen/destino SourceProfile (prioridad baja / Fase 2 hacia SM) |
+| **STRUCTURE SCOUT** | Complemento (muestra vs definición); Fase 2 hacia SM |
 | **Bridge GATE** | Distinto (hash de job vs clone de estructura) |
 
 ```mermaid
@@ -265,7 +268,8 @@ flowchart LR
 - [x] CTA “Importar estructura” en Match Perfil A (P0)
 - [x] Selector origen GATE publicado (+ preview en M3)
 - [x] Escritura borrador Match A vía persistencia destino
-- [ ] GATE → Match B y/o Reverse entrada (al menos un segundo camino)
+- [x] GATE / CLEAN → File Split/Merge (perfil de lectura)
+- [ ] GATE → Match B y/o Reverse entrada (al menos un segundo camino Match/Reverse)
 - [x] Warning overwrite + mensajes UI catálogo
 - [x] Historial / auditoría de semillas
 - [x] Matriz roles PA/ED/GE/CO
@@ -276,6 +280,7 @@ flowchart LR
 
 - [ ] Diff campo a campo / merge asistido
 - [ ] FilePipe origen/destino
+- [ ] Hacia Split/Merge: Match A/B, Reverse entrada, FilePipe, SM→SM, Scout apply
 - [ ] Hub propio con kind `profile_seed` (si el MVP delgado no basta)
 - [ ] API / webhook de seed
 - [ ] CTA embebido también en GATE / Reverse / DMS de forma uniforme
@@ -294,6 +299,18 @@ flowchart LR
 3. Preview: csv · `;` · 8 campos.  
 4. Confirmar → borrador A sembrado.  
 5. Usuario ajusta claves de Match y publica definición Match.
+
+### EJ-04 — GATE o CLEAN → File Split/Merge
+
+**Origen:** FILE GATE `gate-nomina` v2 **o** FILE CLEAN `clean-nomina` v1 (publicados).  
+**Destino:** FILE SPLIT/MERGE `particion-nomina`, perfil de lectura vacío.
+
+1. Hub perfil → **Importar estructura**.  
+2. Kind FILE GATE o FILE CLEAN → elegir proyecto → Continuar.  
+3. Preview + confirmar → borrador con tipo/captura/campos.  
+4. Usuario completa reglas Split/Merge (M3) y publica después.
+
+Orígenes Match / Reverse / FilePipe / Scout / SM→SM: **Fase 2**.
 
 ### EJ-02 — Tipo incompatible
 

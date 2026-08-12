@@ -1,0 +1,51 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — File Split/Merge{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Guía de trabajo · <span class="role-badge">UF</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>Cómo funciona File Split/Merge</h2>
+        <p>
+            <strong>File Split/Merge</strong> permite <strong>partir</strong> un archivo en varios (Split)
+            o <strong>unir</strong> varios en uno (Merge), con reglas versionadas.
+        </p>
+        <p>
+            <strong>No concilia por clave</strong> (File Match).
+            <strong>No limpia celdas</strong> (File Clean).
+            <strong>No mapea a un destino de negocio</strong> (FilePipe).
+        </p>
+    </div>
+    <aside class="guide-hero-aside" aria-label="Ruta rápida">
+        <h3>Ruta rápida</h3>
+        <ol class="guide-quick-path">
+            <li>Cree un proyecto File Split/Merge.</li>
+            <li>Defina el perfil de lectura.</li>
+            <li>Elija Split o Merge y sus reglas.</li>
+            <li>Publique una versión.</li>
+            <li>Ejecute y descargue las salidas.</li>
+            <li>Consulte el historial de jobs.</li>
+        </ol>
+        <p><a href="{% url 'file_split_merge:project_list' %}" class="btn btn-primary">Ir a proyectos</a></p>
+    </aside>
+</div>
+{% endblock %}

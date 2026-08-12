@@ -25,7 +25,9 @@ STATUS_FILTER_CHOICES = (
 
 KIND_LABELS = {
     Project.KIND_FILE_GATE: "FILE GATE",
+    Project.KIND_FILE_CLEAN: "FILE CLEAN",
     Project.KIND_FILE_MATCH: "FILE MATCH",
+    Project.KIND_FILE_SPLIT_MERGE: "FILE SPLIT/MERGE",
     Project.KIND_REVERSE: "Reverse Studio",
     Project.KIND_DMS: "FilePipe / DMS",
 }
@@ -33,6 +35,12 @@ KIND_LABELS = {
 SLOT_LABELS = {
     ProfileSeedEvent.SLOT_PROFILE_A: profile_seed_service.TARGET_SLOT_LABEL_PROFILE_A,
     ProfileSeedEvent.SLOT_SCHEMA: profile_seed_service.SOURCE_SLOT_LABEL_SCHEMA,
+    profile_seed_service.TARGET_SLOT_READ_PROFILE: (
+        profile_seed_service.TARGET_SLOT_LABEL_READ_PROFILE
+    ),
+    profile_seed_service.SOURCE_SLOT_READ_PROFILE: (
+        profile_seed_service.SOURCE_SLOT_LABEL_READ_PROFILE
+    ),
     "profile_b": "Perfil B (archivo B)",
     "input": "Entrada",
     "source": "Origen",
@@ -53,11 +61,19 @@ def _source_url(user, event: ProfileSeedEvent) -> str | None:
     source = event.source_project
     if source is None or source.is_archived:
         return None
-    if source.project_kind != Project.KIND_FILE_GATE:
-        return None
-    if not gate_project_service.user_can_view(user, source):
-        return None
-    return reverse("file_gate:schema_hub", kwargs={"project_slug": source.slug})
+    if source.project_kind == Project.KIND_FILE_GATE:
+        if not gate_project_service.user_can_view(user, source):
+            return None
+        return reverse("file_gate:schema_hub", kwargs={"project_slug": source.slug})
+    if source.project_kind == Project.KIND_FILE_CLEAN:
+        from apps.file_clean.projects.services import clean_project_service
+
+        if not clean_project_service.user_can_view(user, source):
+            return None
+        return reverse(
+            "file_clean:profile_hub", kwargs={"project_slug": source.slug}
+        )
+    return None
 
 
 def event_to_row(user, event: ProfileSeedEvent) -> dict:

@@ -82,13 +82,13 @@ No conviene agregar apps que **repitan** FilePipe o File Gate. Sí conviene cubr
 | **Beneficio** | Pipelines sin código, con versiones, permisos y auditoría de extremo a extremo |
 | **Audiencia** | Operaciones, integración, calidad de datos, tesorería / nómina / ERP |
 
-### Inventario (estado: todas **propuesta**)
+### Inventario (estado mixto)
 
 | Aplicativo | Nemotécnico | Tipo | Diferenciador en una frase |
 |------------|-------------|------|----------------------------|
-| **File Clean** | `FILE_CLEAN` | App / paso pre-Gate | Limpia y normaliza **antes** de validar o transformar |
-| **File Split** | `FILE_SPLIT` | App / utilidad | Parte un archivo grande según reglas |
-| **File Merge** | `FILE_MERGE` | App / utilidad | Consolida varios archivos en uno |
+| **File Clean** | `FILE_CLEAN` | App / paso pre-Gate · **hecho** | Limpia y normaliza **antes** de validar o transformar |
+| **File Split** | `FILE_SPLIT` | Utilidad dual · **en definición** | Parte un archivo grande según reglas — [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) |
+| **File Merge** | `FILE_MERGE` | Utilidad dual · **en definición** | Consolida varios archivos en uno — mismo doc |
 | **File Convert** | — | **No app** | Conversiones triviales → modo simple en **FilePipe** |
 | **File Diff** | — | **No app** | Antes/después y diferencias → **File Match** (clave + compare) |
 | **File Repair** | `FILE_REPAIR` | App / modo Gate | Corrige con trazabilidad a partir de rechazos Gate |
@@ -223,6 +223,8 @@ No es FilePipe (no mapea a un esquema destino de negocio). Es **partición**.
 
 Alto valor operativo · poco solape · **prioridad ⭐⭐⭐⭐** (junto con Merge).
 
+**Definición de producto:** [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) · specs [`definition_app_FILE_SPLIT_MERGE/`](definition_app_FILE_SPLIT_MERGE/).
+
 ---
 
 ## 6. FILE MERGE — Consolidación
@@ -248,6 +250,8 @@ Merge de **archivos** ≠ conciliador Match (Match compara y reporta; Merge prod
 ### 6.3 Criterio
 
 **Prioridad ⭐⭐⭐⭐** con Split. Carga a Worksheet = fase posterior.
+
+**Definición de producto:** [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) · specs [`definition_app_FILE_SPLIT_MERGE/`](definition_app_FILE_SPLIT_MERGE/).
 
 ---
 
@@ -438,7 +442,7 @@ Cada paso = app/módulo independiente; el usuario arma **pipelines** sin program
 |-----------|------|--------|----------------|
 | ⭐⭐⭐⭐⭐ | **File Clean** | Complementa Gate; reusa reglas DMS | App — [`FILE_CLEAN.md`](FILE_CLEAN.md) · [`definition_app_FILE_CLEAN/`](definition_app_FILE_CLEAN/) · **hecho** |
 | ⭐⭐⭐⭐⭐ | **File Watch** | De manual a automático | Plataforma (más tarde que Clean) |
-| ⭐⭐⭐⭐ | **File Split / Merge** | Operaciones frecuentes | App(s) o utilidad dual · **siguiente** |
+| ⭐⭐⭐⭐ | **File Split / Merge** | Operaciones frecuentes | App dual — [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) · [`definition_app_FILE_SPLIT_MERGE/`](definition_app_FILE_SPLIT_MERGE/) · **en definición** · rama `feature/file-split-merge` |
 | ⭐⭐⭐⭐ | **Data Profiler** | Inteligencia antes de modelar/validar | App hermana de Scout |
 | ⭐⭐⭐ | **File Repair** | Diferenciador post-Gate | Modo Gate o app con Clean |
 | ⭐⭐⭐ | **File Scheduler** | Cron / dependencias | Plataforma (con Watch) |
@@ -450,7 +454,7 @@ Cada paso = app/módulo independiente; el usuario arma **pipelines** sin program
 **Orden práctico recomendado para empezar:**
 
 1. **File Clean** — **hecho**  
-2. **Split/Merge** ← siguiente  
+2. **Split/Merge** — **en definición** [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md)  
 3. **Data Profiler**  
 4. **Repair** (o unificar Clean+Repair)  
 5. **Watch + Scheduler**  
@@ -474,12 +478,13 @@ Antes de abrir rama `feature/<slug>`:
 ## 18. Próximos pasos de diseño
 
 1. Mantener este archivo como **paraguas FILE_OPS**.  
-2. **File Clean (en definición):** [`FILE_CLEAN.md`](FILE_CLEAN.md) + [`definition_app_FILE_CLEAN/`](definition_app_FILE_CLEAN/) — prototipar e implementar por módulo con OK explícito.  
-3. Spike técnico: extraer / compartir catálogo de reglas DMS para Clean/Repair/Pipe.  
+2. **File Split/Merge (en definición):** [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) + [`definition_app_FILE_SPLIT_MERGE/`](definition_app_FILE_SPLIT_MERGE/) — prototipar e implementar por módulo con OK explícito.  
+3. Spike técnico: parsers/serializers DMS para 1→N y N→1 + límites de partes.  
 4. Actualizar [`APP_FACTORY.md`](APP_FACTORY.md) §5 / §8 cuando un ítem pase a definición o implementación.  
 5. **PLATFORM API:** implementar **al finalizar** las apps FILE_OPS; cada app nace API-ready (`kind` + runner). Ver [`PLATFORM_API.md`](PLATFORM_API.md).  
 6. No mezclar estas propuestas en el cuerpo principal de [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) (solo puntero).  
-7. **File Diff:** retirado como app (§8); no generar `FILE_DIFF.md` ni `definition_app_FILE_DIFF/`.
+7. **File Diff:** retirado como app (§8); no generar `FILE_DIFF.md` ni `definition_app_FILE_DIFF/`.  
+8. **File Clean:** hecho — [`FILE_CLEAN.md`](FILE_CLEAN.md).
 
 ---
 
@@ -507,7 +512,8 @@ Antes de abrir rama `feature/<slug>`:
 |-----------|----------|
 | [`APP_FACTORY.md`](APP_FACTORY.md) | Visión general y prioridad de fábrica |
 | [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) | Familia §2 (núcleo ya entregado / en curso) |
-| [`FILE_CLEAN.md`](FILE_CLEAN.md) | **File Clean** — en definición · [`definition_app_FILE_CLEAN/`](definition_app_FILE_CLEAN/) |
+| [`FILE_CLEAN.md`](FILE_CLEAN.md) | **File Clean** — **hecho** · [`definition_app_FILE_CLEAN/`](definition_app_FILE_CLEAN/) |
+| [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) | **File Split/Merge** — **en definición** · [`definition_app_FILE_SPLIT_MERGE/`](definition_app_FILE_SPLIT_MERGE/) · rama `feature/file-split-merge` |
 | [`PLATFORM_API.md`](PLATFORM_API.md) | API de ejecución remota (**después** de apps FILE_OPS) |
 | [`FILE_GATE.md`](FILE_GATE.md) | Validador — hecho |
 | [`DataMappingStudio.md`](DataMappingStudio.md) / FilePipe | Motor ETL y reglas |

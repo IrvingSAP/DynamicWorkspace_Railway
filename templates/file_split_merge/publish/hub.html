@@ -1,0 +1,204 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Publicar — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_split_merge_rules.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Publicar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Proyecto">
+    <span class="label">Proyecto</span>
+    <span class="cell-badge">{{ project.slug }}</span>
+    <span>{{ project.name }}</span>
+    {% if membership %}
+    <span class="hint">·</span>
+    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    {% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Módulo 4 · <span class="role-badge">Publish</span></p>
+        <h2>Publicar versión</h2>
+        <p>Congela perfil de lectura + operación + reglas. Solo se ejecuta lo publicado (SM1).</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_split_merge:publish_hub_help' project_slug=project.slug as pub_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=pub_help_url %}
+        <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        {% if can_edit_definition %}
+        <button type="button"
+                class="btn btn-primary"
+                data-action="publish-version"
+                data-draft-label="borrador v{{ publish_hub.draft_version_number }}"
+                data-next="{% url 'file_split_merge:publish_hub' project_slug=project.slug %}"
+                data-status-target="hub-publish-status"
+                {% if not publish_hub.can_publish %}disabled title="Complete el perfil y las reglas antes de publicar"{% endif %}>
+            Publicar v{{ publish_hub.draft_version_number }}
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<p id="hub-publish-status" class="step-save-status" aria-live="polite"></p>
+
+<div id="dms-source-publish-config"
+     data-publish-url="{{ publish_url }}"
+     data-csrf-token="{{ csrf_token }}"
+     hidden></div>
+
+<div class="version-strip">
+    Publicará <strong>v{{ publish_hub.draft_version_number }}</strong>
+    ·
+    <strong>Versión activa:</strong> {{ publish_hub.published_version_label }}
+</div>
+
+{% if publish_hub.blocking_reasons %}
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <div class="note-box">
+            <strong>Pendiente:</strong>
+            {% for reason in publish_hub.blocking_reasons %}{{ reason }}{% if not forloop.last %} · {% endif %}{% endfor %}.
+            Complete el checklist para habilitar publicar.
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if publish_hub.rule_issues %}
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Reglas inválidas (P5)</h3>
+        <ul>
+            {% for issue in publish_hub.rule_issues %}
+            <li>
+                <code class="mono">{{ issue.code }}</code>
+                {% if issue.field_name %}→ <code class="mono">{{ issue.field_name }}</code>{% endif %}
+                — {{ issue.messages|join:"; " }}
+            </li>
+            {% endfor %}
+        </ul>
+        <p style="margin-top:12px">
+            <a href="{% url 'file_split_merge:rules_hub' project_slug=project.slug %}" class="btn btn-secondary">Corregir reglas</a>
+        </p>
+    </div>
+</div>
+{% endif %}
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Checklist antes de publicar</h3>
+        <div class="step-summary-list">
+            {% for item in publish_hub.checklist %}
+            <a href="{% url item.url_name project_slug=project.slug %}" class="step-summary-card{% if item.ready %} is-done{% endif %}">
+                <div>
+                    <h4>{{ item.label }}</h4>
+                    <p>{{ item.detail }}</p>
+                </div>
+                <span class="flow-card-status flow-card-status--{% if item.ready %}done{% else %}empty{% endif %}">
+                    {% if item.ready %}Listo{% else %}Pendiente{% endif %}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Resumen del borrador</h3>
+        <table class="table">
+            <tbody>
+                <tr>
+                    <td>Tipo</td>
+                    <td class="mono">{{ publish_hub.summary.file_type_label }} · {{ publish_hub.summary.encoding }}</td>
+                </tr>
+                <tr>
+                    <td>Campos</td>
+                    <td>{{ publish_hub.summary.fields_count }}</td>
+                </tr>
+                <tr>
+                    <td>Operación</td>
+                    <td>{{ publish_hub.summary.operation_label }}</td>
+                </tr>
+                <tr>
+                    <td>Reglas habilitadas</td>
+                    <td>
+                        {{ publish_hub.summary.rules_enabled_count }}
+                        {% if publish_hub.summary.rules_disabled_count %}
+                        ({{ publish_hub.summary.rules_disabled_count }} deshabilitada{{ publish_hub.summary.rules_disabled_count|pluralize:"s" }})
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="alert alert-info" style="margin-top:16px">
+    Tras publicar, el borrador v{{ publish_hub.draft_version_number|add:1 }} queda editable (copia del perfil + operación + reglas).
+    Los jobs usarán solo la versión activa (SM1 · M5).
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Historial de versiones</h3>
+        {% if publish_hub.version_history %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Versión</th>
+                    <th>Estado</th>
+                    <th>Publicada</th>
+                    <th>Por</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in publish_hub.version_history %}
+                <tr>
+                    <td class="mono">v{{ row.version_number }}</td>
+                    <td>{{ row.status_label }}</td>
+                    <td class="td-mono">{% if row.published_at %}{{ row.published_at|date:"d/m/Y H:i" }}{% else %}—{% endif %}</td>
+                    <td class="mono">{{ row.published_by|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="hint">Aún no hay versiones.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="page-actions" style="margin-top:16px">
+    <a class="btn btn-secondary" href="{% url 'file_split_merge:rules_hub' project_slug=project.slug %}">← Reglas</a>
+    {% if publish_hub.has_published_version %}
+    <a class="btn btn-primary" href="{% url 'file_split_merge:run_hub' project_slug=project.slug %}">Ir a Ejecutar →</a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/source_profile-publish.js' %}"></script>
+{% endblock %}

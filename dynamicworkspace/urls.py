@@ -26,6 +26,7 @@ urlpatterns = [
     path("app/file-match/", include("apps.file_match.urls")),
     path("app/structure-scout/", include("apps.structure_scout.urls")),
     path("app/file-clean/", include("apps.file_clean.urls")),
+    path("app/file-split-merge/", include("apps.file_split_merge.urls")),
     path("app/ayuda/", include(("apps.help.urls", "help"))),
 ]
 

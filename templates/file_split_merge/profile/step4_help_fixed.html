@@ -1,0 +1,106 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos TXT fijo — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:profile_hub' project_slug=project.slug %}">Perfil</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:profile_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Paso 4 · <span class="role-badge">txt_fixed</span></p>
+        <h2>Ayuda — Campos de ancho fijo</h2>
+        <p>Cada campo se corta por posiciones de carácter en la línea. Tipo: <code>{{ file_type_code|default:"txt_fixed" }}</code>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_split_merge:profile_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Editor de cada campo</h3>
+        <table class="help-table">
+            <thead><tr><th>Campo en pantalla</th><th>Para qué sirve</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Nombre (slug)</strong> <span class="req">*</span></td>
+                    <td>Identificador interno (<code>nombre</code>, <code>edad</code>). Lo usan las reglas. Único, en minúsculas.</td>
+                </tr>
+                <tr>
+                    <td><strong>Etiqueta</strong></td>
+                    <td>Texto legible en pantallas. No sustituye al nombre interno.</td>
+                </tr>
+                <tr>
+                    <td><strong>Cómo definir la posición</strong></td>
+                    <td>
+                        <ul style="margin:0;padding-left:1.1rem">
+                            <li><em>Inicio y fin</em> — columna inicial y final inclusive (1-based).</li>
+                            <li><em>Inicio y longitud</em> — desde la columna inicial, N caracteres.</li>
+                            <li><em>Desde carácter</em> — el campo empieza tras un marcador en la línea.</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Inicio (1-based)</strong></td>
+                    <td>Primera columna del campo. El primer carácter de la línea es <code>1</code> (no 0).</td>
+                </tr>
+                <tr>
+                    <td><strong>Fin (inclusive)</strong></td>
+                    <td>Última columna incluida. Debe ser ≥ inicio.</td>
+                </tr>
+                <tr>
+                    <td><strong>Longitud</strong></td>
+                    <td>Cantidad de caracteres a tomar desde el inicio (modo longitud).</td>
+                </tr>
+                <tr>
+                    <td><strong>Marcador <code>char</code></strong></td>
+                    <td>En modo «desde carácter»: el valor empieza después de encontrar ese texto en la línea.</td>
+                </tr>
+                <tr>
+                    <td><strong>Tipo contenido</strong></td>
+                    <td>Clasificación del valor. En Ejecutar, Clean no rechaza por content_type.</td>
+                </tr>
+                <tr>
+                    <td><strong>Campo obligatorio</strong></td>
+                    <td>Marca de perfil; Gate puede usarlo después. Clean sigue leyendo.</td>
+                </tr>
+                <tr>
+                    <td><strong>Patrón regex</strong></td>
+                    <td>Si el tipo es <code>custom</code>: expresión opcional de forma esperada.</td>
+                </tr>
+                <tr>
+                    <td><strong>Formato fecha</strong></td>
+                    <td>Si el tipo es date/datetime: cómo interpretar el texto.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Ejemplo</h3>
+        <p>Línea de 87 caracteres. <code>nombre</code> en 1–21, <code>edad</code> en 22–23 (inicio 22, longitud 2).</p>
+        <p class="hint">Los rangos no deben solaparse. Use la regla visual de la pantalla para alinear.</p>
+    </div>
+</div>
+{% endblock %}

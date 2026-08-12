@@ -1,0 +1,82 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Listado — File Split/Merge{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Módulo 1 · <span class="role-badge">Projects</span></p>
+        <h2>Ayuda — Listado de proyectos</h2>
+        <p>Proyectos para partir un archivo (Split) o unir varios (Merge). Cada uno tiene su perfil, reglas, versiones e historial.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_split_merge:project_list' %}">← Proyectos</a>
+        <a class="btn btn-primary" href="{% url 'file_split_merge:project_create' %}">Nuevo proyecto</a>
+    </div>
+</div>
+
+<div class="help-panel panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué ve en el listado</h3>
+        <p>
+            Solo proyectos <strong>File Split/Merge</strong> de su compañía donde usted es miembro,
+            o proyectos <strong>públicos</strong> (visibilidad compañía) aunque no sea miembro.
+            No aparecen proyectos de File Gate, Clean, Match ni FilePipe.
+        </p>
+
+        <h3 class="form-section-title">Split vs Merge</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>Operación</th><th>Idea</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Split</strong></td><td>1 archivo → N partes (filas, tamaño o valor de columna) + manifiesto.</td></tr>
+                <tr><td><strong>Merge</strong></td><td>≥2 archivos → 1 consolidado.</td></tr>
+            </tbody>
+        </table>
+        <p>
+            La operación <strong>no se elige al crear</strong> el proyecto: se define en
+            <strong>Reglas</strong> (módulo 3), después del perfil de lectura.
+        </p>
+
+        <h3 class="form-section-title">Visibilidad</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>UI</th><th>Quién ve el proyecto</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Privado</strong></td><td>Solo miembros con membresía activa.</td></tr>
+                <tr><td><strong>Público</strong></td><td>UF de la misma compañía pueden abrir en consulta; editar/ejecutar exige rol adecuado.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Historial y tipos de archivo</h3>
+        <p>
+            El historial de ejecuciones es <strong>por proyecto</strong>.
+            Si probó CSV, TXT y XLSX en proyectos distintos, cada historial muestra solo las corridas de ese slug.
+        </p>
+
+        <h3 class="form-section-title">Qué no es</h3>
+        <ul>
+            <li>No valida contrato (File Gate) ni limpia celdas (File Clean).</li>
+            <li>No concilia (File Match) ni mapea a destino de negocio (FilePipe).</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

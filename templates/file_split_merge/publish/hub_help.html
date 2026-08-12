@@ -1,0 +1,136 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Publicar — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:publish_hub' project_slug=project.slug %}">Publicar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Módulo 4 · <span class="role-badge">Publish</span></p>
+        <h2>Ayuda — Publicar versión</h2>
+        <p>Congela el perfil de lectura, la operación (Split o Merge) y las reglas en una versión inmutable de este proyecto.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_split_merge:publish_hub' project_slug=project.slug %}">← Publicar</a>
+    </div>
+</div>
+
+<div class="help-panel panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Alcance: este proyecto</h3>
+        <p>
+            Publicar afecta solo a
+            <span class="cell-badge">{{ project.slug }}</span>.
+            La versión activa (<code>current_version</code>) es la que usará
+            <a href="{% url 'file_split_merge:run_hub' project_slug=project.slug %}">Ejecutar</a>
+            (SM1). Otros proyectos Split/Merge tienen su propio ciclo de versiones.
+        </p>
+
+        <h3 class="form-section-title">Qué se congela</h3>
+        <ul>
+            <li><strong>Perfil de lectura</strong> — tipo de archivo, captura y campos (M2).</li>
+            <li><strong>Operación</strong> — Split o Merge (M3).</li>
+            <li><strong>Reglas</strong> — catálogo <code>sm_rules</code> del borrador (M3).</li>
+        </ul>
+        <p>
+            Tras publicar, esa versión queda <strong>inmutable</strong>. Se crea un
+            <strong>nuevo borrador</strong> (copia editable) para seguir ajustando sin tocar lo ya publicado.
+        </p>
+
+        <h3 class="form-section-title">Checklist antes de publicar</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>ID</th><th>Requisito</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>P1</strong></td>
+                    <td>Perfil completo: tipo, captura y al menos un campo (validación estricta).</td>
+                </tr>
+                <tr>
+                    <td><strong>P2</strong></td>
+                    <td>
+                        Reglas completas: operación elegida y mínimo ON
+                        (Split: partición <code>max_rows</code> / <code>max_bytes</code> / <code>split_by_column</code>;
+                        Merge: <code>missing_columns</code>).
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>P5</strong></td>
+                    <td>
+                        Toda regla <strong>habilitada</strong> con params válidos y campos del perfil existentes.
+                        Las deshabilitadas no bloquean.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p>
+            Si algo falla, el hub muestra motivos pendientes o «Reglas inválidas (P5)» y el botón
+            <strong>Publicar</strong> permanece deshabilitado. Corrija en
+            <a href="{% url 'file_split_merge:profile_hub' project_slug=project.slug %}">Perfil</a>
+            o <a href="{% url 'file_split_merge:rules_hub' project_slug=project.slug %}">Reglas</a>
+            y vuelva aquí.
+        </p>
+
+        <h3 class="form-section-title">Flujo en el hub</h3>
+        <ol>
+            <li>Revise el strip: borrador que se publicará (vN) y versión activa actual.</li>
+            <li>Confirme el resumen (tipo, campos, operación, reglas ON) y el historial de versiones.</li>
+            <li>Pulse <strong>Publicar vN</strong> y confirme el diálogo.</li>
+            <li>Éxito → vN queda publicada y activa; aparece el nuevo borrador vN+1.</li>
+        </ol>
+
+        <h3 class="form-section-title">Después de publicar</h3>
+        <ul>
+            <li><strong>Ejecutar (M5)</strong> — solo contra la versión publicada activa (SM1), no el borrador.</li>
+            <li><strong>Historial (M6)</strong> — cada job guarda la versión que usó; jobs en curso no cambian de definición a mitad (P4).</li>
+            <li>Puede seguir editando el nuevo borrador y publicar de nuevo cuando esté listo.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>Rol</th><th>Puede</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PA / ED</td>
+                    <td>Publicar cuando el checklist esté OK.</td>
+                </tr>
+                <tr>
+                    <td>GE / CO</td>
+                    <td>Ver el hub y el historial de versiones; no publican.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no hace</h3>
+        <ul>
+            <li>No sube archivos ni genera ZIP / consolidado (eso es Ejecutar).</li>
+            <li>No es un “deploy” de producto: es congelar la definición ejecutable del proyecto.</li>
+            <li>No mezcla versiones de otros proyectos Split/Merge.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

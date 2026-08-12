@@ -1,0 +1,104 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Historial — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:history_hub' project_slug=project.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Módulo 6 · <span class="role-badge">History</span></p>
+        <h2>Ayuda — Historial</h2>
+        <p>Auditoría de jobs Split/Merge: filtros, detalle, TTL y borrado de corridas propias.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_split_merge:history_hub' project_slug=project.slug %}">← Historial</a>
+    </div>
+</div>
+
+<div class="help-panel panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Alcance: un proyecto</h3>
+        <p>
+            El historial muestra <strong>solo las corridas de este proyecto</strong>
+            (<span class="cell-badge">{{ project.slug }}</span>.
+            No es un listado global de la compañía ni se filtra por tipo de archivo (CSV, TXT, XLSX…).
+        </p>
+        <p>
+            Si ejecutó Split/Merge en varios proyectos (p. ej. uno por formato de prueba),
+            cada historial vive en su propia URL:
+            <code>/app/file-split-merge/proyectos/&lt;slug&gt;/historial/</code>.
+            Abra el hub de cada proyecto para ver sus jobs.
+        </p>
+
+        <h3 class="form-section-title">Qué ve en el listado</h3>
+        <ul>
+            <li>Operación (Split / Merge), estado, versión publicada usada, usuario, fechas.</li>
+            <li>Nombre de archivo(s), hash y métricas resumidas.</li>
+            <li>Badge de TTL: artifacts descargables mientras estén vigentes ({{ ttl_days }} días).</li>
+        </ul>
+
+        <h3 class="form-section-title">Filtros</h3>
+        <p>
+            Estado, operación, fechas, usuario, nombre de archivo, hash, versión publicada,
+            preview vs ejecución real, y TTL (vigente / expirado / todos). Paginación de 25 filas.
+        </p>
+
+        <h3 class="form-section-title">Detalle</h3>
+        <ul>
+            <li><strong>Split</strong> — manifiesto de partes, conteos y ZIP si sigue disponible.</li>
+            <li><strong>Merge</strong> — métricas de consolidación / dedupe y archivo fusionado.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>Rol</th><th>Puede</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PA / ED / GE</td>
+                    <td>Ver listado y detalle; descargar artifacts con TTL vigente; eliminar solo corridas que usted ejecutó.</td>
+                </tr>
+                <tr>
+                    <td>CO</td>
+                    <td>Ver metadatos del historial; no descarga contenido ni elimina.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Borrado</h3>
+        <p>
+            Solo corridas propias (fila o «Eliminar mis corridas»). Al borrar se purga el almacenamiento
+            del job; no se pueden borrar ejecuciones de otros miembros.
+        </p>
+
+        <h3 class="form-section-title">Qué no hace</h3>
+        <ul>
+            <li>No mezcla jobs de otros proyectos Split/Merge.</li>
+            <li>No filtra automáticamente por tipo de archivo del perfil; use el filtro de nombre si necesita localizar un CSV/TXT/XLSX concreto <em>dentro de este proyecto</em>.</li>
+            <li>Tras caducar el TTL, los metadatos permanecen; las descargas dejan de estar disponibles.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

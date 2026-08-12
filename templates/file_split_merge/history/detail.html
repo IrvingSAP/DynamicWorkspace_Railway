@@ -1,0 +1,215 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Detalle job — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<style>
+.meta-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(12rem,1fr)); gap:10px; }
+.meta-item{ padding:10px 12px; background:#f6f4f0; border-radius:8px; }
+.meta-item .label{ font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:#a8a29e; margin:0 0 4px; }
+.meta-item .value{ margin:0; font-size:13px; word-break:break-all; }
+.preview-table{ width:100%; border-collapse:collapse; font-size:12px; }
+.preview-table th,.preview-table td{ padding:6px 8px; border-bottom:1px solid rgba(28,25,23,.08); text-align:left; }
+.preview-table th{ font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:#a8a29e; background:#f6f4f0; }
+.ttl-ok{ font-size:11px; font-weight:600; padding:2px 7px; border-radius:999px; background:rgba(21,128,61,.12); color:#15803d; }
+.ttl-exp{ font-size:11px; font-weight:600; padding:2px 7px; border-radius:999px; background:rgba(180,83,9,.12); color:#b45309; }
+</style>
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:history_hub' project_slug=project.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ detail.row.short_id }}…</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Job">
+    <span class="label">Job</span>
+    <span class="cell-badge">{{ detail.row.short_id }}…</span>
+    <span class="hint">· {{ detail.operation_label }} · v{{ detail.published_version_number }}</span>
+    {% if detail.dry_run %}<span class="hint">· preview</span>{% endif %}
+    <span class="hint">·</span>
+    {% if detail.row.is_expired %}
+    <span class="ttl-exp">TTL expirado</span>
+    {% else %}
+    <span class="ttl-ok">TTL {{ detail.row.ttl_label }}</span>
+    {% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Módulo 6 · <span class="role-badge">Detail</span></p>
+        <h2>Detalle de corrida</h2>
+        <p>Metadatos, reglas publicadas, outputs y descargas si el TTL y su rol lo permiten.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_split_merge:history_detail_help' project_slug=project.slug job_id=detail.job_id as detail_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=detail_help_url %}
+        <a href="{% url 'file_split_merge:history_hub' project_slug=project.slug %}" class="btn btn-secondary">← Historial</a>
+        <a href="{{ detail.row.result_url }}" class="btn btn-secondary">Resultado</a>
+        {% if detail.can_download and detail.view.download_urls.zip %}
+        <a href="{{ detail.view.download_urls.zip }}" class="btn btn-primary">Descargar ZIP</a>
+        {% endif %}
+        {% if detail.can_download and detail.view.download_urls.merged %}
+        <a href="{{ detail.view.download_urls.merged }}" class="btn btn-primary">Descargar consolidado</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Metadatos</h3>
+        <div class="meta-grid">
+            <div class="meta-item">
+                <p class="label">Estado</p>
+                <p class="value">{{ detail.row.status_label }}{% if detail.dry_run %} · vista previa{% endif %}</p>
+            </div>
+            <div class="meta-item">
+                <p class="label">Operación</p>
+                <p class="value">{{ detail.operation_label }}</p>
+            </div>
+            <div class="meta-item">
+                <p class="label">Archivo(s)</p>
+                <p class="value"><code>{{ detail.row.filename }}</code></p>
+            </div>
+            <div class="meta-item">
+                <p class="label">Versión publicada</p>
+                <p class="value">v{{ detail.published_version_number }}</p>
+            </div>
+            <div class="meta-item">
+                <p class="label">Ejecutado por</p>
+                <p class="value">{{ detail.executed_by|default:"—" }}</p>
+            </div>
+            <div class="meta-item">
+                <p class="label">Finalizado</p>
+                <p class="value">{{ detail.finished_at|date:"d/m/Y H:i"|default:"—" }}</p>
+            </div>
+            <div class="meta-item">
+                <p class="label">TTL artifacts</p>
+                <p class="value">{{ detail.ttl_days }} días · {{ detail.row.ttl_label }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="stats-strip" style="margin-top:14px" aria-label="Métricas">
+    <div class="stat-card">
+        <p class="stat-label">Filas leídas</p>
+        <p class="stat-value">{{ detail.metrics.rows_read|default:0 }}</p>
+    </div>
+    <div class="stat-card is-accent">
+        <p class="stat-label">{% if detail.operation == 'split' %}Partes{% else %}Filas escritas{% endif %}</p>
+        <p class="stat-value">{% if detail.operation == 'split' %}{{ detail.metrics.parts_count|default:0 }}{% else %}{{ detail.metrics.rows_written|default:0 }}{% endif %}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Duración</p>
+        <p class="stat-value" style="font-size:14px">{{ detail.metrics.duration_ms|default:"—" }} ms</p>
+    </div>
+</div>
+
+{% if detail.rules_enabled %}
+<div class="panel" style="margin-top:14px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Reglas aplicadas (snapshot)</h3>
+        <table class="preview-table">
+            <thead><tr><th>Código</th><th>Params</th></tr></thead>
+            <tbody>
+                {% for rule in detail.rules_enabled %}
+                <tr><td><code>{{ rule.code }}</code></td><td>{{ rule.params_summary }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if detail.inputs %}
+<div class="panel" style="margin-top:14px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Entradas</h3>
+        <table class="preview-table">
+            <thead><tr><th>Archivo</th><th>Bytes</th><th>Hash</th></tr></thead>
+            <tbody>
+                {% for item in detail.inputs %}
+                <tr>
+                    <td><code>{{ item.filename }}</code></td>
+                    <td>{{ item.size_bytes }}</td>
+                    <td class="mono">{{ item.content_hash|truncatechars:20 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if detail.outputs %}
+<div class="panel" style="margin-top:14px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Salidas / manifiesto</h3>
+        <table class="preview-table">
+            <thead><tr><th>Kind</th><th>Archivo</th><th>Filas</th><th>Descarga</th></tr></thead>
+            <tbody>
+                {% for item in detail.outputs %}
+                <tr>
+                    <td><code>{{ item.kind }}</code></td>
+                    <td>{{ item.filename }}{% if item.label %} · {{ item.label }}{% endif %}</td>
+                    <td>{{ item.rows|default:"—" }}</td>
+                    <td>
+                        {% if detail.can_download and not detail.dry_run and not detail.row.is_expired %}
+                        <a href="{% url 'file_split_merge:run_download' project_slug=project.slug job_id=detail.job_id kind=item.kind %}">Descargar</a>
+                        {% elif detail.is_company_viewer %}
+                        <span class="hint">Metadatos</span>
+                        {% else %}
+                        <span class="hint">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if detail.can_delete %}
+<div class="page-actions" style="margin-top:16px">
+    <form method="post" action="{% url 'file_split_merge:history_delete_job' project_slug=project.slug job_id=detail.job_id %}" class="js-history-delete-form" data-confirm="¿Eliminar esta corrida? Se borrarán el registro y los artifacts.">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary">Eliminar esta corrida</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("form.js-history-delete-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            if (typeof dwConfirmWarning !== "function") { return; }
+            e.preventDefault();
+            var message = form.getAttribute("data-confirm") || "¿Eliminar?";
+            dwConfirmWarning(message, function () {
+                HTMLFormElement.prototype.submit.call(form);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

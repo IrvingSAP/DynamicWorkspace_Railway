@@ -1,0 +1,118 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Detalle — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:history_hub' project_slug=project.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:history_detail' project_slug=project.slug job_id=detail.job_id %}">Detalle</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Módulo 6 · <span class="role-badge">Detail</span></p>
+        <h2>Ayuda — Detalle de corrida</h2>
+        <p>Metadatos, snapshot de reglas, métricas y descargas de un job concreto.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_split_merge:history_detail' project_slug=project.slug job_id=detail.job_id %}">← Detalle</a>
+        <a class="btn btn-secondary" href="{% url 'file_split_merge:history_hub' project_slug=project.slug %}">Historial</a>
+    </div>
+</div>
+
+<div class="help-panel panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Alcance</h3>
+        <p>
+            Esta pantalla pertenece al proyecto
+            <span class="cell-badge">{{ project.slug }}</span>
+            y a un único job del historial de ese proyecto.
+            Otras corridas (p. ej. en otro proyecto o con otro formato de archivo) no aparecen aquí;
+            vuelva al <a href="{% url 'file_split_merge:history_hub' project_slug=project.slug %}">historial</a>
+            o abra el historial del proyecto correspondiente.
+        </p>
+
+        <h3 class="form-section-title">Qué contiene el detalle</h3>
+        <ul>
+            <li><strong>Metadatos</strong> — estado, operación, archivo(s), versión publicada usada, ejecutado por, fechas, TTL.</li>
+            <li><strong>Métricas</strong> — filas leídas, duración y, según la operación, partes o filas escritas.</li>
+            <li><strong>Snapshot de reglas</strong> — las reglas <em>congeladas</em> al ejecutar con esa versión publicada (no el borrador actual).</li>
+            <li><strong>Salidas</strong> — enlaces a resultado / descargas si el TTL y su rol lo permiten.</li>
+            <li>Indicador de <strong>vista previa</strong> cuando la corrida fue dry-run (sin artifacts definitivos).</li>
+        </ul>
+
+        <h3 class="form-section-title">Split vs Merge</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>Operación</th><th>En el detalle</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Split</td>
+                    <td>Manifiesto de partes, conteos por parte, ZIP de salidas (si vigente).</td>
+                </tr>
+                <tr>
+                    <td>Merge</td>
+                    <td>Métricas de consolidación / dedupe y archivo fusionado (si vigente).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">TTL y descargas</h3>
+        <p>
+            Los artifacts se pueden descargar durante <strong>{{ ttl_days }} días</strong> desde la finalización del job.
+            Después el badge pasa a «TTL expirado»: los metadatos siguen visibles; el contenido deja de estar disponible.
+            Use el botón <strong>Resultado</strong> o las descargas del encabezado mientras el TTL esté vigente.
+        </p>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>Rol</th><th>Puede</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PA / ED / GE</td>
+                    <td>Ver detalle completo y descargar artifacts con TTL vigente. Eliminar solo si usted ejecutó esta corrida.</td>
+                </tr>
+                <tr>
+                    <td>CO</td>
+                    <td>Ver metadatos y métricas; no descarga contenido ni elimina.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Borrado</h3>
+        <p>
+            Solo el ejecutor puede eliminar esta corrida desde el historial o el detalle.
+            Al borrar se purga el almacenamiento del job; la acción no afecta otras corridas del proyecto.
+        </p>
+
+        <h3 class="form-section-title">Qué no hace</h3>
+        <ul>
+            <li>No re-ejecuta ni cambia la versión publicada; para eso use <strong>Ejecutar</strong>.</li>
+            <li>No muestra el borrador actual de perfil/reglas: solo el snapshot de la corrida.</li>
+            <li>No lista jobs de otros proyectos; el historial es siempre por proyecto.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

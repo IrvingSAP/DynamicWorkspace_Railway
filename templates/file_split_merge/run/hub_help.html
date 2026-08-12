@@ -1,0 +1,123 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Ejecutar — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:run_hub' project_slug=project.slug %}">Ejecutar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Módulo 5 · <span class="role-badge">Run</span></p>
+        <h2>Ayuda — Ejecutar</h2>
+        <p>Suba archivo(s) y aplique la versión publicada (perfil + operación + reglas) de este proyecto.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_split_merge:run_hub' project_slug=project.slug %}">← Ejecutar</a>
+    </div>
+</div>
+
+<div class="help-panel panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Alcance: un proyecto</h3>
+        <p>
+            Esta pantalla ejecuta solo la definición publicada de
+            <span class="cell-badge">{{ project.slug }}</span>.
+            Cada proyecto tiene su propio perfil, operación (Split o Merge) e historial de jobs.
+            Pruebas con CSV, TXT o XLSX en proyectos distintos no se mezclan aquí.
+        </p>
+
+        <h3 class="form-section-title">Antes de ejecutar (SM1)</h3>
+        <ul>
+            <li>Debe existir una <strong>versión publicada activa</strong> (perfil + reglas congelados).</li>
+            <li>Sin versión activa, use <strong>Publicar</strong>; no se puede correr el borrador.</li>
+            <li>La operación (Split / Merge) y el criterio de partición o consolidación salen de esa versión.</li>
+        </ul>
+
+        <h3 class="form-section-title">Split vs Merge</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>Operación</th><th>Entrada</th><th>Salida</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Split</td>
+                    <td>Exactamente <strong>1</strong> archivo</td>
+                    <td>N partes + <code>manifest.json</code> + ZIP</td>
+                </tr>
+                <tr>
+                    <td>Merge</td>
+                    <td>Al menos <strong>2</strong> archivos</td>
+                    <td>1 archivo consolidado</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>
+            El tipo de archivo debe coincidir con el perfil publicado (mismo layout).
+            Límite de seguridad Split: máximo <strong>200 partes</strong>; si se supera, la corrida falla.
+        </p>
+
+        <h3 class="form-section-title">Vista previa vs ejecución</h3>
+        <ul>
+            <li><strong>Vista previa</strong> — calcula métricas (y muestra efecto) sin guardar artifacts definitivos descargables.</li>
+            <li><strong>Ejecutar</strong> — persiste el job, escribe salidas y habilita descargas mientras el TTL esté vigente.</li>
+            <li>Ambas corridas quedan en el <a href="{% url 'file_split_merge:history_hub' project_slug=project.slug %}">historial</a> de este proyecto.</li>
+        </ul>
+
+        <h3 class="form-section-title">Parseo y fallos</h3>
+        <p>
+            Se lee con el perfil publicado (parse soft: sin el rigor de content_type de Gate).
+            Si el parseo falla o no hay filas útiles en Split, el job termina en <strong>fallido</strong> sin salida engañosa.
+        </p>
+
+        <h3 class="form-section-title">TTL y descargas</h3>
+        <p>
+            Los artifacts descargables caducan a los <strong>{{ ttl_days }} días</strong> desde la finalización.
+            Los metadatos del job permanecen en historial tras el TTL.
+        </p>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>Rol</th><th>Puede</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PA / ED / GE</td>
+                    <td>Ejecutar, vista previa y descargar artifacts vigentes.</td>
+                </tr>
+                <tr>
+                    <td>CO</td>
+                    <td>Ver pantallas / metadatos; no ejecuta ni descarga contenido.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no hace</h3>
+        <ul>
+            <li>No publica versiones ni edita perfil/reglas (use Perfil, Reglas y Publicar).</li>
+            <li>No ejecuta el borrador: solo la versión publicada activa.</li>
+            <li>No muestra jobs de otros proyectos; el historial es por proyecto.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

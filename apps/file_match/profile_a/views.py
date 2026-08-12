@@ -141,10 +141,11 @@ def profile_a_seed_picker(request, project_slug: str):
     source_id_raw = (request.GET.get("source_id") or "").strip()
     source_id = None
     if source_id_raw:
-        try:
-            source_id = int(source_id_raw)
-        except ValueError:
-            source_id = -1
+        source_id = profile_seed_service.parse_source_project_id(source_id_raw)
+        if source_id is None:
+            from uuid import UUID
+
+            source_id = UUID("00000000-0000-0000-0000-000000000000")
 
     picker = profile_seed_service.get_source_picker_context(
         request.user,
@@ -152,8 +153,14 @@ def profile_a_seed_picker(request, project_slug: str):
         source_kind=source_kind,
         source_id=source_id,
     )
-    if picker.get("invalid_source"):
+    if picker.get("invalid_source") or (
+        source_id_raw
+        and profile_seed_service.parse_source_project_id(source_id_raw) is None
+    ):
         messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
+        picker["invalid_source"] = True
+        picker["selected_source"] = None
+        picker["selected_source_id"] = None
     if not picker.get("source_kind_supported"):
         messages.warning(request, profile_seed_service.MSG_KIND_UNSUPPORTED)
 
@@ -173,14 +180,8 @@ def profile_a_seed_picker_help(request, project_slug: str):
     return _render(request, project_slug, "profile_seed/source_picker_help.html")
 
 
-def _parse_source_id(raw: str | None) -> int | None:
-    value = (raw or "").strip()
-    if not value:
-        return None
-    try:
-        return int(value)
-    except ValueError:
-        return -1
+def _parse_source_id(raw: str | None):
+    return profile_seed_service.parse_source_project_id(raw)
 
 
 @_profile_a_view
@@ -208,7 +209,7 @@ def profile_a_seed_apply(request, project_slug: str):
             messages.success(request, result.user_message)
             return redirect("file_match:profile_a_hub", project_slug=project_slug)
         messages.error(request, result.user_message)
-        if source_id and source_id > 0:
+        if source_id:
             return redirect(
                 reverse(
                     "file_match:profile_a_seed_apply",
@@ -219,7 +220,7 @@ def profile_a_seed_apply(request, project_slug: str):
         return redirect("file_match:profile_a_seed_picker", project_slug=project_slug)
 
     source_id = _parse_source_id(request.GET.get("source_id"))
-    if source_id is None or source_id < 0:
+    if source_id is None:
         messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
         return redirect("file_match:profile_a_seed_picker", project_slug=project_slug)
 

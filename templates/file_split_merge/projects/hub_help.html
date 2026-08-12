@@ -1,0 +1,104 @@
+﻿{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Proyecto — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Módulo 1 · <span class="role-badge">Hub</span></p>
+        <h2>Ayuda — Hub del proyecto</h2>
+        <p>Tablero del ciclo: definición (perfil → reglas → publicar) y ejecución (ejecutar → historial).</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">← Hub</a>
+    </div>
+</div>
+
+<div class="help-panel panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Alcance</h3>
+        <p>
+            Este hub es el punto de entrada de
+            <span class="cell-badge">{{ project.slug }}</span>.
+            Agrupa perfil, reglas Split/Merge, versión publicada, ejecuciones e historial
+            <strong>de este proyecto</strong>. No es File Gate, FilePipe, File Match ni File Clean.
+        </p>
+
+        <h3 class="form-section-title">Orden del ciclo</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>#</th><th>Módulo</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td><strong>Perfil</strong></td><td>Cómo se lee el archivo (tipo, captura, campos).</td></tr>
+                <tr><td>2</td><td><strong>Reglas</strong></td><td>Operación Split o Merge + catálogo de reglas del borrador.</td></tr>
+                <tr><td>3</td><td><strong>Publicar</strong></td><td>Congela perfil + operación + reglas en una versión inmutable.</td></tr>
+                <tr><td>4</td><td><strong>Ejecutar</strong></td><td>Upload y artifacts (solo versión publicada activa · SM1).</td></tr>
+                <tr><td>5</td><td><strong>Historial</strong></td><td>Auditoría de jobs de este proyecto; descargas con TTL.</td></tr>
+            </tbody>
+        </table>
+        <p>
+            El stepper del hub marca avance (completado / pendiente / bloqueado).
+            Reglas exige perfil completo; Ejecutar exige versión publicada.
+        </p>
+
+        <h3 class="form-section-title">Strip de resumen</h3>
+        <ul>
+            <li><strong>Borrador</strong> vs <strong>versión activa</strong> publicada.</li>
+            <li><strong>Operación</strong> actual del borrador (Split / Merge / sin definir).</li>
+            <li><strong>Último job</strong> y conteo de miembros.</li>
+        </ul>
+
+        <h3 class="form-section-title">Split vs Merge</h3>
+        <ul>
+            <li><strong>Split:</strong> 1 archivo → N partes + manifiesto + ZIP.</li>
+            <li><strong>Merge:</strong> ≥2 archivos → 1 consolidado.</li>
+            <li>Una sola operación por borrador; se elige en Reglas, no aquí.</li>
+        </ul>
+
+        <h3 class="form-section-title">Miembros</h3>
+        <p>
+            El botón <strong>Miembros</strong> solo lo ve el administrador (<strong>PA</strong>).
+            Invitar, cambiar rol o revocar se hace en esa pantalla.
+        </p>
+
+        <h3 class="form-section-title">Roles (resumen)</h3>
+        <table class="issue-table">
+            <thead>
+                <tr><th>Rol</th><th>En este proyecto</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>PA</td><td>Todo: miembros, edición, publicar, ejecutar.</td></tr>
+                <tr><td>ED</td><td>Editar borrador, publicar y ejecutar (sin gestionar miembros).</td></tr>
+                <tr><td>GE</td><td>Ejecutar / descargar; no edita definición.</td></tr>
+                <tr><td>CO</td><td>Consulta de metadatos (hub, historial); sin descarga ni edición.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no hace el hub</h3>
+        <ul>
+            <li>No edita campos ni reglas directamente (use los módulos).</li>
+            <li>No mezcla jobs de otros proyectos: el historial es por slug.</li>
+            <li>No limpia, concilia ni mapea a destino de negocio.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

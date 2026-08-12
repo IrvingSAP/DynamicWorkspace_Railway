@@ -17,31 +17,31 @@
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
-    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <a href="{% url seed_host.app_list_url_name %}">{{ seed_host.app_label }}</a>
     <span class="breadcrumb-sep">/</span>
-    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <a href="{% url seed_host.project_hub_url_name project_slug=project.slug %}">{{ project.slug }}</a>
     <span class="breadcrumb-sep">/</span>
-    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
+    <a href="{% url seed_host.profile_hub_url_name project_slug=project.slug %}">{{ seed_host.profile_hub_label }}</a>
     <span class="breadcrumb-sep">/</span>
-    <a href="{% url 'file_match:profile_a_seed_hub' project_slug=project.slug %}">Importar</a>
+    <a href="{% url seed_host.seed_hub_url_name project_slug=project.slug %}">Importar</a>
     <span class="breadcrumb-sep">/</span>
     <span>Confirmar</span>
 </nav>
 {% endblock %}
 
 {% block content %}
-{% include "file_match/profile_a/_project_scope.html" %}
+{% include seed_host.scope_include %}
 
 <div class="page-header">
     <div>
         <p class="page-eyebrow">PROFILE SEED · Confirmar</p>
         <h2>Confirmar importación</h2>
-        <p>Se clonará la estructura publicada al <strong>borrador</strong> del Perfil A. No publica la definición Match.</p>
+        <p>Se clonará la estructura publicada al <strong>borrador</strong> del {{ seed_host.profile_hub_label }}. No publica la versión del destino.</p>
     </div>
     <div class="page-actions">
-        {% url 'file_match:profile_a_seed_apply_help' project_slug=project.slug as seed_help_url %}
+        {% url seed_host.seed_apply_help_url_name project_slug=project.slug as seed_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=seed_help_url %}
-        <a href="{% url 'file_match:profile_a_seed_picker' project_slug=project.slug %}?source_id={{ source.id }}" class="btn btn-secondary">← Origen</a>
+        <a href="{% url seed_host.seed_picker_url_name project_slug=project.slug %}?source_id={{ source.id }}&kind={{ source.kind }}" class="btn btn-secondary">← Origen</a>
     </div>
 </div>
 
@@ -63,13 +63,13 @@
 </div>
 {% elif overwrite %}
 <div class="alert alert-warning" style="margin-bottom:16px">
-    El borrador del Perfil A ya tiene <strong>{{ target.field_count }}</strong> campos;
+    El borrador del {{ seed_host.profile_hub_label }} ya tiene <strong>{{ target.field_count }}</strong> campos;
     se sobrescribirán con <strong>{{ source.fields_count }}</strong> del origen.
     No se publica la definición Match.
 </div>
 {% else %}
 <div class="alert alert-info" style="margin-bottom:16px">
-    Se llenará el borrador del Perfil A con <strong>{{ source.fields_count }}</strong> campos.
+    Se llenará el borrador del {{ seed_host.profile_hub_label }} con <strong>{{ source.fields_count }}</strong> campos.
     El borrador actual está vacío.
 </div>
 {% endif %}
@@ -106,7 +106,7 @@
                 <dt class="hint">Campos hoy</dt>
                 <dd style="margin:0">{{ target.field_count }}</dd>
                 <dt class="hint">Efecto</dt>
-                <dd style="margin:0">Solo borrador — publicar Match es otro módulo</dd>
+                <dd style="margin:0">Solo borrador — publicar en la app destino es otro módulo</dd>
             </dl>
         </div>
     </div>
@@ -138,10 +138,10 @@
             {% else %}
             <span class="btn btn-primary" aria-disabled="true" title="No se puede importar este origen">Sembrar borrador</span>
             {% endif %}
-            <a href="{% url 'file_match:profile_a_seed_picker' project_slug=project.slug %}?kind=file_gate&source_id={{ source.id }}" class="btn btn-secondary">← Cambiar origen</a>
-            <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
+            <a href="{% url seed_host.seed_picker_url_name project_slug=project.slug %}?kind={{ source.kind }}&source_id={{ source.id }}" class="btn btn-secondary">← Cambiar origen</a>
+            <a href="{% url seed_host.profile_hub_url_name project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
         </div>
-        <p class="hint" style="margin-top:10px">Se registra un evento de auditoría. No publica la definición Match.</p>
+        <p class="hint" style="margin-top:10px">Se registra un evento de auditoría. No publica la versión del destino.</p>
     </div>
 </div>
 {% endblock %}

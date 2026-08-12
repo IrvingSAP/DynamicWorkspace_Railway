@@ -1,0 +1,186 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Resultado — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<style>
+.verdict-banner{
+  display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+  padding:14px 16px; border-radius:10px; margin-bottom:14px;
+  border:1px solid rgba(28,25,23,.1); background:#f6f4f0;
+}
+.verdict-banner.is-passed{ background:rgba(21,128,61,.08); border-color:rgba(21,128,61,.25); }
+.verdict-banner.is-failed{ background:rgba(185,28,28,.08); border-color:rgba(185,28,28,.2); }
+.preview-table{ width:100%; border-collapse:collapse; font-size:12px; }
+.preview-table th,.preview-table td{ padding:6px 8px; border-bottom:1px solid rgba(28,25,23,.08); text-align:left; max-width:10rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.preview-table th{ font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:#a8a29e; background:#f6f4f0; }
+</style>
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_uf.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:run_hub' project_slug=project.slug %}">Ejecutar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Resultado</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="project-scope-strip" aria-label="Job">
+    <span class="label">Job</span>
+    <span class="cell-badge">{{ view.id|slice:":8" }}…</span>
+    <span class="hint">· {{ view.operation_label }} · definición v{{ view.published_version_number }}</span>
+    {% if view.dry_run %}<span class="hint">· preview</span>{% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Módulo 5 · <span class="role-badge">Result</span></p>
+        <h2>Resultado {% if view.is_merge %}Merge{% else %}Split{% endif %}</h2>
+        <p>Métricas, vista previa y descargas de artifacts.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_split_merge:run_result_help' project_slug=project.slug job_id=view.id as result_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=result_help_url %}
+        <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub Proyecto</a>
+        <a href="{% url 'file_split_merge:run_hub' project_slug=project.slug %}" class="btn btn-secondary">Nueva corrida</a>
+        {% if run.can_download and view.download_urls.zip %}
+        <a href="{{ view.download_urls.zip }}" class="btn btn-primary">Descargar ZIP</a>
+        {% endif %}
+        {% if run.can_download and view.download_urls.merged %}
+        <a href="{{ view.download_urls.merged }}" class="btn btn-primary">Descargar consolidado</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="verdict-banner {% if view.is_success %}is-passed{% else %}is-failed{% endif %}">
+    <div>
+        <h3>{{ view.status_label }}{% if view.dry_run %} · vista previa{% endif %}</h3>
+        <p>
+            {% if view.error_message %}{{ view.error_message }}{% else %}
+            {{ view.input_label }} · {{ view.metrics.rows_read|default:0 }} filas leídas
+            {% if view.is_split %} → {{ view.metrics.parts_count|default:0 }} parte{{ view.metrics.parts_count|default:0|pluralize:"s" }}{% endif %}
+            {% if view.is_merge %} → {{ view.metrics.rows_written|default:0 }} escritas{% if view.metrics.dedupe_removed %} · {{ view.metrics.dedupe_removed }} dedupe{% endif %}{% endif %}.
+            {% endif %}
+        </p>
+    </div>
+    <div class="hint">
+        {% if view.duration_ms %}{{ view.duration_ms }} ms · {% endif %}
+        TTL {{ view.ttl_label }}
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Métricas">
+    <div class="stat-card">
+        <p class="stat-label">Filas leídas</p>
+        <p class="stat-value">{{ view.metrics.rows_read|default:0 }}</p>
+    </div>
+    {% if view.is_split %}
+    <div class="stat-card is-accent">
+        <p class="stat-label">Partes</p>
+        <p class="stat-value">{{ view.metrics.parts_count|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Filas en partes</p>
+        <p class="stat-value">{{ view.metrics.rows_written|default:0 }}</p>
+    </div>
+    {% else %}
+    <div class="stat-card is-accent">
+        <p class="stat-label">Filas escritas</p>
+        <p class="stat-value">{{ view.metrics.rows_written|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Archivos</p>
+        <p class="stat-value">{{ view.metrics.files_count|default:0 }}</p>
+    </div>
+    {% endif %}
+    <div class="stat-card">
+        <p class="stat-label">Partición / op</p>
+        <p class="stat-value" style="font-size:14px">{{ view.metrics.partition_code|default:view.operation }}</p>
+    </div>
+</div>
+
+{% if view.can_offer_downloads and view.outputs %}
+<div class="panel" style="margin-top:14px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Descargas</h3>
+        <ul>
+            {% for item in view.outputs %}
+            <li>
+                <a href="{% url 'file_split_merge:run_download' project_slug=project.slug job_id=view.id kind=item.kind %}">{{ item.filename }}</a>
+                · {{ item.kind }}
+                {% if item.rows %} · {{ item.rows }} filas{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        <p class="hint">Evidencia disponible {{ view.ttl_label }} (TTL {{ view.ttl_days }} días).</p>
+    </div>
+</div>
+{% elif view.is_expired and not view.dry_run %}
+<div class="alert alert-warning" style="margin-top:14px">Evidencia expirada. Los metadatos del job siguen disponibles.</div>
+{% endif %}
+
+{% if view.is_split and view.preview_parts %}
+<div class="panel" style="margin-top:14px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Partes (resumen)</h3>
+        <table class="preview-table">
+            <thead><tr><th>Parte</th><th>Etiqueta</th><th>Filas</th></tr></thead>
+            <tbody>
+                {% for part in view.preview_parts %}
+                <tr>
+                    <td class="mono">{{ part.part_key }}</td>
+                    <td>{{ part.label }}</td>
+                    <td>{{ part.rows }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if view.is_merge and view.preview_fields %}
+<div class="panel" style="margin-top:14px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Vista previa (primeras filas)</h3>
+        <div style="overflow:auto">
+        <table class="preview-table">
+            <thead>
+                <tr>{% for f in view.preview_fields %}<th>{{ f }}</th>{% endfor %}</tr>
+            </thead>
+            <tbody>
+                {% for cells in view.preview_merge_rows %}
+                <tr>{% for cell in cells %}<td title="{{ cell }}">{{ cell }}</td>{% endfor %}</tr>
+                {% empty %}
+                <tr><td colspan="{{ view.preview_fields|length }}">Sin filas</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if view.parse_errors_count %}
+<div class="panel" style="margin-top:14px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Avisos de lectura</h3>
+        <p class="hint">{{ view.parse_errors_count }} incidencia(s). Soft-parse: no se rechaza por content_type.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -19,7 +19,7 @@
         <p>Qué es el Módulo 4 del Sembrador de perfiles (PROFILE SEED).</p>
     </div>
     <div class="page-actions">
-        <a class="btn btn-secondary" href="{% url 'file_match:profile_a_seed_history' project_slug=project.slug %}">← Volver</a>
+        <a class="btn btn-secondary" href="{% url seed_host.seed_history_url_name project_slug=project.slug %}">← Volver</a>
     </div>
 </div>
 <div class="panel"><div class="panel-body">
@@ -28,7 +28,7 @@
     <li>PA / ED / GE / CO pueden <strong>consultar</strong> el historial del proyecto Match.</li>
     <li>Solo PA / ED pueden <strong>importar de nuevo</strong>.</li>
     <li>No es el historial de publicaciones Match, ni STRUCTURE SCOUT, ni el bridge FILE GATE.</li>
-    <li>No deshace un overwrite; el borrador actual se edita en Perfil A.</li>
+    <li>No deshace un overwrite; el borrador actual se edita en {{ seed_host.profile_hub_label }}.</li>
 </ul>
 </div></div>
 {% endblock %}

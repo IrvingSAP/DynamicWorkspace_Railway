@@ -14,6 +14,7 @@ class Project(models.Model):
     KIND_FILE_MATCH = "file_match"
     KIND_STRUCTURE_SCOUT = "structure_scout"
     KIND_FILE_CLEAN = "file_clean"
+    KIND_FILE_SPLIT_MERGE = "file_split_merge"
     KIND_CHOICES = [
         (KIND_WORKSPACE, "Workspace (tabla)"),
         (KIND_DMS, "DMS (FilePipe)"),
@@ -22,6 +23,7 @@ class Project(models.Model):
         (KIND_FILE_MATCH, "FILE MATCH (Conciliador)"),
         (KIND_STRUCTURE_SCOUT, "STRUCTURE SCOUT (Explorador)"),
         (KIND_FILE_CLEAN, "FILE CLEAN (Limpieza)"),
+        (KIND_FILE_SPLIT_MERGE, "FILE SPLIT/MERGE (Partición)"),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

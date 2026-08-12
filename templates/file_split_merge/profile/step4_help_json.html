@@ -1,0 +1,91 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos JSON — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_split_merge:project_list' %}">File Split/Merge</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:profile_hub' project_slug=project.slug %}">Perfil</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_split_merge:profile_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Split/Merge · Paso 4 · <span class="role-badge">json</span></p>
+        <h2>Ayuda — Campos JSON</h2>
+        <p>Indica dónde está la lista de registros y la ruta de cada campo. Tipo: <code>{{ file_type_code|default:"json" }}</code>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_split_merge:profile_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Parámetros JSON</h3>
+        <table class="help-table">
+            <thead><tr><th>Campo en pantalla</th><th>Para qué sirve</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Ruta de registros</strong> (<code>record_path</code>) <span class="req">*</span></td>
+                    <td>
+                        Camino hasta el array (o objeto) que se repite por fila.
+                        Ejemplos: <code>empleados</code>, <code>data.items</code>.
+                        Cada elemento de esa lista es un registro a procesar.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Editor de cada campo</h3>
+        <table class="help-table">
+            <thead><tr><th>Campo en pantalla</th><th>Para qué sirve</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Nombre interno</strong> <span class="req">*</span></td>
+                    <td>Identificador en Clean / reglas.</td>
+                </tr>
+                <tr>
+                    <td><strong>json_path</strong> <span class="req">*</span></td>
+                    <td>
+                        Ruta relativa <em>dentro de cada registro</em> (notación con puntos).
+                        Si el registro es <code>{"documento":"A1","persona":{"edad":19}}</code>,
+                        use <code>documento</code> o <code>persona.edad</code>.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Tipo contenido</strong></td>
+                    <td>Clasificación del valor. Clean no rechaza por content_type al ejecutar.</td>
+                </tr>
+                <tr>
+                    <td><strong>Campo obligatorio</strong></td>
+                    <td>Marca de perfil; Gate puede usarlo después.</td>
+                </tr>
+                <tr>
+                    <td><strong>Patrón regex (custom)</strong></td>
+                    <td>Aparece si el tipo es <code>custom</code>. Expresión regular de la forma esperada (ej. <code>^[A-Z0-9]+$</code>). Obligatoria al guardar un campo custom.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
