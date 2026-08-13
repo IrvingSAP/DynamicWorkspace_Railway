@@ -98,15 +98,21 @@ Detalle y prioridad: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md).
 |-----------|------|------|
 | ⭐⭐⭐⭐⭐ | File Clean | Limpieza pre-Gate; reuso de reglas DMS · **hecho** |
 | ⭐⭐⭐⭐⭐ | File Watch | Ingestión automática (después de Clean/Split·Merge) |
-| ⭐⭐⭐⭐ | Data Profiler · Split/Merge | Complementan Scout / lotes |
+| ⭐⭐⭐⭐ | Data Profiler / Repair (**pendiente revisión**) · Split/Merge (**hecho**) · Watch (**previsto**) | Ver [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) |
 | — | File Convert | **No** como app; modo simple en FilePipe |
 | — | File Diff | **No** como app; cubierto por File Match |
 
-### 4.2 PLATFORM API — ejecución remota
+### 4.2 FILE PIPELINE — orquestación multi-app
+
+Detalle: [`FILE_PIPELINE.md`](FILE_PIPELINE.md).
+
+Capacidad de plataforma para **componer** pasos (Clean → Merge → Gate → …) con informe OK/Error por etapa. Consumida por UI, Watch, Scheduler y **PLATFORM API**.
+
+### 4.3 PLATFORM API — ejecución remota
 
 Detalle: [`PLATFORM_API.md`](PLATFORM_API.md).
 
-Capa HTTP alineada a **todas las apps ejecutables** (Gate, Pipe, Reverse, Match, Scout, futuras FILE_OPS). Misma semántica que la UI: proyecto + versión publicada + archivo(s) → job + informe/salida. Disparador hermano de Watch/Scheduler.
+Capa HTTP alineada a **todas las apps ejecutables** y, previsto, a **pipelines** (`mode=job` \| `mode=pipeline`). Misma semántica que la UI: proyecto/pipeline publicado + archivo(s) → run + informe/salida. Disparador hermano de Watch/Scheduler.
 
 ---
 
@@ -121,9 +127,14 @@ Capa HTTP alineada a **todas las apps ejecutables** (Gate, Pipe, Reverse, Match,
 | **1 (en curso)** | **Sembrador de perfiles** | MVP P0 M1–M4 · `feature/profile-seed` — [`PROFILE_SEED.md`](PROFILE_SEED.md) · [`ps_integration.md`](definition_app_PROFILE_SEED/ps_integration.md) |
 | 2 | **Catálogos / maestros** | Propuesta — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §5 |
 | 3 | **File Clean** (FILE_OPS) | **Hecho** — [`FILE_CLEAN.md`](FILE_CLEAN.md) · [`definition_app_FILE_CLEAN/`](definition_app_FILE_CLEAN/) |
-| 3b | **File Split/Merge** (FILE_OPS) | **En definición** — [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) · [`definition_app_FILE_SPLIT_MERGE/`](definition_app_FILE_SPLIT_MERGE/) · `feature/file-split-merge` |
+| 3b | **File Split/Merge** (FILE_OPS) | **Hecho** — [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) · [`definition_app_FILE_SPLIT_MERGE/`](definition_app_FILE_SPLIT_MERGE/) · `main` / Railway (PR #13) |
+| 3c | **Data Profiler** (FILE_OPS) | **Pendiente revisión de aporte** — [`DATA_PROFILER.md`](DATA_PROFILER.md) |
+| 3d | **File Repair** (FILE_OPS) | **Pendiente revisión** — [`FILE_REPAIR.md`](FILE_REPAIR.md) (app / modo Gate / Clean) |
+| 3e | **Watch + Scheduler** (FILE_OPS) | **Previsto**; forma de trabajo TBD — [`FILE_WATCH.md`](FILE_WATCH.md) · [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) |
+| 3f | **Archive / Schema Registry** | **Previsto**; forma TBD — [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md) · [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) |
+| 3g | **File Pipeline** (plataforma) | **Propuesta** — orquestación multi-app — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) |
 | 4 | **Formularios de captura** | Abre el producto a usuarios que no manejan archivos |
-| 5 | **Scheduling / Watch / API** | Roadmap + [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) · [`PLATFORM_API.md`](PLATFORM_API.md) |
+| 5 | **PLATFORM API** | Tras apps FILE_OPS; puede ejecutar Job o Pipeline — [`PLATFORM_API.md`](PLATFORM_API.md) |
 
 > Detalle §2: [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §1 / §13.  
 > Detalle ops: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §16.
@@ -164,9 +175,11 @@ Si la respuesta es “sí” a 1–4, conviene un doc hermano al estilo `DataMap
 | Explorador de estructura | **Hecho (MVP M1–M7)** — [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) · `apps/structure_scout/` · `main` |
 | Sembrador de perfiles | **MVP P0 en código** — [`PROFILE_SEED.md`](PROFILE_SEED.md) · [`ps_integration.md`](definition_app_PROFILE_SEED/ps_integration.md) · rama `feature/profile-seed` |
 | Catálogos / maestros | **Propuesta detallada** — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §5 (`MASTER_CATALOG`) |
-| File Clean / Profiler / Split·Merge | Clean: **hecho** [`FILE_CLEAN.md`](FILE_CLEAN.md); Split/Merge: **en definición** [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md); Diff **retirado** (→ Match); Profiler propuesta — [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) |
-| File Watch / Scheduler / Archive / Schema Registry | **Propuesta (plataforma)** — [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) |
-| **PLATFORM API** (ejecución remota de jobs) | **Propuesta — diferida** hasta cerrar apps FILE_OPS — [`PLATFORM_API.md`](PLATFORM_API.md) |
+| File Clean / Profiler / Split·Merge / Repair | Clean + Split/Merge: **hecho**; Profiler + Repair: **pendiente revisión** — [`DATA_PROFILER.md`](DATA_PROFILER.md), [`FILE_REPAIR.md`](FILE_REPAIR.md); Diff **retirado** |
+| File Watch / Scheduler | **Previsto**; forma de trabajo TBD — [`FILE_WATCH.md`](FILE_WATCH.md), [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) |
+| File Archive / Schema Registry | **Previsto**; forma TBD — [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md), [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) |
+| **File Pipeline** (orquestación multi-app) | **Propuesta** — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) |
+| **PLATFORM API** (ejecución remota) | **Propuesta — diferida**; Job suelto o Pipeline — [`PLATFORM_API.md`](PLATFORM_API.md) |
 | File Convert (app) | **Descartado** como app — modo simple en FilePipe |
 | Formularios de captura | Propuesta |
 | Checklists / inspecciones | Propuesta |

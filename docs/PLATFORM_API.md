@@ -76,7 +76,7 @@ Cliente (ERP / bot / middleware)
 2. **Polimórfico por `kind`** — un patrón común; el shape de I/O varía por app.  
 3. **MVP = apuntar a proyecto publicado** — no enviar el esquema completo en cada request.  
 4. **Sync para lotes chicos; async para lotes grandes**.  
-5. **API es disparador**, junto a Upload, Watch y Scheduler — no sustituye FILE_OPS ni §2.
+5. **API es disparador**, junto a Upload, Watch, Scheduler y **Pipeline** — no sustituye FILE_OPS ni §2; puede ejecutar un job suelto **o** un pipeline compuesto.
 
 ---
 
@@ -84,24 +84,26 @@ Cliente (ERP / bot / middleware)
 
 ```text
 Disparadores
-├── UI (upload manual)
+├── UI (upload manual / ejecutar pipeline)
 ├── File Watch (llegada de archivo)     ← FILE_OPS
 ├── File Scheduler (cron / dependencia) ← FILE_OPS
 └── PLATFORM API (HTTP)                 ← este documento
         ↓
-   Job común (archivo + versión + resultado + auditoría)
+   mode=job ──────────→ Job suelto (un kind)
+   mode=pipeline ─────→ FILE PIPELINE orchestrator  ← [`FILE_PIPELINE.md`](FILE_PIPELINE.md)
         ↓
-   Apps: Gate · Pipe · Reverse · Match · Scout
-         (+ Clean · Split/Merge · Repair cuando existan)
+   Runner(s) de app(s): Gate · Pipe · Reverse · Match · Scout · Clean · Split/Merge
+         (+ Repair · Profiler cuando existan)
 ```
 
 | Documento | Relación |
 |-----------|----------|
 | [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) | Verticales que la API **invoca** |
-| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Ops + Job encadenable; API = tercer disparador |
+| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Ops + Job encadenable |
+| [`FILE_PIPELINE.md`](FILE_PIPELINE.md) | Orquestación multi-app; **la API puede ejecutar un pipeline completo** |
 | [`APP_FACTORY.md`](APP_FACTORY.md) §4 | “API / Webhooks” de plataforma |
 
-**No es** una app del sidebar. **Sí es** capacidad de plataforma disponible para **cualquier** `project_kind` ejecutable.
+**No es** una app del sidebar. **Sí es** capacidad de plataforma disponible para **cualquier** `project_kind` ejecutable y, previsto, para **`pipeline_id`**.
 
 ---
 
@@ -120,6 +122,9 @@ La API debe estar **alineada y disponible** para toda app que el sistema pueda e
 | `file_clean` | File Clean | Sí | Archivo limpio + log reglas |
 | `file_split` / `file_merge` | Split/Merge | Sí | Uno o N archivos |
 | `file_repair` | File Repair | Sí | Archivo reparado + auditoría |
+| `file_pipeline` | File Pipeline | Sí (orquestación) | Informe por paso + artifacts finales — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) |
+
+> **`mode=pipeline`:** además del `kind` suelto, la API puede aceptar `pipeline_id` (definición publicada) y delegar en el orquestador FILE_PIPELINE. Ver [`FILE_PIPELINE.md`](FILE_PIPELINE.md) §3 y EJ-06.
 
 > **File Diff:** no hay `kind` `file_diff`. Comparación A vs B → `file_match`. Ver [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §8.
 
@@ -507,6 +512,7 @@ UI    ─┘
 |-----------|----------|
 | [`APP_FACTORY.md`](APP_FACTORY.md) | Visión; §4 API/Webhooks; prioridad plataforma |
 | [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Ops; Job encadenable; Watch/Scheduler como hermanos disparadores |
+| [`FILE_PIPELINE.md`](FILE_PIPELINE.md) | Orquestación multi-app; API `mode=pipeline` / `kind=file_pipeline` |
 | [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) | Verticales §2 que la API invoca |
 | [`FILE_GATE.md`](FILE_GATE.md) | Primer kind MVP de validación |
 | [`DataMappingStudio.md`](DataMappingStudio.md) | FilePipe / motor ETL |

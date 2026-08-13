@@ -2,20 +2,23 @@
 
 > **Archivo:** `sm_integration.md`  
 > **Producto:** [`../FILE_SPLIT_MERGE.md`](../FILE_SPLIT_MERGE.md)  
-> **Estado:** borrador
+> **Estado:** **parcial** — chasis / kind / UI **vivos** en `main`; contrato HTTP **diferido** a [`PLATFORM_API.md`](../PLATFORM_API.md)
+
+Este documento no bloquea el cierre del vertical M1–M6. La ampliación de §5 (kinds HTTP, auth, payloads) se hace **cuando se desarrolle la capa PLATFORM API**, no como módulo pendiente de la app Split/Merge.
 
 ---
 
-## 1. Kind y chasis
+## 1. Kind y chasis (implementado)
 
 | Ítem | Valor |
 |------|--------|
 | `Project.project_kind` | `file_split_merge` |
 | Label UI | **File Split/Merge** (Title Case) |
-| App Django (objetivo) | `apps/file_split_merge/` |
+| App Django | `apps/file_split_merge/` |
 | Namespace URLs | `file_split_merge:` |
 | Prefijo | `/app/file-split-merge/` |
-| Estado M1 | **Implementado** (listado, alta, hub, miembros, guía, sidebar) |
+| Migración kind | `apps/projects/migrations/0008_add_file_split_merge_kind.py` |
+| M1–M6 | **Implementados** (proyecto → historial) |
 
 ---
 
@@ -34,7 +37,7 @@ Ejecución (GE) alineada a Clean/Gate para PLATFORM_API.
 | Serializers | Escritura de partes / consolidado |
 | Intake / storage jobs | Upload y artifacts |
 | Patrones Clean (hub, publish, history) | UI y ciclo de vida |
-| UI_MESSAGES / error_code | Respuestas servicio |
+| UI_MESSAGES / error_code | Respuestas servicio · §3.15 |
 
 **No reusar:** Target mapping de negocio, Match compare, reglas de limpieza Clean (salvo dedupe genérico si se comparte motor).
 
@@ -48,21 +51,23 @@ Clean (opcional) → Split/Merge (descarga) → usuario sube a Gate / Pipe / Mat
 
 ---
 
-## 5. PLATFORM_API (futuro)
+## 5. PLATFORM_API (diferido)
 
-| Kind | Entrada | Salida |
-|------|---------|--------|
+> Ampliar esta sección al implementar [`../PLATFORM_API.md`](../PLATFORM_API.md). El runner interno (`run_sm_job`) ya es el punto de enganche.
+
+| Kind (propuesta) | Entrada | Salida |
+|------------------|---------|--------|
 | `file_split` | 1 file | N outputs + manifiesto |
 | `file_merge` | `files[]` | 1 output |
 
-Alternativa: un solo `kind=file_split_merge` + `operation` en el body. Decidir en implementación API; el runner interno debe soportar ambas operaciones.
+Alternativa: un solo `kind=file_split_merge` + `operation` en el body. Decidir en implementación API; el runner interno soporta ambas operaciones.
 
 ---
 
 ## 6. Sidebar
 
-Entrada en menú UF junto a File Clean / Gate / Match, solo si la compañía/paquete lo habilita (mismo patrón de feature flags si aplica).
+Entrada en menú UF junto a File Clean / Gate / Match (`templates/includes/sidebar_uf.html`), sujeta a paquete/feature flags si aplica.
 
 ---
 
-*Actualizar este archivo al cablear settings, urls y migración de kind.*
+*Chasis cableado. Pendiente solo el contrato HTTP unificado con PLATFORM_API.*
