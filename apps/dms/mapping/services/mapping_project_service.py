@@ -1,7 +1,9 @@
 import logging
 
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Max, Q
+from django.db.models.functions import Coalesce
+from django.utils import timezone as dj_timezone
 
 from apps.accounts.models import UserProfile
 from apps.core.services.operation_result import OperationResult
@@ -107,12 +109,24 @@ def _version_label(project: Project) -> str:
     return "Sin versión publicada"
 
 
+def _format_last_execution(value) -> str:
+    if value is None:
+        return "—"
+    when = value
+    if dj_timezone.is_aware(when):
+        when = dj_timezone.localtime(when)
+    return when.strftime("%Y-%m-%d %H:%M")
+
+
 def list_with_stats(user):
     projects = list(visible_projects_qs(user).order_by("-updated_at"))
     project_ids = [project.id for project in projects]
 
     member_counts: dict = {}
+    last_executions: dict = {}
     if project_ids:
+        from apps.dms.file_intake.models import DmsExecutionJob
+
         for row in (
             ProjectMembership.objects.filter(
                 project_id__in=project_ids,
@@ -122,6 +136,17 @@ def list_with_stats(user):
             .annotate(count=Count("id"))
         ):
             member_counts[row["project_id"]] = row["count"]
+
+        for row in (
+            DmsExecutionJob.objects.filter(
+                project_id__in=project_ids,
+                job_type=DmsExecutionJob.JOB_FULL,
+            )
+            .exclude(status=DmsExecutionJob.STATUS_UPLOADED)
+            .values("project_id")
+            .annotate(last_at=Max(Coalesce("finished_at", "created_at")))
+        ):
+            last_executions[row["project_id"]] = row["last_at"]
 
     rows = []
     for project in projects:
@@ -136,7 +161,9 @@ def list_with_stats(user):
                 "visibility": visibility,
                 "visibility_label": VISIBILITY_LABELS.get(visibility, visibility),
                 "version_label": _version_label(project),
-                "last_execution": "—",
+                "last_execution": _format_last_execution(
+                    last_executions.get(project.id)
+                ),
                 "member_count": member_counts.get(project.id, 0),
                 "is_pa": role_code == ProjectMembership.ROLE_PA,
             }
@@ -283,6 +310,13 @@ def get_hub_context(user, project: Project) -> dict:
         project=project, status=DmsExecutionJob.STATUS_UPLOADED
     ).count()
     intake_ready = has_published and jobs_uploaded_count > 0
+    execute_complete = DmsExecutionJob.objects.filter(
+        project=project,
+        status__in={
+            DmsExecutionJob.STATUS_COMPLETED,
+            DmsExecutionJob.STATUS_PARTIAL,
+        },
+    ).exists()
 
     # Fase B: done | active (siguiente pendiente) | pending
     if source_complete:
@@ -318,12 +352,19 @@ def get_hub_context(user, project: Project) -> dict:
     else:
         publish_step_class = "is-pending"
 
-    if intake_ready:
+    if execute_complete:
         execute_step_class = "is-done"
     elif has_published:
         execute_step_class = "is-active"
     else:
         execute_step_class = "is-pending"
+
+    if execute_complete:
+        history_step_class = "is-done"
+    elif has_published:
+        history_step_class = "is-pending"
+    else:
+        history_step_class = "is-pending"
 
     return {
         "role": role_code,
@@ -343,6 +384,7 @@ def get_hub_context(user, project: Project) -> dict:
         "samples_count": samples_count,
         "jobs_uploaded_count": jobs_uploaded_count,
         "intake_ready": intake_ready,
+        "execute_complete": execute_complete,
         "source_steps_complete": source_wizard.steps_complete,
         "target_steps_complete": target_wizard.steps_complete,
         "source_file_type_label": source_wizard.file_type_label,
@@ -359,4 +401,5 @@ def get_hub_context(user, project: Project) -> dict:
         "rules_step_class": rules_step_class,
         "publish_step_class": publish_step_class,
         "execute_step_class": execute_step_class,
+        "history_step_class": history_step_class,
     }

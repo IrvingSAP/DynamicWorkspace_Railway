@@ -1,5 +1,6 @@
 from django.contrib import messages
 import json
+from uuid import UUID
 
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
@@ -13,6 +14,11 @@ from apps.dms.source_profile.services import (
     source_profile_catalog_service,
     source_profile_service,
     version_publish_service,
+)
+from apps.profile_seed.services import (
+    apply_seed_service,
+    profile_seed_service,
+    seed_history_service,
 )
 from apps.projects.services import project_service
 
@@ -41,6 +47,11 @@ def _base_context(request, project, current_step: int | None = None) -> dict:
     membership = project_service.get_membership(request.user, project)
     wizard = source_profile_service.get_wizard_context(project, membership)
     source = source_persistence_service.get_source_dict(project)
+    seed_ctx = profile_seed_service.get_seed_context(
+        request.user,
+        project,
+        destination_slot=profile_seed_service.TARGET_SLOT_SOURCE,
+    )
     return {
         "project": project,
         "wizard": wizard,
@@ -54,6 +65,7 @@ def _base_context(request, project, current_step: int | None = None) -> dict:
         "source_save_url": reverse("dms:source_save", kwargs={"project_slug": project.slug}),
         "source_publish_url": reverse("dms:source_publish", kwargs={"project_slug": project.slug}),
         "version_publish": version_publish_service.get_publish_context(project),
+        **seed_ctx,
     }
 
 
@@ -355,3 +367,213 @@ def source_publish(request, project_slug: str):
     else:
         messages.error(request, result.user_message)
     return redirect(redirect_to)
+
+
+@_source_view
+def source_seed_hub(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("dms:mapping_list")
+    if not profile_seed_service.user_can_import(request.user, project):
+        messages.error(request, profile_seed_service.MSG_NO_IMPORT)
+        return redirect("dms:source_hub", project_slug=project_slug)
+    return _render(request, project_slug, "profile_seed/seed_entry.html")
+
+
+@_source_view
+def source_seed_hub_help(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("dms:mapping_list")
+    from_key = (request.GET.get("from") or "").strip().lower()
+    if from_key == "hub":
+        help_back_url_name = "dms:source_hub"
+        help_back_label = "← Origen"
+        help_from_hub = True
+    else:
+        can_import = profile_seed_service.user_can_import(request.user, project)
+        if can_import:
+            help_back_url_name = "dms:source_seed_hub"
+            help_back_label = "← Volver a Importar"
+            help_from_hub = False
+        else:
+            help_back_url_name = "dms:source_hub"
+            help_back_label = "← Origen"
+            help_from_hub = True
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/seed_entry_help.html",
+        help_back_url_name=help_back_url_name,
+        help_back_label=help_back_label,
+        help_from_hub=help_from_hub,
+    )
+
+
+@_source_view
+def source_seed_picker(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("dms:mapping_list")
+    if not profile_seed_service.user_can_import(request.user, project):
+        messages.error(request, profile_seed_service.MSG_NO_IMPORT)
+        return redirect("dms:source_hub", project_slug=project_slug)
+
+    source_kind = (request.GET.get("kind") or "").strip() or None
+    source_id_raw = (request.GET.get("source_id") or "").strip()
+    source_id = None
+    if source_id_raw:
+        source_id = profile_seed_service.parse_source_project_id(source_id_raw)
+        if source_id is None:
+            source_id = UUID("00000000-0000-0000-0000-000000000000")
+
+    picker = profile_seed_service.get_source_picker_context(
+        request.user,
+        project,
+        source_kind=source_kind,
+        source_id=source_id,
+        destination_slot=profile_seed_service.TARGET_SLOT_SOURCE,
+    )
+    if picker.get("invalid_source") or (
+        source_id_raw and profile_seed_service.parse_source_project_id(source_id_raw) is None
+    ):
+        messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
+        picker["invalid_source"] = True
+        picker["selected_source"] = None
+        picker["selected_source_id"] = None
+    if not picker.get("source_kind_supported"):
+        messages.warning(request, profile_seed_service.MSG_KIND_UNSUPPORTED)
+
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/source_picker.html",
+        **picker,
+    )
+
+
+@_source_view
+def source_seed_picker_help(request, project_slug: str):
+    return _render(request, project_slug, "profile_seed/source_picker_help.html")
+
+
+def _parse_source_id(raw: str | None):
+    return profile_seed_service.parse_source_project_id(raw)
+
+
+@_source_view
+@require_http_methods(["GET", "POST"])
+def source_seed_apply(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("dms:mapping_list")
+    if not profile_seed_service.user_can_import(request.user, project):
+        messages.error(request, profile_seed_service.MSG_NO_IMPORT)
+        return redirect("dms:source_hub", project_slug=project_slug)
+
+    if request.method == "POST":
+        source_id = _parse_source_id(request.POST.get("source_id"))
+        source_kind = (request.POST.get("kind") or "").strip() or None
+        action = (request.POST.get("action") or "").strip()
+        if action != "apply":
+            messages.error(request, apply_seed_service.MSG_APPLY_FAIL)
+            return redirect("dms:source_seed_picker", project_slug=project_slug)
+        result = apply_seed_service.apply_seed_to_draft(
+            request.user,
+            project,
+            source_id=source_id,
+            destination_slot=profile_seed_service.TARGET_SLOT_SOURCE,
+            source_kind=source_kind,
+        )
+        if result.ok:
+            messages.success(request, result.user_message)
+            return redirect("dms:source_hub", project_slug=project_slug)
+        messages.error(request, result.user_message)
+        if source_id:
+            qs = f"?source_id={source_id}"
+            if source_kind:
+                qs += f"&kind={source_kind}"
+            return redirect(
+                reverse(
+                    "dms:source_seed_apply",
+                    kwargs={"project_slug": project_slug},
+                )
+                + qs
+            )
+        return redirect("dms:source_seed_picker", project_slug=project_slug)
+
+    source_id = _parse_source_id(request.GET.get("source_id"))
+    source_kind = (request.GET.get("kind") or "").strip() or None
+    if source_id is None:
+        messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
+        return redirect("dms:source_seed_picker", project_slug=project_slug)
+
+    preview = apply_seed_service.get_apply_preview(
+        request.user,
+        project,
+        source_id,
+        destination_slot=profile_seed_service.TARGET_SLOT_SOURCE,
+        source_kind=source_kind,
+    )
+    if preview is None:
+        messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
+        return redirect("dms:source_seed_picker", project_slug=project_slug)
+
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/apply_confirm.html",
+        **preview,
+    )
+
+
+@_source_view
+def source_seed_apply_help(request, project_slug: str):
+    return _render(request, project_slug, "profile_seed/apply_confirm_help.html")
+
+
+@_source_view
+def source_seed_history(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("dms:mapping_list")
+    status = (request.GET.get("status") or "").strip()
+    history = seed_history_service.get_history_hub_context(
+        request.user,
+        project,
+        status=status,
+        destination_slot=profile_seed_service.TARGET_SLOT_SOURCE,
+    )
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/history_hub.html",
+        **history,
+    )
+
+
+@_source_view
+def source_seed_history_detail(request, project_slug: str, event_id):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("dms:mapping_list")
+    detail = seed_history_service.get_history_detail_context(
+        request.user,
+        project,
+        event_id,
+        destination_slot=profile_seed_service.TARGET_SLOT_SOURCE,
+    )
+    if detail is None:
+        messages.error(request, seed_history_service.MSG_EVENT_NOT_FOUND)
+        return redirect("dms:source_seed_history", project_slug=project_slug)
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/history_detail.html",
+        **detail,
+    )
+
+
+@_source_view
+def source_seed_history_help(request, project_slug: str):
+    return _render(request, project_slug, "profile_seed/history_help.html")

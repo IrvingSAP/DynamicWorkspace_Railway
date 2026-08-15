@@ -92,7 +92,7 @@ Descargar archivo limpio + log de cambios
 
 | Incluido | Descripción |
 |----------|-------------|
-| Proyecto `project_kind=file_clean` | Alta, hub, miembros (PA/ED/CO/GE) |
+| Proyecto `project_kind=file_clean` | Alta, hub, miembros (PA/ED/CO/GE/CG) |
 | Perfil de lectura | Tipo de archivo, encoding, captura, campos (reuso source / catálogo DMS) |
 | Reglas de limpieza | Catálogo versionable, ordenadas, por campo o globales |
 | Publicar versión | Congela perfil + reglas; solo se ejecuta lo publicado |

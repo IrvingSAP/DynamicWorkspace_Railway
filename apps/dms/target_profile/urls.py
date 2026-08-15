@@ -5,6 +5,31 @@ from apps.dms.target_profile import views
 urlpatterns = [
     path("", views.hub, name="target_hub"),
     path("ayuda/", views.hub_help, name="target_hub_help"),
+    path("importar/", views.target_seed_hub, name="target_seed_hub"),
+    path("importar/ayuda/", views.target_seed_hub_help, name="target_seed_hub_help"),
+    path("importar/origen/", views.target_seed_picker, name="target_seed_picker"),
+    path(
+        "importar/origen/ayuda/",
+        views.target_seed_picker_help,
+        name="target_seed_picker_help",
+    ),
+    path("importar/confirmar/", views.target_seed_apply, name="target_seed_apply"),
+    path(
+        "importar/confirmar/ayuda/",
+        views.target_seed_apply_help,
+        name="target_seed_apply_help",
+    ),
+    path("importar/historial/", views.target_seed_history, name="target_seed_history"),
+    path(
+        "importar/historial/ayuda/",
+        views.target_seed_history_help,
+        name="target_seed_history_help",
+    ),
+    path(
+        "importar/historial/<uuid:event_id>/",
+        views.target_seed_history_detail,
+        name="target_seed_history_detail",
+    ),
     path("guardar/", views.target_save, name="target_save"),
     path("paso/1/ayuda/", views.step1_help, name="target_step1_help"),
     path("paso/1/", views.step1_file_type, name="target_step1"),

@@ -35,11 +35,7 @@ def user_can_upload_production(user, project: Project) -> bool:
     membership = project_service.get_membership(user, project)
     if membership is None:
         return False
-    return membership.role in (
-        ProjectMembership.ROLE_PA,
-        ProjectMembership.ROLE_ED,
-        ProjectMembership.ROLE_GE,
-    )
+    return ProjectMembership.role_can_execute(membership.role)
 
 
 def _validate_upload_file(uploaded_file, *, allowed_exts: list[str], max_bytes: int) -> OperationResult | None:

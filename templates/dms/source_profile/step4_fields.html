@@ -33,11 +33,13 @@
         <div class="page-actions">
             {% url 'dms:source_step4_help' project_slug=project.slug as source_help_url %}
             {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+            {% include "dms/source_profile/_step4_import_cta.html" %}
             <button type="button" id="btn-add-field" class="btn btn-primary">+ Agregar campo</button>
         </div>
     </div>
 
     {% include "dms/source_profile/_wizard_stepper.html" %}
+    {% include "dms/source_profile/_step4_import_banner.html" %}
 
     <div class="positional-preview" aria-label="Vista previa posicional">
         <div id="positional-ruler" class="positional-ruler"></div>

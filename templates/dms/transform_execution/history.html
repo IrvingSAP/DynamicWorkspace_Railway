@@ -31,18 +31,19 @@
     <div>
         <p class="page-eyebrow">Fase C · Historial</p>
         <h2>Historial de ejecuciones</h2>
-        <p>Jobs completos. Descargas disponibles durante 7 días.</p>
+        <p>Corridas completas (archivo destino + informe). El preview dry run no genera una fila aquí hasta que pulse Ejecutar transformación.</p>
     </div>
     <div class="page-actions">
         {% url 'dms:transform_execution_history_help' project_slug=project.slug as transform_execution_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=transform_execution_help_url %}
+        <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub Proyecto</a>
         <a href="{% url 'dms:transform_execution_hub' project_slug=project.slug %}" class="btn btn-secondary">← Ejecutar</a>
     </div>
 </div>
 
+{% if history_jobs %}
 <div class="panel">
     <div class="panel-body">
-        {% if history_jobs %}
         <div class="table-scroll">
             <table class="data-table">
                 <thead>
@@ -66,7 +67,7 @@
                         <td>{{ job.input_filename }}</td>
                         <td>{{ job.output_filename|default:"—" }}</td>
                         <td>{{ job.rows_ok }}{% if job.rows_rejected %} / {{ job.rows_rejected }} rej.{% endif %}</td>
-                        <td><span class="flow-card-status flow-card-status--{% if job.status == 'completed' %}done{% elif job.status == 'partial' %}draft{% else %}empty{% endif %}">{{ job.status }}</span></td>
+                        <td><span class="flow-card-status flow-card-status--{% if job.status == 'completed' %}done{% elif job.status == 'partial' %}draft{% else %}empty{% endif %}">{{ job.status_label }}</span></td>
                         <td>
                             {% if job.expired %}
                             <span class="hint">Archivo expirado</span>
@@ -77,21 +78,98 @@
                             {% else %}
                             —
                             {% endif %}
+                            {% if job.can_delete %}
+                            <form method="post" action="{% url 'dms:transform_execution_history_delete' project_slug=project.slug job_id=job.id %}" class="js-history-delete-form" data-confirm="¿Eliminar esta corrida? Se borrarán el registro y los archivos generados." style="display:inline;margin:0">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary btn-sm">Eliminar</button>
+                            </form>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        {% else %}
-        <div class="empty-state">
-            <h3>Sin ejecuciones</h3>
-            <p>Cuando ejecute una transformación aparecerán aquí.</p>
-        </div>
-        {% endif %}
     </div>
 </div>
+{% endif %}
+
+{% if uploaded_jobs %}
+<div class="panel"{% if history_jobs %} style="margin-top:16px"{% endif %}>
+    <div class="panel-body">
+        <h3 class="form-section-title">Pendientes de ejecución completa</h3>
+        <p class="hint">Archivos subidos. «Solo preview» no deja corrida ni archivo destino; use Ejecutar transformación.</p>
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Subido</th>
+                        <th>Archivo</th>
+                        <th>Versión</th>
+                        <th>Último preview</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in uploaded_jobs %}
+                    <tr>
+                        <td>{{ job.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>{{ job.original_filename }}</td>
+                        <td>v{{ job.version_number }}</td>
+                        <td>
+                            {% if job.last_preview %}
+                            OK {{ job.last_preview.rows_ok }} · leídas {{ job.last_preview.rows_read }}{% if job.last_preview.rows_rejected %} · rej. {{ job.last_preview.rows_rejected }}{% endif %}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if job.can_delete %}
+                            <form method="post" action="{% url 'dms:transform_execution_history_delete' project_slug=project.slug job_id=job.id %}" class="js-history-delete-form" data-confirm="¿Eliminar este archivo pendiente? Se borrará el registro y el archivo subido." style="display:inline;margin:0">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary btn-sm">Eliminar</button>
+                            </form>
+                            {% endif %}
+                            <a class="btn btn-primary btn-sm" href="{% url 'dms:transform_execution_hub' project_slug=project.slug %}">Ejecutar transformación</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if not history_jobs and not uploaded_jobs %}
+<div class="panel">
+    <div class="panel-body">
+        <div class="empty-state">
+            <h3>Sin ejecuciones</h3>
+            <p>Suba un archivo de producción y pulse <strong>Ejecutar transformación</strong> (no solo preview).</p>
+            <a href="{% url 'dms:file_intake_hub' project_slug=project.slug %}" class="btn btn-secondary">Subir archivo</a>
+            <a href="{% url 'dms:transform_execution_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a ejecutar</a>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("form.js-history-delete-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            if (typeof dwConfirmWarning !== "function") {
+                return;
+            }
+            e.preventDefault();
+            var message = form.getAttribute("data-confirm") || "¿Eliminar?";
+            dwConfirmWarning(message, function () {
+                HTMLFormElement.prototype.submit.call(form);
+            });
+        });
+    });
+});
+</script>
 {% endblock %}

@@ -31,6 +31,7 @@ Documentación segregada por **app**: responsabilidades, modelos, reglas, diseñ
 | [`PROTOTIPOS.md`](PROTOTIPOS.md) | Flujo de prototipos HTML (`prototype/`) |
 | [`records_datatables_design.md`](records_datatables_design.md) | Diseño DataTables tipo hoja de cálculo (`apps.records`) |
 | [`accounts_provisioning.md`](accounts_provisioning.md) | Carga masiva UF por CSV (**pendiente** Fase 1+) |
+| [`project_status_future.md`](project_status_future.md) | **Futura mejora:** estado de proyecto Activo / Inactivo / En proceso (todas las apps + Pepeline) |
 
 ## Modelos de datos
 

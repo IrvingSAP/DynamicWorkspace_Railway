@@ -36,6 +36,7 @@
         <div class="page-actions">
             {% url 'dms:target_step4_help' project_slug=project.slug as target_help_url %}
             {% include "projects/includes/project_help_link.html" with help_url=target_help_url %}
+            {% include "dms/target_profile/_step4_import_cta.html" %}
             {% if can_edit_target %}
             <button type="button"
                     id="btn-import-from-source"

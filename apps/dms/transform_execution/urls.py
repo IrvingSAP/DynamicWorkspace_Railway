@@ -8,6 +8,11 @@ urlpatterns = [
     path("historial/ayuda/", views.history_help, name="transform_execution_history_help"),
     path("historial/", views.history, name="transform_execution_history"),
     path(
+        "historial/<uuid:job_id>/eliminar/",
+        views.history_delete_job,
+        name="transform_execution_history_delete",
+    ),
+    path(
         "jobs/<uuid:job_id>/preview/",
         views.job_preview,
         name="transform_execution_preview",

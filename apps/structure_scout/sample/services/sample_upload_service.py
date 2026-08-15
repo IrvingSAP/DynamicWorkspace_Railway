@@ -31,15 +31,11 @@ MSG_TOO_BIG = "El archivo supera el límite de 10 MB para muestras."
 
 
 def user_can_upload_sample(user, project: Project) -> bool:
-    """PA / ED / GE (SU3)."""
+    """PA / ED / GE / CG (SU3)."""
     membership = project_service.get_membership(user, project)
     if membership is None:
         return False
-    return membership.role in (
-        ProjectMembership.ROLE_PA,
-        ProjectMembership.ROLE_ED,
-        ProjectMembership.ROLE_GE,
-    )
+    return ProjectMembership.role_can_execute(membership.role)
 
 
 def user_can_view_preview(user, project: Project) -> bool:

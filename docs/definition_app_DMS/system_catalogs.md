@@ -832,7 +832,7 @@ Los 8 tipos documentados en [`field_mapping.md`](field_mapping.md) §Generadores
 
 ### Por qué existe
 
-Al invitar miembros, la UI ofrece **paquetes** administrables. Cada paquete se traduce a un rol de `ProjectMembership` (`PA` / `ED` / `CO` / `GE`) vía `maps_to_role`. Los checks de autorización en servicios siguen usando el rol corto.
+Al invitar miembros, la UI ofrece **paquetes** administrables. Cada paquete se traduce a un rol de `ProjectMembership` (`PA` / `ED` / `CO` / `GE` / `CG`) vía `maps_to_role`. Los checks de autorización en servicios siguen usando el rol corto.
 
 ### Campos
 
@@ -840,13 +840,13 @@ Al invitar miembros, la UI ofrece **paquetes** administrables. Cada paquete se t
 |-------|------|--------|
 | `code` | slug | Ej. `admin`, `editor`, `view_only` |
 | `name` | string | Etiqueta UI |
-| `maps_to_role` | `PA`\|`ED`\|`CO`\|`GE` | Rol persistido en membership |
+| `maps_to_role` | `PA`\|`ED`\|`CO`\|`GE`\|`CG` | Rol persistido en membership |
 | `permissions` | JSON lista | Documentación / futuro granular |
 | `sort_order` / `is_active` | — | Estándar |
 
 ### Semilla
 
-`admin`→PA, `editor`→ED, `viewer`→CO, `executor`→GE, más alias documentados (`view_only`, `update_view`, `update_view_create`, `full_crud`).
+`admin`→PA, `editor`→ED, `viewer`→CO, `executor`→GE, `consulta_generar`→CG, más alias documentados (`view_only`, `update_view`, `update_view_create`, `full_crud`).
 
 ---
 

@@ -10,6 +10,7 @@ ROLE_CODES = frozenset(
         ProjectMembership.ROLE_ED,
         ProjectMembership.ROLE_CO,
         ProjectMembership.ROLE_GE,
+        ProjectMembership.ROLE_CG,
     }
 )
 
@@ -44,6 +45,12 @@ FALLBACK_PACKAGES = [
         "code": "executor",
         "name": "Generar / ejecutar",
         "maps_to_role": ProjectMembership.ROLE_GE,
+        "permissions": ["view", "execute"],
+    },
+    {
+        "code": "consulta_generar",
+        "name": "Consulta-Generar",
+        "maps_to_role": ProjectMembership.ROLE_CG,
         "permissions": ["view", "execute"],
     },
     {
@@ -99,10 +106,10 @@ def list_permission_packages(*, active_only: bool = True) -> list[dict]:
 
 def role_choices_for_ui() -> list[dict]:
     """
-    Opciones UI de miembro: una por rol PA/ED/CO/GE (primer paquete activo que mapee).
+    Opciones UI de miembro: una por rol PA/ED/CO/GE/CG (primer paquete activo que mapee).
     value = maps_to_role para no romper change_role / membership.
     """
-    preferred = ["admin", "editor", "viewer", "executor"]
+    preferred = ["admin", "editor", "viewer", "executor", "consulta_generar"]
     by_role: dict[str, dict] = {}
     packages = list_permission_packages(active_only=True)
     packages.sort(
@@ -129,6 +136,7 @@ def role_choices_for_ui() -> list[dict]:
             ProjectMembership.ROLE_ED,
             ProjectMembership.ROLE_CO,
             ProjectMembership.ROLE_GE,
+            ProjectMembership.ROLE_CG,
         ]
         return [by_role[role] for role in order if role in by_role]
     return [
@@ -138,7 +146,7 @@ def role_choices_for_ui() -> list[dict]:
 
 
 def resolve_role_code(raw: str) -> str | None:
-    """Acepta código de rol PA/ED/CO/GE o código de paquete → maps_to_role."""
+    """Acepta código de rol PA/ED/CO/GE/CG o código de paquete → maps_to_role."""
     value = (raw or "").strip()
     if not value:
         return None

@@ -76,7 +76,7 @@ Usuario confirma · ajusta · publica en la app destino
 | Alternativa | Limitación | Diferenciador PROFILE_SEED |
 |-------------|------------|----------------------------|
 | Volver a armar el wizard | Lento, error-prone | Clone de lo ya gobernado |
-| STRUCTURE SCOUT | Parte de **muestra**; no de definición publicada | Seed exige definición **ya publicada** |
+| STRUCTURE SCOUT | Parte de **muestra**; no publica contrato DMS | Seed clona publicados; **excepción FilePipe:** también el borrador Scout current |
 | Bridge FILE GATE | Pre-check por **hash** de job; no copia perfil | Seed = **estructura**, no veredicto de archivo |
 | Copiar/pegar JSON a mano | Sin roles ni auditoría | Flujo con permisos + historial |
 | Perfil compartido por FK | Cascading breaks entre apps | **Solo clone snapshot** (decisión congelada) |
@@ -93,7 +93,7 @@ Usuario confirma · ajusta · publica en la app destino
 | FILE MATCH | Destino P0 (Perfil A); también B / origen |
 | Reverse Studio | Destino: contrato de **entrada**; origen: entrada publicada |
 | FilePipe | Origen/destino: SourceProfile del origen (Fase 2+ si no entra MVP) |
-| STRUCTURE SCOUT | Complemento: Scout = muestra → draft; Seed = definición → draft |
+| STRUCTURE SCOUT | También origen FilePipe: borrador current; Scout M6 aplica a GATE/Reverse |
 | Bridge GATE | Distinto producto; no mezclar en el mismo flujo UX |
 
 ---
@@ -130,6 +130,9 @@ Escenarios típicos:
 |----------|------|
 | GATE publicado → Match Perfil A | **P0** |
 | GATE / CLEAN publicados → File Split/Merge (perfil lectura) | **Implementado** (host SM) |
+| GATE / CLEAN / otro FilePipe / Match A+B / Reverse / Split-Merge → FilePipe origen | **Implementado** (host DMS `/origen/importar/`) |
+| GATE / CLEAN / otro FilePipe / Match A+B / Reverse / Split-Merge → FilePipe destino | **Implementado** (host DMS `/destino/importar/`) |
+| Más orígenes → FilePipe (Scout) | **Pendiente (evaluar)** — tablero en [`definition_app_DMS/source_definition.md`](definition_app_DMS/source_definition.md) § Importar estructura |
 | GATE → Match Perfil B | P1 |
 | GATE → Reverse entrada | P2 |
 | Match A ↔ Match B / otro Match | P3 — **parcial:** A→B mismo proyecto en hub Perfil B |
@@ -162,8 +165,8 @@ Escenarios típicos:
 | **FILE MATCH** | Destino prioritario (Perfil A/B); origen posible (Fase 2 hacia SM) |
 | **FILE SPLIT/MERGE** | Destino (perfil de lectura); orígenes P0: Gate + Clean |
 | **Reverse Studio** | Destino: contrato de entrada; origen: entrada publicada |
-| **FilePipe** | Origen/destino SourceProfile (prioridad baja / Fase 2 hacia SM) |
-| **STRUCTURE SCOUT** | Complemento (muestra vs definición); Fase 2 hacia SM |
+| **FilePipe** | Destino: definición de origen o destino. Combo: GATE, CLEAN, otro FilePipe, Match A/B, Reverse entrada, Split/Merge, Scout (borrador). |
+| **STRUCTURE SCOUT** | Origen FilePipe = `StructureDraft` current. «Aplicar a destino» en Scout sigue siendo Scout → GATE/Reverse. |
 | **Bridge GATE** | Distinto (hash de job vs clone de estructura) |
 
 ```mermaid
@@ -279,7 +282,8 @@ flowchart LR
 ### 7.3 Fase 2
 
 - [ ] Diff campo a campo / merge asistido
-- [ ] FilePipe origen/destino
+- [x] FilePipe origen/destino (host DMS; orígenes GATE+CLEAN+otro FilePipe+Match A/B+Reverse+Split/Merge)
+- [ ] FilePipe: más orígenes en el combo (tablero en [`definition_app_DMS/source_definition.md`](definition_app_DMS/source_definition.md))
 - [ ] Hacia Split/Merge: Match A/B, Reverse entrada, FilePipe, SM→SM, Scout apply
 - [ ] Hub propio con kind `profile_seed` (si el MVP delgado no basta)
 - [ ] API / webhook de seed

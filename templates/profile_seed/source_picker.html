@@ -36,7 +36,11 @@
     <div>
         <p class="page-eyebrow">PROFILE SEED · Elegir origen</p>
         <h2>Elegir origen publicado</h2>
+        {% if source_kind == 'structure_scout' %}
+        <p>Seleccione el <strong>borrador Scout actual</strong> (no es un contrato publicado). El destino FilePipe queda en borrador; no se publica.</p>
+        {% else %}
         <p>Seleccione un contrato o perfil <strong>publicado</strong> de la misma compañía. No publica el destino.</p>
+        {% endif %}
     </div>
     <div class="page-actions">
         {% url seed_host.seed_picker_help_url_name project_slug=project.slug as seed_help_url %}
@@ -90,7 +94,7 @@
         <p class="hint" style="margin-top:12px">{{ msg_kind_unsupported }}</p>
         {% elif not has_sources %}
         <div class="empty-state" style="margin-top:16px">
-            <h3>Sin orígenes publicados</h3>
+            <h3>{% if source_kind == 'structure_scout' %}Sin borradores Scout{% else %}Sin orígenes publicados{% endif %}</h3>
             <p>{{ msg_no_sources }}</p>
             <a href="{% url empty_origins_cta.url_name %}" class="btn btn-primary">{{ empty_origins_cta.label }}</a>
             <a href="{% url seed_host.seed_hub_url_name project_slug=project.slug %}" class="btn btn-secondary">← Volver</a>
@@ -155,7 +159,7 @@
         <div class="page-actions" style="margin-top:14px">
             {% if selected_source %}
             <a
-                href="{% url seed_host.seed_apply_url_name project_slug=project.slug %}?source_id={{ selected_source.id }}"
+                href="{% url seed_host.seed_apply_url_name project_slug=project.slug %}?source_id={{ selected_source.id }}&kind={{ source_kind }}"
                 class="btn btn-primary"
             >Continuar a confirmar</a>
             {% else %}

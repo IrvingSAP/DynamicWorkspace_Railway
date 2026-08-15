@@ -380,6 +380,7 @@ def seed_catalogs(apps, schema_editor):
         ("editor", "Editor", "ED", ["view", "create", "update"], 20),
         ("viewer", "Consulta", "CO", ["view"], 30),
         ("executor", "Generar / ejecutar", "GE", ["view", "execute"], 40),
+        ("consulta_generar", "Consulta-Generar", "CG", ["view", "execute"], 45),
         ("view_only", "Solo lectura", "CO", ["view"], 50),
         ("update_view", "Ver y editar", "ED", ["view", "update"], 60),
         ("update_view_create", "Ver, editar y crear", "ED", ["view", "update", "create"], 70),

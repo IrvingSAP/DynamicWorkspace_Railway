@@ -641,6 +641,72 @@ La auto-detección de encoding, tipo y delimitador **no forma del núcleo de def
 | `json`, `xml` como tipo de origen | MVP | Hecho (UI + parser; semilla `mvp`) |
 
 > Nota: patrones y blancos están en semilla **mvp** y habilitados en el asistente.
+
+---
+
+## Importar estructura (Profile Seed)
+
+CTA **Importar estructura** (PA/ED) en el hub de origen y en el **paso 4 (Campos)** — mismo flujo que Split/Merge. Reusa `apps.profile_seed` + templates `templates/profile_seed/` (host FilePipe vía `seed_host`).
+
+El combo **Tipo de origen** no lista todas las apps de la suite: solo las que PROFILE SEED tiene registradas como origen hacia FilePipe. GATE, CLEAN, otro FilePipe, FILE MATCH A/B, Reverse entrada, FILE SPLIT/MERGE y **STRUCTURE SCOUT** (borrador actual) ya tienen adaptador. Este apartado es el **tablero**.
+
+Reglas vigentes: misma compañía, origen con versión **publicada** (salvo Scout: **borrador current** `StructureDraft.payload.source`), escritura solo **borrador** (`save_source` / destino FilePipe), overwrite con aviso, auditoría `ProfileSeedEvent`, **no auto-publicar**. Distinto del bridge FILE GATE (hash de job) y de «Aplicar a destino» en Scout (Scout → GATE/Reverse).
+
+URLs host origen: `/app/filepipe/proyectos/<slug>/origen/importar/…`  
+El mismo tablero aplica al importar hacia **destino** FilePipe (`/destino/importar/…`); ver [`target_definition.md`](target_definition.md).
+
+Producto transversal: [`../PROFILE_SEED.md`](../PROFILE_SEED.md). Código: `SOURCE_KIND_CHOICES_DMS` / `list_eligible_sources` / `apply_seed_service`.
+
+### Combo hoy (Hecho)
+
+| Código combo | App | Slot origen | Estado |
+|--------------|-----|-------------|--------|
+| FILE GATE — Esquema | FILE GATE | `schema` | **Hecho** |
+| FILE CLEAN — Perfil de lectura | FILE CLEAN | `read_profile` | **Hecho** |
+| FilePipe — Origen | FilePipe (otro proyecto) | `source` | **Hecho** (excluye el proyecto destino) |
+| FILE MATCH — Perfil A | FILE MATCH | `profile_a` | **Hecho** (`DmsSourceProfile` = Perfil A publicado) |
+| FILE MATCH — Perfil B | FILE MATCH | `profile_b` | **Hecho** (`FileMatchSourceB`; `kind=file_match_b`) |
+| Reverse Studio — Entrada | Reverse Studio | `input` | **Hecho** (`DmsSourceProfile` de entrada; no clona salida) |
+| FILE SPLIT/MERGE — Perfil de lectura | FILE SPLIT/MERGE | `read_profile` | **Hecho** (no clona reglas Split/Merge) |
+| STRUCTURE SCOUT — Borrador | STRUCTURE SCOUT | `draft` | **Hecho** (`StructureDraft` current; no `DmsMappingVersion`) |
+
+### Fortaleza — orígenes pendientes hacia FilePipe
+
+Orden de desarrollo (el más natural primero: ya comparten `DmsSourceProfile` + `get_published_version`). Al implementar una fila: pasar **Pendiente** → **Hecho** y no abrir la siguiente sin cerrar la actual.
+
+| # | Origen en el combo | App | Slot / nota | Esfuerzo | Estado |
+|---|--------------------|-----|-------------|----------|--------|
+| 1 | FilePipe — Origen | FilePipe (otro proyecto) | `source`. Excluir el proyecto destino (no auto-copia). También siembra destino FilePipe desde el **origen** publicado del otro proyecto (no copia TargetProfile). | Bajo–medio | **Hecho** |
+| 2 | FILE MATCH — Perfil A | FILE MATCH | `profile_a` (`DmsSourceProfile` de la versión publicada). No copia Perfil B ni reglas de cruce. | Medio | **Hecho** |
+| 3 | FILE MATCH — Perfil B | FILE MATCH | `profile_b` (`FileMatchSourceB` de la versión publicada). Combo `file_match_b` para no confundir con A del mismo proyecto. No copia reglas de cruce. | Medio | **Hecho** |
+| 4 | Reverse Studio — Entrada | Reverse Studio | `input` (contrato de entrada publicado en `DmsSourceProfile`). **No** clona el layout de salida. | Bajo–medio | **Hecho** |
+| 5 | FILE SPLIT/MERGE — Perfil de lectura | FILE SPLIT/MERGE | `read_profile` (`DmsSourceProfile` publicado). No clona `sm_rules`. No se ofrece como origen en el combo del propio Split/Merge (otra matriz). | Bajo | **Hecho** |
+| 6 | STRUCTURE SCOUT — Borrador | STRUCTURE SCOUT | `draft`: `StructureDraft` con `is_current=True` y `payload.source` (tipo + campos). No usa `get_published_version`. Distinto de Scout M6 «Aplicar a destino». | Medio / distinto | **Hecho** |
+
+Match como **destino** (Perfil A) sigue con combo propio (`SOURCE_KIND_CHOICES_MATCH`, hoy solo GATE). Abrir FilePipe u otros hacia Match es otra matriz, no este tablero.
+
+### Checklist de implementación por origen (cuando se desarrolle)
+
+No basta con pintar la opción en el `<select>`. Por cada fila pendiente:
+
+1. Constante y etiqueta en `profile_seed_service.py`.
+2. Incluirla en `_source_kind_choices_for` cuando el destino es FilePipe (origen y, si aplica, destino).
+3. Rama en `list_eligible_sources`: `visible_projects_qs` de esa app + versión publicada (Scout: borrador current).
+4. Fila del picker: `kind`, slot y etiqueta.
+5. `apply_seed_service._source_meta_for_project`: no asumir que todo lo que no es CLEAN es GATE.
+6. CTA de lista vacía y textos de ayuda del picker.
+7. Autoexclusión si el `project_kind` origen coincide con FilePipe (no listar el proyecto actual).
+
+Sin migración de BD si el origen ya publica `DmsMappingVersion` + `DmsSourceProfile`.
+
+### Orden práctico al abrir cada origen
+
+1. Elegir el siguiente **Pendiente** de la tabla (el tablero FilePipe → FilePipe está cerrado; otras matrices: Match destino, Split/Merge destino, etc.).
+2. Publicar al menos un proyecto de esa app y comprobar `current_version` publicada.
+3. Implementar los 7 puntos de arriba.
+4. Probar: combo → lista → confirmar → campos en el **paso 4** del wizard, **sin** auto-publicar.
+5. Marcar la fila **Hecho** en esta tabla (y el espejo en destino).
+
 ---
 
 ## Documentos relacionados (DMS)

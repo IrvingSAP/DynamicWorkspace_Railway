@@ -136,7 +136,7 @@ class ValueGeneratorType(CatalogBase):
 class PermissionPackage(CatalogBase):
     maps_to_role = models.CharField(
         max_length=2,
-        help_text="Rol ProjectMembership: PA | ED | CO | GE",
+        help_text="Rol ProjectMembership: PA | ED | CO | GE | CG",
     )
     permissions = models.JSONField(default=list, blank=True)
 

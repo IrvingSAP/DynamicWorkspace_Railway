@@ -460,7 +460,7 @@ Contenedor de una tabla configurable dentro de una compañía: campos, registros
 | `slug` | SlugField(220) | No | — | Identificador URL; único por compañía |
 | `description` | TextField | Sí | `""` | Descripción opcional |
 | `owner` | ForeignKey → User | No | — | Usuario creador |
-| `is_archived` | BooleanField | No | `False` | Oculto sin borrar datos |
+| `is_archived` | BooleanField | No | `False` | Oculto sin borrar datos. **Futura mejora:** [`project_status_future.md`](project_status_future.md) (`en_proceso` / `activo` / `inactivo`) |
 | `project_kind` | CharField(20) | No | `workspace` | `workspace` \| `dms` — ver DMS |
 | `created_at` | DateTimeField | No | auto_now_add | — |
 | `updated_at` | DateTimeField | No | auto_now | — |
@@ -550,6 +550,7 @@ Vincula un usuario con un proyecto y su rol de acceso.
 | `ED` | Editor | Crear y modificar registros |
 | `CO` | Consulta | Solo lectura |
 | `GE` | Generar | Exportar documentos |
+| `CG` | Consulta-Generar | Consulta del proyecto y generar / exportar salidas |
 
 ### Reglas de negocio
 

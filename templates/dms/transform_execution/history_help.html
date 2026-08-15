@@ -25,7 +25,7 @@
     <div>
         <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Historial de ejecuciones</h2>
-        <p>Consulta jobs completados y descarga resultados mientras el enlace esté vigente.</p>
+        <p>Guía de la pantalla: corridas completas, pendientes y descargas.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'dms:transform_execution_history' project_slug=project.slug %}" class="btn btn-secondary">← Volver al historial</a>
@@ -34,23 +34,197 @@
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Columnas típicas</h3>
+        <h3 class="form-section-title">Objetivo</h3>
+        <p class="help-intro">
+            Consulta las <strong>transformaciones ya ejecutadas</strong> del proyecto
+            <strong>{{ project.name }}</strong> y descarga el archivo destino, el informe y el listado de errores
+            mientras el enlace esté vigente (7 días).
+        </p>
+        <p class="help-intro">
+            <strong>Quién:</strong> quien opera o revisa corridas (cualquier miembro del proyecto).
+            <strong>Ejemplo:</strong> tras pulsar Ejecutar transformación sobre <span class="mono">entrada.txt</span>,
+            aquí aparece la fila con salida, filas OK y botones de descarga.
+        </p>
+
+        <h3 class="form-section-title">Cómo está organizada la pantalla</h3>
         <table class="help-table">
-            <thead><tr><th>Columna</th><th>Qué muestra</th></tr></thead>
+            <thead><tr><th>Zona</th><th>Para qué</th></tr></thead>
             <tbody>
-                <tr><td>Fecha</td><td>Cuándo se ejecutó el job.</td></tr>
-                <tr><td>Usuario</td><td>Quién lanzó la transformación.</td></tr>
-                <tr><td>Versión</td><td>Versión publicada usada.</td></tr>
-                <tr><td>Entrada</td><td>Nombre del archivo de producción.</td></tr>
-                <tr><td>Salida / estado</td><td>Resultado y contadores (OK / errores).</td></tr>
-                <tr><td>Descargas</td><td>Output, informe y errores (si existen y no expiraron).</td></tr>
+                <tr>
+                    <td>Cabecera</td>
+                    <td>Título, esta ayuda y volver a Ejecutar.</td>
+                </tr>
+                <tr>
+                    <td>Tabla de corridas</td>
+                    <td>Jobs que ya corrieron (completado, parcial o fallido): fechas, métricas y descargas.</td>
+                </tr>
+                <tr>
+                    <td>Pendientes de ejecución completa</td>
+                    <td>Archivos subidos que aún no se ejecutaron del todo. Puede haber un resumen de «Solo preview».</td>
+                </tr>
+                <tr>
+                    <td>Sin ejecuciones</td>
+                    <td>Si no hay corridas ni archivos subidos: atajos a Subir archivo e Ir a ejecutar.</td>
+                </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Notas</h3>
-        <ul class="help-list">
-            <li>Las descargas firmadas suelen caducar a los <strong>7 días</strong>.</li>
-            <li>Desde aquí no se re-ejecuta el mismo job; para otra corrida suba archivo y ejecute de nuevo.</li>
+        <h3 class="form-section-title">Preview frente a ejecución completa</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción en Ejecutar</th><th>Qué queda en esta pantalla</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Solo preview</td>
+                    <td>No crea una corrida ni archivo destino. El job sigue en Pendientes; si hubo preview, se muestra el conteo.</td>
+                    <td>OK 12 · leídas 12</td>
+                </tr>
+                <tr>
+                    <td>Ejecutar transformación</td>
+                    <td>Crea la fila de historial con salida, informe y errores. El archivo deja de estar pendiente.</td>
+                    <td>Estado Completado · Salida / Informe / Errores</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Tabla de corridas</h3>
+        <table class="help-table">
+            <thead><tr><th>Columna</th><th>Para qué sirve</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Fecha</td>
+                    <td>Momento en que terminó el job.</td>
+                    <td><span class="mono">2026-08-14 13:05</span></td>
+                </tr>
+                <tr>
+                    <td>Usuario</td>
+                    <td>Quién lanzó la transformación.</td>
+                    <td>su usuario de sesión</td>
+                </tr>
+                <tr>
+                    <td>Versión</td>
+                    <td>Versión <strong>publicada</strong> que se aplicó (origen, destino, mapeo y reglas de esa versión).</td>
+                    <td>v1</td>
+                </tr>
+                <tr>
+                    <td>Entrada</td>
+                    <td>Nombre del archivo de producción que se transformó.</td>
+                    <td><span class="mono">entrada.txt</span></td>
+                </tr>
+                <tr>
+                    <td>Salida</td>
+                    <td>Nombre del archivo destino generado (según el patrón del perfil de destino).</td>
+                    <td><span class="mono">salida_20260814.txt</span></td>
+                </tr>
+                <tr>
+                    <td>Filas OK</td>
+                    <td>Filas escritas correctamente. Si hubo rechazos, se indica a continuación.</td>
+                    <td>120 / 3 rej.</td>
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    <td>Completado (sin errores de fila), Parcial (algunas filas rechazadas), Fallido u otros.</td>
+                    <td>Completado</td>
+                </tr>
+                <tr>
+                    <td>Acciones</td>
+                    <td>Descargas (si no expiraron) y <strong>Eliminar</strong> si usted ejecutó esa corrida.</td>
+                    <td>Salida · Informe · Errores · Eliminar</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Botones de descarga (por corrida)</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Salida</td>
+                    <td>Descarga el archivo destino generado por el serializer (CSV, TXT, etc.).</td>
+                    <td><span class="mono">salida_20260814.txt</span></td>
+                </tr>
+                <tr>
+                    <td>Informe</td>
+                    <td>Descarga el informe de la corrida (métricas, mensajes de captura, resumen).</td>
+                    <td>JSON o HTML según configuración del informe</td>
+                </tr>
+                <tr>
+                    <td>Errores</td>
+                    <td>Descarga el detalle de filas con error (vacío o corto si el estado es Completado).</td>
+                    <td><span class="mono">errors.csv</span></td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Los enlaces llevan firma y caducan a los <strong>7 días</strong> desde el fin del job. Después verá «Archivo expirado» y deberá volver a ejecutar con un archivo nuevo.</p>
+
+        <h3 class="form-section-title">Pendientes de ejecución completa</h3>
+        <table class="help-table">
+            <thead><tr><th>Columna / botón</th><th>Para qué sirve</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Subido</td>
+                    <td>Cuándo se cargó el archivo de producción en Archivo.</td>
+                    <td><span class="mono">2026-08-14 12:50</span></td>
+                </tr>
+                <tr>
+                    <td>Archivo</td>
+                    <td>Nombre original del fichero de entrada.</td>
+                    <td><span class="mono">entrada.txt</span></td>
+                </tr>
+                <tr>
+                    <td>Versión</td>
+                    <td>Versión publicada a la que está asociado el job (la que se usará al ejecutar).</td>
+                    <td>v1</td>
+                </tr>
+                <tr>
+                    <td>Último preview</td>
+                    <td>Resumen del último dry run, si lo hubo. No implica que exista archivo destino.</td>
+                    <td>OK 12 · leídas 12</td>
+                </tr>
+                <tr>
+                    <td>Ejecutar transformación</td>
+                    <td>Vuelve a la pantalla Ejecutar para lanzar el job completo (con confirmación).</td>
+                    <td>—</td>
+                </tr>
+                <tr>
+                    <td>Eliminar</td>
+                    <td>Quita el registro y los archivos de esa corrida (o del pendiente). Solo si usted la ejecutó o subió. Pide confirmación.</td>
+                    <td>—</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Botones de la cabecera y del vacío</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Ayuda (icono)</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>← Hub Proyecto</td>
+                    <td>Vuelve al hub FilePipe del proyecto (origen, destino, mapeo, publicar).</td>
+                </tr>
+                <tr>
+                    <td>← Ejecutar</td>
+                    <td>Vuelve a dry run y ejecución completa.</td>
+                </tr>
+                <tr>
+                    <td>Subir archivo</td>
+                    <td>Solo en estado vacío: va a File Intake para cargar producción.</td>
+                </tr>
+                <tr>
+                    <td>Ir a ejecutar</td>
+                    <td>Solo en estado vacío: abre Ejecutar.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no hace esta pantalla</h3>
+        <ul class="help-intro">
+            <li>No re-ejecuta el mismo job: para otra corrida suba de nuevo (o use un archivo aún pendiente) y pulse Ejecutar transformación.</li>
+            <li>No publica versiones ni cambia el mapeo; usa la versión publicada que tenía el job al ejecutarse.</li>
+            <li>No sustituye el preview del editor de mapeo (eso es una fila de prueba, no un archivo de producción).</li>
         </ul>
     </div>
 </div>

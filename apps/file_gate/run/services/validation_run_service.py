@@ -71,15 +71,11 @@ GATE_STATUS_TONE = {
 # --------------------------------------------------------------------------- #
 
 def user_can_execute(user, project: Project) -> bool:
-    """V2: ejecutar requiere PA, ED o GE."""
+    """V2: ejecutar requiere PA, ED, GE o CG."""
     membership = project_service.get_membership(user, project)
     if membership is None:
         return False
-    return membership.role in (
-        ProjectMembership.ROLE_PA,
-        ProjectMembership.ROLE_ED,
-        ProjectMembership.ROLE_GE,
-    )
+    return ProjectMembership.role_can_execute(membership.role)
 
 
 def get_published_version(project: Project) -> DmsMappingVersion | None:

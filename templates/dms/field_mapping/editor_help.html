@@ -25,7 +25,7 @@
     <div>
         <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Editor de mapeo</h2>
-        <p>Cómo relacionar campos origen → destino y qué hace cada tipo de mapeo.</p>
+        <p>Guía de la pantalla de trabajo: paneles, tabla, diálogo y preview.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'dms:field_mapping_editor' project_slug=project.slug %}" class="btn btn-secondary">← Volver al editor</a>
@@ -34,35 +34,416 @@
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Propósito</h3>
+        <h3 class="form-section-title">Objetivo</h3>
         <p class="help-intro">
-            Pantalla de trabajo para crear, editar y guardar las relaciones del borrador.
-            Los paneles laterales listan campos origen y destino disponibles.
+            En el editor se define <strong>de dónde sale el valor de cada campo destino</strong>
+            del proyecto <strong>{{ project.name }}</strong>: copia 1:1, constante, concatenación,
+            trozo de un texto, expresión numérica o un valor generado (secuencia, UUID, etc.).
+            El resultado se guarda en el <strong>borrador</strong>; no publica la versión FilePipe.
+        </p>
+        <p class="help-intro">
+            <strong>Quién:</strong> quien diseña la transformación (editor del proyecto).
+            <strong>Ejemplo:</strong> el destino <span class="mono">numero_factura</span> se arma con
+            el literal <span class="mono">FAC-</span> más el campo origen <span class="mono">documento</span>
+            (tipo Concatenar).
         </p>
 
-        <h3 class="form-section-title">Tipos de mapeo</h3>
+        <h3 class="form-section-title">Cómo está organizada la pantalla</h3>
         <table class="help-table">
-            <thead><tr><th>Tipo</th><th>Qué hace</th></tr></thead>
+            <thead><tr><th>Zona</th><th>Para qué</th></tr></thead>
             <tbody>
-                <tr><td class="mono">direct</td><td>Copia un campo origen a un destino.</td></tr>
-                <tr><td class="mono">constant</td><td>Escribe un valor fijo en el destino.</td></tr>
-                <tr><td class="mono">concat</td><td>Une varios orígenes (o textos) en un destino.</td></tr>
-                <tr><td class="mono">generated</td><td>Valor generado por una regla/generador del sistema.</td></tr>
+                <tr>
+                    <td>Cabecera</td>
+                    <td>Título, ayuda, volver al hub, Auto-sugerir, Añadir mapeo y Guardar (si puede editar).</td>
+                </tr>
+                <tr>
+                    <td>Tarjetas de resumen</td>
+                    <td>Conteo de mapeos, destinos sin mapear, orígenes no usados y obligatorios pendientes.</td>
+                </tr>
+                <tr>
+                    <td>Panel izquierdo · Origen</td>
+                    <td>Lista de campos del perfil de origen. Se pueden arrastrar hacia un destino.</td>
+                </tr>
+                <tr>
+                    <td>Centro · Relaciones</td>
+                    <td>Tabla de mapeos activos, estado vacío y bloque Preview valor por fila.</td>
+                </tr>
+                <tr>
+                    <td>Panel derecho · Destino</td>
+                    <td>Lista de campos del perfil de destino. Reciben el arrastre o se eligen en el diálogo.</td>
+                </tr>
+                <tr>
+                    <td>Diálogo Mapeo</td>
+                    <td>Formulario al pulsar Añadir mapeo o Editar: tipo de enlace, fuente y reglas.</td>
+                </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Acciones</h3>
+        <h3 class="form-section-title">Indicadores</h3>
+        <table class="help-table">
+            <thead><tr><th>Campo</th><th>Para qué sirve</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Mapeos activos</td>
+                    <td>Cuántas relaciones hay en el borrador (filas de la tabla).</td>
+                    <td>12</td>
+                </tr>
+                <tr>
+                    <td>Destino sin mapear</td>
+                    <td>Campos destino que aún no tienen una relación.</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td>Origen no usado</td>
+                    <td>Campos origen que no aparecen en ningún mapeo (pueden quedar así a propósito).</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td>Obligatorios pendientes</td>
+                    <td>Campos destino marcados como obligatorios en el perfil y aún sin mapear.</td>
+                    <td>1</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Paneles Origen y Destino</h3>
+        <table class="help-table">
+            <thead><tr><th>Elemento</th><th>Para qué sirve</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Origen (hint de tipo)</td>
+                    <td>Muestra el tipo de archivo de entrada del proyecto.</td>
+                    <td><span class="mono">txt_fixed</span></td>
+                </tr>
+                <tr>
+                    <td>Lista de campos origen</td>
+                    <td>Cada ítem es un campo definido en el asistente de origen. Arrástrelo hacia un campo destino para crear un enlace <strong>Directo (1:1)</strong>.</td>
+                    <td><span class="mono">documento</span></td>
+                </tr>
+                <tr>
+                    <td>Destino (hint de tipo)</td>
+                    <td>Tipo de archivo de salida.</td>
+                    <td><span class="mono">csv</span></td>
+                </tr>
+                <tr>
+                    <td>Lista de campos destino</td>
+                    <td>Campos del perfil de destino. Destino de arrastre o de «Campo destino» en el diálogo.</td>
+                    <td><span class="mono">numero_factura</span></td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">El arrastre solo crea mapeos <strong>directos</strong>. Concatenar, expresión, split, constante o generado se configuran la primera vez con <strong>Añadir mapeo</strong>.</p>
+
+        <h3 class="form-section-title">Cómo ver o cambiar un mapeo ya guardado</h3>
+        <p class="help-intro">
+            <strong>Añadir mapeo</strong> siempre parte de un formulario vacío (nuevo enlace).
+            Para el correlativo autogenerado (u otro destino ya mapeado) use una de estas vías:
+        </p>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Editar (en la fila de Relaciones)</td>
+                    <td>Abre el diálogo con tipo Generado, prefijo, inicio, plantilla, etc. ya cargados.</td>
+                    <td>Fila destino <span class="mono">correlativo</span> · tipo Generado</td>
+                </tr>
+                <tr>
+                    <td>Clic en la fila</td>
+                    <td>Igual que Editar (excepto si pulsa Quitar).</td>
+                    <td>—</td>
+                </tr>
+                <tr>
+                    <td>Clic en el campo del panel Destino</td>
+                    <td>Si ya tiene mapeo, abre esa misma condición.</td>
+                    <td>Panel derecho → <span class="mono">correlativo</span></td>
+                </tr>
+                <tr>
+                    <td>Añadir mapeo y elegir el mismo destino</td>
+                    <td>Si el destino ya está mapeado, el diálogo pasa a modo edición y carga lo guardado.</td>
+                    <td>Campo destino = <span class="mono">correlativo</span></td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Tras Aplicar, pulse <strong>Guardar</strong> en la cabecera para persistir el borrador.</p>
+
+        <h3 class="form-section-title">Tabla Relaciones</h3>
+        <table class="help-table">
+            <thead><tr><th>Columna</th><th>Para qué sirve</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Destino</td>
+                    <td>Nombre del campo de salida que recibe el valor.</td>
+                    <td><span class="mono">numero_factura</span></td>
+                </tr>
+                <tr>
+                    <td>Tipo</td>
+                    <td>Clase de enlace (Directo, Constante, Concat, Generado, Split, Expresión).</td>
+                    <td>Concat</td>
+                </tr>
+                <tr>
+                    <td>Fuente</td>
+                    <td>Resumen de de dónde sale el valor (campo, literal, generador…).</td>
+                    <td><span class="mono">FAC-</span> + <span class="mono">documento</span></td>
+                </tr>
+                <tr>
+                    <td>Reglas</td>
+                    <td>Transformaciones aplicadas al valor ya mapeado (trim, mayúsculas, fecha…).</td>
+                    <td>Trim, Mayúsculas</td>
+                </tr>
+                <tr>
+                    <td>(acciones)</td>
+                    <td><strong>Editar</strong> abre el diálogo con esa fila. <strong>Quitar</strong> la elimina del borrador en memoria (hasta Guardar no se persiste).</td>
+                    <td>—</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Si no hay filas, verá «Sin mapeos aún». El hint indica que también puede arrastrar origen → destino o usar auto-sugerencia.</p>
+
+        <h3 class="form-section-title">Preview valor por fila</h3>
+        <table class="help-table">
+            <thead><tr><th>Campo / botón</th><th>Para qué sirve</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Cajas de valor (una por campo origen)</td>
+                    <td>Simula una fila de entrada sin ejecutar un job real.</td>
+                    <td><span class="mono">documento</span> = <span class="mono">8891</span></td>
+                </tr>
+                <tr>
+                    <td>Probar</td>
+                    <td>Aplica mapeos + reglas del borrador a esos valores y muestra el resultado por campo destino.</td>
+                    <td><span class="mono">numero_factura</span> → <span class="mono">FAC-8891</span></td>
+                </tr>
+                <tr>
+                    <td>Usar 1ª fila muestra</td>
+                    <td>Rellena las cajas con la primera fila del archivo de muestra del proyecto (si existe).</td>
+                    <td>—</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Botones de la cabecera</h3>
         <table class="help-table">
             <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
             <tbody>
-                <tr><td>Auto-sugerir por nombre</td><td>Propone mapeos directos cuando origen y destino coinciden por nombre.</td></tr>
-                <tr><td>Añadir mapeo</td><td>Abre el formulario / fila para una nueva relación.</td></tr>
-                <tr><td>Guardar</td><td>Persiste el conjunto de mapeos en el borrador.</td></tr>
-                <tr><td>← Hub mapeo</td><td>Vuelve al resumen del módulo.</td></tr>
+                <tr>
+                    <td>Ayuda (icono)</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>← Hub mapeo</td>
+                    <td>Vuelve al resumen del módulo de mapeo. No guarda por sí solo.</td>
+                </tr>
+                <tr>
+                    <td>Auto-sugerir por nombre</td>
+                    <td>Propone mapeos <strong>directos</strong> cuando el nombre de origen y destino coincide (sin distinguir mayúsculas). Revise y pulse Guardar.</td>
+                </tr>
+                <tr>
+                    <td>Añadir mapeo</td>
+                    <td>Abre el diálogo vacío para un campo destino y un tipo de enlace.</td>
+                </tr>
+                <tr>
+                    <td>Guardar</td>
+                    <td>Persiste el conjunto de mapeos en el borrador del proyecto.</td>
+                </tr>
             </tbody>
         </table>
 
-        <p class="help-intro">Tras completar el mapeo, puede continuar con <strong>Reglas</strong> (transformaciones post-mapeo) y luego publicar la versión.</p>
+        <h3 class="form-section-title">Diálogo Mapeo — campos comunes</h3>
+        <table class="help-table">
+            <thead><tr><th>Campo</th><th>Para qué sirve</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Campo destino</td>
+                    <td>Campo de salida que recibirá el valor. Un destino suele tener un solo mapeo activo.</td>
+                    <td><span class="mono">numero_factura</span></td>
+                </tr>
+                <tr>
+                    <td>Tipo de enlace</td>
+                    <td>Cómo se obtiene el valor. Al cambiarlo se muestran otros campos.</td>
+                    <td>Concatenar</td>
+                </tr>
+                <tr>
+                    <td>Reglas (casillas)</td>
+                    <td>Se aplican <em>después</em> de calcular la fuente: recortar espacios, mayúsculas/minúsculas, formato de fecha, relleno, valor por defecto si vacío.</td>
+                    <td>Trim</td>
+                </tr>
+                <tr>
+                    <td>Formato fecha</td>
+                    <td>Visible si marca «Formato fecha». Patrón estilo Python.</td>
+                    <td><span class="mono">%Y-%m-%d</span> → <span class="mono">2026-08-14</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Tipo Directo (1:1)</h3>
+        <table class="help-table">
+            <thead><tr><th>Campo</th><th>Para qué sirve</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Campo origen</td>
+                    <td>Copia el valor tal cual (luego pueden actuar las reglas).</td>
+                    <td>origen <span class="mono">nombre</span> → destino <span class="mono">cliente</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Tipo Constante</h3>
+        <table class="help-table">
+            <thead><tr><th>Campo</th><th>Para qué sirve</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Valor constante</td>
+                    <td>El destino siempre recibe ese texto, independiente de la fila origen.</td>
+                    <td><span class="mono">PE</span> en un campo <span class="mono">pais</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Tipo Concatenar</h3>
+        <p class="help-intro">Une partes en orden. Cada parte es un <strong>literal</strong> (texto fijo) o un <strong>campo</strong> origen.</p>
+        <table class="help-table">
+            <thead><tr><th>Control</th><th>Para qué sirve</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>+ Literal</td>
+                    <td>Añade un texto fijo a la cadena.</td>
+                    <td><span class="mono">FAC-</span></td>
+                </tr>
+                <tr>
+                    <td>+ Campo</td>
+                    <td>Añade el valor de un campo origen.</td>
+                    <td><span class="mono">documento</span></td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Ejemplo: literal <span class="mono">FAC-</span> + campo <span class="mono">documento</span> → <span class="mono">FAC-8891</span>.</p>
+
+        <h3 class="form-section-title">Tipo Dividir (1:N)</h3>
+        <p class="help-intro">Toma un campo origen y extrae una parte. Un mapeo alimenta <em>un</em> destino; para varias partes (nombre y apellido) cree dos mapeos split sobre el mismo origen.</p>
+        <table class="help-table">
+            <thead><tr><th>Campo</th><th>Para qué sirve</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Campo origen</td>
+                    <td>Texto a partir del cual se extrae.</td>
+                    <td><span class="mono">nombre_completo</span> = <span class="mono">Ana Pérez</span></td>
+                </tr>
+                <tr>
+                    <td>Parte · Primera palabra</td>
+                    <td>Hasta el primer espacio.</td>
+                    <td><span class="mono">Ana</span></td>
+                </tr>
+                <tr>
+                    <td>Parte · Resto</td>
+                    <td>Todo después de la primera palabra.</td>
+                    <td><span class="mono">Pérez</span></td>
+                </tr>
+                <tr>
+                    <td>Parte · Por delimitador</td>
+                    <td>Parte el texto por un carácter y toma el índice (0 = primera pieza).</td>
+                    <td>Delimitador <span class="mono">|</span>, índice 1 sobre <span class="mono">A|B|C</span> → <span class="mono">B</span></td>
+                </tr>
+                <tr>
+                    <td>Parte · Substring</td>
+                    <td>Recorte por posición (inicio 0) y longitud.</td>
+                    <td>Inicio 0, longitud 2 sobre <span class="mono">PE123</span> → <span class="mono">PE</span></td>
+                </tr>
+                <tr>
+                    <td>Parte · Regex</td>
+                    <td>Patrón regular; Grupo 0 es toda la coincidencia, 1 el primer paréntesis.</td>
+                    <td>Patrón <span class="mono">(\d+)</span>, grupo 1 sobre <span class="mono">FAC-8891</span> → <span class="mono">8891</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Tipo Expresión</h3>
+        <p class="help-intro">Árbol de operaciones (máximo 5 niveles). La raíz es siempre una expresión. Cada operando puede ser campo origen, literal o otra sub-expresión.</p>
+        <table class="help-table">
+            <thead><tr><th>Control</th><th>Para qué sirve</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Operación</td>
+                    <td>Sumar, restar, multiplicar, dividir, concatenar o coalesce (primer valor no vacío).</td>
+                    <td>Sumar (+) cantidad + recargo</td>
+                </tr>
+                <tr>
+                    <td>Campo / Literal</td>
+                    <td>Operandos. Un literal numérico se escribe como texto, p. ej. <span class="mono">1.18</span>.</td>
+                    <td>campo <span class="mono">precio</span> × literal <span class="mono">1.18</span></td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Para unir textos con formato suele ser más claro el tipo Concatenar que una expresión concat.</p>
+
+        <h3 class="form-section-title">Tipo Generado</h3>
+        <p class="help-intro">El valor no viene del archivo origen: lo produce el sistema al ejecutar (o en el preview con las reglas del generador).</p>
+        <p class="help-intro">
+            En destino <strong>TXT de ancho fijo</strong> el correlativo debe caber en la ranura del campo.
+            Si <span class="mono">correlativo</span> tiene longitud 1, el valor 10 se escribe como <span class="mono">1</span>
+            (parece un reinicio). Amplíe Inicio/Fin en Destino, paso 4 (p. ej. longitud 4), publique y vuelva a ejecutar.
+        </p>
+        <table class="help-table">
+            <thead><tr><th>Campo</th><th>Para qué sirve</th><th>Ejemplo</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Generador</td>
+                    <td>Familia: secuencia numérica, con padding, alfanumérica, plantilla, UUID, correlativo por job, fecha/hora de ejecución, número de fila.</td>
+                    <td>Secuencia alfanumérica → <span class="mono">A1</span>, <span class="mono">A2</span>…</td>
+                </tr>
+                <tr>
+                    <td>Prefijo / Sufijo</td>
+                    <td>Texto fijo antes o después del número o secuencia.</td>
+                    <td>Prefijo <span class="mono">A</span> → <span class="mono">A1</span></td>
+                </tr>
+                <tr>
+                    <td>Inicio / Paso</td>
+                    <td>Primer número y cuánto avanza cada fila o cada job según el alcance.</td>
+                    <td>Inicio 1, paso 1</td>
+                </tr>
+                <tr>
+                    <td>Padding / Carácter pad</td>
+                    <td>Rellena a la izquierda hasta N caracteres.</td>
+                    <td>Padding 5, carácter 0 → <span class="mono">00001</span></td>
+                </tr>
+                <tr>
+                    <td>Plantilla</td>
+                    <td>Para generador de plantilla. <span class="mono">{seq:5}</span> es la secuencia con 5 dígitos.</td>
+                    <td><span class="mono">FAC-{seq:5}</span> → <span class="mono">FAC-00001</span></td>
+                </tr>
+                <tr>
+                    <td>Alcance</td>
+                    <td>Job: un contador por ejecución. Fila: por cada registro. Proyecto: continúa entre ejecuciones del mismo proyecto.</td>
+                    <td>Job</td>
+                </tr>
+                <tr>
+                    <td>Reiniciar por job</td>
+                    <td>Si está marcado, el contador vuelve al inicio en cada ejecución.</td>
+                    <td>Marcado</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Botones del diálogo</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Cerrar / Cancelar</td>
+                    <td>Cierra sin aplicar los cambios de ese formulario.</td>
+                </tr>
+                <tr>
+                    <td>Aplicar</td>
+                    <td>Añade o actualiza la fila en la tabla (memoria). Debe pulsar <strong>Guardar</strong> en la cabecera para persistir el borrador.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no hace esta pantalla</h3>
+        <ul class="help-intro">
+            <li>No publica la versión FilePipe (eso está en el hub del proyecto, cuando origen, destino, mapeo y reglas estén listos).</li>
+            <li>No define campos nuevos de origen o destino (use los asistentes de origen y destino).</li>
+            <li>Las reglas globales posteriores al mapeo (módulo Reglas) son otro paso; las casillas del diálogo son transformaciones <em>por campo</em> en el propio mapeo.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

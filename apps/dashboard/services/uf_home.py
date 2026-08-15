@@ -71,6 +71,7 @@ def get_uf_home_data(user) -> UfHomeData:
         "ED": role_counts.get("ED", 0),
         "CO": role_counts.get("CO", 0),
         "GE": role_counts.get("GE", 0),
+        "CG": role_counts.get("CG", 0),
     }
     data.kpi_pa_count = data.roles_by_type.get("PA", 0)
 
@@ -273,7 +274,9 @@ def _fill_dms_kpis(data: UfHomeData, user) -> None:
             if getattr(row["project"], "dms_config", None)
             and row["project"].dms_config.current_version_id
         )
-        data.kpi_dms_ge_count = sum(1 for row in rows if row["role"] == "GE")
+        data.kpi_dms_ge_count = sum(
+            1 for row in rows if row["role"] in ("GE", "CG")
+        )
 
         dms_ids = [row["project"].id for row in rows]
         month_start = timezone.now().replace(

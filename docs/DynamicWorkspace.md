@@ -210,6 +210,7 @@ La seguridad se documenta en **`docs/security/`**. Aquí solo el resumen; el det
 | `ED` — Editor | Crear y modificar registros |
 | `CO` — Consulta | Solo lectura |
 | `GE` — Generar | Exportar a otros formatos |
+| `CG` — Consulta-Generar | Consulta del proyecto y generar / exportar salidas |
 
 **Reglas clave:**
 

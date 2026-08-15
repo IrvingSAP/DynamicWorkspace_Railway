@@ -133,23 +133,24 @@ OneToOne con `Project` cuando `project_kind = dms`.
 | `editor` | `ED` | Editar origen, destino, mapeo, reglas; publicar versión |
 | `viewer` | `CO` | Solo lectura de definiciones e historial |
 | `executor` | `GE` | Ver + **ejecutar** transformación y descargar (rol «Generar») |
+| `consulta_generar` | `CG` | Consulta del proyecto y **ejecutar** / generar salidas (CO + GE) |
 
 Al crear proyecto DMS, el `owner` recibe `ProjectMembership` con rol **`PA`** (regla ya existente en [`projects.md`](../definition_app/projects.md)).
 
 ### Paquetes de permisos DMS (4.4)
 
-En MVP se implementan como **selector de rol** `PA` / `ED` / `CO` / `GE` en la pantalla de miembros — misma UI que `project_members.html`. Los paquetes granulares (`update_view`, `permission_package` JSON) quedan como **Fase 2** si se requiere más detalle que los cuatro roles.
+En MVP se implementan como **selector de rol** `PA` / `ED` / `CO` / `GE` / `CG` en la pantalla de miembros — misma UI que `project_members.html`. Los paquetes granulares (`update_view`, `permission_package` JSON) quedan como **Fase 2** si se requiere más detalle que los cinco roles.
 
 ### Matriz acción DMS → rol de proyecto
 
-| Acción DMS | PA | ED | CO | GE |
-|------------|----|----|----|-----|
-| Ver proyecto / historial | Sí | Sí | Sí | Sí |
-| Editar origen, destino, mapeo | Sí | Sí | No | No |
-| Publicar versión | Sí | Sí | No | No |
-| Ejecutar / descargar | Sí | Sí | No | Sí |
-| Gestionar miembros | Sí | No | No | No |
-| Archivar proyecto | Sí | No | No | No |
+| Acción DMS | PA | ED | CO | GE | CG |
+|------------|----|----|----|-----|-----|
+| Ver proyecto / historial | Sí | Sí | Sí | Sí | Sí |
+| Editar origen, destino, mapeo | Sí | Sí | No | No | No |
+| Publicar versión | Sí | Sí | No | No | No |
+| Ejecutar / descargar | Sí | Sí | No | Sí | Sí |
+| Gestionar miembros | Sí | No | No | No | No |
+| Archivar proyecto | Sí | No | No | No | No |
 
 Decoradores: reutilizar `apps.core` (`@project_permission`, etc.) extendiendo matriz para rutas `/app/dms/`.
 

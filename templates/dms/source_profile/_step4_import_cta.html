@@ -1,0 +1,8 @@
+{# CTA Importar estructura (Profile Seed) — paso 4 campos FilePipe #}
+{% if can_seed_import %}
+<a href="{% url 'dms:source_seed_hub' project_slug=project.slug %}"
+   class="btn btn-secondary"
+   title="Importar perfil publicado (GATE, CLEAN, FilePipe, MATCH, Reverse o Split/Merge) al borrador">
+    Importar estructura
+</a>
+{% endif %}

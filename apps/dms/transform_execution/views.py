@@ -29,7 +29,7 @@ def _get_project_or_redirect(request, project_slug: str):
 
 def _base_context(request, project) -> dict:
     membership = project_service.get_membership(request.user, project)
-    ctx = execution_ui_service.get_hub_context(project, membership)
+    ctx = execution_ui_service.get_hub_context(project, membership, user=request.user)
     return {
         "project": project,
         "membership": membership,
@@ -80,6 +80,20 @@ def history(request, project_slug: str):
     return render(
         request, "dms/transform_execution/history.html", _base_context(request, project)
     )
+
+
+@_exec_view
+@require_http_methods(["POST"])
+def history_delete_job(request, project_slug: str, job_id):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("dms:mapping_list")
+    result = execution_service.delete_own_job(request.user, project, job_id)
+    if result.ok:
+        messages.success(request, result.user_message)
+    else:
+        messages.error(request, result.user_message)
+    return redirect("dms:transform_execution_history", project_slug=project_slug)
 
 
 @_exec_view

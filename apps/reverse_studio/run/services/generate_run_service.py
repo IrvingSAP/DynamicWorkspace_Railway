@@ -63,6 +63,7 @@ def get_hub_context(user, project, membership) -> dict:
     exec_ctx = execution_ui_service.get_hub_context(
         project,
         membership,
+        user=user,
         download_url_namespace="reverse_studio",
         download_url_names=DOWNLOAD_URL_NAMES,
         force_bridge_disabled=False,

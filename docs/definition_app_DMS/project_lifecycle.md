@@ -25,6 +25,8 @@ Ciclo de vida del **proyecto** en Data Mapping Studio: creación, visibilidad, m
 | Miembros | `ProjectMembership` — misma compañía que el proyecto |
 | Listado visible | Usuarios de la **compañía** + membresía (no cross-tenant) |
 
+**Futura mejora (no implementada):** estado persistido `en_proceso` / `activo` / `inactivo` en `Project`, listados de todas las apps y Pepeline — [`../definition_app/project_status_future.md`](../definition_app/project_status_future.md).
+
 Detalle completo: [`dms_integration.md`](dms_integration.md).
 
 ---
@@ -225,7 +227,7 @@ erDiagram
 | `id` | UUID | PK — `apps.projects.ProjectMembership` |
 | `project_id` | FK | — |
 | `user_id` | FK | Misma compañía que el proyecto |
-| `role` | enum | `PA` \| `ED` \| `CO` \| `GE` (mapeo roles DMS — ver integración) |
+| `role` | enum | `PA` \| `ED` \| `CO` \| `GE` \| `CG` (mapeo roles DMS — ver integración) |
 | `invited_by_id` | FK | Quién otorgó el acceso |
 | `is_active` | boolean | — |
 | `created_at` | datetime | — |
@@ -405,7 +407,7 @@ Resumen; detalle en [`transform_execution.md`](transform_execution.md). Carga de
 | 1 | Proyecto **público en compañía**: permiso default | Solo `CO` (lectura) vs `CO`+`GE` — ver integración |
 | 2 | `slug` único | Por compañía (definido en `DynamicWorkspace_Model`) |
 | 3 | ¿Ejecutar borrador sin publicar? | No (recomendado) vs sí con advertencia |
-| 4 | Paquetes de permisos | `PermissionPackage` en catálogos → `maps_to_role` PA/ED/CO/GE; permisos JSON documentales |
+| 4 | Paquetes de permisos | `PermissionPackage` en catálogos → `maps_to_role` PA/ED/CO/GE/CG; permisos JSON documentales |
 | 5 | Multi-tenant | **`Company`** ya implementado — sin `Organization` adicional |
 
 ---
@@ -449,5 +451,6 @@ Vista previa del flujo en `prototype/dms/` (estilos base desde `prototype/projec
 | `transform_rules.md` | Fase B — reglas (**MVP implementado**) |
 | `transform_execution.md` | Fase C — ejecución, descarga, historial (**MVP implementado**) |
 | [`../definition_app/UI_MESSAGES.md`](../definition_app/UI_MESSAGES.md) | Mensajes UI (SourceProfile §3.8) |
+| [`../definition_app/project_status_future.md`](../definition_app/project_status_future.md) | **Futura mejora:** estado Activo / Inactivo / En proceso |
 | `file_intake.md` | Browse, upload, archivo muestra y producción (**MVP implementado**) |
 | `system_catalogs.md` | Catálogos transversales |

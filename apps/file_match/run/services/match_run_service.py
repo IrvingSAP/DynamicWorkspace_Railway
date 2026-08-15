@@ -57,11 +57,7 @@ def user_can_execute(user, project: Project) -> bool:
     membership = project_service.get_membership(user, project)
     if membership is None:
         return False
-    return membership.role in (
-        ProjectMembership.ROLE_PA,
-        ProjectMembership.ROLE_ED,
-        ProjectMembership.ROLE_GE,
-    )
+    return ProjectMembership.role_can_execute(membership.role)
 
 
 def user_can_download_detail(user, project: Project) -> bool:
