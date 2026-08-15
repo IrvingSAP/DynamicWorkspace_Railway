@@ -13,10 +13,12 @@ def get_hub_context(
     project,
     membership,
     *,
+    user=None,
     download_url_namespace: str = "dms",
     download_url_names: dict[str, str] | None = None,
     force_bridge_disabled: bool = False,
 ) -> dict:
+    actor = user or getattr(membership, "user", None)
     publish = version_publish_service.get_publish_context(project)
     published = file_intake_persistence_service.get_published_version(project)
     uploaded = execution_service.list_uploaded_jobs(project)
@@ -39,6 +41,8 @@ def get_hub_context(
             "version_number": job.version.version_number if job.version_id else None,
             "created_at": job.created_at,
             "content_hash_short": _hash_short(job.input_content_hash),
+            "last_preview": _preview_row((job.input_suggestions or {}).get("last_preview")),
+            "can_delete": execution_service.can_delete_job(actor, job),
             "bridge": None,
         }
         if bridge_enabled:
@@ -87,7 +91,9 @@ def get_hub_context(
                 "output_filename": job.output_filename,
                 "rows_ok": job.rows_ok,
                 "rows_rejected": job.rows_rejected,
+                "status_label": _status_label(job.status),
                 "expired": execution_service.is_download_expired(job),
+                "can_delete": execution_service.can_delete_job(actor, job),
                 "file_gate_check": (job.input_suggestions or {}).get("file_gate_check"),
                 "downloads": (
                     execution_service.build_download_links(
@@ -105,6 +111,32 @@ def get_hub_context(
             for job in history
         ],
     }
+
+
+_STATUS_LABELS = {
+    "uploaded": "Subido",
+    "queued": "En cola",
+    "running": "En ejecución",
+    "completed": "Completado",
+    "partial": "Parcial",
+    "failed": "Fallido",
+    "cancelled": "Cancelado",
+}
+
+
+def _preview_row(raw) -> dict | None:
+    if not isinstance(raw, dict) or not raw:
+        return None
+    return {
+        "at": raw.get("at") or "",
+        "rows_read": raw.get("rows_read") or 0,
+        "rows_ok": raw.get("rows_ok") or 0,
+        "rows_rejected": raw.get("rows_rejected") or 0,
+    }
+
+
+def _status_label(code: str) -> str:
+    return _STATUS_LABELS.get(code or "", code or "—")
 
 
 def _hash_short(value: str) -> str:

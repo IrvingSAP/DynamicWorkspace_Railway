@@ -97,6 +97,20 @@
         });
     }
 
+    function indexOfTarget(name) {
+        const key = String(name || "").trim().toLowerCase();
+        if (!key) {
+            return -1;
+        }
+        return api.getMappings().findIndex(function (item) {
+            return (
+                item &&
+                item.is_active !== false &&
+                String(item.target_field || "").trim().toLowerCase() === key
+            );
+        });
+    }
+
     function mappedTargets() {
         const set = {};
         activeMappings().forEach(function (item) {
@@ -160,7 +174,18 @@
         }
         if (kind === "generated") {
             const gen = item.generator || {};
-            return gen.type || "generated";
+            if (gen.template) {
+                return gen.template;
+            }
+            const bits = [];
+            if (gen.prefix) {
+                bits.push(gen.prefix);
+            }
+            bits.push(gen.type || "generated");
+            if (gen.start != null) {
+                bits.push("desde " + gen.start);
+            }
+            return bits.join(" · ");
         }
         if (kind === "split") {
             const split = item.split || {};
@@ -323,6 +348,16 @@
                     (required ? " · obligatorio" : "") +
                     (isMapped ? "" : " · sin mapeo");
                 bindTargetDrop(li, name);
+                if (isMapped && api.canEdit) {
+                    li.classList.add("is-editable");
+                    li.title = "Clic para ver o editar el mapeo";
+                    li.addEventListener("click", function () {
+                        const idx = indexOfTarget(name);
+                        if (idx >= 0) {
+                            openDialog(idx);
+                        }
+                    });
+                }
                 targetList.appendChild(li);
             });
         }
@@ -358,6 +393,16 @@
                 KIND_LABELS[item.mapping_kind] || item.mapping_kind || "—";
             tr.querySelector(".fm-source-summary").textContent = summarizeMapping(item);
             tr.querySelector(".fm-pipe").textContent = pipelineLabel(item);
+            if (api.canEdit) {
+                tr.style.cursor = "pointer";
+                tr.title = "Clic para ver o editar";
+                tr.addEventListener("click", function (event) {
+                    if (event.target.closest("button")) {
+                        return;
+                    }
+                    openDialog(index);
+                });
+            }
 
             const actions = tr.querySelector(".fm-row-actions");
             if (api.canEdit) {
@@ -365,14 +410,16 @@
                 editBtn.type = "button";
                 editBtn.className = "btn btn-secondary btn-sm";
                 editBtn.textContent = "Editar";
-                editBtn.addEventListener("click", function () {
+                editBtn.addEventListener("click", function (event) {
+                    event.stopPropagation();
                     openDialog(index);
                 });
                 const delBtn = document.createElement("button");
                 delBtn.type = "button";
                 delBtn.className = "btn btn-secondary btn-sm";
                 delBtn.textContent = "Quitar";
-                delBtn.addEventListener("click", function () {
+                delBtn.addEventListener("click", function (event) {
+                    event.stopPropagation();
                     removeMapping(index);
                 });
                 actions.appendChild(editBtn);
@@ -617,6 +664,52 @@
         };
     }
 
+    function targetFieldWidth(name) {
+        const key = String(name || "").trim().toLowerCase();
+        const field = targetFields.find(function (item) {
+            return fieldName(item) === key;
+        });
+        if (!field) {
+            return null;
+        }
+        if (field.start != null && field.start !== "" && field.end != null && field.end !== "") {
+            const fromPos = Number(field.end) - Number(field.start) + 1;
+            if (fromPos > 0) {
+                return fromPos;
+            }
+        }
+        const raw = Number(field.length || field.max_length || 0);
+        return raw > 0 ? raw : null;
+    }
+
+    function updateGeneratedWidthHint() {
+        const hint = document.getElementById("fm-dialog-hint");
+        if (!hint) {
+            return;
+        }
+        const kind = els.mappingKind ? els.mappingKind.value : "";
+        const target = els.targetField ? els.targetField.value : "";
+        const gtype = els.generatorType ? els.generatorType.value : "";
+        const width = targetFieldWidth(target);
+        if (
+            kind === "generated" &&
+            String(gtype).indexOf("sequence") === 0 &&
+            width != null &&
+            width < 2
+        ) {
+            hint.hidden = false;
+            hint.textContent =
+                "El campo destino «" +
+                target +
+                "» tiene longitud " +
+                width +
+                ". En TXT de ancho fijo, el valor 10 se recorta a «1» (parece que el correlativo se reinicia). Amplíe el campo en Destino, paso 4, y publique de nuevo.";
+            return;
+        }
+        hint.hidden = true;
+        hint.textContent = "";
+    }
+
     function clearDialogErrors() {
         if (!dialogErrors) {
             return;
@@ -777,6 +870,12 @@
               }
             : mappings[index] || {};
 
+        const title = document.getElementById("fm-dialog-title");
+        if (title) {
+            title.textContent = isNew
+                ? "Nuevo mapeo"
+                : "Editar mapeo · " + (item.target_field || "");
+        }
         els.editIndex.value = String(index);
         fillSelect(
             els.targetField,
@@ -852,6 +951,7 @@
 
         setPipeline(item.transform_pipeline || []);
         showKindPanels(els.mappingKind.value);
+        updateGeneratedWidthHint();
         if (typeof dialog.showModal === "function") {
             dialog.showModal();
         }
@@ -1161,6 +1261,21 @@
         if (els.mappingKind) {
             els.mappingKind.addEventListener("change", function () {
                 showKindPanels(els.mappingKind.value);
+                updateGeneratedWidthHint();
+            });
+        }
+        if (els.generatorType) {
+            els.generatorType.addEventListener("change", updateGeneratedWidthHint);
+        }
+        if (els.targetField) {
+            els.targetField.addEventListener("change", function () {
+                const existing = indexOfTarget(els.targetField.value);
+                const current = Number(els.editIndex.value);
+                if (existing >= 0 && existing !== current) {
+                    openDialog(existing);
+                    return;
+                }
+                updateGeneratedWidthHint();
             });
         }
         if (els.splitPart) {

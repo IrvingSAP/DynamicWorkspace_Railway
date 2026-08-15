@@ -43,7 +43,7 @@ Carpeta de documentación de análisis y definición para **Data Mapping Studio 
 | Integración DynamicWorkspace | [`dms_integration.md`](dms_integration.md) — en revisión · modelos parciales en código |
 | Definición general | Ver `DataMappingStudio.md` + `DynamicWorkspace.md` |
 | Project lifecycle | [`project_lifecycle.md`](project_lifecycle.md) — en revisión · hub/mapping parcial |
-| **Source definition** | [`source_definition.md`](source_definition.md) — **MVP** (wizard 1–6, JSON/XML, captura patrón/blancos, B+E) |
+| **Source definition** | [`source_definition.md`](source_definition.md) — **MVP**. Importar hacia FilePipe: GATE+CLEAN+otro FilePipe+Match A/B+Reverse+Split/Merge **hecho**; Scout **pendiente (evaluar)** |
 | **Target definition** | [`target_definition.md`](target_definition.md) — **MVP implementado** (wizard 1–6) |
 | **Field mapping** | [`field_mapping.md`](field_mapping.md) — **MVP implementado** (editor + persistencia + publicar) |
 | **Transform rules** | [`transform_rules.md`](transform_rules.md) — **MVP implementado** (hub + editor + preview + `apply_pipeline`) |

@@ -59,6 +59,10 @@
     background: rgba(15, 92, 76, 0.06);
 }
 
+.fm-field-item.is-editable {
+    cursor: pointer;
+}
+
 .fm-field-item.is-required-unmapped {
     border-color: rgba(180, 83, 9, 0.45);
     background: rgba(180, 83, 9, 0.06);

@@ -27,9 +27,11 @@ KIND_LABELS = {
     Project.KIND_FILE_GATE: "FILE GATE",
     Project.KIND_FILE_CLEAN: "FILE CLEAN",
     Project.KIND_FILE_MATCH: "FILE MATCH",
+    "file_match_b": "FILE MATCH",
     Project.KIND_FILE_SPLIT_MERGE: "FILE SPLIT/MERGE",
     Project.KIND_REVERSE: "Reverse Studio",
     Project.KIND_DMS: "FilePipe / DMS",
+    Project.KIND_STRUCTURE_SCOUT: "STRUCTURE SCOUT",
 }
 
 SLOT_LABELS = {
@@ -40,6 +42,15 @@ SLOT_LABELS = {
     ),
     profile_seed_service.SOURCE_SLOT_READ_PROFILE: (
         profile_seed_service.SOURCE_SLOT_LABEL_READ_PROFILE
+    ),
+    profile_seed_service.TARGET_SLOT_SOURCE: (
+        profile_seed_service.TARGET_SLOT_LABEL_SOURCE
+    ),
+    profile_seed_service.SOURCE_SLOT_DRAFT: (
+        profile_seed_service.SOURCE_SLOT_LABEL_DRAFT
+    ),
+    profile_seed_service.TARGET_SLOT_TARGET: (
+        profile_seed_service.TARGET_SLOT_LABEL_TARGET
     ),
     "profile_b": "Perfil B (archivo B)",
     "input": "Entrada",
@@ -72,6 +83,44 @@ def _source_url(user, event: ProfileSeedEvent) -> str | None:
             return None
         return reverse(
             "file_clean:profile_hub", kwargs={"project_slug": source.slug}
+        )
+    if source.project_kind == Project.KIND_DMS:
+        from apps.dms.mapping.services import mapping_project_service
+
+        if not mapping_project_service.user_can_view(user, source):
+            return None
+        return reverse("dms:source_hub", kwargs={"project_slug": source.slug})
+    if source.project_kind == Project.KIND_FILE_MATCH:
+        from apps.file_match.projects.services import match_project_service
+
+        if not match_project_service.user_can_view(user, source):
+            return None
+        if event.source_kind == profile_seed_service.SOURCE_KIND_FILE_MATCH_B:
+            return reverse(
+                "file_match:profile_b_hub", kwargs={"project_slug": source.slug}
+            )
+        return reverse("file_match:profile_a_hub", kwargs={"project_slug": source.slug})
+    if source.project_kind == Project.KIND_REVERSE:
+        from apps.reverse_studio.projects.services import reverse_project_service
+
+        if not reverse_project_service.user_can_view(user, source):
+            return None
+        return reverse("reverse_studio:input_hub", kwargs={"project_slug": source.slug})
+    if source.project_kind == Project.KIND_FILE_SPLIT_MERGE:
+        from apps.file_split_merge.projects.services import split_merge_project_service
+
+        if not split_merge_project_service.user_can_view(user, source):
+            return None
+        return reverse(
+            "file_split_merge:profile_hub", kwargs={"project_slug": source.slug}
+        )
+    if source.project_kind == Project.KIND_STRUCTURE_SCOUT:
+        from apps.structure_scout.projects.services import scout_project_service
+
+        if not scout_project_service.user_can_view(user, source):
+            return None
+        return reverse(
+            "structure_scout:draft_hub", kwargs={"project_slug": source.slug}
         )
     return None
 
@@ -111,12 +160,16 @@ def list_events(
     target_project: Project,
     *,
     status: str | None = None,
+    destination_slot: str | None = None,
 ) -> list[dict]:
     qs = (
         ProfileSeedEvent.objects.filter(target_project=target_project)
         .select_related("source_project", "created_by")
         .order_by("-created_at")
     )
+    slot = (destination_slot or "").strip()
+    if slot:
+        qs = qs.filter(target_slot=slot)
     status_value = (status or "").strip()
     if status_value in {
         ProfileSeedEvent.STATUS_OK,
@@ -148,6 +201,7 @@ def get_history_hub_context(
     target_project: Project,
     *,
     status: str | None = None,
+    destination_slot: str | None = None,
 ) -> dict:
     status_value = (status or "").strip()
     if status_value not in {
@@ -156,29 +210,47 @@ def get_history_hub_context(
         ProfileSeedEvent.STATUS_FAILED,
     }:
         status_value = ""
-    events = list_events(user, target_project, status=status_value or None)
+    events = list_events(
+        user,
+        target_project,
+        status=status_value or None,
+        destination_slot=destination_slot,
+    )
+    history_qs = ProfileSeedEvent.objects.filter(target_project=target_project)
+    slot = (destination_slot or "").strip()
+    if slot:
+        history_qs = history_qs.filter(target_slot=slot)
     return {
-        **profile_seed_service.get_profile_a_seed_context(user, target_project),
+        **profile_seed_service.get_seed_context(
+            user, target_project, destination_slot=destination_slot
+        ),
         "events": events,
         "has_events": bool(events),
         "status_filter": status_value,
         "status_filter_choices": STATUS_FILTER_CHOICES,
         "msg_no_events": MSG_NO_EVENTS,
-        "has_any_history": ProfileSeedEvent.objects.filter(
-            target_project=target_project
-        ).exists(),
+        "has_any_history": history_qs.exists(),
     }
 
 
 def get_history_detail_context(
-    user, target_project: Project, event_id: str | UUID
+    user,
+    target_project: Project,
+    event_id: str | UUID,
+    *,
+    destination_slot: str | None = None,
 ) -> dict | None:
     event = get_event(user, target_project, event_id)
     if event is None:
         return None
+    slot = (destination_slot or "").strip()
+    if slot and event.target_slot != slot:
+        return None
     row = event_to_row(user, event)
     return {
-        **profile_seed_service.get_profile_a_seed_context(user, target_project),
+        **profile_seed_service.get_seed_context(
+            user, target_project, destination_slot=destination_slot
+        ),
         "event": row,
         "source_gone_hint": None
         if row["source_available"] or not row["source_slug"] or row["source_slug"] == "—"

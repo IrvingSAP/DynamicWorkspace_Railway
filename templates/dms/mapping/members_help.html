@@ -58,7 +58,7 @@
                 <tr>
                     <td>Rol</td>
                     <td>Nivel de permiso en este proyecto.</td>
-                    <td class="mono">PA · ED · CO · GE</td>
+                    <td class="mono">PA · ED · CO · GE · CG</td>
                 </tr>
                 <tr>
                     <td>Autorizar miembro</td>
@@ -76,8 +76,9 @@
             <tbody>
                 <tr><td class="mono">PA</td><td>Admin de proyecto</td><td>Definición, publicar, miembros, ejecución.</td></tr>
                 <tr><td class="mono">ED</td><td>Editor</td><td>Editar definición y ejecutar según políticas del módulo.</td></tr>
-                <tr><td class="mono">CO</td><td>Consulta</td><td>Lectura / consulta del proyecto.</td></tr>
-                <tr><td class="mono">GE</td><td>Generar</td><td>Ejecutar / generar salidas; alcance de lectura según política.</td></tr>
+                <tr><td class="mono">CO</td><td>Consulta</td><td>Lectura / consulta del proyecto. No ejecuta ni edita.</td></tr>
+                <tr><td class="mono">GE</td><td>Generar</td><td>Ejecutar / generar salidas; alcance de lectura según política. No edita definición ni gestiona miembros.</td></tr>
+                <tr><td class="mono">CG</td><td>Consulta-Generar</td><td>Consulta del proyecto y ejecutar / generar salidas (combinación CO + GE). Alcance de lectura según política. No edita definición ni gestiona miembros.</td></tr>
             </tbody>
         </table>
 

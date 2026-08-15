@@ -208,10 +208,14 @@ Fuente funcional: [`../definition_app_DMS/source_definition.md`](../definition_a
 | Captura fin &lt; inicio (origen) | `error` | La línea de fin debe ser posterior a la de inicio. |
 | Destino obligatorio sin mapeo | `warning` / `error` (strict) | Campo destino obligatorio «{name}» sin mapeo ni default_value. |
 | Destino / origen sin usar | `warning` | Campo destino/origen «{name}» aún sin mapeo / no se usa. |
+| Secuencia en campo de longitud 1 | `warning` | Campo destino «{name}» tiene longitud {n}: la secuencia 10, 11… se recorta al escribir (parece que se reinicia). Amplíe el campo en Destino (paso 4) y vuelva a publicar. |
 | Publicar sin destino completo | `error` | Complete y corrija el perfil de destino antes de publicar. |
 | Publicar sin mapeo completo | `error` | Complete y corrija el mapeo de campos antes de publicar. |
 | Publicación OK | `success` | Versión v{N} publicada correctamente. Nuevo borrador v{N+1} listo para edición. |
 | Sin permiso de edición | `error` | No tiene permiso para editar la definición de origen/destino / el mapeo de campos / las reglas de transformación. |
+| Estructura importada al origen | `success` | Estructura importada al borrador de la definición de origen. Revise los pasos del asistente y publique FilePipe cuando corresponda. |
+| Estructura importada al destino | `success` | Estructura importada al borrador de la definición de destino. Revise layout, serialización y publique FilePipe cuando corresponda. |
+| Sin permiso importar estructura | `error` | No tiene permiso para importar estructuras en este proyecto. |
 | Archivo muestra subido | `success` | Archivo muestra subido correctamente. |
 | Archivo producción subido | `success` | Archivo de producción subido correctamente. |
 | Archivo muestra eliminado | `success` | Archivo muestra eliminado correctamente. |
@@ -222,6 +226,10 @@ Fuente funcional: [`../definition_app_DMS/source_definition.md`](../definition_a
 | Sin permiso upload muestra / producción | `error` | No tiene permiso para subir archivos muestra / de producción. |
 | Preview dry run OK | `success` | Preview generado correctamente. |
 | Transformación finalizada | `success` | Transformación finalizada: {n} filas OK… |
+| Corrida eliminada del historial | `success` | Corrida eliminada del historial. |
+| Solo propias | `error` | Solo puede eliminar corridas que usted ejecutó. |
+| Job en ejecución | `error` | No se puede eliminar un job en ejecución. |
+| Error al eliminar corrida | `error` | No se pudo eliminar la corrida. Si el problema continúa, contacte al administrador. |
 | Sin permiso ejecutar | `error` | No tiene permiso para ejecutar transformaciones de este proyecto. |
 | Sin archivo de entrada en job | `error` | El job no tiene archivo de entrada subido. |
 | Job ya ejecutado | `error` | Este job ya fue ejecutado o está en ejecución. |
@@ -769,7 +777,7 @@ Mensajes de usuario para el Sembrador de perfiles. Alineados a [`../PROFILE_SEED
 | Sin acceso al proyecto Match | `error` | No tiene acceso a este proyecto FILE MATCH. |
 | Sin permiso importar (no PA/ED, archivado, kind incorrecto) | `error` | No tiene permiso para importar estructuras en este proyecto. |
 
-> Motor M1: `profile_seed_service.user_can_import` / `get_profile_a_seed_context`. URLs host: `file_match:profile_a_seed_hub` / `profile_a_seed_hub_help`. CTA solo si `can_seed_import`.
+> Motor M1: `profile_seed_service.user_can_import` / `get_seed_context`. Hosts: Match Perfil A, Split/Merge perfil, **FilePipe origen**. CTA solo si `can_seed_import`.
 
 #### Módulo 2 — Selector de origen
 
@@ -778,8 +786,14 @@ Mensajes de usuario para el Sembrador de perfiles. Alineados a [`../PROFILE_SEED
 | Sin orígenes elegibles | empty UI | No hay orígenes publicados visibles. Publique un esquema en FILE GATE o pida acceso a un proyecto GATE. |
 | Origen no elegible / no encontrado | `error` | El origen seleccionado no está disponible o no tiene versión publicada. |
 | Kind no soportado | `warning` / empty | Este tipo de origen aún no está disponible para importar. |
+| Sin orígenes FilePipe | empty UI | No hay otros proyectos FilePipe publicados visibles. Publique un origen en otro proyecto FilePipe o pida acceso. |
+| Sin orígenes Match Perfil A | empty UI | No hay orígenes FILE MATCH (Perfil A) publicados visibles. Publique el Perfil A en FILE MATCH o pida acceso a un proyecto Match. |
+| Sin orígenes Match Perfil B | empty UI | No hay orígenes FILE MATCH (Perfil B) publicados visibles. Publique el Perfil B en FILE MATCH o pida acceso a un proyecto Match. |
+| Sin orígenes Reverse entrada | empty UI | No hay orígenes Reverse Studio (entrada) publicados visibles. Publique el contrato de entrada en Reverse Studio o pida acceso. |
+| Sin orígenes Split/Merge | empty UI | No hay orígenes FILE SPLIT/MERGE publicados visibles. Publique un perfil de lectura en FILE SPLIT/MERGE o pida acceso. |
+| Sin orígenes Scout | empty UI | No hay borradores STRUCTURE SCOUT visibles. Guarde un borrador de estructura en Explorador o pida acceso al proyecto. |
 
-> Motor M2: `list_eligible_sources` / `get_source_picker_context`. Lectura: `get_published_version` + `profile_to_dict` (metadata). Visibilidad GATE: `visible_projects_qs`. URLs: `profile_a_seed_picker` / `profile_a_seed_picker_help`.
+> Motor M2: `list_eligible_sources`. Host FilePipe: GATE + CLEAN + otro FilePipe + Match A/B + Reverse entrada + FILE SPLIT/MERGE + **STRUCTURE SCOUT** (borrador current). Apply pasa `kind` para no confundir Match A y B.
 
 #### Módulo 3 — Preview y aplicar borrador
 

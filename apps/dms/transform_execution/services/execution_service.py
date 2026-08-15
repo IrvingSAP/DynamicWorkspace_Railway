@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+import shutil
+from datetime import timedelta, timezone
 
-from django.db import transaction
 from django.urls import reverse
 from django.utils import timezone as dj_timezone
 
@@ -146,6 +146,16 @@ def dry_run_job(user, project: Project, job_id, *, limit: int = PREVIEW_ROW_LIMI
         errors, capture_messages
     )
 
+    suggestions = dict(job.input_suggestions or {})
+    suggestions["last_preview"] = {
+        "at": dj_timezone.now().isoformat(),
+        "rows_read": rows_read,
+        "rows_ok": len(ok_rows),
+        "rows_rejected": len({err["line"] for err in localized_errors}),
+    }
+    job.input_suggestions = suggestions
+    job.save(update_fields=["input_suggestions", "updated_at"])
+
     return OperationResult.success(
         user_message="Preview generado correctamente.",
         payload={
@@ -162,7 +172,6 @@ def dry_run_job(user, project: Project, job_id, *, limit: int = PREVIEW_ROW_LIMI
     )
 
 
-@transaction.atomic
 def run_full_job(
     user,
     project: Project,
@@ -403,3 +412,60 @@ def is_download_expired(job: DmsExecutionJob) -> bool:
     if dj_timezone.is_naive(ref):
         ref = dj_timezone.make_aware(ref, timezone.utc)
     return dj_timezone.now() > ref + timedelta(days=7)
+
+
+MSG_DELETED = "Corrida eliminada del historial."
+MSG_NOT_OWNER = "Solo puede eliminar corridas que usted ejecutó."
+MSG_NOT_FOUND = "Job no encontrado."
+MSG_DELETE_FAILED = (
+    "No se pudo eliminar la corrida. Si el problema continúa, contacte al administrador."
+)
+MSG_DELETE_RUNNING = "No se puede eliminar un job en ejecución."
+
+
+def can_delete_job(user, job: DmsExecutionJob) -> bool:
+    if user is None or not getattr(user, "is_authenticated", False):
+        return False
+    if job.status in {DmsExecutionJob.STATUS_RUNNING, DmsExecutionJob.STATUS_QUEUED}:
+        return False
+    if not job.executed_by_id:
+        return False
+    return job.executed_by_id == user.id
+
+
+def _purge_job_storage(project: Project, job: DmsExecutionJob) -> None:
+    root = storage_service.job_input_dir(project.company_id, project.id, job.id).parent
+    if not root.exists():
+        return
+    try:
+        shutil.rmtree(root, ignore_errors=False)
+    except OSError:
+        logger.exception(
+            "purge_job_storage failed project=%s job=%s path=%s",
+            project.id,
+            job.id,
+            root,
+        )
+
+
+def delete_own_job(user, project: Project, job_id) -> OperationResult:
+    if not user_can_view_history(user, project):
+        return OperationResult.failure(
+            "forbidden",
+            "No tiene acceso al historial de este proyecto.",
+        )
+    job = get_job(project, job_id)
+    if job is None:
+        return OperationResult.failure("not_found", MSG_NOT_FOUND)
+    if job.status in {DmsExecutionJob.STATUS_RUNNING, DmsExecutionJob.STATUS_QUEUED}:
+        return OperationResult.failure("validation_form", MSG_DELETE_RUNNING)
+    if not can_delete_job(user, job):
+        return OperationResult.failure("forbidden", MSG_NOT_OWNER)
+    try:
+        _purge_job_storage(project, job)
+        job.delete()
+        project.save(update_fields=["updated_at"])
+    except Exception:
+        logger.exception("delete_own_job failed project=%s job=%s", project.id, job_id)
+        return OperationResult.failure("unexpected", MSG_DELETE_FAILED)
+    return OperationResult.success(user_message=MSG_DELETED)

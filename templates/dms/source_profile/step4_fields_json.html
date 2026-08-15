@@ -37,6 +37,7 @@
         <div class="page-actions">
             {% url 'dms:source_step4_help' project_slug=project.slug as source_help_url %}
             {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+            {% include "dms/source_profile/_step4_import_cta.html" %}
             {% if can_edit_source %}
             <button type="button" id="btn-save-json-config" class="btn btn-ghost btn-sm">Guardar parámetros</button>
             <button type="button" id="btn-add-field" class="btn btn-primary">+ Agregar campo</button>
@@ -45,6 +46,7 @@
     </div>
 
     {% include "dms/source_profile/_wizard_stepper.html" %}
+    {% include "dms/source_profile/_step4_import_banner.html" %}
     <p id="json-save-status" class="step-save-status" aria-live="polite"></p>
 
     <div class="panel">

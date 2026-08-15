@@ -20,7 +20,6 @@
 {% block content %}
 {% include "dms/source_profile/_project_scope.html" %}
 {% include "dms/source_profile/_source_persistence.html" %}
-{% include "dms/source_profile/_source_publish.html" %}
 
 <div id="processing-report-root" data-project-slug="{{ project.slug }}">
 
@@ -104,19 +103,14 @@
             </div>
 
             <div class="wizard-footer">
-                <span class="hint">Borrador v{{ wizard.version_number }} · validación estricta al publicar</span>
+                <span class="hint">Borrador v{{ wizard.version_number }} · publicar la versión completa se hace en el hub del proyecto</span>
                 <div class="wizard-footer-actions">
                     <a href="{% url 'dms:source_step5' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
                     {% if can_edit_source %}
                     <button type="button" id="btn-save-source-profile" class="btn btn-ghost">Validar borrador</button>
-                    <button type="button"
-                            id="btn-publish-version"
-                            class="btn btn-primary"
-                            data-draft-label="borrador v{{ version_publish.draft_version_number }}"
-                            data-next="{% url 'dms:source_hub' project_slug=project.slug %}"
-                            data-status-target="processing-report-status">Publicar versión</button>
                     {% endif %}
-                    <a href="{% url 'dms:source_hub' project_slug=project.slug %}" class="btn btn-secondary">Volver al hub</a>
+                    <a href="{% url 'dms:mapping_hub' project_slug=project.slug %}" class="btn btn-secondary">Hub del proyecto</a>
+                    <a href="{% url 'dms:source_hub' project_slug=project.slug %}" class="btn btn-secondary">Volver al origen</a>
                 </div>
             </div>
         </div>

@@ -5,6 +5,31 @@ from apps.dms.source_profile import views
 urlpatterns = [
     path("", views.hub, name="source_hub"),
     path("ayuda/", views.hub_help, name="source_hub_help"),
+    path("importar/", views.source_seed_hub, name="source_seed_hub"),
+    path("importar/ayuda/", views.source_seed_hub_help, name="source_seed_hub_help"),
+    path("importar/origen/", views.source_seed_picker, name="source_seed_picker"),
+    path(
+        "importar/origen/ayuda/",
+        views.source_seed_picker_help,
+        name="source_seed_picker_help",
+    ),
+    path("importar/confirmar/", views.source_seed_apply, name="source_seed_apply"),
+    path(
+        "importar/confirmar/ayuda/",
+        views.source_seed_apply_help,
+        name="source_seed_apply_help",
+    ),
+    path("importar/historial/", views.source_seed_history, name="source_seed_history"),
+    path(
+        "importar/historial/ayuda/",
+        views.source_seed_history_help,
+        name="source_seed_history_help",
+    ),
+    path(
+        "importar/historial/<uuid:event_id>/",
+        views.source_seed_history_detail,
+        name="source_seed_history_detail",
+    ),
     path("guardar/", views.source_save, name="source_save"),
     path("publicar/", views.source_publish, name="source_publish"),
     path("paso/1/ayuda/", views.step1_help, name="source_step1_help"),

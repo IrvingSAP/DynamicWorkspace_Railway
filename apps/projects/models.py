@@ -115,13 +115,20 @@ class ProjectMembership(models.Model):
     ROLE_ED = "ED"
     ROLE_CO = "CO"
     ROLE_GE = "GE"
+    ROLE_CG = "CG"
 
     ROLE_CHOICES = [
         (ROLE_PA, "Admin de proyecto"),
         (ROLE_ED, "Editor"),
         (ROLE_CO, "Consulta"),
         (ROLE_GE, "Generar"),
+        (ROLE_CG, "Consulta-Generar"),
     ]
+    ROLES_CAN_EXECUTE = frozenset({ROLE_PA, ROLE_ED, ROLE_GE, ROLE_CG})
+
+    @classmethod
+    def role_can_execute(cls, role: str) -> bool:
+        return role in cls.ROLES_CAN_EXECUTE
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     project = models.ForeignKey(

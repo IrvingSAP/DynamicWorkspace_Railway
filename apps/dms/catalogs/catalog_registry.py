@@ -410,6 +410,7 @@ CATALOGS: dict[str, CatalogDef] = {
                     ("ED", "ED — Editor"),
                     ("CO", "CO — Consulta"),
                     ("GE", "GE — Generar"),
+                    ("CG", "CG — Consulta-Generar"),
                 ],
             ),
             CatalogField("permissions", "Permisos (JSON)", field_type="json"),

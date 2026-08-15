@@ -1,9 +1,10 @@
-{# Contexto: project, current_step (1-6) #}
+{# Contexto: project, wizard, current_step (1-6). ✓ según estado real, no según el paso actual. #}
 <nav class="wizard-stepper" aria-label="Pasos del asistente origen">
-    <a href="{% url 'dms:source_step1' project_slug=project.slug %}" class="wizard-step{% if current_step == 1 %} is-active{% elif current_step > 1 %} is-done{% endif %}"><span class="wizard-step-num">{% if current_step > 1 %}✓{% else %}1{% endif %}</span> Tipo archivo</a>
-    <a href="{% url 'dms:source_step2' project_slug=project.slug %}" class="wizard-step{% if current_step == 2 %} is-active{% elif current_step > 2 %} is-done{% endif %}"><span class="wizard-step-num">{% if current_step > 2 %}✓{% else %}2{% endif %}</span> Inicio</a>
-    <a href="{% url 'dms:source_step3' project_slug=project.slug %}" class="wizard-step{% if current_step == 3 %} is-active{% elif current_step > 3 %} is-done{% endif %}"><span class="wizard-step-num">{% if current_step > 3 %}✓{% else %}3{% endif %}</span> Fin</a>
-    <a href="{% url 'dms:source_step4' project_slug=project.slug %}" class="wizard-step{% if current_step == 4 %} is-active{% elif current_step > 4 %} is-done{% endif %}"><span class="wizard-step-num">{% if current_step > 4 %}✓{% else %}4{% endif %}</span> Campos</a>
-    <a href="{% url 'dms:source_step5' project_slug=project.slug %}" class="wizard-step{% if current_step == 5 %} is-active{% elif current_step > 5 %} is-done{% endif %}"><span class="wizard-step-num">{% if current_step > 5 %}✓{% else %}5{% endif %}</span> Reglas</a>
-    <a href="{% url 'dms:source_step6' project_slug=project.slug %}" class="wizard-step{% if current_step == 6 %} is-active{% endif %}"><span class="wizard-step-num">6</span> Informe</a>
+    {% for step in wizard.steps %}
+    <a href="{% url step.url_name project_slug=project.slug %}"
+       class="wizard-step{% if current_step == step.number %} is-active{% elif step.status == 'done' %} is-done{% endif %}">
+        <span class="wizard-step-num">{% if step.status == 'done' and current_step != step.number %}✓{% else %}{{ step.number }}{% endif %}</span>
+        {% if step.number == 1 %}Tipo archivo{% elif step.number == 2 %}Inicio{% elif step.number == 3 %}Fin{% elif step.number == 4 %}Campos{% elif step.number == 5 %}Reglas{% else %}Informe{% endif %}
+    </a>
+    {% endfor %}
 </nav>

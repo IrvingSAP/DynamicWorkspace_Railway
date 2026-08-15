@@ -36,6 +36,29 @@ def _active_generator_codes() -> frozenset[str]:
     return GENERATOR_TYPES
 
 
+def _target_field_width(field: dict) -> int | None:
+    start = field.get("start")
+    end = field.get("end")
+    if start not in (None, "") and end not in (None, ""):
+        try:
+            width = int(end) - int(start) + 1
+            if width > 0:
+                return width
+        except (TypeError, ValueError):
+            pass
+    for key in ("length", "max_length"):
+        raw = field.get(key)
+        if raw in (None, ""):
+            continue
+        try:
+            width = int(raw)
+        except (TypeError, ValueError):
+            continue
+        if width > 0:
+            return width
+    return None
+
+
 def default_mappings_dict() -> dict:
     return {"mappings": []}
 
@@ -202,6 +225,19 @@ def validate_mappings_dict(
                 errors.setdefault("mappings", []).append(
                     f"Mapeo «{target}»: tipo de generador «{gtype}» no válido."
                 )
+            else:
+                width = _target_field_width(target_by_name.get(target) or {})
+                if (
+                    gtype.startswith("sequence")
+                    and width is not None
+                    and width < 2
+                ):
+                    warnings.setdefault("mappings", []).append(
+                        f"Campo destino «{target}» tiene longitud {width}: "
+                        "la secuencia 10, 11… se recorta al escribir "
+                        "(parece que se reinicia). Amplíe el campo en Destino "
+                        "(paso 4) y vuelva a publicar."
+                    )
         elif kind == "split":
             if len(mapping.get("source_fields") or []) != 1:
                 errors.setdefault("mappings", []).append(

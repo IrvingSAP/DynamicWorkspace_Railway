@@ -72,7 +72,7 @@ Detalle completo en [`DynamicWorkspace_Model.md`](DynamicWorkspace_Model.md#proj
 
 | `owner` | FK User | Creador (UF); debe ser de la misma compañía |
 
-| `is_archived` | BooleanField | Archivado |
+| `is_archived` | BooleanField | Archivado (soft). **Futura mejora:** estado `en_proceso` / `activo` / `inactivo` — [`project_status_future.md`](project_status_future.md) |
 
 | `created_at` / `updated_at` | DateTimeField | Auditoría |
 
@@ -148,6 +148,8 @@ def projects_for_user(user):
 
 | Generar | `GE` | Exportar documentos |
 
+| Consulta-Generar | `CG` | Consulta del proyecto y generar / exportar salidas |
+
 
 
 El creador (UF) recibe `PA` automáticamente.
@@ -162,23 +164,23 @@ El creador (UF) recibe `PA` automáticamente.
 
 
 
-| Acción | PA | ED | CO | GE |
+| Acción | PA | ED | CO | GE | CG |
 
-|--------|----|----|----|-----|
+|--------|----|----|----|-----|-----|
 
-| Ver registros | Sí | Sí | Sí | Sí |
+| Ver registros | Sí | Sí | Sí | Sí | Sí |
 
-| Crear/editar registros | Sí | Sí | No | No |
+| Crear/editar registros | Sí | Sí | No | No | No |
 
-| Diseñar campos | Sí | No | No | No |
+| Diseñar campos | Sí | No | No | No | No |
 
-| Gestionar miembros | Sí | No | No | No |
+| Gestionar miembros | Sí | No | No | No | No |
 
-| Ver auditoría | Sí | No | No | No |
+| Ver auditoría | Sí | No | No | No | No |
 
-| Exportar | Sí | Sí | Sí | Sí |
+| Exportar | Sí | Sí | Sí | Sí | Sí |
 
-| Importar Excel | Sí | Sí | No | No |
+| Importar Excel | Sí | Sí | No | No | No |
 
 
 
@@ -284,6 +286,8 @@ Tras el OK: migrar a `templates/projects/` extendiendo `app_base.html`; eliminar
 
 
 - [`DynamicWorkspace_Model.md`](DynamicWorkspace_Model.md)
+
+- [`project_status_future.md`](project_status_future.md) — **Futura mejora:** estado de proyecto (Activo / Inactivo / En proceso) para listados y Pepeline
 
 - [`company.md`](company.md)
 

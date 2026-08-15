@@ -148,7 +148,7 @@ Si la respuesta es “sí” a 1–4, conviene un doc hermano al estilo `DataMap
 
 1. Crear `docs/definition_app_<slug>/` o un `.md` de producto (como `DataMappingStudio.md`).
 2. Definir módulos, modelo conceptual, casos de uso y fases MVP.
-3. Decidir `project_kind` y permisos (mapa a `PA/ED/CO/GE` o paquetes).
+3. Decidir `project_kind` y permisos (mapa a `PA/ED/CO/GE/CG` o paquetes).
 4. Prototipar UI en `prototype/` antes de apps Django.
 5. Actualizar este archivo marcando el vertical como **en definición** / **en curso** / **hecho**.
 

@@ -20,6 +20,7 @@ ROLE_LABELS = {
     ProjectMembership.ROLE_ED: "ED — Editor",
     ProjectMembership.ROLE_CO: "CO — Consulta",
     ProjectMembership.ROLE_GE: "GE — Generar",
+    ProjectMembership.ROLE_CG: "CG — Consulta-Generar",
 }
 
 # Etiquetas de producto para mensajes de slug compartido entre apps.

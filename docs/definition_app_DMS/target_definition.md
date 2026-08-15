@@ -622,6 +622,27 @@ Qué hace el motor cuando un valor **no cumple** el esquema destino antes de ser
 
 ---
 
+## Importar estructura (Profile Seed)
+
+CTA **Importar estructura** (PA/ED) en el hub de destino y en el **paso 4 (Campos)** — mismo flujo Profile Seed que el origen FilePipe. Reusa `apps.profile_seed` (slot `target`).
+
+| Fase | Orígenes → FilePipe destino |
+|------|-----------------------------|
+| **Hecho** | **FILE GATE** · **FILE CLEAN** · **otro FilePipe** · **FILE MATCH A/B** · **Reverse entrada** · **FILE SPLIT/MERGE** · **STRUCTURE SCOUT** (borrador) |
+| **Pendiente** | — (tablero FilePipe cerrado; otras matrices no van aquí) |
+
+**Tablero y orden de desarrollo** (otro FilePipe → Match A → Match B → Reverse entrada → Split/Merge → Scout): [`source_definition.md`](source_definition.md) § *Importar estructura (Profile Seed)*. Al cerrar un origen, marcar **Hecho** allí; el combo de destino debe ofrecer los mismos kinds.
+
+Se adapta el snapshot de lectura a `TargetProfile` (tipo, encoding, layout, campos de escritura). No copia serialización/validación de escritura del origen (se aplican defaults). No auto-publica.
+
+**Distinto de** «Cargar desde origen» (paso 4): esa acción copia campos del **origen de este mismo proyecto**.
+
+URLs: `/app/filepipe/proyectos/<slug>/destino/importar/…`
+
+Ver [`../PROFILE_SEED.md`](../PROFILE_SEED.md).
+
+---
+
 ## Documentos relacionados (DMS)
 
 | Documento | Contenido |

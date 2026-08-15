@@ -311,6 +311,11 @@
                     <p class="type-count">{{ dashboard.roles_by_type.GE|default:0 }}</p>
                     <p class="type-label">Generar</p>
                 </div>
+                <div class="type-card">
+                    <span class="type-code">CG</span>
+                    <p class="type-count">{{ dashboard.roles_by_type.CG|default:0 }}</p>
+                    <p class="type-label">Consulta-Generar</p>
+                </div>
             </div>
             {% if dashboard.kpi_pa_count %}
             <div class="status-pills">

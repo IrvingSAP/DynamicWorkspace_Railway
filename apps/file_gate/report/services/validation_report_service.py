@@ -74,11 +74,7 @@ def can_view_report(user, project: Project) -> bool:
 def can_view_issues(user, project: Project) -> bool:
     """CO no ve tabla de incidencias (FG-I04)."""
     role = resolve_role(user, project)
-    return role in (
-        ProjectMembership.ROLE_PA,
-        ProjectMembership.ROLE_ED,
-        ProjectMembership.ROLE_GE,
-    )
+    return ProjectMembership.role_can_execute(role)
 
 
 def can_reveal_values(user, project: Project) -> bool:
@@ -90,11 +86,7 @@ def can_reveal_values(user, project: Project) -> bool:
 def can_download_files(user, project: Project) -> bool:
     """I8: CO denegado para JSON/CSV."""
     role = resolve_role(user, project)
-    return role in (
-        ProjectMembership.ROLE_PA,
-        ProjectMembership.ROLE_ED,
-        ProjectMembership.ROLE_GE,
-    )
+    return ProjectMembership.role_can_execute(role)
 
 
 def can_view_certificate(user, project: Project) -> bool:

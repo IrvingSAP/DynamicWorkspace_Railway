@@ -60,11 +60,7 @@ def can_view_report(user, project: Project) -> bool:
 def can_view_detail(user, project: Project) -> bool:
     """CO no ve tabla de diferencias con valores de fila."""
     role = resolve_role(user, project)
-    return role in (
-        ProjectMembership.ROLE_PA,
-        ProjectMembership.ROLE_ED,
-        ProjectMembership.ROLE_GE,
-    )
+    return ProjectMembership.role_can_execute(role)
 
 
 def can_reveal_values(user, project: Project) -> bool:
@@ -74,11 +70,7 @@ def can_reveal_values(user, project: Project) -> bool:
 
 def can_download_files(user, project: Project) -> bool:
     role = resolve_role(user, project)
-    return role in (
-        ProjectMembership.ROLE_PA,
-        ProjectMembership.ROLE_ED,
-        ProjectMembership.ROLE_GE,
-    )
+    return ProjectMembership.role_can_execute(role)
 
 
 def can_view_certificate(user, project: Project) -> bool:

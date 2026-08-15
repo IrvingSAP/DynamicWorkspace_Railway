@@ -76,11 +76,11 @@
     <div class="panel-body">
         <h3 class="form-section-title">Qué hará a continuación</h3>
         <ul>
-            <li>Elegirá un origen <strong>publicado</strong> (FILE GATE y, según la app destino, FILE CLEAN) — Módulo 2.</li>
+            <li>Elegirá un origen (FILE GATE, FILE CLEAN, otro FilePipe, FILE MATCH A/B, Reverse Studio entrada, FILE SPLIT/MERGE o STRUCTURE SCOUT — borrador, según la app destino) — Módulo 2.</li>
             <li>Verá un preview y confirmará — Módulo 3.</li>
             <li>Se sembrará el borrador del {{ seed_host.profile_hub_label }} (overwrite con aviso si ya hay campos).</li>
         </ul>
-        <p class="hint">Esto no es STRUCTURE SCOUT (muestra) ni el bridge FILE GATE (hash de job).</p>
+        <p class="hint">El bridge FILE GATE (hash de job) es otro producto. STRUCTURE SCOUT como origen usa el borrador Scout; no infiere la muestra aquí.</p>
         <div class="page-actions" style="margin-top:14px">
             <a href="{% url seed_host.seed_picker_url_name project_slug=project.slug %}" class="btn btn-primary">Continuar a elegir origen</a>
             <a href="{% url seed_host.profile_hub_url_name project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>

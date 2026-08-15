@@ -99,7 +99,7 @@ Descargar salida(s) + log / métricas
 
 | Incluido | Descripción |
 |----------|-------------|
-| Proyecto `project_kind=file_split_merge` | Alta, hub, miembros (PA/ED/CO/GE) |
+| Proyecto `project_kind=file_split_merge` | Alta, hub, miembros (PA/ED/CO/GE/CG) |
 | Perfil de lectura | Tipo, encoding, captura, campos (reuso source / catálogo DMS) |
 | Modo de operación | **Split** o **Merge** (por versión publicada; un proyecto puede publicar uno u otro, o ambos en fases) |
 | Reglas Split | max_rows, max_bytes, split_by_column (+ valores), date_range (fase 2 si hace falta) |

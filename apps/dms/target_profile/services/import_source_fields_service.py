@@ -172,6 +172,13 @@ def build_fields_from_source(project) -> OperationResult:
     source = source_persistence_service.get_source_dict(project)
     target = target_persistence_service.get_target_dict(project)
 
+    return build_fields_from_source_snapshot(
+        source, (target.get("file_type_code") or "").strip()
+    )
+
+
+def build_fields_from_source_snapshot(source: dict, target_file_type: str) -> OperationResult:
+    """Convierte campos de un snapshot de lectura al shape TargetProfile."""
     source_fields = source.get("fields") or []
     if not source_fields:
         return OperationResult.failure(
@@ -180,7 +187,7 @@ def build_fields_from_source(project) -> OperationResult:
             errors={"fields": ["El origen no tiene campos definidos."]},
         )
 
-    target_type = (target.get("file_type_code") or "").strip()
+    target_type = (target_file_type or "").strip()
     if not target_type:
         return OperationResult.failure(
             "validation_form",

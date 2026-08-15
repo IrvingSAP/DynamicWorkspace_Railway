@@ -77,7 +77,7 @@
 <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
     <div class="panel">
         <div class="panel-body">
-            <h3 class="form-section-title">Origen (publicado)</h3>
+            <h3 class="form-section-title">{% if source.kind == 'structure_scout' %}Origen (borrador Scout){% else %}Origen (publicado){% endif %}</h3>
             <dl style="display:grid;grid-template-columns:110px 1fr;gap:6px 12px;font-size:14px;margin:0">
                 <dt class="hint">App</dt>
                 <dd style="margin:0">{{ source.kind_label }} · {{ source.slot_label }}</dd>
@@ -133,6 +133,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="action" value="apply">
                 <input type="hidden" name="source_id" value="{{ source.id }}">
+                <input type="hidden" name="kind" value="{{ source.kind }}">
                 <button type="submit" class="btn btn-primary">Sembrar borrador</button>
             </form>
             {% else %}

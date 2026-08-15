@@ -39,7 +39,14 @@
         <h3 class="form-section-title">Propósito de la página</h3>
         <p class="help-intro">
             El hub resume el estado del proyecto <strong>{{ project.name }}</strong> y da acceso a cada etapa:
-            acceso (miembros), definición (origen → destino → mapeo → reglas → publicar) y ejecución (archivo, transformar, historial).
+            acceso (miembros), definición (origen → destino → mapeo → reglas → publicar) y ejecución
+            (archivo + transformar, historial, integración FILE GATE).
+            La publicación de la <strong>versión completa</strong> se hace aquí (no en los hubs de origen o destino).
+        </p>
+        <p class="help-intro">
+            <strong>Quién:</strong> cualquier miembro ve el hub; PA gestiona miembros; editores publican y ejecutan.
+            <strong>Ejemplo:</strong> con origen, destino, mapeo y reglas listos, pulse <strong>Publicar vN</strong>
+            y luego use Fase C para transformar un archivo de producción.
         </p>
 
         <h3 class="form-section-title">Cabecera y acciones</h3>
@@ -49,20 +56,32 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>Código / visibilidad / rol</td>
-                    <td>Identifica el proyecto, si es público o privado, y tu permiso (p. ej. PA).</td>
+                    <td>Código (badge)</td>
+                    <td>Slug del proyecto, p. ej. <span class="mono">{{ project.slug }}</span>.</td>
+                </tr>
+                <tr>
+                    <td>Visibilidad</td>
+                    <td>Si el proyecto es de la compañía o solo de miembros (p. ej. Privado / Compañía).</td>
+                </tr>
+                <tr>
+                    <td>Rol</td>
+                    <td>Su permiso en este proyecto (PA administrador, ED editor, etc.).</td>
+                </tr>
+                <tr>
+                    <td>Ayuda (icono)</td>
+                    <td>Abre esta página.</td>
                 </tr>
                 <tr>
                     <td>Miembros</td>
-                    <td>Solo si eres PA: gestiona quién puede usar el proyecto.</td>
+                    <td>Solo PA: invita, cambia rol o revoca. También está el paso 3 del stepper.</td>
                 </tr>
                 <tr>
                     <td>Publicar vN</td>
-                    <td>Congela el borrador (origen, destino, mapeo y reglas) y lo deja como versión activa. Requiere Fase B completa.</td>
+                    <td>Congela el <strong>borrador</strong> (origen + destino + mapeo + reglas) como versión activa y abre un borrador nuevo. Está deshabilitado hasta completar las 4 etapas de definición. Tras publicar, el círculo del paso Publicar pasa a ✓.</td>
                 </tr>
                 <tr>
                     <td>← Proyectos</td>
-                    <td>Vuelve al listado Data Mapping.</td>
+                    <td>Vuelve al listado FilePipe.</td>
                 </tr>
             </tbody>
         </table>
@@ -75,16 +94,20 @@
             <tbody>
                 <tr>
                     <td>Borrador</td>
-                    <td>Versión editable donde trabajas la definición.</td>
+                    <td>Versión editable (origen, destino, mapeo, reglas). Lo que cambia en los asistentes vive aquí hasta publicar.</td>
                 </tr>
                 <tr>
                     <td>Versión activa</td>
-                    <td>Última publicada; es la que se usa al ejecutar transformación en producción.</td>
+                    <td>Última publicada. Es la que se usa al ejecutar transformación en producción. Si aún no hay, verá un texto del tipo «Sin versión publicada».</td>
                 </tr>
             </tbody>
         </table>
 
         <h3 class="form-section-title">Ciclo de vida (stepper)</h3>
+        <p class="help-intro">
+            Cada paso muestra número o <strong>✓</strong> cuando está hecho. Puede pulsar un paso para ir a esa pantalla
+            (Publicar dispara la misma acción que el botón de cabecera si la definición está completa).
+        </p>
         <table class="help-table">
             <thead>
                 <tr><th>Fase</th><th>Pasos</th><th>Para qué sirve</th></tr>
@@ -92,21 +115,69 @@
             <tbody>
                 <tr>
                     <td>A — Acceso</td>
-                    <td>Crear · Visibilidad · Miembros</td>
-                    <td>Quién ve y quién edita el proyecto.</td>
+                    <td>Crear proyecto · Visibilidad · Miembros</td>
+                    <td>Quién ve y quién edita. Crear y visibilidad quedan en ✓ al existir el proyecto. Miembros pasa a ✓ cuando hay más de un integrante (si usted es PA).</td>
                 </tr>
                 <tr>
                     <td>B — Definición</td>
-                    <td>Origen · Destino · Mapeo · Reglas · Publicar</td>
-                    <td>Cómo se lee, transforma y escribe el archivo.</td>
+                    <td>1 Origen · 2 Destino · 3 Mapeo · 4 Reglas · 5 Publicar</td>
+                    <td>Cómo se lee, mapea, transforma y escribe el archivo. Publicar exige los cuatro anteriores completos. El ✓ de Publicar aparece cuando ya hay versión publicada.</td>
                 </tr>
                 <tr>
                     <td>C — Ejecución</td>
-                    <td>Archivo + transformar · Historial</td>
-                    <td>Subir archivo, ejecutar job y revisar resultados.</td>
+                    <td>6 Archivo + transformar · 7 Historial · 8 FILE GATE</td>
+                    <td>
+                        Subir archivo de producción, ejecutar el job y revisar descargas.
+                        Los pasos 6 y 7 pasan a ✓ cuando hay al menos una corrida completada o parcial.
+                        El paso 8 abre la integración opcional con FILE GATE (ver más abajo). Si el pre-check no está activado, el círculo permanece en 8 (pendiente); el enlace igual funciona.
+                    </td>
                 </tr>
             </tbody>
         </table>
+
+        <h3 class="form-section-title">Paso 8 · FILE GATE</h3>
+        <p class="help-intro">
+            Es un atajo a <strong>Integración FILE GATE</strong> de este proyecto FilePipe.
+            No transforma el archivo: decide si FilePipe <strong>puede o no</strong> ejecutar la transformación.
+            FILE GATE es otro tipo de proyecto (contrato, políticas, validar archivo). FilePipe es la transformación.
+            El paso 8 solo <strong>une</strong> ambos cuando usted enciende el bridge.
+        </p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Tema</th><th>Qué implica</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>¿Está activa por defecto?</td>
+                    <td>No. Hasta que marque «Exigir validación FILE GATE» y elija un proyecto GATE de la misma compañía, FilePipe transforma <strong>sin</strong> pre-check. El stepper se ve gris (<span class="mono">is-pending</span>) si el flag está apagado.</td>
+                </tr>
+                <tr>
+                    <td>Qué hace al activarla</td>
+                    <td>
+                        1) Sube el archivo en FilePipe.
+                        2) Ese mismo contenido debe haberse validado y <strong>aceptado</strong> en el proyecto FILE GATE vinculado (mismo <em>content hash</em>, no el nombre del fichero).
+                        3) Solo entonces arranca <strong>Ejecutar transformación</strong>.
+                        4) Si no hay corrida aceptada, el estado es error/parcial, o caducó la frescura (p. ej. 7 días), FilePipe <strong>bloquea</strong> el job.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Estados que abren el paso</td>
+                    <td>Solo corridas GATE en <span class="mono">passed</span> o, si lo configura, también <span class="mono">passed_with_warnings</span>. <span class="mono">failed</span>, <span class="mono">partial</span> y <span class="mono">error</span> nunca abren la transformación.</td>
+                </tr>
+                <tr>
+                    <td>Bypass</td>
+                    <td>En el MVP no hay excepción: ni PA puede saltarse el pre-check mientras el flag esté activo. Desactivar el flag restaura el comportamiento habitual de FilePipe (el vínculo al proyecto GATE puede quedar guardado).</td>
+                </tr>
+                <tr>
+                    <td>Quién configura</td>
+                    <td>Roles PA y ED. El resto puede ver el estado (activo/inactivo) pero no cambiarlo.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Ejemplo: exige GATE, vincula <span class="mono">pq-fg-entrada-01</span>, sube <span class="mono">entrada.txt</span> en ambos lados.
+            Si FILE GATE aceptó ese contenido, FilePipe transforma; si no, verá un bloqueo pidiendo validar primero en FILE GATE.
+        </p>
 
         <h3 class="form-section-title">Pestañas y tarjetas</h3>
         <table class="help-table">
@@ -114,14 +185,42 @@
                 <tr><th>Sección</th><th>Qué hace</th></tr>
             </thead>
             <tbody>
-                <tr><td>Resumen</td><td>Métricas de progreso (origen, destino, mapeo, versión) y atajos.</td></tr>
-                <tr><td>Origen</td><td>Perfil del archivo de entrada (tipo, encoding, layout, campos…).</td></tr>
-                <tr><td>Destino</td><td>Perfil del archivo de salida, incluido patrón de nombre.</td></tr>
-                <tr><td>Mapeo</td><td>Correspondencia origen → destino (directo, constante, concat, generado).</td></tr>
-                <tr><td>Reglas</td><td>Transformaciones post-mapeo (trim, upper, fechas, pad, default…).</td></tr>
-                <tr><td>Archivo</td><td>Carga de muestra o producción.</td></tr>
-                <tr><td>Ejecutar</td><td>Preview y transformación completa; acceso a historial.</td></tr>
-                <tr><td>Miembros</td><td>Invitar, cambiar rol o revocar (solo PA).</td></tr>
+                <tr>
+                    <td>Resumen</td>
+                    <td>
+                        Métricas: tipo de origen/destino y pasos  n/6, cantidad de mapeos, etiqueta de versión.
+                        Debajo, tarjetas de atajo: Definir origen, Definir destino, Mapeo, Reglas y Publicar versión
+                        (misma acción que el botón de cabecera).
+                    </td>
+                </tr>
+                <tr>
+                    <td>Origen</td>
+                    <td>Asistente de 6 pasos del archivo de entrada (tipo, inicio, fin, campos, reglas, informe). Puede importar estructura desde un perfil publicado de GATE, CLEAN, otro FilePipe, FILE MATCH, Reverse Studio o FILE SPLIT/MERGE, o desde un borrador STRUCTURE SCOUT.</td>
+                </tr>
+                <tr>
+                    <td>Destino</td>
+                    <td>Asistente de 6 pasos del archivo de salida (tipo, encoding, layout, campos, serialización, validación). En TXT de ancho fijo, longitudes (p. ej. correlativo) deben caber los valores generados.</td>
+                </tr>
+                <tr>
+                    <td>Mapeo</td>
+                    <td>Correspondencia origen → destino: directo, constante, concat, generado, split, expresión. Un mapeo ya guardado se edita con <strong>Editar</strong>, no con Añadir mapeo.</td>
+                </tr>
+                <tr>
+                    <td>Reglas</td>
+                    <td>Pipeline post-mapeo (trim, mayúsculas, fechas, pad, default…). Completar reglas habilita Publicar.</td>
+                </tr>
+                <tr>
+                    <td>Archivo</td>
+                    <td>Carga de muestra (definición) o producción (ejecución).</td>
+                </tr>
+                <tr>
+                    <td>Ejecutar</td>
+                    <td>Solo preview (no deja historial de corrida) o Ejecutar transformación (genera salida, informe y fila en historial). Requiere versión publicada. Si el bridge FILE GATE está activo, además exige una corrida GATE aceptada con el mismo hash.</td>
+                </tr>
+                <tr>
+                    <td>Miembros</td>
+                    <td>Invitar, cambiar rol o revocar (solo PA). Pestaña visible si puede gestionar miembros.</td>
+                </tr>
             </tbody>
         </table>
     </div>
