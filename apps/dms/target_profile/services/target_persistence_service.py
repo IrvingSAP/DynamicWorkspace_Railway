@@ -453,17 +453,35 @@ def save_target(
             "Ocurrió un error al guardar. Si persiste, contacte al administrador.",
         )
 
+    saved_target = profile_to_dict(profile)
+    warning_messages = flatten_validation_messages(warnings)
+    message_level = "success"
+    success_msg = (
+        "Contrato de salida guardado correctamente."
+        if is_reverse
+        else "Perfil de destino guardado correctamente."
+    )
+    late_save = is_reverse and (
+        "serialization" in (partial or {}) or "write_validation" in (partial or {})
+    )
+    if late_save:
+        missing = incomplete_step_labels(saved_target)
+        if missing:
+            success_msg = (
+                "El borrador se guardó. Faltan pasos por completar: "
+                + ", ".join(missing)
+                + "."
+            )
+            message_level = "warning"
+
     return OperationResult.success(
-        user_message=(
-            "Contrato de salida guardado correctamente."
-            if is_reverse
-            else "Perfil de destino guardado correctamente."
-        ),
+        user_message=success_msg,
         payload={
-            "target": profile_to_dict(profile),
+            "target": saved_target,
             "version": version,
             "warnings": warnings,
-            "warning_messages": flatten_validation_messages(warnings),
+            "warning_messages": warning_messages,
+            "message_level": message_level,
         },
     )
 
@@ -500,3 +518,22 @@ def step_statuses(target: dict) -> list[str]:
     write_validation = target.get("write_validation") or {}
     statuses.append("done" if write_validation.get("policy") else "pending")
     return statuses
+
+
+_WIZARD_STEP_LABELS = (
+    "Tipo",
+    "Encoding",
+    "Layout",
+    "Campos",
+    "Serialización",
+    "Validación",
+)
+
+
+def incomplete_step_labels(target: dict) -> list[str]:
+    statuses = step_statuses(target)
+    labels = []
+    for index, status in enumerate(statuses):
+        if status != "done":
+            labels.append(f"{_WIZARD_STEP_LABELS[index]} (paso {index + 1})")
+    return labels

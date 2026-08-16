@@ -7,11 +7,10 @@
 <link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -32,48 +31,102 @@
     <div>
         <p class="page-eyebrow">Referencia · Salida · Paso 5 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Serialización</h2>
-        <p>Cómo se formatean los valores al escribirlos en el archivo de envío.</p>
+        <p>Cómo se formatean los valores al escribirlos en el archivo de envío. Defaults globales; el pad fino suele ir por campo (paso 4) o en reglas (M3).</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:output_step5' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 5</a>
+        <a href="{% url 'reverse_studio:output_step6' project_slug=project.slug %}" class="btn btn-primary">Ir al paso 6</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué decide este paso</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            Reglas de <strong>escritura</strong> a nivel layout: padding, truncado, formatos de fecha/número,
-            representación de nulos. No sustituyen las transformaciones de negocio del mapeo (M3).
+            Reglas de <strong>escritura</strong> a nivel layout. Ocurren después del mapeo y de las reglas de transformación.
+            No sustituyen trim/upper/date_format del Módulo 3.
         </p>
 
-        <h3 class="form-section-title">Temas frecuentes</h3>
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>En posicional deje <strong>recortar espacios antes de escribir</strong> activo (trim ocurre <em>antes</em> del pad).</li>
+            <li>Ajuste fecha, booleanos y decimales al manual del receptor.</li>
+            <li>En bancos, evite truncar a ciegas: combine con la política del paso 6 (rechazar fila si no cabe).</li>
+            <li>Pulse <strong>Guardar borrador</strong> o Siguiente (marcar un check no guarda solo).</li>
+        </ol>
+
+        <h3 class="form-section-title">Campos de esta pantalla</h3>
         <table class="help-table">
-            <thead><tr><th>Tema</th><th>Detalle</th></tr></thead>
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
             <tbody>
                 <tr>
-                    <td class="mono">trim_before_write</td>
-                    <td>Quita espacios antes de rellenar (pad) en posicional. Suele ser deseable.</td>
+                    <td>Recortar espacios (<code>trim_before_write</code>)</td>
+                    <td>Quita espacios antes de escribir/pad. Deseable en posicional. No es <code>trim_lines</code> de entrada.</td>
                 </tr>
                 <tr>
-                    <td>Padding / alineación</td>
-                    <td>Completa a la longitud del campo (espacios, ceros…). Definido por campo y/o defaults globales.</td>
+                    <td>Truncado por defecto</td>
+                    <td>Si el valor es más largo: recortar derecha, izquierda, o no truncar (<code>none</code>).</td>
                 </tr>
                 <tr>
-                    <td>Truncate</td>
-                    <td>En layouts bancarios se recomienda fallar si no cabe (<code>error</code>), no “casi correcto”.</td>
+                    <td>Formato de fecha</td>
+                    <td>Patrón al escribir (p. ej. <code>YYYY-MM-DD</code>). Distinto del <code>date_format</code> de lectura en la planilla.</td>
                 </tr>
                 <tr>
-                    <td>Fechas / decimales</td>
-                    <td>Formato de salida hacia el receptor (distinto del <code>date_format</code> de lectura en entrada).</td>
+                    <td>Formato booleano</td>
+                    <td><code>1/0</code>, <code>true/false</code> o <code>si/no</code>.</td>
+                </tr>
+                <tr>
+                    <td>Representación de nulo</td>
+                    <td>Qué se escribe si no hay valor. Vacío = cadena vacía.</td>
+                </tr>
+                <tr>
+                    <td>Decimales / separador</td>
+                    <td>Defaults numéricos del layout. Las reglas M3 pueden haber formateado el valor antes.</td>
                 </tr>
             </tbody>
         </table>
 
         <h3 class="form-section-title">No confundir</h3>
+        <table class="help-table">
+            <thead><tr><th>Esto (paso 5 salida)</th><th>No es…</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Trim al <em>escribir</em></td>
+                    <td><code>trim_lines</code> al <em>leer</em> la planilla (entrada paso 5)</td>
+                </tr>
+                <tr>
+                    <td>Defaults globales de formato</td>
+                    <td>Pipeline por campo en Reglas de mapeo (trim, pad, number_format…)</td>
+                </tr>
+                <tr>
+                    <td>Truncado de escritura</td>
+                    <td>Política «truncar y escribir» del paso 6 (error vs recortar la fila)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Si algo no encaja</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>El borrador se guardó. Faltan pasos…</td><td>La serialización quedó, pero el contrato aún no está completo (p. ej. sin campos). Revise el hub.</td></tr>
+                <tr><td>Montos con coma/punto mal</td><td>Alinee este separador con lo que pide el banco y con las reglas M3.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Guardar serialización</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no es</h3>
         <ul>
-            <li><code>trim_lines</code> del contrato de <em>entrada</em> limpia al leer la planilla.</li>
-            <li><code>trim_before_write</code> limpia al <em>escribir</em> el layout; ocurre antes del pad posicional.</li>
+            <li>No publica ni genera. Publique (M4) para que Generar use estos cambios.</li>
+            <li>No define posiciones ni <code>data_type</code> de cada campo (paso 4).</li>
         </ul>
     </div>
 </div>

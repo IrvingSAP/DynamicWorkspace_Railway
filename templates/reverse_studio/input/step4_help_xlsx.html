@@ -1,0 +1,137 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos Excel — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">Entrada</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_step4' project_slug=project.slug %}">Paso 4 · Excel</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Entrada · Paso 4 de 6 · <span class="cell-badge">xlsx</span></p>
+        <h2>Ayuda — Campos de la planilla (Excel)</h2>
+        <p>Asocie cada campo del contrato a una columna de la hoja (letra o encabezado). No es el layout de envío.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'reverse_studio:input_step4' project_slug=project.slug %}">← Volver al paso 4</a>
+        <a class="btn btn-primary" href="{% url 'reverse_studio:input_step5' project_slug=project.slug %}">Ir al paso 5</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es</h3>
+        <p class="help-intro">
+            El tipo del paso 1 es <strong>Excel</strong> (<code>xlsx</code>). Reverse lee <strong>una hoja</strong>
+            y extrae celdas por columna. Al generar use archivos <strong>.xlsx</strong>; el formato antiguo <strong>.xls</strong> no se lee.
+        </p>
+
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Indique el <strong>nombre de hoja</strong> exacto del libro (p. ej. <code>Hoja1</code> vs <code>Sheet1</code>).</li>
+            <li>Ponga la <strong>fila de encabezados</strong> (suele ser 1). Esa fila no es un dato de negocio.</li>
+            <li>Agregue un campo por columna útil: letra o texto del encabezado + nombre interno.</li>
+            <li>Pulse <strong>Guardar borrador</strong> o guarde al agregar cada campo; luego Siguiente.</li>
+        </ol>
+
+        <h3 class="form-section-title">Parámetros de hoja</h3>
+        <table class="help-table">
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Nombre de hoja</td>
+                    <td>Debe existir en el archivo de generación. Si no coincide, el job falla (hoja inexistente).</td>
+                </tr>
+                <tr>
+                    <td>Fila de encabezados</td>
+                    <td>1-based. El motor omite esa fila como dato y, si usa nombres, resuelve columnas por título.</td>
+                </tr>
+                <tr>
+                    <td>Guardar borrador</td>
+                    <td>Persiste hoja y fila. Los campos también se guardan al agregar / editar / eliminar cada uno.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columna vs nombre interno</h3>
+        <table class="help-table">
+            <thead><tr><th>Propiedad</th><th>Qué es</th><th>¿Debe coincidir con el Excel?</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Columna</td>
+                    <td>De dónde leer: letra (<code>A</code>, <code>D</code>) o texto del encabezado.</td>
+                    <td><strong>Sí</strong> (posición o título de esa celda).</td>
+                </tr>
+                <tr>
+                    <td>Nombre interno</td>
+                    <td>Clave estable (<code>tipo_documento</code>, <code>monto</code>) para el mapeo.</td>
+                    <td><strong>No.</strong> Puede ser distinto del encabezado.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Ejemplo: encabezado <code>Tipo Documento</code>, columna <code>D</code> o <code>Tipo Documento</code>,
+            nombre interno <code>tipo_documento</code>.
+        </p>
+
+        <h3 class="form-section-title">Cómo rellenar «Columna»</h3>
+        <table class="help-table">
+            <thead><tr><th>Forma</th><th>Ejemplo</th><th>Notas</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Letra</td>
+                    <td class="mono">A, B, D</td>
+                    <td>Independiente del texto del título. Recomendada si los encabezados cambian entre archivos.</td>
+                </tr>
+                <tr>
+                    <td>Nombre de encabezado</td>
+                    <td class="mono">Tipo Documento</td>
+                    <td>Debe estar en la fila de encabezados. Se toleran mayúsculas y separadores
+                        <code>_</code> <code>-</code> espacio. Si no coincide, el valor llega vacío.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Si algo no encaja</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>Vista previa / generación vacía</td><td>Revise <strong>Columna</strong> y <strong>nombre de hoja</strong>, no el nombre interno.</td></tr>
+                <tr><td>REQUIRED_FIELD_EMPTY</td><td>La columna no apunta a la celda (letra o encabezado mal escrito).</td></tr>
+                <tr><td>La hoja no existe</td><td>Renombre la hoja en Excel o el nombre en este paso; publique de nuevo.</td></tr>
+                <tr><td>Fechas mal leídas</td><td>Ajuste <code>date_format</code>. Celdas fecha nativas se convierten a ese patrón; el texto debe coincidir.</td></tr>
+                <tr><td>Archivo .xls</td><td>Convierta a <strong>.xlsx</strong>.</td></tr>
+            </tbody>
+        </table>
+
+        {% include "reverse_studio/input/_step4_help_field_criteria.html" %}
+
+        <h3 class="form-section-title">Qué no es</h3>
+        <ul>
+            <li>No es el editor de CSV / delimitado (otro HTML si el paso 1 no es Excel).</li>
+            <li>No define el layout de envío ni mapea campos.</li>
+            <li>No hay índice 0-based aquí: en Excel se usa letra o encabezado.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

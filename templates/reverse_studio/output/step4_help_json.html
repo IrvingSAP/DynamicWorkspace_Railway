@@ -1,0 +1,102 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos JSON — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}">Salida</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:output_step4' project_slug=project.slug %}">Paso 4 · JSON</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Salida · Paso 4 de 6 · <span class="cell-badge">json</span></p>
+        <h2>Ayuda — Campos del layout (JSON)</h2>
+        <p>Cada campo se escribe en un <code>path</code> relativo al registro (notación con puntos). No hay inicio/fin de columna.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'reverse_studio:output_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+        <a href="{% url 'reverse_studio:output_step5' project_slug=project.slug %}" class="btn btn-primary">Ir al paso 5</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es</h3>
+        <p class="help-intro">
+            El tipo del paso 1 es <strong>JSON</strong>. La raíz, <code>records_path</code> y pretty print se configuran en el
+            <strong>paso 3</strong>. Aquí solo declara claves dentro de cada registro.
+        </p>
+
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Revise en el paso 3 si los registros están en la raíz o en una ruta (<code>data.items</code>).</li>
+            <li>Opcional: <strong>Cargar desde entrada</strong>; luego ajuste cada <code>path</code> al contrato JSON del receptor.</li>
+            <li>Use puntos para anidar: <code>cliente.documento</code>.</li>
+            <li>El nombre interno puede ser distinto del último segmento del path.</li>
+        </ol>
+
+        <h3 class="form-section-title">Campos de esta pantalla</h3>
+        <table class="help-table">
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Nombre</td>
+                    <td>Clave para el mapeo. Obligatorio, único.</td>
+                </tr>
+                <tr>
+                    <td>path</td>
+                    <td>Ruta relativa al registro. Obligatorio. Ejemplo: <code>documento</code> o <code>pago.monto</code>.</td>
+                </tr>
+                <tr>
+                    <td>Etiqueta / Order / Tipo / Oblig.</td>
+                    <td>Metadatos del layout. El JSON generado usa el path, no la etiqueta.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Relación con el paso 3</h3>
+        <p class="help-intro">
+            Si la raíz es un array, cada objeto del array recibe estos paths.
+            Si usó <code>records_path</code>, los paths son relativos a ese nodo, no al documento entero.
+        </p>
+
+        <h3 class="form-section-title">Si algo no encaja</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>Claves en el lugar incorrecto</td><td>Revise raíz / <code>records_path</code> (paso 3) y el path de cada campo.</td></tr>
+                <tr><td>Path vacío</td><td>El editor exige path. No use posiciones de TXT aquí.</td></tr>
+                <tr><td>Cargar desde entrada deja paths = nombre</td><td>Esperado: complete el path real del proveedor.</td></tr>
+            </tbody>
+        </table>
+
+        {% include "reverse_studio/output/_step4_help_field_criteria.html" %}
+
+        <h3 class="form-section-title">Qué no es</h3>
+        <ul>
+            <li>No es el editor posicional (inicio/fin) ni el XML (elemento hijo).</li>
+            <li>No serializa pretty print (paso 3) ni políticas de error (paso 6).</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

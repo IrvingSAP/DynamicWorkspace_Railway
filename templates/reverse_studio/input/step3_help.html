@@ -9,9 +9,7 @@
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -32,39 +30,99 @@
     <div>
         <p class="page-eyebrow">Referencia · Entrada · Paso 3 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Fin de captura</h2>
-        <p>Dónde terminan los datos útiles de la planilla (<code>capture_end</code>).</p>
+        <p>Dónde terminan los datos útiles. Pie, totales y firmas no deben mapearse al layout de envío.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-secondary" href="{% url 'reverse_studio:input_step3' project_slug=project.slug %}">← Volver al paso 3</a>
+        <a class="btn btn-primary" href="{% url 'reverse_studio:input_step4' project_slug=project.slug %}">Ir al paso 4</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué decide este paso</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            Cierra la zona de lectura. Evita pie de página, totales, firmas o filas de control
-            que no deben mapearse al layout de envío.
+            Cierra la zona de lectura. Debe ser <strong>posterior</strong> al inicio del paso 2.
+            En emisiones mensuales el default recomendado es leer hasta el final del archivo.
         </p>
 
-        <h3 class="form-section-title">Modos habituales</h3>
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Deje <strong>fin de archivo</strong> salvo que haya un pie fijo o un rótulo «TOTAL».</li>
+            <li>Si recorta, compruebe que no se come la última fila de negocio.</li>
+            <li>Guarde y pase a campos (paso 4).</li>
+        </ol>
+
+        <h3 class="form-section-title">Modos de esta pantalla</h3>
         <table class="help-table">
-            <thead><tr><th>Modo</th><th>Cuándo usarlo</th></tr></thead>
+            <thead><tr><th>Modo</th><th>Parámetro</th><th>Cuándo</th></tr></thead>
             <tbody>
-                <tr><td class="mono">eof</td><td><strong>Default recomendado</strong> en emisiones mensuales: leer hasta el final del archivo.</td></tr>
-                <tr><td>Número de línea</td><td>Cortar en una fila fija (útil si siempre hay N filas de datos).</td></tr>
-                <tr><td>Máximo de filas</td><td>Limitar filas leídas (pruebas o techos de seguridad). No sustituye filtros de negocio.</td></tr>
-                <tr><td>Marcador / patrón</td><td>Parar al encontrar un texto o regex (p. ej. «TOTAL»).</td></tr>
-                <tr><td>Líneas en blanco</td><td>Parar tras un bloque de filas vacías.</td></tr>
-                <tr><td>Porcentaje</td><td>Leer solo una fracción del archivo (sobre todo en pruebas).</td></tr>
+                <tr>
+                    <td>Fin de archivo</td>
+                    <td>Ninguno</td>
+                    <td><strong>Recomendado</strong> para planillas de longitud variable.</td>
+                </tr>
+                <tr>
+                    <td>Número de línea</td>
+                    <td>Línea final</td>
+                    <td>Siempre hay exactamente N filas (o un corte fijo).</td>
+                </tr>
+                <tr>
+                    <td>Porcentaje</td>
+                    <td>% del archivo (1–100)</td>
+                    <td>Sobre todo en pruebas; no es un filtro de negocio.</td>
+                </tr>
+                <tr>
+                    <td>Máximo de filas</td>
+                    <td>Tope de filas leídas</td>
+                    <td>Techo de seguridad. No sustituye validaciones de campo.</td>
+                </tr>
+                <tr>
+                    <td>Texto marcador</td>
+                    <td>Cadena</td>
+                    <td>Parar al encontrar un rótulo (p. ej. «=== FIN ===»).</td>
+                </tr>
+                <tr>
+                    <td>Línea o fin de archivo</td>
+                    <td>Línea</td>
+                    <td>Se detiene en esa línea o al EOF, lo que ocurra primero.</td>
+                </tr>
+                <tr>
+                    <td>Antes de patrón</td>
+                    <td>Regex</td>
+                    <td>La captura termina <strong>antes</strong> de la primera línea que coincida (p. ej. <code>^TOTAL</code>).</td>
+                </tr>
+                <tr>
+                    <td>Líneas en blanco</td>
+                    <td>N blancas consecutivas</td>
+                    <td>Parar al hueco del pie. Fin exclusive en la primera blanca del bloque.</td>
+                </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Reglas</h3>
+        <h3 class="form-section-title">Si el guardado rechaza</h3>
+        <table class="help-table">
+            <thead><tr><th>Mensaje típico</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>Fin no es posterior al inicio</td><td>Suba la línea de fin o baje el inicio del paso 2.</td></tr>
+                <tr><td>Parámetro vacío</td><td>Complete línea, %, tope, marcador o regex según el modo.</td></tr>
+                <tr><td>Se pierden filas al generar</td><td>El corte está demasiado arriba; vuelva a fin de archivo y pruebe.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Guardar captura</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no es</h3>
         <ul>
-            <li>El fin debe ser coherente con el inicio (paso 2); el servidor valida rangos incompatibles.</li>
-            <li><code>max_rows</code> solo acota la lectura: no reemplaza validaciones de campo ni reglas de mapeo.</li>
-            <li>Misma semántica DMS (<code>capture_end</code>).</li>
+            <li><code>max_rows</code> no reemplaza reglas de mapeo ni tipos de contenido del paso 4.</li>
+            <li>No es el umbral de FILE GATE ni el TTL del historial.</li>
             <li>Cambios en borrador; publique (M4) para que Generar los aplique.</li>
         </ul>
     </div>

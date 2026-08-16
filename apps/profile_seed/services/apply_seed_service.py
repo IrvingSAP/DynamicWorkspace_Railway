@@ -42,6 +42,10 @@ MSG_APPLY_OK_GATE = (
     "Estructura importada al borrador del contrato FILE GATE. "
     "Revise los pasos del asistente y publique el contrato cuando corresponda."
 )
+MSG_APPLY_OK_REVERSE = (
+    "Estructura importada al borrador del contrato de entrada. "
+    "Revise los pasos del asistente y publique la definición Reverse cuando corresponda."
+)
 MSG_APPLY_OK = MSG_APPLY_OK_MATCH  # compat
 MSG_APPLY_FAIL = (
     "No se pudo importar la estructura. Si persiste, contacte al administrador."
@@ -58,6 +62,10 @@ MSG_TYPE_UNSUPPORTED_DMS = (
 MSG_TYPE_UNSUPPORTED_GATE = (
     "El tipo de archivo seleccionado aún no tiene editor de campos en "
     "FILE GATE. Elija txt_fixed, csv, txt_delimited, xlsx, json o xml."
+)
+MSG_TYPE_UNSUPPORTED_REVERSE = (
+    "El tipo de planilla no está permitido en Reverse Studio. "
+    "Use CSV, Excel o TXT delimitado."
 )
 
 FIELD_NAMES_SAMPLE_LIMIT = 8
@@ -322,6 +330,8 @@ def _apply_ok_message(
         return MSG_APPLY_OK_SPLIT_MERGE
     if target_project.project_kind == Project.KIND_FILE_GATE:
         return MSG_APPLY_OK_GATE
+    if target_project.project_kind == Project.KIND_REVERSE:
+        return MSG_APPLY_OK_REVERSE
     if (
         target_project.project_kind == Project.KIND_DMS
         and slot == profile_seed_service.TARGET_SLOT_TARGET
@@ -355,6 +365,17 @@ def _check_file_type_for_target(
         variant = get_step4_variant(file_type)
         if variant == "unsupported" or not file_type:
             return OperationResult.failure("validation_form", MSG_TYPE_UNSUPPORTED_GATE)
+        return None
+    if target_project.project_kind == Project.KIND_REVERSE:
+        from apps.reverse_studio.input.services.input_whitelist import (
+            reject_non_whitelist_file_type as reject_reverse_type,
+        )
+
+        whitelist_result = reject_reverse_type(file_type)
+        if whitelist_result is not None and not whitelist_result.ok:
+            return whitelist_result
+        if not file_type:
+            return OperationResult.failure("validation_form", MSG_TYPE_UNSUPPORTED_REVERSE)
         return None
     return None
 

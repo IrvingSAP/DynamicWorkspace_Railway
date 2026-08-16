@@ -1,0 +1,142 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos delimitados — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">Entrada</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:input_step4' project_slug=project.slug %}">Paso 4 · Delimitado</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Entrada · Paso 4 de 6 · <span class="cell-badge">{{ file_type_code|default:"csv" }}</span></p>
+        <h2>Ayuda — Campos de la planilla (CSV / delimitado)</h2>
+        <p>Para <code>csv</code> y <code>txt_delimited</code>: delimitador, comillas y columnas. El parser usa el índice 0-based.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'reverse_studio:input_step4' project_slug=project.slug %}">← Volver al paso 4</a>
+        <a class="btn btn-primary" href="{% url 'reverse_studio:input_step5' project_slug=project.slug %}">Ir al paso 5</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es</h3>
+        <p class="help-intro">
+            El tipo del paso 1 es <strong>CSV</strong> o <strong>texto delimitado</strong>. Primero se parten las líneas
+            con delimitador y comillas; después cada campo apunta a una columna. No hay hoja Excel ni letra A/B/C.
+        </p>
+
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Elija el delimitador real del archivo (coma en CSV típico; punto y coma o tab en TXT).</li>
+            <li>Marque si la primera fila es encabezado y, si aplica, el número de fila de títulos.</li>
+            <li>Pulse <strong>Guardar parámetros</strong> antes de cargar muchos campos.</li>
+            <li>Agregue campos: índice 0, 1, 2… y nombre interno. El texto «Columna del archivo» es referencia si hay encabezado.</li>
+        </ol>
+
+        <h3 class="form-section-title">Parámetros delimitador</h3>
+        <table class="help-table">
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Delimitador</td>
+                    <td>Coma, punto y coma, tabulador o pipe. Si no coincide con el archivo, todas las columnas se desalinean.</td>
+                </tr>
+                <tr>
+                    <td>Carácter de comillas</td>
+                    <td>Envuelve valores que contienen el delimitador (normalmente <code>"</code>). Ejemplo: <code>"Calle Sol, 12"</code>.</td>
+                </tr>
+                <tr>
+                    <td>Carácter de escape</td>
+                    <td>Opcional. Escapa comillas internas. Vacío si el archivo no lo usa.</td>
+                </tr>
+                <tr>
+                    <td>Primera fila es encabezado</td>
+                    <td>Esa fila no es un registro. Permite etiquetar columnas por nombre.</td>
+                </tr>
+                <tr>
+                    <td>Fila encabezado</td>
+                    <td>Número 1-based de los títulos (suele ser 1). Visible con encabezado activo.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Editor de cada campo</h3>
+        <table class="help-table">
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Columna del archivo</td>
+                    <td>Nombre del encabezado (p. ej. <code>DOC_ID</code>). Referencia humana; el parseo usa el índice.</td>
+                </tr>
+                <tr>
+                    <td>Nombre interno</td>
+                    <td>Clave para mapeo. No tiene que ser igual al encabezado.</td>
+                </tr>
+                <tr>
+                    <td>Índice (0-based)</td>
+                    <td><strong>Obligatorio.</strong> Primera columna = 0, segunda = 1. En <code>nombre,edad,direccion</code>, edad es 1.</td>
+                </tr>
+                <tr>
+                    <td>Tipo / obligatorio / fecha / regex</td>
+                    <td>Validan el valor al generar. Ver guía más abajo.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Ejemplo</h3>
+        <pre class="mono" style="padding:10px;background:var(--canvas);border-radius:8px;overflow:auto">nombre,edad,direccion
+Beatriz Martinez,19,Calle Parque 282</pre>
+        <ul>
+            <li>Delimitador: coma · Encabezado: sí · Fila encabezado: 1</li>
+            <li><code>nombre</code> → índice 0 · <code>edad</code> → 1 · <code>direccion</code> → 2</li>
+        </ul>
+
+        <h3 class="form-section-title">Relación con captura (pasos 2–3)</h3>
+        <p class="help-intro">
+            El inicio/fin define <em>qué filas</em> se leen. Delimitador e índices definen <em>cómo se parten</em>.
+            No confunda «fila encabezado = 1» con «inicio de captura = línea 2» si la línea 1 ya es un dato.
+        </p>
+
+        <h3 class="form-section-title">Si algo no encaja</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>Todas las columnas mezcladas</td><td>El delimitador no coincide (coma vs punto y coma vs tab).</td></tr>
+                <tr><td>Valores con comas rotos</td><td>Revise el carácter de comillas.</td></tr>
+                <tr><td>Campo siempre vacío</td><td>El índice está mal (recuerde: 0-based, no letra Excel).</td></tr>
+                <tr><td>Encoding raro (ñ, acentos)</td><td>Ajuste la codificación del paso 1, no este paso.</td></tr>
+            </tbody>
+        </table>
+
+        {% include "reverse_studio/input/_step4_help_field_criteria.html" %}
+
+        <h3 class="form-section-title">Qué no es</h3>
+        <ul>
+            <li>No es el editor Excel (hoja + letra de columna): eso aparece si el paso 1 es <code>xlsx</code>.</li>
+            <li>No define el layout de envío ni mapea campos.</li>
+            <li>La extensión al generar debe coincidir con el tipo publicado (<code>.csv</code> / delimitado).</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

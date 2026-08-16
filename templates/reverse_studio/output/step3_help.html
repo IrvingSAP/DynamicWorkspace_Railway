@@ -7,11 +7,10 @@
 <link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -32,50 +31,103 @@
     <div>
         <p class="page-eyebrow">Referencia · Salida · Paso 3 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Estructura del archivo</h2>
-        <p>Parámetros de layout según el tipo del paso 1 (posicional / JSON / XML).</p>
+        <p>Una sola pantalla: los paneles cambian según el tipo del paso 1. No define aún cada campo (paso 4).</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:output_step3' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 3</a>
+        <a href="{% url 'reverse_studio:output_step4' project_slug=project.slug %}" class="btn btn-primary">Ir al paso 4</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué decide este paso</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            La <strong>estructura</strong> del archivo de envío: longitud de registro, raíz JSON/XML,
-            BOM, patrón de nombre al descargar. No define aún cada campo (paso 4).
+            Parámetros de <strong>envoltura</strong> del archivo de envío: cómo se llama al descargar, longitud de
+            registro, raíz JSON/XML, BOM. Si no eligió tipo en el paso 1, aquí solo verá un aviso.
         </p>
 
-        <h3 class="form-section-title">Según tipo (MVP Reverse)</h3>
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Ponga un <strong>patrón de nombre</strong> reconocible (p. ej. con fecha).</li>
+            <li>Complete el panel de su tipo (posicional, JSON o XML).</li>
+            <li>Guarde y pase a campos.</li>
+        </ol>
+
+        <h3 class="form-section-title">Parámetros comunes</h3>
         <table class="help-table">
-            <thead><tr><th>Tipo</th><th>Qué suele configurarse</th></tr></thead>
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
             <tbody>
                 <tr>
-                    <td class="mono">txt_fixed</td>
-                    <td>Longitud de registro, nueva línea al final de cada registro, patrón de nombre, BOM opcional.</td>
+                    <td>Patrón de nombre de archivo</td>
+                    <td>Nombre al descargar en Generar (p. ej. <code>salida_{date:%Y%m%d}.txt</code>). No cambia el contenido de las filas.</td>
                 </tr>
                 <tr>
-                    <td class="mono">json</td>
-                    <td>Tipo de raíz / envoltura del documento, patrón de nombre.</td>
-                </tr>
-                <tr>
-                    <td class="mono">xml</td>
-                    <td>Elemento raíz, elemento de registro, patrón de nombre.</td>
+                    <td>Incluir BOM UTF-8</td>
+                    <td>Marca de orden de bytes. Visible en posicional/JSON, no en XML. Solo si el receptor lo pide.</td>
                 </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Patrón de nombre</h3>
-        <p class="help-intro">
-            <code>output_filename_pattern</code> define cómo se llama el archivo al descargar tras generar (M5),
-            p. ej. con fecha. No afecta el contenido de las filas.
-        </p>
+        <h3 class="form-section-title">TXT posicional</h3>
+        <table class="help-table">
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Longitud de registro</td>
+                    <td>Ancho fijo de cada línea. Si una fila la supera → error de overflow al generar (salvo política de truncar).</td>
+                </tr>
+                <tr>
+                    <td>Nueva línea al final de cada registro</td>
+                    <td>Casi siempre activo. Algunas especificaciones piden el último registro sin salto.</td>
+                </tr>
+            </tbody>
+        </table>
 
-        <h3 class="form-section-title">Cabeceras</h3>
+        <h3 class="form-section-title">JSON</h3>
+        <table class="help-table">
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr><td>Tipo de raíz</td><td><code>array</code> (lista de registros) u <code>object</code>.</td></tr>
+                <tr><td>Ruta de registros</td><td>Opcional. Vacío = raíz. Ej. <code>data.items</code> si los registros no están arriba.</td></tr>
+                <tr><td>Pretty print / indentación</td><td>Legible para humanos. Algunos receptores piden JSON compacto: desactive pretty print.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">XML</h3>
+        <table class="help-table">
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr><td>Elemento raíz</td><td>Tag envolvente (p. ej. <code>records</code>).</td></tr>
+                <tr><td>Elemento por registro</td><td>Tag de cada fila (p. ej. <code>record</code>).</td></tr>
+                <tr><td>Namespace</td><td>URI opcional del esquema del proveedor.</td></tr>
+                <tr><td>Declaración XML</td><td>Incluye <code>&lt;?xml …?&gt;</code> al inicio.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Si algo no encaja</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>No ve el panel esperado</td><td>Vuelva al paso 1 y elija txt_fixed / json / xml.</td></tr>
+                <tr><td>El archivo generado se llama distinto</td><td>Revise el patrón y publique de nuevo.</td></tr>
+                <tr><td>Líneas más largas que el banco acepta</td><td>Ajuste longitud de registro y posiciones del paso 4.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Guardar estructura</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no es</h3>
         <ul>
-            <li>En salida Reverse <strong>no</strong> hay “incluir fila de encabezado” de planilla: CSV/Excel no son tipos de emisión MVP.</li>
-            <li>La cabecera de la <em>entrada</em> sirve para leer columnas; aquí el receptor espera posiciones, paths o tags.</li>
+            <li>No hay «incluir fila de encabezado» de planilla: CSV/Excel no son salida Reverse MVP.</li>
+            <li>No define campos ni pad por columna (pasos 4 y 5).</li>
         </ul>
     </div>
 </div>

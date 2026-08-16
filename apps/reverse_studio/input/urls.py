@@ -18,4 +18,29 @@ urlpatterns = [
     path("paso/5/", views.step5_content_rules, name="input_step5"),
     path("paso/6/ayuda/", views.step6_help, name="input_step6_help"),
     path("paso/6/", views.step6_report, name="input_step6"),
+    path("importar/", views.input_seed_hub, name="input_seed_hub"),
+    path("importar/ayuda/", views.input_seed_hub_help, name="input_seed_hub_help"),
+    path("importar/origen/", views.input_seed_picker, name="input_seed_picker"),
+    path(
+        "importar/origen/ayuda/",
+        views.input_seed_picker_help,
+        name="input_seed_picker_help",
+    ),
+    path("importar/confirmar/", views.input_seed_apply, name="input_seed_apply"),
+    path(
+        "importar/confirmar/ayuda/",
+        views.input_seed_apply_help,
+        name="input_seed_apply_help",
+    ),
+    path("importar/historial/", views.input_seed_history, name="input_seed_history"),
+    path(
+        "importar/historial/ayuda/",
+        views.input_seed_history_help,
+        name="input_seed_history_help",
+    ),
+    path(
+        "importar/historial/<uuid:event_id>/",
+        views.input_seed_history_detail,
+        name="input_seed_history_detail",
+    ),
 ]

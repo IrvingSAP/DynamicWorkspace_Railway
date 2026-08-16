@@ -1,17 +1,16 @@
 {% extends "app_base.html" %}
 {% load static %}
 
-{% block title %}Ayuda — Editor de reglas{% endblock %}
+{% block title %}Ayuda · Editor de reglas — {{ project.name }}{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/transform_rules.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -38,62 +37,131 @@
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:mapping_rules_editor' project_slug=project.slug %}" class="btn btn-secondary">← Volver al editor</a>
+        <a href="{% url 'reverse_studio:mapping_rules_hub' project_slug=project.slug %}" class="btn btn-primary">Ir al hub de reglas</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Cómo trabajar</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            Elija un campo del layout en la lista izquierda. A la derecha configure la secuencia de
-            operaciones (<code>transform_pipeline</code>). El <strong>orden importa</strong>: se aplican de arriba abajo
-            sobre el valor ya resuelto por el mapeo (direct, constant, concat, generated…).
+            Aplica operaciones <strong>después</strong> de resolver el mapeo (directo, constante, concat, generado…)
+            y <strong>antes</strong> de serializar el layout. El <strong>orden importa</strong>: de arriba abajo.
+            Máximo 20 pasos por campo.
         </p>
-        <ol>
-            <li>Seleccione el campo del layout.</li>
-            <li>Añada operaciones del catálogo (trim, upper, pad…).</li>
-            <li>Reordene si hace falta (p. ej. <code>trim</code> antes de <code>pad</code>).</li>
-            <li>Pulse <strong>Guardar</strong> para persistir el borrador.</li>
+
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Elija un campo del layout en la lista izquierda.</li>
+            <li>Añada pasos o aplique una <strong>plantilla</strong> (luego ajústela).</li>
+            <li>Reordene (p. ej. <code>trim</code> antes de <code>pad</code>).</li>
+            <li>Pruebe con un literal o con la 1ª fila muestra (no ejecuta un job).</li>
+            <li>Pulse <strong>Guardar</strong> (el preview no persiste solo).</li>
         </ol>
 
-        <h3 class="form-section-title">Operaciones típicas (MVP)</h3>
+        <h3 class="form-section-title">Controles de esta pantalla</h3>
         <table class="help-table">
-            <thead><tr><th>Operación</th><th>Efecto</th></tr></thead>
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
             <tbody>
-                <tr><td class="mono">trim</td><td>Quita espacios al inicio/fin.</td></tr>
-                <tr><td class="mono">upper / lower</td><td>Mayúsculas o minúsculas.</td></tr>
-                <tr><td class="mono">date_format</td><td>Reformatea fechas según patrón de salida.</td></tr>
-                <tr><td class="mono">pad_left / pad_right</td><td>Rellena hasta una longitud (útil en posicional).</td></tr>
-                <tr><td class="mono">default_if_empty</td><td>Valor por defecto si queda vacío.</td></tr>
-                <tr><td class="mono">number_format</td><td><strong>Numérico con decimales</strong> — montos, medidas (altura, peso). Configure decimales y separadores.</td></tr>
-                <tr><td class="mono">number_integer</td><td><strong>Numérico entero</strong> — sin parte decimal (edad, cantidad, códigos numéricos enteros).</td></tr>
-                <tr><td class="mono">replace_map</td><td>Sustituciones controladas (catálogo / mapa).</td></tr>
+                <tr>
+                    <td>Lista de campos</td>
+                    <td>Solo destinos ya mapeados. El pipeline se edita de uno en uno.</td>
+                </tr>
+                <tr>
+                    <td>Plantilla / Aplicar plantilla</td>
+                    <td>Carga una secuencia típica sobre el campo activo. Reemplaza los pasos actuales.</td>
+                </tr>
+                <tr>
+                    <td>+ Paso</td>
+                    <td>Añade una operación al final. Elija el <code>op</code> y complete parámetros.</td>
+                </tr>
+                <tr>
+                    <td>Subir / bajar / quitar</td>
+                    <td>Reordena o elimina un paso. Trim → pad es el orden habitual en posicional.</td>
+                </tr>
+                <tr>
+                    <td>Sin reglas</td>
+                    <td>Estado válido: el valor del mapeo pasa intacto a la escritura.</td>
+                </tr>
+                <tr>
+                    <td>Preview · Valor de prueba</td>
+                    <td>Literal que recorre el pipeline del campo activo.</td>
+                </tr>
+                <tr>
+                    <td>Usar 1ª fila muestra</td>
+                    <td>Si hay archivo de muestra, toma el valor post-mapeo de la primera fila. No es Generar.</td>
+                </tr>
+                <tr>
+                    <td>Guardar</td>
+                    <td>Persiste todos los pipelines en el borrador de la versión.</td>
+                </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Acciones</h3>
+        <h3 class="form-section-title">Operaciones</h3>
         <table class="help-table">
-            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <thead><tr><th>Operación</th><th>Efecto / parámetros</th></tr></thead>
             <tbody>
-                <tr><td>Guardar</td><td>Persiste los pipelines en el borrador de la versión.</td></tr>
-                <tr><td>Preview</td><td>Si está disponible, prueba el efecto sobre un valor de ejemplo (no ejecuta un job).</td></tr>
-                <tr><td>← Hub reglas</td><td>Vuelve al resumen del módulo.</td></tr>
+                <tr><td class="mono">trim / ltrim / rtrim</td><td>Quita espacios (ambos lados o uno).</td></tr>
+                <tr><td class="mono">upper / lower</td><td>Mayúsculas o minúsculas.</td></tr>
+                <tr><td class="mono">date_format</td><td>Salida <code>format</code> (p. ej. <code>%Y-%m-%d</code>) y <code>input_formats</code> de entrada, separados por coma.</td></tr>
+                <tr><td class="mono">pad_left / pad_right</td><td>Rellena con <code>char</code> hasta <code>length</code> (típico en TXT posicional).</td></tr>
+                <tr><td class="mono">default_if_empty</td><td>Si queda vacío, escribe <code>value</code>.</td></tr>
+                <tr><td class="mono">number_format</td><td>Montos: decimales, separador de miles y decimal.</td></tr>
+                <tr><td class="mono">number_integer</td><td>Entero (edad, cantidad). Sin parte decimal.</td></tr>
+                <tr><td class="mono">replace / replace_map</td><td>Sustituir texto o mapa de códigos (match exacto del valor completo).</td></tr>
+                <tr><td class="mono">substring / regex_extract</td><td>Recortar o extraer un grupo de un patrón.</td></tr>
+                <tr><td class="mono">coalesce / boolean_map</td><td>Valor alternativo si vacío; o sí/no hacia textos de salida.</td></tr>
             </tbody>
         </table>
 
         <h3 class="form-section-title">No confundir</h3>
-        <ul>
-            <li><strong>Reglas de contenido</strong> (entrada paso 5) limpian al <em>leer</em> la planilla.</li>
-            <li><strong>Serialización</strong> (salida paso 5) formatea al <em>escribir</em> el layout (padding global, truncate…).</li>
-            <li><strong>Estas reglas</strong> transforman el valor <em>después del mapeo</em> y antes de la escritura final.</li>
-        </ul>
+        <table class="help-table">
+            <thead><tr><th>Esto (reglas M3)</th><th>No es…</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Transforma el valor <em>después del mapeo</em></td>
+                    <td>Reglas de contenido de entrada (paso 5): limpian al <em>leer</em> la planilla</td>
+                </tr>
+                <tr>
+                    <td>Por campo del layout</td>
+                    <td>Serialización de salida (paso 5): padding/truncate global al <em>escribir</em></td>
+                </tr>
+                <tr>
+                    <td>Preview local</td>
+                    <td>Un job de Generar ni el historial</td>
+                </tr>
+            </tbody>
+        </table>
 
-        <h3 class="form-section-title">Qué sigue</h3>
-        <p class="help-intro">
-            Cuando el mapeo (y las reglas que necesite) estén listos, vuelva a <strong>Hub reglas</strong> para revisar
-            la definición por campo, luego a <strong>Hub mapeo</strong> o <strong>Proyecto</strong> para seguir el ciclo
-            y <strong>publique la definición</strong> (Módulo 4). Solo la versión publicada se usa al generar (M5).
-        </p>
+        <h3 class="form-section-title">Si algo no encaja</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>El pad se come espacios útiles</td><td>Ponga <code>trim</code> antes de <code>pad</code>.</td></tr>
+                <tr><td>Fecha mal formateada</td><td>Revise <code>input_formats</code> frente al valor post-mapeo (no el de Excel crudo si ya hubo parse).</td></tr>
+                <tr><td>Op desconocida / params</td><td>El guardado rechaza el paso. Complete longitud, mapa, regex, etc.</td></tr>
+                <tr><td>Preview distinto a Generar</td><td>El job usa la versión <strong>publicada</strong> y el archivo real, no solo el literal de prueba.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver el editor</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Añadir pasos y guardar</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+                <tr><td>Probar preview</td><td>Sí</td><td>Sí</td><td>Sí*</td><td>Sí*</td></tr>
+            </tbody>
+        </table>
+        <p class="hint">* La prueba no persiste. Solo PA/ED pueden guardar. Completar reglas no habilita Generar.</p>
+
+        <h3 class="form-section-title">Qué no es</h3>
+        <ul>
+            <li>No crea ni borra campos de entrada o salida.</li>
+            <li>No sustituye un mapeo <code>constant</code> / <code>generated</code> (eso es el editor de enlaces).</li>
+            <li>No publica la definición ni emite el archivo de envío.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

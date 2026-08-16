@@ -680,13 +680,27 @@ def save_source(
     else:
         success_msg = "Perfil de origen guardado correctamente."
 
+    saved_source = profile_to_dict(profile)
+    warning_messages = _flatten_messages(warnings)
+    message_level = "success"
+    if is_reverse and "processing_report" in (partial or {}):
+        missing = incomplete_step_labels(saved_source)
+        if missing:
+            success_msg = (
+                "El borrador se guardó. Faltan pasos por completar: "
+                + ", ".join(missing)
+                + "."
+            )
+            message_level = "warning"
+
     return OperationResult.success(
         user_message=success_msg,
         payload={
-            "source": profile_to_dict(profile),
+            "source": saved_source,
             "version": version,
             "warnings": warnings,
-            "warning_messages": _flatten_messages(warnings),
+            "warning_messages": warning_messages,
+            "message_level": message_level,
         },
     )
 
@@ -717,3 +731,22 @@ def step_statuses(source: dict) -> list[str]:
     report = source.get("processing_report") or {}
     statuses.append("done" if report else "pending")
     return statuses
+
+
+_WIZARD_STEP_LABELS = (
+    "Tipo",
+    "Inicio",
+    "Fin",
+    "Campos",
+    "Reglas",
+    "Informe",
+)
+
+
+def incomplete_step_labels(source: dict) -> list[str]:
+    statuses = step_statuses(source)
+    labels = []
+    for index, status in enumerate(statuses):
+        if status != "done":
+            labels.append(f"{_WIZARD_STEP_LABELS[index]} (paso {index + 1})")
+    return labels

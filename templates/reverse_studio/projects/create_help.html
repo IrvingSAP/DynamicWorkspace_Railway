@@ -4,13 +4,12 @@
 {% block title %}Ayuda · Nuevo proyecto — Reverse Studio{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -29,76 +28,83 @@
     <div>
         <p class="page-eyebrow">Referencia · Reverse Studio · Acceso</p>
         <h2>Ayuda — Crear proyecto</h2>
-        <p>Nombre, código (slug) y visibilidad del emisor. Quién crea queda como administrador (PA).</p>
+        <p>Nombre, código (slug) y visibilidad. Quién crea queda como administrador (PA). No define campos ni genera archivos.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-secondary" href="{% url 'reverse_studio:project_create' %}">← Volver al formulario</a>
+        <a class="btn btn-primary" href="{% url 'reverse_studio:project_list' %}">Ir al listado</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué crea este formulario</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            Un proyecto <strong>Reverse Studio</strong> (kind <code>reverse</code>) en su compañía:
-            listo para definir planilla → layout → mapeo → publicar → generar.
-            No crea la definición de campos ni genera archivos todavía.
+            Alta de un proyecto Reverse Studio (<code>kind reverse</code>) en su compañía.
+            Queda listo para el ciclo planilla → layout → mapeo → publicar → generar.
         </p>
 
-        <h3 class="form-section-title">Campos</h3>
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Elija un slug corto y estable (minúsculas y guiones).</li>
+            <li>Privado si solo su equipo; público si toda la compañía debe <em>ver</em> el emisor.</li>
+            <li>Pulse <strong>Crear y continuar</strong>: entra al hub como PA.</li>
+            <li>Si es privado, invite en <strong>Miembros</strong>. Luego contrato de entrada (6 pasos).</li>
+        </ol>
+
+        <h3 class="form-section-title">Campos de esta pantalla</h3>
         <table class="help-table">
-            <thead>
-                <tr><th>Campo</th><th>Detalle</th></tr>
-            </thead>
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
             <tbody>
                 <tr>
                     <td>Nombre corto (código)</td>
-                    <td>Slug único <strong>por compañía</strong>, compartido con Worksheets / FilePipe / otras apps. Use minúsculas y guiones (p. ej. <code>emision-pagos-banco</code>).</td>
+                    <td>Slug único <strong>por compañía</strong>, compartido con Worksheets, FilePipe y otras apps. Obligatorio.</td>
                 </tr>
                 <tr>
                     <td>Nombre visible</td>
-                    <td>Título que verá el equipo en listados y hub.</td>
+                    <td>Título en listados y hub. Obligatorio.</td>
                 </tr>
                 <tr>
                     <td>Descripción</td>
-                    <td>Opcional: contexto de negocio (banco, ciclo mensual, layout destino…).</td>
+                    <td>Opcional: banco, ciclo, layout destino…</td>
                 </tr>
-                <tr>
-                    <td>Visibilidad</td>
-                    <td><strong>Privado</strong> o <strong>Público</strong> (ver abajo).</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <h3 class="form-section-title">Visibilidad</h3>
-        <table class="help-table">
-            <thead>
-                <tr><th>Opción</th><th>Efecto</th></tr>
-            </thead>
-            <tbody>
                 <tr>
                     <td>Privado</td>
-                    <td>Solo usuarios que agregue en <strong>Miembros</strong> ven y trabajan el proyecto.</td>
+                    <td>Solo quienes agregue en Miembros ven y trabajan el proyecto.</td>
                 </tr>
                 <tr>
                     <td>Público</td>
-                    <td>Cualquier UF de la compañía puede <strong>ver</strong> el proyecto. Editar, publicar o generar siguen exigiendo rol (ED / GE / PA).</td>
+                    <td>Cualquier UF de la compañía puede <strong>ver</strong>. Editar, publicar o generar siguen exigiendo rol (ED / GE / PA).</td>
+                </tr>
+                <tr>
+                    <td>Crear y continuar / Cancelar</td>
+                    <td>Persiste y abre el hub, o vuelve al listado sin guardar.</td>
                 </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Después de crear</h3>
-        <ol>
-            <li>Queda como <strong>PA</strong> automáticamente.</li>
-            <li>Si el proyecto es privado, invite miembros (hub → <strong>Miembros</strong>).</li>
-            <li>Configure el <strong>contrato de entrada</strong> (asistente de 6 pasos).</li>
-            <li>Siga con salida → mapeo → <strong>publicar</strong> → generar.</li>
-        </ol>
-        <p class="help-intro">
-            Sin versión publicada no se puede generar el archivo de envío.
-        </p>
+        <h3 class="form-section-title">Si el alta rechaza</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>Revise los datos marcados</td><td>Complete slug y nombre; corrija visibilidad.</td></tr>
+                <tr><td>Ya existe un proyecto con este slug</td><td>El código está usado en esta compañía (cualquier app). Elija otro.</td></tr>
+                <tr><td>Solo usuarios UF pueden crear</td><td>El alta es para usuario final de la compañía, no para otros tipos de cuenta.</td></tr>
+            </tbody>
+        </table>
 
-        <h3 class="form-section-title">Qué no hace esta pantalla</h3>
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Creador</th><th>Otros UF</th></tr></thead>
+            <tbody>
+                <tr><td>Crear el proyecto</td><td>Sí (UF)</td><td>Cada uno crea los suyos</td></tr>
+                <tr><td>Queda como PA</td><td>Automático</td><td>—</td></tr>
+                <tr><td>Ver si es público</td><td>Sí</td><td>Sí (consulta hasta que los invite)</td></tr>
+            </tbody>
+        </table>
+        <p class="hint">Sin versión publicada no se puede generar el archivo de envío. Esta pantalla no publica.</p>
+
+        <h3 class="form-section-title">Qué no es</h3>
         <ul>
             <li>No define campos de planilla ni layout.</li>
             <li>No publica ni genera archivos.</li>

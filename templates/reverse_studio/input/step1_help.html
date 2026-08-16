@@ -9,9 +9,7 @@
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -36,56 +34,81 @@
     </div>
     <div class="page-actions">
         <a class="btn btn-secondary" href="{% url 'reverse_studio:input_step1' project_slug=project.slug %}">← Volver al paso 1</a>
+        <a class="btn btn-primary" href="{% url 'reverse_studio:input_step2' project_slug=project.slug %}">Ir al paso 2</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué decide este paso</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            El <strong>tipo de planilla</strong> de entrada (contrato de lectura). No define el layout del banco/ERP
-            (salida, Módulo 2) ni genera archivos.
+            Elige el <strong>tipo de planilla de entrada</strong>. No define el layout del banco/ERP (Salida) ni genera archivos.
+            Solo se admiten tipos amigables: Excel, CSV y texto delimitado.
         </p>
 
-        <h3 class="form-section-title">Whitelist MVP</h3>
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Elija el formato que el negocio ya sabe llenar (no el del banco, salvo que coincidan).</li>
+            <li>Ajuste encoding y fin de línea en CSV / delimitado.</li>
+            <li>Pulse <strong>Guardar borrador</strong> o <strong>Siguiente</strong>.</li>
+            <li>Si ya había campos y cambia el tipo, confirme: puede limpiar el paso 4.</li>
+        </ol>
+
+        <h3 class="form-section-title">Campos de esta pantalla</h3>
         <table class="help-table">
-            <thead><tr><th>Código</th><th>Uso</th><th>Al generar (M5)</th></tr></thead>
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
             <tbody>
                 <tr>
-                    <td class="mono">xlsx</td>
-                    <td>Excel de negocio. En el paso 4 se configuran hoja, encabezados y columnas.</td>
-                    <td>Use archivos <strong>.xlsx</strong>. El formato antiguo <strong>.xls</strong> no se lee.</td>
+                    <td>Excel (<code>xlsx</code>)</td>
+                    <td>Hoja, encabezados y columnas se configuran en el paso 4. Al generar use <strong>.xlsx</strong> (no .xls antiguo).</td>
                 </tr>
                 <tr>
-                    <td class="mono">csv</td>
-                    <td>CSV con delimitador (coma u otro, paso 4).</td>
-                    <td>Extensión acorde al tipo publicado.</td>
+                    <td>CSV (<code>csv</code>)</td>
+                    <td>Delimitador y encabezados en el paso 4. La extensión al generar debe coincidir con el contrato publicado.</td>
                 </tr>
                 <tr>
-                    <td class="mono">txt_delimited</td>
-                    <td>Texto delimitado (punto y coma, tab, etc.).</td>
-                    <td>Igual: extensión y delimitador deben coincidir con el contrato.</td>
+                    <td>Texto delimitado (<code>txt_delimited</code>)</td>
+                    <td>Igual que CSV con otro delimitador (punto y coma, tab, etc.).</td>
+                </tr>
+                <tr>
+                    <td>Codificación</td>
+                    <td>Cómo se leen los caracteres en CSV/delimitado. En Excel suele ser secundario.</td>
+                </tr>
+                <tr>
+                    <td>Final de línea</td>
+                    <td>CRLF / LF / personalizado. Relevante en texto; en Excel casi no condiciona la lectura.</td>
+                </tr>
+                <tr>
+                    <td>Guardar borrador / Siguiente</td>
+                    <td>Persiste en el borrador. ← Anterior vuelve al hub de entrada.</td>
                 </tr>
             </tbody>
         </table>
-        <p class="help-intro">
-            <strong>No</strong> se admiten como entrada: posicional, JSON ni XML (van en FilePipe o como <em>salida</em> Reverse).
-        </p>
 
-        <h3 class="form-section-title">Parámetros de texto</h3>
+        <h3 class="form-section-title">Si cambia el tipo</h3>
         <table class="help-table">
-            <thead><tr><th>Parámetro</th><th>Para qué</th></tr></thead>
+            <thead><tr><th>Situación</th><th>Resultado</th></tr></thead>
             <tbody>
-                <tr><td>Encoding</td><td>Cómo se interpretan los caracteres al leer CSV/delimitado. En Excel suele ser secundario.</td></tr>
-                <tr><td>Fin de línea</td><td>Relevante en CSV / delimitado; en Excel no suele condicionar la lectura.</td></tr>
+                <tr><td>Aún no hay campos</td><td>Puede cambiar de tipo sin impacto.</td></tr>
+                <tr><td>Ya hay campos definidos</td><td>Confirmación: el motor puede vaciar columnas del paso 4 (no sirven igual en Excel vs CSV).</td></tr>
+                <tr><td>Tipo fuera de lista (API)</td><td>El servidor rechaza el guardado. La UI solo ofrece la whitelist.</td></tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Reglas</h3>
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver este paso</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Cambiar tipo y guardar</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no es</h3>
         <ul>
-            <li>Solo <span class="mono">PA</span> / <span class="mono">ED</span> editan (IN1).</li>
-            <li>Cambiar el tipo con campos ya definidos pide confirmación; puede limpiar campos (IN4).</li>
-            <li>Se guarda en <strong>borrador</strong>; publicar la definición completa es el Módulo 4.</li>
+            <li>No es el tipo de <em>salida</em> (posicional, XML, JSON van en Módulo 2).</li>
+            <li>No publica la definición ni habilita Generar por sí solo.</li>
+            <li>Posicional, JSON y XML <strong>no</strong> son entrada Reverse en este producto.</li>
         </ul>
     </div>
 </div>

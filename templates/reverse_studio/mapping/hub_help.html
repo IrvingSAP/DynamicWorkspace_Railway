@@ -1,17 +1,16 @@
 {% extends "app_base.html" %}
 {% load static %}
 
-{% block title %}Ayuda — Hub de mapeo{% endblock %}
+{% block title %}Ayuda · Hub de mapeo — {{ project.name }}{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/field_mapping.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -34,79 +33,98 @@
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:mapping_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al hub</a>
+        <a href="{% url 'reverse_studio:mapping_editor' project_slug=project.slug %}" class="btn btn-primary">Ir al editor de enlaces</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué es este hub</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            Punto de entrada del <strong>Módulo 3</strong>: define de dónde sale cada campo del archivo
-            que recibirá el banco/ERP. Agrupa <strong>enlaces</strong> (mapeo) y <strong>reglas</strong>
-            (transformaciones opcionales). Copy: entrada → layout — no “origen → destino” de FilePipe.
+            Punto de entrada del Módulo 3: de dónde sale cada campo del archivo que recibirá el banco/ERP.
+            Agrupa <strong>enlaces</strong> (obligatorios para cubrir el layout) y <strong>reglas</strong> (opcionales).
+            Copy de producto: entrada → layout; no «origen → destino» de FilePipe (aunque los paneles del editor usen esas etiquetas).
         </p>
 
-        <h3 class="form-section-title">Prerrequisitos</h3>
-        <ul>
-            <li>Contrato de <strong>entrada</strong> con campos (planilla).</li>
-            <li>Contrato de <strong>salida</strong> con campos (layout).</li>
-            <li>Si faltan, el hub muestra aviso y CTAs para completar esos asistentes.</li>
-        </ul>
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Tenga campos en <strong>entrada</strong> y <strong>salida</strong> (recomendado: asistentes 6/6).</li>
+            <li>Abra el <strong>editor de enlaces</strong>: arrastre, sugiera por nombre o añada constante/generado.</li>
+            <li>Cubra los campos <code>required</code> del layout (o un <code>default_value</code> en salida).</li>
+            <li>Opcional: <strong>reglas</strong> (trim, pad, fechas) donde haga falta.</li>
+            <li><strong>Publique</strong> (M4). Generar es M5.</li>
+        </ol>
 
-        <h3 class="form-section-title">Indicadores</h3>
+        <h3 class="form-section-title">Controles de esta pantalla</h3>
         <table class="help-table">
-            <thead><tr><th>Indicador</th><th>Significado</th></tr></thead>
-            <tbody>
-                <tr><td>Mapeos</td><td>Cantidad de enlaces activos en el borrador.</td></tr>
-                <tr><td>Entrada → Layout</td><td>Campos de planilla vs campos del layout.</td></tr>
-                <tr><td>Obligatorios sin mapear</td><td>Campos del layout <code>required</code> aún sin fuente (bloquean publicar en modo strict).</td></tr>
-                <tr><td>Con reglas</td><td>Cuántos campos mapeados tienen al menos un paso de transformación.</td></tr>
-            </tbody>
-        </table>
-
-        <h3 class="form-section-title">Áreas del módulo</h3>
-        <table class="help-table">
-            <thead><tr><th>Área</th><th>Qué hace</th><th>Estados</th></tr></thead>
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
             <tbody>
                 <tr>
+                    <td>Aviso entrada/salida incompletos</td>
+                    <td>Recomendación. Puede mapear si ya hay campos; el editor se bloquea si falta uno de los dos contratos.</td>
+                </tr>
+                <tr>
+                    <td>Mapeos</td>
+                    <td>Enlaces activos en el borrador.</td>
+                </tr>
+                <tr>
+                    <td>Entrada → Layout</td>
+                    <td>Cantidad de campos de planilla vs campos del layout.</td>
+                </tr>
+                <tr>
+                    <td>Obligatorios sin mapear</td>
+                    <td>Destinos <code>required</code> sin fuente. Advertencia en borrador; error al publicar (strict).</td>
+                </tr>
+                <tr>
+                    <td>Con reglas</td>
+                    <td>Mapeos que ya tienen al menos un paso de pipeline.</td>
+                </tr>
+                <tr>
                     <td>1 · Enlaces</td>
-                    <td>Editor de mapeos (direct, constant, concat, generated…).</td>
-                    <td>Pendiente / En edición / Completo (obligatorios cubiertos).</td>
+                    <td>Abre el editor. Completo = obligatorios cubiertos.</td>
                 </tr>
                 <tr>
                     <td>2 · Reglas</td>
-                    <td>Pipelines opcionales post-enlace (trim, upper, pad…).</td>
-                    <td>Sin reglas / Parcial (n/m) / Listo (todos con al menos un paso).</td>
+                    <td>Hub de pipelines. Sin reglas / parcial / listo. Requiere al menos un mapeo.</td>
                 </tr>
                 <tr>
-                    <td>Entrada / Salida</td>
-                    <td>Acceso rápido a los contratos ya definidos.</td>
-                    <td>Referencia; no se editan desde aquí.</td>
+                    <td>Tarjetas Entrada / Salida</td>
+                    <td>Atajo a esos contratos. No se editan desde aquí.</td>
+                </tr>
+                <tr>
+                    <td>Continuar a publicar</td>
+                    <td>Aparece cuando el mapeo cubre obligatorios. No genera el archivo.</td>
                 </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Acciones</h3>
+        <h3 class="form-section-title">Si algo no encaja</h3>
         <table class="help-table">
-            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <thead><tr><th>Situación</th><th>Qué hacer</th></tr></thead>
             <tbody>
-                <tr><td>Abrir editor de enlaces</td><td>Crea o edita mapeos en el borrador.</td></tr>
-                <tr><td>Reglas de transformación</td><td>Abre el hub/editor de pipelines (requiere al menos un mapeo).</td></tr>
-                <tr><td>Continuar a publicar</td><td>Visible cuando el mapeo cubre obligatorios; Módulo 4.</td></tr>
-                <tr><td>← Proyecto</td><td>Vuelve al hub del proyecto.</td></tr>
+                <tr><td>Faltan contratos</td><td>Defina campos en entrada y/o salida. Sin ellos no hay editor.</td></tr>
+                <tr><td>Obligatorios sin mapear &gt; 0</td><td>Enlace, use constante/generado, o un default en el campo de salida.</td></tr>
+                <tr><td>El stepper del proyecto no marca Mapeo hecho</td><td>Aún no hay campos o no hay mapeos suficientes.</td></tr>
+                <tr><td>Generar no usa los enlaces nuevos</td><td>Publique de nuevo (M4).</td></tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Orden recomendado</h3>
-        <ol>
-            <li>Complete enlaces hasta que no queden obligatorios sin mapear.</li>
-            <li>Opcional: configure reglas donde haga falta limpiar o formatear valores.</li>
-            <li><strong>Publique</strong> la definición (M4). Generar el archivo es M5.</li>
-        </ol>
-        <p class="help-intro">
-            Completar mapeo/reglas <strong>no</strong> habilita generar: hace falta publicar (MAP7).
-            Solo <span class="mono">PA</span> / <span class="mono">ED</span> editan (MAP1).
-        </p>
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver el hub</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Editar enlaces y reglas</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+            </tbody>
+        </table>
+        <p class="hint">Completar mapeo/reglas no habilita Generar: falta publicar (MAP7).</p>
+
+        <h3 class="form-section-title">Qué no es</h3>
+        <ul>
+            <li>No redefine columnas de la planilla ni del layout.</li>
+            <li>No publica la definición ni sube la planilla de producción.</li>
+            <li>No es FILE GATE ni el pre-check del Módulo 7.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

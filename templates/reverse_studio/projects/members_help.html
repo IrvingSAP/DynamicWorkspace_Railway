@@ -1,16 +1,15 @@
 {% extends "app_base.html" %}
 {% load static %}
 
-{% block title %}Ayuda — Miembros {{ project.slug }}{% endblock %}
+{% block title %}Ayuda · Miembros — {{ project.name }}{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -27,84 +26,132 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span> · <span class="perm-badge perm-badge--admin">PA</span></p>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span> · Acceso</p>
         <h2>Ayuda — Miembros y permisos</h2>
-        <p>Quién puede ver y trabajar en este emisor y qué hace cada rol.</p>
+        <p>Quién puede ver y trabajar en este emisor. Solo el administrador (PA) abre esta pantalla.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:project_members' project_slug=project.slug %}" class="btn btn-secondary">← Volver a miembros</a>
+        <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}" class="btn btn-primary">Ir al hub</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Propósito</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            Solo el <strong>administrador (PA)</strong> gestiona miembros. Se invitan usuarios UF de la compañía
-            {% if company %}{{ company.name_short }}{% else %}actual{% endif %}.
-            La membresía es la misma infraestructura compartida con Worksheets / FilePipe
-            (<code>ProjectMembership</code>); el <strong>rol</strong> define qué puede hacer en Reverse Studio.
+            Gestión de membresía del proyecto. Se invitan usuarios <strong>UF de
+            {% if company %}{{ company.name_short }}{% else %}su compañía{% endif %}</strong>.
+            La ficha es la misma infraestructura que Worksheets / FilePipe; el <strong>rol</strong> define qué pueden hacer en Reverse Studio.
         </p>
-        <ul>
-            <li>Proyecto <strong>privado:</strong> sin membresía activa no hay acceso.</li>
-            <li>Proyecto <strong>público:</strong> la compañía puede verlo; para editar o generar hace falta rol (invitación).</li>
-            <li>El creador / propietario permanece como PA y no se revoca desde esta pantalla.</li>
-        </ul>
 
-        <h3 class="form-section-title">Roles en Reverse Studio</h3>
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>En privado, invite al menos un ED (diseño) y un GE (emisión mensual) antes de operar.</li>
+            <li>Elija usuario y rol → <strong>Autorizar miembro</strong>.</li>
+            <li>Si alguien ya estuvo y está inactivo, use <strong>Reactivar</strong> (no vuelve a aparecer en el desplegable de alta).</li>
+            <li>El rol no sustituye <strong>publicar</strong>: Generar usa la versión activa.</li>
+        </ol>
+
+        <h3 class="form-section-title">Controles de esta pantalla</h3>
         <table class="help-table">
-            <thead>
-                <tr><th>Código</th><th>Nombre</th><th>Permisos principales</th></tr>
-            </thead>
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
             <tbody>
                 <tr>
-                    <td class="mono">PA</td>
-                    <td>Admin</td>
-                    <td>Miembros, editar definición (entrada/salida/mapeo), publicar, generar, bridge FILE GATE.</td>
+                    <td>Stepper Datos / Visibilidad / Miembros</td>
+                    <td>Recordatorio de alta del proyecto. Visibilidad se cambió al crear; aquí solo se gestionan personas.</td>
                 </tr>
                 <tr>
-                    <td class="mono">ED</td>
-                    <td>Editor</td>
-                    <td>Editar entrada / salida / mapeo y publicar; generar. Sin gestionar miembros.</td>
+                    <td>Usuario UF</td>
+                    <td>Candidatos de la compañía que aún no son miembros activos. Obligatorio.</td>
                 </tr>
                 <tr>
-                    <td class="mono">GE</td>
-                    <td>Generar</td>
-                    <td>Generar y descargar el archivo de envío sobre la versión publicada. Sin editar definición.</td>
+                    <td>Rol en el proyecto</td>
+                    <td>PA, ED, GE, CG o CO. Obligatorio.</td>
                 </tr>
                 <tr>
-                    <td class="mono">CG</td>
-                    <td>Consulta-Generar</td>
-                    <td>Consulta del proyecto y generar / descargar salidas (CO + GE). Sin editar definición.</td>
+                    <td>Autorizar miembro</td>
+                    <td>Crea la membresía o reactiva si el servicio lo permite con ese usuario.</td>
                 </tr>
                 <tr>
-                    <td class="mono">CO</td>
-                    <td>Consulta</td>
-                    <td>Ver proyecto e historial (metadatos). Sin editar, publicar ni generar datos de negocio.</td>
+                    <td>Filtro estado</td>
+                    <td>Todos / Activo / Inactivo sobre la tabla.</td>
+                </tr>
+                <tr>
+                    <td>Cambiar (rol)</td>
+                    <td>Actualiza el permiso. No aplica al propietario.</td>
+                </tr>
+                <tr>
+                    <td>Revocar</td>
+                    <td>Pide confirmación y deja al miembro inactivo. Sigue en la tabla para reactivar.</td>
+                </tr>
+                <tr>
+                    <td>Reactivar</td>
+                    <td>Vuelve a dar acceso con el rol que tenía (puede cambiarlo después).</td>
+                </tr>
+                <tr>
+                    <td>Propietario</td>
+                    <td>El dueño no se revoca ni pierde PA desde aquí.</td>
                 </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Acciones de la pantalla</h3>
+        <h3 class="form-section-title">Privado vs público</h3>
         <table class="help-table">
-            <thead>
-                <tr><th>Acción</th><th>Qué hace</th></tr>
-            </thead>
+            <thead><tr><th>Visibilidad</th><th>Efecto</th></tr></thead>
             <tbody>
-                <tr><td>Agregar / Autorizar</td><td>Crea o reactiva membresía con el rol elegido (solo UF de la compañía).</td></tr>
-                <tr><td>Cambiar rol</td><td>Actualiza el permiso (no aplica al propietario).</td></tr>
-                <tr><td>Revocar</td><td>Desactiva el acceso (con confirmación). El usuario deja de operar el proyecto.</td></tr>
-                <tr><td>Reactivar</td><td>Vuelve a activar un miembro inactivo.</td></tr>
-                <tr><td>Propietario</td><td>El dueño no se revoca ni pierde PA desde esta pantalla.</td></tr>
+                <tr>
+                    <td>Privado</td>
+                    <td>Sin membresía activa no hay acceso al hub ni a generar.</td>
+                </tr>
+                <tr>
+                    <td>Público</td>
+                    <td>Cualquier UF de la compañía puede <strong>ver</strong>. Para editar, publicar o generar hay que invitar con el rol adecuado.</td>
+                </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Buenas prácticas</h3>
+        <h3 class="form-section-title">Qué puede cada rol</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CG</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver hub / historial (metadatos)</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Gestionar miembros</td><td>Sí</td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
+                <tr><td>Editar entrada / salida / mapeo</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td><td>No</td></tr>
+                <tr><td>Publicar definición</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td><td>No</td></tr>
+                <tr><td>Generar y descargar envío</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td><td>No</td></tr>
+                <tr><td>Configurar FILE GATE</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td><td>No</td></tr>
+            </tbody>
+        </table>
+        <p class="hint">
+            <strong>CG</strong> (Consulta-Generar) = consulta + emitir, sin diseñar el contrato.
+            CO no descarga archivos con datos de negocio.
+        </p>
+
+        <h3 class="form-section-title">Si algo no encaja</h3>
+        <table class="help-table">
+            <thead><tr><th>Mensaje típico</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Solo el administrador (PA) puede gestionar miembros</td>
+                    <td>Pida al PA. ED/GE/CO no entran a esta pantalla.</td>
+                </tr>
+                <tr>
+                    <td>El usuario no aparece en el desplegable</td>
+                    <td>Debe ser UF de la misma compañía y no estar ya como miembro activo.</td>
+                </tr>
+                <tr>
+                    <td>No puede revocar al propietario</td>
+                    <td>Esperado. Transfiera la propiedad por otro canal de producto si aplica; no desde aquí.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no es</h3>
         <ul>
-            <li>En proyectos privados, invite al menos un ED o GE antes de operar en producción.</li>
-            <li>Use <span class="mono">GE</span> para quien solo emite archivos cada ciclo, sin tocar el contrato.</li>
-            <li>Use <span class="mono">CO</span> para auditoría o seguimiento sin riesgo de editar o generar.</li>
-            <li>Generar siempre usa la <strong>versión publicada</strong>; el rol no sustituye publicar.</li>
+            <li>No cambia la visibilidad público/privado del proyecto (eso se fijó al crear).</li>
+            <li>No publica la definición ni genera el archivo de envío.</li>
+            <li>No invita usuarios de otra compañía ni cuentas que no sean UF.</li>
         </ul>
     </div>
 </div>

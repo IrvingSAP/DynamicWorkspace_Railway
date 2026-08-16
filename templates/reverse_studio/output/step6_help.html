@@ -7,11 +7,10 @@
 <link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -32,49 +31,107 @@
     <div>
         <p class="page-eyebrow">Referencia · Salida · Paso 6 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Validación al escribir</h2>
-        <p>Qué hacer cuando un valor no cumple el layout al generar el archivo de envío.</p>
+        <p>Qué hacer cuando un valor no cumple el layout al generar. Se aplica en Generar (M5), no al editar el borrador.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:output_step6' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 6</a>
+        <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}" class="btn btn-primary">Ir al hub de salida</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué decide este paso</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            Políticas de <code>write_validation</code>: obligatorio vacío, tipo incorrecto, longitud excedida, etc.
-            Se aplican en la <strong>generación (M5)</strong>, no al editar el borrador.
+            Políticas de <code>write_validation</code>. Cierra el asistente de salida; no publica ni genera.
+            Completar solo M2 no habilita Generar (faltan mapeo y publicar).
         </p>
 
-        <h3 class="form-section-title">Políticas típicas</h3>
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Deje <strong>Rechazar fila</strong> como default en layouts bancarios (informe de errores, el resto se emite).</li>
+            <li>Use <strong>Abortar job</strong> si un solo error debe detener todo el archivo.</li>
+            <li>Use truncar / default / vacío solo si el receptor lo admite (archivos «casi correctos» suelen rechazarse en el banco).</li>
+            <li>Pulse <strong>Guardar borrador</strong> o <strong>Finalizar</strong> y siga a mapeo.</li>
+        </ol>
+
+        <h3 class="form-section-title">Campos de esta pantalla</h3>
         <table class="help-table">
-            <thead><tr><th>Política</th><th>Comportamiento</th></tr></thead>
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
             <tbody>
-                <tr><td class="mono">reject_row</td><td>Descarta la fila y la reporta (default habitual).</td></tr>
-                <tr><td class="mono">abort</td><td>Detiene el job ante el primer error.</td></tr>
-                <tr><td class="mono">truncate</td><td>Recorta al máximo permitido (use con cuidado en bancos).</td></tr>
-                <tr><td class="mono">use_default / write_empty</td><td>Sustituye por default o vacío según configuración.</td></tr>
+                <tr>
+                    <td>Política general</td>
+                    <td>Fallback si un escenario no tiene regla propia.</td>
+                </tr>
+                <tr>
+                    <td>Tipo incorrecto</td>
+                    <td>El valor no convierte al <code>data_type</code> del campo.</td>
+                </tr>
+                <tr>
+                    <td>Longitud excedida</td>
+                    <td>Supera el ancho del campo o del registro posicional.</td>
+                </tr>
+                <tr>
+                    <td>Obligatorio vacío</td>
+                    <td>Campo required del layout sin valor tras mapeo/reglas.</td>
+                </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Errores de ejecución (referencia)</h3>
+        <h3 class="form-section-title">Opciones de cada política</h3>
+        <table class="help-table">
+            <thead><tr><th>Opción</th><th>Comportamiento al generar</th></tr></thead>
+            <tbody>
+                <tr><td>Rechazar fila</td><td>Omite la fila, la reporta y sigue. Default habitual.</td></tr>
+                <tr><td>Abortar job</td><td>Detiene la generación en el primer error.</td></tr>
+                <tr><td>Truncar y escribir</td><td>Recorta al máximo y escribe. Use con cuidado.</td></tr>
+                <tr><td>Usar valor por defecto</td><td>Sustituye por el default del campo, si existe.</td></tr>
+                <tr><td>Escribir vacío</td><td>Emite celda/posición vacía.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Códigos que verá en el informe</h3>
         <table class="help-table">
             <thead><tr><th>Código</th><th>Significado</th></tr></thead>
             <tbody>
-                <tr><td class="mono">TARGET_REQUIRED_EMPTY</td><td>Campo obligatorio sin valor.</td></tr>
-                <tr><td class="mono">TARGET_TYPE_MISMATCH</td><td>No convertible al <code>data_type</code>.</td></tr>
+                <tr><td class="mono">TARGET_REQUIRED_EMPTY</td><td>Obligatorio sin valor.</td></tr>
+                <tr><td class="mono">TARGET_TYPE_MISMATCH</td><td>No convertible al tipo del layout.</td></tr>
                 <tr><td class="mono">TARGET_LENGTH_EXCEEDED</td><td>Supera longitud y la política no permite truncar.</td></tr>
-                <tr><td class="mono">TARGET_RECORD_LENGTH_OVERFLOW</td><td>Línea posicional excede <code>record_length</code>.</td></tr>
+                <tr><td class="mono">TARGET_RECORD_LENGTH_OVERFLOW</td><td>La línea posicional excede <code>record_length</code>.</td></tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Después de completar</h3>
-        <ol>
-            <li>Continúe al <strong>mapeo</strong> (Módulo 3).</li>
-            <li>Luego <strong>publique</strong> (M4) y <strong>genere</strong> (M5).</li>
-            <li>Completar solo salida <strong>no</strong> habilita generar (OUT7).</li>
-        </ol>
+        <h3 class="form-section-title">Si algo no encaja</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>El borrador se guardó. Faltan pasos…</td>
+                    <td>La política quedó, pero el contrato de salida aún no está completo. Revise el hub.</td>
+                </tr>
+                <tr>
+                    <td>Generar no respeta abortar/rechazar</td>
+                    <td>Publique (M4). Estas políticas viven en la versión publicada.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Guardar políticas</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+            </tbody>
+        </table>
+        <p class="hint">No es el umbral de FILE GATE ni <code>skip_row</code> de lectura de la planilla.</p>
+
+        <h3 class="form-section-title">Qué no es</h3>
+        <ul>
+            <li>No congela la definición (publicar = M4).</li>
+            <li>No genera el archivo (M5) ni es el Historial (M6).</li>
+            <li>Después: mapeo → publicar → generar.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

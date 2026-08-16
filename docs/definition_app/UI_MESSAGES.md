@@ -395,11 +395,14 @@ Código: `apps/reverse_studio/` · kind `Project.KIND_REVERSE = "reverse"`.
 | Situación | Tag / canal | Texto al usuario |
 |-----------|-------------|------------------|
 | Entrada guardada (borrador) | `success` | Contrato de entrada guardado correctamente. |
+| Entrada guardada con pasos pendientes (paso 6) | `warning` | El borrador se guardó. Faltan pasos por completar: {pasos}. |
 | Validación bloqueante al guardar | `error` + inline | Revise los datos del contrato de entrada. |
 | Sin permiso editar | `error` | No tiene permiso para editar el contrato de este proyecto. |
 | JSON inválido (POST) | `error` | JSON de contrato de entrada inválido. |
 | Tipo fuera de whitelist (IN3) | `error` + inline | El tipo de planilla no está permitido en Reverse Studio. Use CSV, Excel o TXT delimitado. |
 | Tipo sin editor de campos | `warning` | Elija un tipo de planilla permitido (CSV, Excel o TXT delimitado) en el paso 1. |
+| Estructura importada a entrada | `success` | Estructura importada al borrador del contrato de entrada. Revise los pasos del asistente y publique la definición Reverse cuando corresponda. |
+| Tipo no permitido al importar | `error` | El tipo de planilla no está permitido en Reverse Studio. Use CSV, Excel o TXT delimitado. |
 
 > Guardar reutiliza `source_persistence_service.save_source`; el texto anterior aplica cuando `project_kind = reverse`. No hay publicar solo-entrada (publicar definición = Módulo 4).
 
@@ -408,6 +411,7 @@ Código: `apps/reverse_studio/` · kind `Project.KIND_REVERSE = "reverse"`.
 | Situación | Tag / canal | Texto al usuario |
 |-----------|-------------|------------------|
 | Salida guardada (borrador) | `success` | Contrato de salida guardado correctamente. |
+| Salida guardada con pasos pendientes (pasos 5–6) | `warning` | El borrador se guardó. Faltan pasos por completar: {pasos}. |
 | Validación bloqueante al guardar | `error` + inline / modal | Revise los datos del contrato de salida. {detalle}. Ej. solapamiento posicional: «campoA» (1-40) y «campoB» (2-2). Al cambiar la longitud… «campoB» debería empezar en 41… (+N más). |
 | Sin permiso editar | `error` | No tiene permiso para editar el contrato de este proyecto. |
 | JSON inválido (POST) | `error` | JSON de contrato de salida inválido. |
@@ -785,7 +789,7 @@ Mensajes de usuario para el Sembrador de perfiles. Alineados a [`../PROFILE_SEED
 | Sin acceso al proyecto Match | `error` | No tiene acceso a este proyecto FILE MATCH. |
 | Sin permiso importar (no PA/ED, archivado, kind incorrecto) | `error` | No tiene permiso para importar estructuras en este proyecto. |
 
-> Motor M1: `profile_seed_service.user_can_import` / `get_seed_context`. Hosts: Match Perfil A, Split/Merge perfil, **FilePipe origen**. CTA solo si `can_seed_import`.
+> Motor M1: `profile_seed_service.user_can_import` / `get_seed_context`. Hosts: Match Perfil A, Split/Merge perfil, FilePipe origen/destino, **FILE GATE esquema**, **Reverse Studio entrada**. CTA solo si `can_seed_import`.
 
 #### Módulo 2 — Selector de origen
 
@@ -802,7 +806,7 @@ Mensajes de usuario para el Sembrador de perfiles. Alineados a [`../PROFILE_SEED
 | Sin orígenes Split/Merge | empty UI | No hay orígenes FILE SPLIT/MERGE publicados visibles. Publique un perfil de lectura en FILE SPLIT/MERGE o pida acceso. |
 | Sin orígenes Scout | empty UI | No hay borradores STRUCTURE SCOUT visibles. Guarde un borrador de estructura en Explorador o pida acceso al proyecto. |
 
-> Motor M2: `list_eligible_sources`. Host FilePipe y **FILE GATE**: GATE + CLEAN + FilePipe + Match A/B + Reverse entrada + FILE SPLIT/MERGE + STRUCTURE SCOUT. Apply pasa `kind` para no confundir Match A y B.
+> Motor M2: `list_eligible_sources`. Host FilePipe, FILE GATE y **Reverse Studio**: GATE + CLEAN + FilePipe + Match A/B + Reverse entrada + FILE SPLIT/MERGE + STRUCTURE SCOUT. Apply pasa `kind` para no confundir Match A y B.
 
 #### Módulo 3 — Preview y aplicar borrador
 

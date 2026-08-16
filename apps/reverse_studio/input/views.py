@@ -1,4 +1,5 @@
 import json
+from uuid import UUID
 
 from django.contrib import messages
 from django.http import JsonResponse
@@ -12,6 +13,11 @@ from apps.dms.source_profile.services import (
     source_profile_catalog_service,
     source_profile_service,
 )
+from apps.profile_seed.services import (
+    apply_seed_service,
+    profile_seed_service,
+    seed_history_service,
+)
 from apps.reverse_studio.input.services import input_wizard_service
 from apps.reverse_studio.projects.services import reverse_project_service
 from apps.projects.services import project_service
@@ -19,6 +25,11 @@ from apps.projects.services import project_service
 STEP4_TEMPLATES = {
     "delimited": "reverse_studio/input/step4_fields_delimited.html",
     "xlsx": "reverse_studio/input/step4_fields_xlsx.html",
+}
+
+STEP4_HELP_TEMPLATES = {
+    "delimited": "reverse_studio/input/step4_help_delimited.html",
+    "xlsx": "reverse_studio/input/step4_help_xlsx.html",
 }
 
 
@@ -38,6 +49,11 @@ def _base_context(request, project, current_step: int | None = None) -> dict:
     membership = project_service.get_membership(request.user, project)
     wizard = input_wizard_service.get_wizard_context(project, membership)
     source = source_persistence_service.get_source_dict(project)
+    seed_ctx = profile_seed_service.get_seed_context(
+        request.user,
+        project,
+        destination_slot=profile_seed_service.SOURCE_SLOT_INPUT,
+    )
     return {
         "project": project,
         "wizard": wizard,
@@ -51,6 +67,7 @@ def _base_context(request, project, current_step: int | None = None) -> dict:
         "source_save_url": reverse(
             "reverse_studio:input_save", kwargs={"project_slug": project.slug}
         ),
+        **seed_ctx,
     }
 
 
@@ -90,7 +107,27 @@ def step3_help(request, project_slug: str):
 
 @_input_view
 def step4_help(request, project_slug: str):
-    return _render(request, project_slug, "reverse_studio/input/step4_help.html", current_step=4)
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("reverse_studio:project_list")
+    source = source_persistence_service.get_source_dict(project)
+    file_type = (source.get("file_type_code") or "").strip()
+    variant = source_profile_service.get_step4_variant(file_type)
+    template = STEP4_HELP_TEMPLATES.get(variant)
+    if not template:
+        messages.warning(
+            request,
+            "Elija un tipo de planilla permitido (CSV, Excel o TXT delimitado) en el paso 1.",
+        )
+        return redirect("reverse_studio:input_step1", project_slug=project_slug)
+    return _render(
+        request,
+        project_slug,
+        template,
+        current_step=4,
+        file_type_code=file_type or variant,
+        step4_variant=variant,
+    )
 
 
 @_input_view
@@ -271,6 +308,7 @@ def input_save(request, project_slug: str):
                 {
                     "ok": True,
                     "message": result.user_message,
+                    "level": result.payload.get("message_level") or "success",
                     "source": result.payload.get("source", {}),
                     "warnings": result.payload.get("warning_messages") or [],
                 }
@@ -288,9 +326,228 @@ def input_save(request, project_slug: str):
         )
 
     if result.ok:
-        messages.success(request, result.user_message)
+        level = result.payload.get("message_level") or "success"
+        if level == "warning":
+            messages.warning(request, result.user_message)
+        else:
+            messages.success(request, result.user_message)
         for warning in result.payload.get("warning_messages") or []:
-            messages.warning(request, warning)
+            if warning != result.user_message:
+                messages.warning(request, warning)
     else:
         messages.error(request, result.user_message)
     return redirect(redirect_to)
+
+
+_SEED_SLOT = profile_seed_service.SOURCE_SLOT_INPUT
+
+
+@_input_view
+def input_seed_hub(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("reverse_studio:project_list")
+    if not profile_seed_service.user_can_import(request.user, project):
+        messages.error(request, profile_seed_service.MSG_NO_IMPORT)
+        return redirect("reverse_studio:input_hub", project_slug=project_slug)
+    return _render(request, project_slug, "profile_seed/seed_entry.html")
+
+
+@_input_view
+def input_seed_hub_help(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("reverse_studio:project_list")
+    from_key = (request.GET.get("from") or "").strip().lower()
+    if from_key == "hub":
+        help_back_url_name = "reverse_studio:input_hub"
+        help_back_label = "← Entrada"
+        help_from_hub = True
+    else:
+        can_import = profile_seed_service.user_can_import(request.user, project)
+        if can_import:
+            help_back_url_name = "reverse_studio:input_seed_hub"
+            help_back_label = "← Volver a Importar"
+            help_from_hub = False
+        else:
+            help_back_url_name = "reverse_studio:input_hub"
+            help_back_label = "← Entrada"
+            help_from_hub = True
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/seed_entry_help.html",
+        help_back_url_name=help_back_url_name,
+        help_back_label=help_back_label,
+        help_from_hub=help_from_hub,
+    )
+
+
+@_input_view
+def input_seed_picker(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("reverse_studio:project_list")
+    if not profile_seed_service.user_can_import(request.user, project):
+        messages.error(request, profile_seed_service.MSG_NO_IMPORT)
+        return redirect("reverse_studio:input_hub", project_slug=project_slug)
+
+    source_kind = (request.GET.get("kind") or "").strip() or None
+    source_id_raw = (request.GET.get("source_id") or "").strip()
+    source_id = None
+    if source_id_raw:
+        source_id = profile_seed_service.parse_source_project_id(source_id_raw)
+        if source_id is None:
+            source_id = UUID("00000000-0000-0000-0000-000000000000")
+
+    picker = profile_seed_service.get_source_picker_context(
+        request.user,
+        project,
+        source_kind=source_kind,
+        source_id=source_id,
+        destination_slot=_SEED_SLOT,
+    )
+    if picker.get("invalid_source") or (
+        source_id_raw and profile_seed_service.parse_source_project_id(source_id_raw) is None
+    ):
+        messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
+        picker["invalid_source"] = True
+        picker["selected_source"] = None
+        picker["selected_source_id"] = None
+    if not picker.get("source_kind_supported"):
+        messages.warning(request, profile_seed_service.MSG_KIND_UNSUPPORTED)
+
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/source_picker.html",
+        **picker,
+    )
+
+
+@_input_view
+def input_seed_picker_help(request, project_slug: str):
+    return _render(request, project_slug, "profile_seed/source_picker_help.html")
+
+
+def _parse_source_id(raw: str | None):
+    return profile_seed_service.parse_source_project_id(raw)
+
+
+@_input_view
+@require_http_methods(["GET", "POST"])
+def input_seed_apply(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("reverse_studio:project_list")
+    if not profile_seed_service.user_can_import(request.user, project):
+        messages.error(request, profile_seed_service.MSG_NO_IMPORT)
+        return redirect("reverse_studio:input_hub", project_slug=project_slug)
+
+    dest = _SEED_SLOT
+    if request.method == "POST":
+        source_id = _parse_source_id(request.POST.get("source_id"))
+        source_kind = (request.POST.get("kind") or "").strip() or None
+        action = (request.POST.get("action") or "").strip()
+        if action != "apply":
+            messages.error(request, apply_seed_service.MSG_APPLY_FAIL)
+            return redirect("reverse_studio:input_seed_picker", project_slug=project_slug)
+        result = apply_seed_service.apply_seed_to_draft(
+            request.user,
+            project,
+            source_id=source_id,
+            destination_slot=dest,
+            source_kind=source_kind,
+        )
+        if result.ok:
+            messages.success(request, result.user_message)
+            return redirect("reverse_studio:input_hub", project_slug=project_slug)
+        messages.error(request, result.user_message)
+        if source_id:
+            qs = f"?source_id={source_id}"
+            if source_kind:
+                qs += f"&kind={source_kind}"
+            return redirect(
+                reverse(
+                    "reverse_studio:input_seed_apply",
+                    kwargs={"project_slug": project_slug},
+                )
+                + qs
+            )
+        return redirect("reverse_studio:input_seed_picker", project_slug=project_slug)
+
+    source_id = _parse_source_id(request.GET.get("source_id"))
+    source_kind = (request.GET.get("kind") or "").strip() or None
+    if source_id is None:
+        messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
+        return redirect("reverse_studio:input_seed_picker", project_slug=project_slug)
+
+    preview = apply_seed_service.get_apply_preview(
+        request.user,
+        project,
+        source_id,
+        destination_slot=dest,
+        source_kind=source_kind,
+    )
+    if preview is None:
+        messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
+        return redirect("reverse_studio:input_seed_picker", project_slug=project_slug)
+
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/apply_confirm.html",
+        **preview,
+    )
+
+
+@_input_view
+def input_seed_apply_help(request, project_slug: str):
+    return _render(request, project_slug, "profile_seed/apply_confirm_help.html")
+
+
+@_input_view
+def input_seed_history(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("reverse_studio:project_list")
+    status = (request.GET.get("status") or "").strip()
+    history = seed_history_service.get_history_hub_context(
+        request.user,
+        project,
+        status=status,
+        destination_slot=_SEED_SLOT,
+    )
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/history_hub.html",
+        **history,
+    )
+
+
+@_input_view
+def input_seed_history_detail(request, project_slug: str, event_id):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("reverse_studio:project_list")
+    detail = seed_history_service.get_history_detail_context(
+        request.user,
+        project,
+        event_id,
+        destination_slot=_SEED_SLOT,
+    )
+    if detail is None:
+        messages.error(request, seed_history_service.MSG_EVENT_NOT_FOUND)
+        return redirect("reverse_studio:input_seed_history", project_slug=project_slug)
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/history_detail.html",
+        **detail,
+    )
+
+
+@_input_view
+def input_seed_history_help(request, project_slug: str):
+    return _render(request, project_slug, "profile_seed/history_help.html")

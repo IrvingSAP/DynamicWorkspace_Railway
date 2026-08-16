@@ -7,11 +7,10 @@
 <link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -32,38 +31,75 @@
     <div>
         <p class="page-eyebrow">Referencia · Salida · Paso 1 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Tipo de layout de envío</h2>
-        <p>Formato rígido que exige el receptor. Condiciona estructura, campos y serialización.</p>
+        <p>Formato rígido que exige el receptor. Condiciona estructura (paso 3), campos (paso 4) y serialización.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:output_step1' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 1</a>
+        <a href="{% url 'reverse_studio:output_step2' project_slug=project.slug %}" class="btn btn-primary">Ir al paso 2</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué decide este paso</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            El <strong>tipo de archivo de salida</strong>. No es la planilla de negocio (entrada) ni genera el archivo todavía.
+            Elige el <strong>tipo de archivo de salida</strong>. No es la planilla de negocio (entrada) ni genera el archivo.
+            El diferenciador de Reverse es planilla fácil → layout rígido.
         </p>
 
-        <h3 class="form-section-title">Whitelist MVP</h3>
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Elija lo que el banco/ERP ya exige (casi siempre TXT posicional).</li>
+            <li>Pulse <strong>Guardar borrador</strong> o <strong>Siguiente</strong>.</li>
+            <li>Si ya había campos y cambia el tipo, confirme: puede vaciar el paso 4.</li>
+        </ol>
+
+        <h3 class="form-section-title">Campos de esta pantalla</h3>
         <table class="help-table">
-            <thead><tr><th>Código</th><th>Uso típico</th></tr></thead>
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
             <tbody>
-                <tr><td class="mono">txt_fixed</td><td>TXT posicional (bancos / legacy). Caso estrella Reverse.</td></tr>
-                <tr><td class="mono">json</td><td>Batch JSON / APIs.</td></tr>
-                <tr><td class="mono">xml</td><td>XML del proveedor o ERP.</td></tr>
+                <tr>
+                    <td>TXT posicional (<code>txt_fixed</code>)</td>
+                    <td>Caso estrella: longitud de registro, posiciones, pad. Bancos y legacy.</td>
+                </tr>
+                <tr>
+                    <td>JSON (<code>json</code>)</td>
+                    <td>Batch / API. Raíz array u objeto en el paso 3; paths en el paso 4.</td>
+                </tr>
+                <tr>
+                    <td>XML (<code>xml</code>)</td>
+                    <td>Elemento raíz y por registro en el paso 3; tags/paths en el paso 4.</td>
+                </tr>
+                <tr>
+                    <td>Guardar / Siguiente</td>
+                    <td>Persiste en el borrador. ← Anterior vuelve al hub de salida.</td>
+                </tr>
             </tbody>
         </table>
-        <p class="help-intro">
-            <strong>No</strong> se admiten como salida: CSV, Excel ni delimitado amigable (el negocio ya los usa de entrada; use FilePipe si necesita emitirlos).
-        </p>
 
-        <h3 class="form-section-title">Reglas</h3>
+        <h3 class="form-section-title">Si cambia el tipo</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Resultado</th></tr></thead>
+            <tbody>
+                <tr><td>Aún no hay campos</td><td>Puede cambiar de tipo sin impacto.</td></tr>
+                <tr><td>Ya hay campos</td><td>Confirmación: las posiciones/paths del otro formato no sirven.</td></tr>
+                <tr><td>CSV / Excel / delimitado</td><td>No son salida Reverse. La planilla ya es entrada; emítalos en FilePipe si hace falta.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Cambiar tipo y guardar</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no es</h3>
         <ul>
-            <li>Solo <span class="mono">PA</span> / <span class="mono">ED</span> editan (OUT1).</li>
-            <li>Cambiar el tipo con campos ya definidos pide confirmación; puede limpiar campos (OUT4).</li>
-            <li>Se guarda en borrador; publicar la definición completa es el Módulo 4.</li>
+            <li>No es el tipo de <em>entrada</em> (xlsx/csv van en Módulo 1).</li>
+            <li>No publica ni habilita Generar por sí solo.</li>
         </ul>
     </div>
 </div>

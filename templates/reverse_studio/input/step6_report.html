@@ -32,7 +32,7 @@
         <div class="page-actions">
             {% url 'reverse_studio:input_step6_help' project_slug=project.slug as source_help_url %}
             {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
-            <button type="button" id="btn-save-processing-report" class="btn btn-ghost btn-sm"{% if not can_edit_source %} disabled{% endif %}>Guardar borrador</button>
+            <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
         </div>
     </div>
 
@@ -95,7 +95,7 @@
                 <div class="wizard-footer-actions">
                     <a href="{% url 'reverse_studio:input_step5' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
                     {% if can_edit_source %}
-                    <button type="button" id="btn-save-processing-report-footer" class="btn btn-ghost" onclick="document.getElementById('btn-save-processing-report').click()">Guardar borrador</button>
+                    <button type="button" id="btn-save-processing-report" class="btn btn-secondary">Guardar borrador</button>
                     <button type="button" id="btn-finish-processing-report" class="btn btn-primary" data-next="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">Finalizar entrada →</button>
                     {% else %}
                     <a href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}" class="btn btn-primary">Finalizar entrada →</a>

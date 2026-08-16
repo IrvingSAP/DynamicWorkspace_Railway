@@ -9,9 +9,7 @@
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -32,46 +30,102 @@
     <div>
         <p class="page-eyebrow">Referencia · Entrada · Paso 2 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Inicio de captura</h2>
-        <p>Dónde empiezan los datos útiles de la planilla (<code>capture_start</code>).</p>
+        <p>Dónde empiezan los datos útiles de la planilla. Títulos y banners por encima no deben entrar al mapeo.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-secondary" href="{% url 'reverse_studio:input_step2' project_slug=project.slug %}">← Volver al paso 2</a>
+        <a class="btn btn-primary" href="{% url 'reverse_studio:input_step3' project_slug=project.slug %}">Ir al paso 3</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué decide este paso</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            Marca el <strong>inicio</strong> de la zona de datos al leer el archivo en una generación.
-            Títulos, logos o filas basura por encima no deben entrar al mapeo.
+            Marca el <strong>inicio</strong> de la zona de lectura al generar. Recorta el archivo; no identifica columnas
+            (eso es el paso 4: fila de encabezados y nombres).
         </p>
 
-        <h3 class="form-section-title">Modos habituales</h3>
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>En Excel sencillo: inicio en la primera fila y, en el paso 4, fila de encabezados = 1.</li>
+            <li>Si hay logo o título, salte esas líneas (número de línea, bloque o marcador).</li>
+            <li>Guarde y defina el fin en el paso 3 (debe ser posterior a este inicio).</li>
+        </ol>
+
+        <h3 class="form-section-title">Modos de esta pantalla</h3>
         <table class="help-table">
-            <thead><tr><th>Modo</th><th>Cuándo usarlo</th></tr></thead>
+            <thead><tr><th>Modo</th><th>Parámetro</th><th>Cuándo</th></tr></thead>
             <tbody>
-                <tr><td>Primera fila / número de línea</td><td>Default típico: datos desde la fila N (p. ej. 1).</td></tr>
-                <tr><td>Tras bloque de cabecera</td><td>Saltar N líneas fijas al inicio.</td></tr>
-                <tr><td>Marcador / patrón</td><td>Empezar después de un texto o regex conocido.</td></tr>
-                <tr><td>Tras líneas en blanco</td><td>Cuando hay un hueco antes de la tabla.</td></tr>
+                <tr>
+                    <td>Número de línea</td>
+                    <td>Línea de inicio (mín. 1)</td>
+                    <td>Default típico: datos desde la fila N.</td>
+                </tr>
+                <tr>
+                    <td>Tras bloque de cabecera</td>
+                    <td>Líneas a saltar</td>
+                    <td>Siempre hay N filas fijas de título.</td>
+                </tr>
+                <tr>
+                    <td>Texto marcador</td>
+                    <td>Cadena exacta</td>
+                    <td>Empieza al encontrar un rótulo conocido (p. ej. «=== DATOS ===»).</td>
+                </tr>
+                <tr>
+                    <td>Tras patrón</td>
+                    <td>Regex</td>
+                    <td>La captura inicia en la línea <strong>siguiente</strong> a la primera coincidencia.</td>
+                </tr>
+                <tr>
+                    <td>Tras líneas en blanco</td>
+                    <td>N blancas consecutivas</td>
+                    <td>Hay un hueco antes de la tabla. Vacío = línea sin texto (solo espacios).</td>
+                </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Relación con el paso 4 (Excel / CSV)</h3>
-        <ul>
-            <li>Si la planilla tiene <strong>fila de encabezados</strong>, indíquela en el paso 4
-                (<em>Fila de encabezados</em>). El motor <strong>omite esa fila</strong> como dato y la usa
-                para resolver columnas por nombre.</li>
-            <li>Captura e encabezado se complementan: la captura recorta el archivo; el header identifica columnas.</li>
-            <li>En Excel sencillo (fila 1 = títulos, fila 2+ = datos) suele bastar:
-                inicio en la primera fila + <code>header_row = 1</code> en el paso 4.</li>
-        </ul>
+        <h3 class="form-section-title">Relación con el paso 4</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Resultado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Hay fila de títulos</td>
+                    <td>Indíquela en el paso 4. El motor <strong>omite esa fila como dato</strong> y resuelve columnas por nombre.</td>
+                </tr>
+                <tr>
+                    <td>Captura recorta demasiado arriba</td>
+                    <td>Puede perder el encabezado o las primeras filas de negocio.</td>
+                </tr>
+                <tr>
+                    <td>Captura recorta demasiado abajo</td>
+                    <td>Títulos o filas basura entran al mapeo y suelen fallar al generar.</td>
+                </tr>
+            </tbody>
+        </table>
 
-        <h3 class="form-section-title">Notas</h3>
+        <h3 class="form-section-title">Si el guardado rechaza</h3>
+        <table class="help-table">
+            <thead><tr><th>Mensaje típico</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>Rango incompatible con el fin</td><td>Ajuste el paso 3: el fin debe ser posterior al inicio.</td></tr>
+                <tr><td>Patrón o marcador vacío</td><td>Complete el parámetro del modo elegido.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Guardar captura</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no es</h3>
         <ul>
-            <li>Misma semántica que el origen DMS (<code>capture_start</code>).</li>
-            <li>Debe ser coherente con el fin de captura (paso 3); rangos incompatibles se rechazan al guardar.</li>
+            <li>No es el filtro de filas de negocio (eso es mapeo / reglas, Módulo 3).</li>
+            <li>No sustituye la fila de encabezados del paso 4.</li>
             <li>Los cambios van al borrador; publique (M4) para que Generar los use.</li>
         </ul>
     </div>

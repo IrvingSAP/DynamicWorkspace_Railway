@@ -1,0 +1,36 @@
+{# Criterios comunes — ayudas paso 4 Reverse salida (fixed / json / xml) #}
+<h3 class="form-section-title">Nombre interno y tipo de dato</h3>
+<p class="help-intro">
+    El <strong>nombre</strong> es la clave del mapeo (M3). Estables, minúsculas, únicos.
+    No tiene que coincidir con la etiqueta ni con el path/posición.
+    Salida usa <code>data_type</code>; la planilla usa <code>content_type</code> — el puente es el mapeo, no este paso.
+</p>
+<table class="help-table">
+    <thead><tr><th>Propiedad</th><th>Uso</th></tr></thead>
+    <tbody>
+        <tr><td>Etiqueta</td><td>Texto humano en la tabla. No entra al archivo.</td></tr>
+        <tr><td>Order</td><td>Orden de declaración. En posicional no sustituye inicio/fin.</td></tr>
+        <tr><td>Tipo</td><td>Cómo se serializa (string, integer, date…). Fechas: complete <code>date_format</code> si el editor lo pide.</td></tr>
+        <tr><td>Obligatorio</td><td>Vacío al generar → política del paso 6 (<code>TARGET_REQUIRED_EMPTY</code>).</td></tr>
+    </tbody>
+</table>
+
+<h3 class="form-section-title">Cargar desde entrada</h3>
+<p class="help-intro">
+    Siembra nombres, etiquetas y tipos desde los campos de la <strong>planilla</strong>.
+    Debe existir contrato de entrada con campos. <strong>Reemplaza</strong> los campos actuales del layout si confirma.
+    Usted completa posiciones o paths. No publica Reverse ni copia mapeo.
+</p>
+
+<h3 class="form-section-title">Roles</h3>
+<table class="help-table">
+    <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+    <tbody>
+        <tr><td>Ver campos</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+        <tr><td>Agregar / editar / cargar desde entrada</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+    </tbody>
+</table>
+<p class="hint">
+    Al publicar se exige al menos un campo destino. Tras editar, publique (M4) para que Generar use la versión nueva.
+    Cambiar el tipo en el paso 1 puede vaciar estos campos.
+</p>

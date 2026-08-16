@@ -1,0 +1,105 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos posicional — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}">Salida</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:output_step4' project_slug=project.slug %}">Paso 4 · Posicional</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Salida · Paso 4 de 6 · <span class="cell-badge">txt_fixed</span></p>
+        <h2>Ayuda — Campos del layout (ancho fijo)</h2>
+        <p>Cada campo ocupa un rango de columnas en la línea. No hay path JSON/XML ni letra de Excel.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'reverse_studio:output_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+        <a href="{% url 'reverse_studio:output_step5' project_slug=project.slug %}" class="btn btn-primary">Ir al paso 5</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es</h3>
+        <p class="help-intro">
+            El tipo del paso 1 es <strong>TXT posicional</strong>. Define <code>start</code>/<code>end</code> (1-based, fin inclusive),
+            alineación y carácter de relleno. La longitud de registro del paso 3 debe cubrir el último <code>end</code>.
+        </p>
+
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Opcional: <strong>Cargar desde entrada</strong> para sembrar nombres; luego ponga inicios y fines según el manual del banco.</li>
+            <li>Agregue campos de izquierda a derecha sin solapes (1–10, 11–20…).</li>
+            <li>Números a la derecha con relleno <code>0</code>; texto a la izquierda con espacio.</li>
+            <li>Los campos se guardan al agregar/editar cada uno (no hay «Guardar parámetros» de hoja).</li>
+        </ol>
+
+        <h3 class="form-section-title">Campos de esta pantalla</h3>
+        <table class="help-table">
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Inicio / Fin</td>
+                    <td>Columnas 1-based, fin inclusive. Longitud = fin − inicio + 1. No se solapan.</td>
+                </tr>
+                <tr>
+                    <td>Alineación</td>
+                    <td>Izquierda o derecha dentro del hueco.</td>
+                </tr>
+                <tr>
+                    <td>Carácter de relleno</td>
+                    <td>Un carácter (espacio o <code>0</code>). El trim del paso 5 ocurre <em>antes</em> de rellenar.</td>
+                </tr>
+                <tr>
+                    <td>Longitud máxima</td>
+                    <td>Tope adicional. Vacío = el ancho del rango.</td>
+                </tr>
+                <tr>
+                    <td>Formato fecha</td>
+                    <td>Si el tipo es fecha: patrón al escribir ese campo (puede afinar el default del paso 5).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Si algo no encaja</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>Rangos solapados</td><td>El guardado rechaza. Ajuste inicio/fin.</td></tr>
+                <tr><td>Línea más larga que el banco</td><td>Baje el último fin o suba <code>record_length</code> del paso 3.</td></tr>
+                <tr><td>TARGET_LENGTH_EXCEEDED</td><td>El valor mapeado no cabe; recorte en reglas o rechace en el paso 6.</td></tr>
+                <tr><td>Cargar desde entrada no hace nada</td><td>Defina campos en el contrato de entrada primero.</td></tr>
+            </tbody>
+        </table>
+
+        {% include "reverse_studio/output/_step4_help_field_criteria.html" %}
+
+        <h3 class="form-section-title">Qué no es</h3>
+        <ul>
+            <li>No es el editor JSON/XML (paths). Si ve esta pantalla, el paso 1 es posicional.</li>
+            <li>No mapea la planilla: solo declara huecos del layout.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

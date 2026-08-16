@@ -9,9 +9,7 @@
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -32,53 +30,102 @@
     <div>
         <p class="page-eyebrow">Referencia · Entrada · Paso 6 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Informe de lectura</h2>
-        <p>Qué se registra al parsear la planilla en una generación (<code>processing_report</code>).</p>
+        <p>Qué se registra al parsear la planilla en una generación. Cierra el asistente de entrada; no publica ni genera el archivo de envío.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-secondary" href="{% url 'reverse_studio:input_step6' project_slug=project.slug %}">← Volver al paso 6</a>
+        <a class="btn btn-primary" href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">Ir al hub de entrada</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué decide este paso</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            Configura el <strong>informe de lectura</strong> que acompaña al job de generación (Módulo 5):
-            resumen de filas, detalle de errores y umbrales de alerta.
-            Cierra el asistente de entrada; no publica ni genera el archivo de envío.
+            Configura el <strong>informe de lectura</strong> del job de generación (Módulo 5): resumen de filas,
+            detalle de errores y umbral de alerta. Completar este paso no congela la definición ni habilita Generar
+            (faltan salida, mapeo y publicar).
         </p>
 
-        <h3 class="form-section-title">Opciones</h3>
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Deje el informe habilitado, con resumen y detalle por fila.</li>
+            <li>Ajuste el umbral si quiere aviso cuando hay muchos rechazos.</li>
+            <li>Pulse <strong>Guardar borrador</strong> o <strong>Finalizar entrada</strong>.</li>
+            <li>Si el aviso dice que faltan pasos, vuelva al hub y complete campos o captura.</li>
+            <li>Siga a <strong>Salida</strong> → mapeo → <strong>Publicar</strong> → Generar.</li>
+        </ol>
+
+        <h3 class="form-section-title">Campos de esta pantalla</h3>
         <table class="help-table">
-            <thead><tr><th>Opción</th><th>Detalle</th></tr></thead>
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
             <tbody>
-                <tr><td class="mono">report_enabled</td><td>Activa o desactiva el informe. Se recomienda dejarlo encendido.</td></tr>
-                <tr><td>Incluir resumen</td><td>Conteos: leídas, OK, rechazadas.</td></tr>
-                <tr><td>Detalle por fila</td><td>Línea, campo y mensaje de cada incidencia (útil para diagnosticar vista previa / generación).</td></tr>
-                <tr><td>Umbral de alerta</td><td>Aviso cuando los rechazos superan N (o %).</td></tr>
-                <tr><td>Formato</td><td>Cómo se materializa el informe (según opciones del producto).</td></tr>
+                <tr>
+                    <td>Informe habilitado</td>
+                    <td>Activa o desactiva el informe. Se recomienda dejarlo encendido.</td>
+                </tr>
+                <tr>
+                    <td>Incluir resumen</td>
+                    <td>Conteos: leídas, OK, rechazadas (las mismas métricas que verá en Historial).</td>
+                </tr>
+                <tr>
+                    <td>Detalle por fila</td>
+                    <td>Línea, campo y mensaje de cada incidencia (CSV de errores al generar).</td>
+                </tr>
+                <tr>
+                    <td>Umbral de alerta + unidad</td>
+                    <td>Aviso cuando los rechazos superan N o un %. No aborta el job por sí solo.</td>
+                </tr>
+                <tr>
+                    <td>Formato</td>
+                    <td>JSON, CSV o HTML del informe de lectura.</td>
+                </tr>
+                <tr>
+                    <td>Vista previa</td>
+                    <td>JSON <code>processing_report</code> que se guardará en el borrador.</td>
+                </tr>
+                <tr>
+                    <td>Finalizar entrada</td>
+                    <td>Guarda y vuelve al hub. No publica la definición.</td>
+                </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Cómo se guarda</h3>
-        <ul>
-            <li>Use <strong>Guardar borrador</strong>, <strong>Siguiente / Finalizar</strong> según los botones de la pantalla.</li>
-            <li>Los cambios quedan en el borrador hasta que <strong>publique</strong> la definición (M4).</li>
-        </ul>
+        <h3 class="form-section-title">Si algo no encaja</h3>
+        <table class="help-table">
+            <thead><tr><th>Mensaje típico</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>El borrador se guardó. Faltan pasos por completar…</td>
+                    <td>El informe quedó guardado, pero el contrato de entrada aún no está completo (p. ej. sin campos). Revise el hub.</td>
+                </tr>
+                <tr>
+                    <td>IN7 en pantalla</td>
+                    <td>Esperado: entrada sola no habilita Generar.</td>
+                </tr>
+                <tr>
+                    <td>Al generar no ve el informe nuevo</td>
+                    <td>Publique (M4). Generar usa la versión publicada.</td>
+                </tr>
+            </tbody>
+        </table>
 
-        <h3 class="form-section-title">Qué no hace</h3>
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Guardar informe</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no es</h3>
         <ul>
             <li>No congela la definición (publicar = Módulo 4).</li>
-            <li>No genera el layout del banco/ERP (Generar = Módulo 5, con versión publicada).</li>
-            <li>No es el historial de generaciones (Módulo 6).</li>
+            <li>No genera el layout de envío (Módulo 5).</li>
+            <li>No es el Historial de generaciones (Módulo 6): aquí solo se configura <em>qué</em> se registrará.</li>
+            <li>No es el umbral de FILE GATE ni el certificado de validación.</li>
         </ul>
-
-        <h3 class="form-section-title">Después de completar</h3>
-        <ol>
-            <li>Vuelva al hub de <strong>Entrada</strong> o continúe al <strong>contrato de salida</strong> (Módulo 2).</li>
-            <li>Siga con mapeo → reglas (opcional) → <strong>publicar</strong> → generar.</li>
-            <li>Completar solo M1 <strong>no</strong> habilita generar (IN7).</li>
-        </ol>
     </div>
 </div>
 {% endblock %}
