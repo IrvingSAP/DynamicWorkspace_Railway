@@ -176,6 +176,12 @@
                         <a href="{{ row.result_url }}">Resultado</a>
                         <a href="{{ row.report_url }}">Evidencia</a>
                         <a href="{{ row.certificate_url }}">Certificado</a>
+                        {% if row.can_delete %}
+                        <form method="post" action="{% url 'file_gate:history_delete_job' project_slug=project.slug job_id=row.id %}" class="js-history-delete-form" data-confirm="¿Eliminar esta corrida? Se borrarán el registro y la evidencia.">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-link-danger">Eliminar</button>
+                        </form>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -211,4 +217,23 @@
 <p class="hint" style="margin-top:14px">Como consultor (CO) ve los metadatos y el certificado de cada corrida; el detalle de incidencias y las descargas JSON/CSV no están disponibles.</p>
 {% endif %}
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("form.js-history-delete-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            if (typeof dwConfirmWarning !== "function") {
+                return;
+            }
+            e.preventDefault();
+            var message = form.getAttribute("data-confirm") || "¿Eliminar?";
+            dwConfirmWarning(message, function () {
+                HTMLFormElement.prototype.submit.call(form);
+            });
+        });
+    });
+});
+</script>
 {% endblock %}

@@ -37,10 +37,11 @@
         <div class="page-actions">
             {% url 'file_gate:schema_step4_help' project_slug=project.slug as source_help_url %}
             {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+            {% include "file_gate/schema/_step4_import_cta.html" %}
             {% if can_edit_source %}
-            <button type="button" id="btn-save-json-config" class="btn btn-ghost btn-sm">Guardar parámetros</button>
             <button type="button" id="btn-add-field" class="btn btn-primary">+ Agregar campo</button>
             {% endif %}
+            <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
         </div>
     </div>
 
@@ -113,8 +114,12 @@
     {% endif %}
 
     <div class="wizard-footer">
+        <span class="hint">Los cambios se guardan en el borrador del contrato de validación.</span>
         <div class="wizard-footer-actions">
             <a href="{% url 'file_gate:schema_step3' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
+            {% if can_edit_source %}
+            <button type="button" id="btn-save-json-config" class="btn btn-secondary">Guardar borrador</button>
+            {% endif %}
             <a href="{% url 'file_gate:schema_step5' project_slug=project.slug %}" class="btn btn-primary">Siguiente →</a>
         </div>
     </div>

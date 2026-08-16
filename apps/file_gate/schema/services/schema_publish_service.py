@@ -63,6 +63,15 @@ def publish_draft_schema(user, project: Project) -> OperationResult:
             "No hay borrador disponible para publicar.",
         )
 
+    from apps.file_gate.schema.services import schema_wizard_service
+
+    wizard = schema_wizard_service.get_wizard_context(project)
+    if not wizard.is_complete:
+        return OperationResult.failure(
+            "validation_form",
+            wizard.publish_blocked_reason,
+        )
+
     try:
         profile = draft.source_profile
     except DmsSourceProfile.DoesNotExist:

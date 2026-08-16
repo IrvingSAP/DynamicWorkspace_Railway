@@ -1,0 +1,31 @@
+{# Criterios comunes de rechazo — ayudas paso 4 FILE GATE #}
+<h3 class="form-section-title">Criterios de rechazo (todos los tipos)</h3>
+<p class="help-intro">
+    En FILE GATE cada campo es un criterio de conformidad, no un origen para mapear a un destino.
+    Al publicar se exige al menos un campo. Las incidencias usan el <strong>nombre interno</strong>.
+</p>
+<table class="help-table">
+    <thead><tr><th>Propiedad</th><th>Significado en el gate</th></tr></thead>
+    <tbody>
+        <tr>
+            <td>Nombre interno</td>
+            <td>Identificador único (minúsculas, números y guión bajo). Aparece en el informe y en cada incidencia.</td>
+        </tr>
+        <tr>
+            <td>Tipo de contenido</td>
+            <td>Forma esperada (numérico, fecha, alfanumérico, <code class="mono">custom</code>…). Un valor incompatible genera error de contenido.</td>
+        </tr>
+        <tr>
+            <td>Campo obligatorio</td>
+            <td>Si está vacío, cuenta como rechazo. El umbral de Políticas decide si el job falla.</td>
+        </tr>
+        <tr>
+            <td>Patrón / formato fecha</td>
+            <td>Si el tipo es <code class="mono">custom</code>, regex propia. Si es fecha, indique <code class="mono">date_format</code> (p. ej. <code class="mono">DD/MM/YYYY</code>).</td>
+        </tr>
+    </tbody>
+</table>
+<p class="help-intro">
+    Opcional: <strong>Importar estructura</strong> clona campos al borrador desde otra app. No publica ni copia políticas.
+    Solo <strong>PA</strong> y <strong>ED</strong> editan. Guarde el borrador; <strong>Siguiente</strong> va al paso 5.
+</p>

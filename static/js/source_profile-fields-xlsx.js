@@ -281,7 +281,7 @@
         if (nextUrl) {
             setStatus("Guardando…", false);
         }
-        return persist({ config: config }).then(function () {
+        return persist({ config: config, fields: fields }).then(function () {
             if (nextUrl) {
                 window.location.href = nextUrl;
             }

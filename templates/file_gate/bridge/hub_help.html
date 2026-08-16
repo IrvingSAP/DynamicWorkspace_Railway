@@ -8,6 +8,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_run.css' %}">
 <link rel="stylesheet" href="{% static 'css/file_gate_bridge.css' %}">
 {% endblock %}
 
@@ -29,47 +30,32 @@
 <div class="page-header">
     <div>
         <p class="page-eyebrow">FILE GATE · Módulo 6 · ayuda</p>
-        <h2>Cómo funciona el bridge FilePipe</h2>
-        <p>El bridge es un <strong>pre-check</strong>: FilePipe no transforma hasta que exista una corrida FILE GATE <strong>aceptada</strong> del mismo archivo (mismo content hash). FILE GATE no genera destino de negocio.</p>
+        <h2>Detalle del pre-check</h2>
+        <p>El hub ya resume qué es el bridge. Esta guía cubre emisores, hash, bloqueos, permisos y el significado de cada campo de la tarjeta.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'file_gate:bridge_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al bridge</a>
+        <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}" class="btn btn-primary">Validar archivo</a>
     </div>
 </div>
 
 <div class="panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué es esta pantalla</h3>
-        <ul class="hint">
-            <li>Muestra los proyectos <strong>FilePipe / DMS</strong> de la misma compañía que apuntan a este gate.</li>
-            <li>Desde aquí solo se <strong>consulta</strong> el vínculo. El flag «Exigir FILE GATE» se activa en el lado DMS.</li>
-            <li>Si no hay vínculos, verá el estado vacío hasta que un PA/ED de FilePipe configure la integración.</li>
-        </ul>
+        <h3 class="form-section-title">Qué no repetimos</h3>
+        <p class="hint">En el hub ya está: candado por hash, que aquí no se configura el interruptor, qué estados abren el paso, el flujo en tres pasos y que el vacío no es un error. Siga aquí si un emisor <strong>bloquea</strong> o si necesita interpretar una tarjeta de vínculo.</p>
     </div>
 </div>
 
 <div class="panel" style="margin-top:16px">
     <div class="panel-body">
-        <h3 class="form-section-title">Flujo resumido</h3>
-        <ol class="hint">
-            <li>En FilePipe se activa «Exigir validación FILE GATE» y se elige este proyecto.</li>
-            <li>El operador valida el archivo aquí (Módulo 3) y obtiene un resultado aceptado.</li>
-            <li>Al subir el <strong>mismo archivo</strong> en FilePipe, el sistema busca una corrida con el mismo hash.</li>
-            <li>Si el gate está en verde (y fresco), FilePipe puede transformar; si no, queda bloqueado con enlaces a validar.</li>
-        </ol>
-    </div>
-</div>
-
-<div class="panel" style="margin-top:16px">
-    <div class="panel-body">
-        <h3 class="form-section-title">Matching por content hash</h3>
+        <h3 class="form-section-title">Emisores que pueden apuntar a este gate</h3>
+        <p class="hint">Un mismo FILE GATE puede recibir varios emisores de la <strong>misma compañía</strong>. Cada emisor apunta a <strong>un</strong> gate. Los contratos no se fusionan.</p>
         <table class="issue-table">
-            <thead><tr><th>Regla</th><th>Detalle</th></tr></thead>
+            <thead><tr><th>Emisor</th><th>Qué exige el pre-check</th><th>Dónde se activa</th></tr></thead>
             <tbody>
-                <tr><td>Clave de empareje</td><td><code>content_hash</code> (SHA-256) del archivo de entrada.</td></tr>
-                <tr><td>Qué no cuenta</td><td>El nombre del archivo ni la ruta. Dos archivos con el mismo contenido comparten hash.</td></tr>
-                <tr><td>Origen del hash</td><td>Se calcula al validar en FILE GATE y al subir en FilePipe (intake DMS).</td></tr>
-                <tr><td>Si no hay job con ese hash</td><td>FilePipe bloquea: hay que validar primero en este proyecto.</td></tr>
+                <tr><td>FilePipe</td><td>Validar el archivo de entrada antes de <strong>transformar</strong>.</td><td>Ajustes DMS · Integración FILE GATE</td></tr>
+                <tr><td>Reverse Studio</td><td>Validar la planilla antes de <strong>generar</strong>.</td><td>Ajustes Reverse</td></tr>
+                <tr><td>FILE MATCH</td><td>Validar lado A y/o B antes de <strong>conciliar</strong> (se puede exigir uno o ambos).</td><td>Ajustes Match</td></tr>
             </tbody>
         </table>
     </div>
@@ -77,31 +63,51 @@
 
 <div class="panel" style="margin-top:16px">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué estados acepta FilePipe</h3>
+        <h3 class="form-section-title">Matching por hash (casos reales)</h3>
         <table class="issue-table">
-            <thead><tr><th>Política «Acepta»</th><th>Permite transformar</th></tr></thead>
+            <thead><tr><th>Situación</th><th>Resultado</th></tr></thead>
             <tbody>
-                <tr><td>solo <code>passed</code></td><td>Únicamente gate limpio, sin errores.</td></tr>
-                <tr><td><code>passed</code> + warnings</td><td>También <code>passed_with_warnings</code> (dentro del umbral).</td></tr>
-                <tr><td>Nunca</td><td><code>failed</code>, <code>partial</code> o error técnico. No abren el paso.</td></tr>
+                <tr><td>Mismo contenido, otro nombre o ruta</td><td>Mismo hash → el pre-check puede pasar.</td></tr>
+                <tr><td>Edita una celda y vuelve a subir</td><td>Hash distinto → hay que <strong>volver a validar</strong> en este proyecto.</td></tr>
+                <tr><td>Valida en FILE GATE pero sube otro archivo al emisor</td><td>No hay corrida con ese hash → bloqueo.</td></tr>
+                <tr><td>Contrato no publicado</td><td>El vínculo se puede crear; el pre-check falla hasta que publique esquema y políticas.</td></tr>
+                <tr><td>Tipo de archivo del contrato ≠ origen del emisor</td><td>Aviso en ajustes del emisor; no impide vincular, pero suele indicar un gate equivocado.</td></tr>
             </tbody>
         </table>
-        <p class="hint" style="margin-top:12px"><strong>Frescura:</strong> la corrida debe estar dentro de la ventana configurada (p. ej. 7 días). Un passed antiguo fuera de ventana también bloquea.</p>
+        <p class="hint" style="margin-top:12px">El pre-check <strong>no vuelve a validar</strong> el archivo: reutiliza la corrida ya persistida (mismo espíritu que el historial). El hash se calcula al validar aquí y al subir en el emisor.</p>
     </div>
 </div>
 
 <div class="panel" style="margin-top:16px">
     <div class="panel-body">
-        <h3 class="form-section-title">Tarjeta de vínculo (cuando hay DMS)</h3>
+        <h3 class="form-section-title">Por qué bloquea el emisor</h3>
+        <table class="issue-table">
+            <thead><tr><th>Mensaje típico</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>No hay corrida aceptada con el mismo contenido</td><td>Valide <strong>ese</strong> archivo aquí y reintente en el emisor.</td></tr>
+                <tr><td>La última validación no está aceptada</td><td>Corrija el archivo o revise la evidencia. <code>failed</code> / parcial no abren el paso.</td></tr>
+                <tr><td>Expiró por frescura</td><td>Vuelva a validar. Un aprobado antiguo fuera de la ventana (p. ej. 7 días) también bloquea. La frescura la define el emisor; no es lo mismo que el TTL de descarga del informe.</td></tr>
+                <tr><td>El proyecto FILE GATE no tiene contrato publicado</td><td>Publique esquema y políticas, luego reintente.</td></tr>
+                <tr><td>Integración mal configurada</td><td>En el emisor, revise que el proyecto gate exista y el flag esté bien guardado.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px">Si el pre-check está activo, <strong>nadie puede saltarlo</strong> (ni el PA). Desactivar el flag solo se hace en ajustes del emisor, no desde esta ayuda.</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Campos de la tarjeta de vínculo</h3>
         <table class="issue-table">
             <thead><tr><th>Campo</th><th>Significado</th></tr></thead>
             <tbody>
-                <tr><td>Slug / nombre</td><td>Proyecto FilePipe vinculado.</td></tr>
-                <tr><td><span class="status-pill is-on">activo</span> / <span class="status-pill is-off">inactivo</span></td><td>Si el flag de pre-check está encendido en ese DMS.</td></tr>
-                <tr><td>Acepta</td><td>Política de estados que desbloquean la transformación.</td></tr>
-                <tr><td>Frescura</td><td>Máxima antigüedad del job gate (días).</td></tr>
-                <tr><td>Vinculado</td><td>Cuándo (y quién) configuró el vínculo.</td></tr>
-                <tr><td>Último check</td><td>Resultado del último pre-check registrado desde FilePipe.</td></tr>
+                <tr><td>Slug / nombre · producto</td><td>Proyecto emisor (FilePipe, Reverse o Match) que apunta a <code>{{ project.slug }}</code>.</td></tr>
+                <tr><td><span class="status-pill is-on">pre-check activo</span></td><td>El emisor exige gate en verde antes de continuar.</td></tr>
+                <tr><td><span class="status-pill is-off">vínculo inactivo</span></td><td>El proyecto sigue apuntando aquí, pero el interruptor está apagado: el emisor corre sin pre-check.</td></tr>
+                <tr><td>Acepta</td><td>Solo aprobado limpio, o también aprobado con advertencias (según el umbral del contrato).</td></tr>
+                <tr><td>Frescura</td><td>Antigüedad máxima de la corrida, en días, desde que terminó la validación.</td></tr>
+                <tr><td>Vinculado</td><td>Cuándo y quién guardó el vínculo en el emisor.</td></tr>
+                <tr><td>Último check</td><td>Estado del último pre-check registrado. «Aún no se ejecutó» es normal si nadie ha corrido el emisor con el flag activo.</td></tr>
             </tbody>
         </table>
     </div>
@@ -109,14 +115,15 @@
 
 <div class="panel" style="margin-top:16px">
     <div class="panel-body">
-        <h3 class="form-section-title">Botones y acciones</h3>
+        <h3 class="form-section-title">Botones de esta pantalla</h3>
         <table class="issue-table">
             <thead><tr><th>Control</th><th>Acción</th></tr></thead>
             <tbody>
-                <tr><td><strong>Ayuda</strong></td><td>Abre esta guía.</td></tr>
-                <tr><td><strong>Validar</strong></td><td>Va al hub de validación de este proyecto FILE GATE (para generar un job aceptado).</td></tr>
-                <tr><td><strong>Abrir Ejecutar</strong></td><td>Deep-link al Ejecutar del proyecto DMS vinculado.</td></tr>
-                <tr><td><strong>Ajustes DMS</strong></td><td>Abre la configuración de integración FILE GATE en FilePipe (donde se activa el flag).</td></tr>
+                <tr><td><strong>← Proyecto</strong></td><td>Vuelve al hub del ciclo FILE GATE.</td></tr>
+                <tr><td><strong>Validar archivo</strong></td><td>Genera (o reutiliza) una corrida aceptada con el hash que el emisor va a exigir.</td></tr>
+                <tr><td><strong>Ayuda</strong> (encabezado)</td><td>Abre esta guía: emisores, bloqueos, hash y permisos. No hace falta un segundo botón en el vacío: el hub ya explica el flujo.</td></tr>
+                <tr><td><strong>Abrir Ejecutar / Generar / Conciliar</strong></td><td>Entra al flujo del emisor vinculado (solo si ya hay tarjeta).</td></tr>
+                <tr><td><strong>Ajustes DMS / Reverse / Match</strong></td><td>Donde PA/ED del emisor activan o cambian el flag. Requiere membresía en ese proyecto.</td></tr>
             </tbody>
         </table>
     </div>
@@ -124,25 +131,17 @@
 
 <div class="panel" style="margin-top:16px">
     <div class="panel-body">
-        <h3 class="form-section-title">Quién configura y permisos</h3>
-        <ul class="hint">
-            <li>Solo <code>PA</code> / <code>ED</code> del proyecto <strong>DMS</strong> activan o cambian el flag y el proyecto gate.</li>
-            <li>Desde FILE GATE, los miembros del proyecto (y consulta CO según permisos) ven el vínculo.</li>
-            <li>En el MVP <strong>nadie puede saltar</strong> el pre-check si está activo (ni el PA de FilePipe).</li>
-            <li>Ambos proyectos deben pertenecer a la <strong>misma compañía</strong>.</li>
-        </ul>
-    </div>
-</div>
-
-<div class="panel" style="margin-top:16px">
-    <div class="panel-body">
-        <h3 class="form-section-title">Prerrequisitos habituales</h3>
-        <ul class="hint">
-            <li>Contrato FILE GATE <strong>publicado</strong> (esquema + políticas).</li>
-            <li>Al menos una validación finalizada con el hash del archivo que se transformará.</li>
-            <li>Estado del gate dentro de la política de aceptación y de la ventana de frescura.</li>
-        </ul>
-        <p class="hint" style="margin-top:12px">Si FilePipe bloquea, valide aquí el mismo archivo, espere un resultado aceptado y reintente Ejecutar en DMS.</p>
+        <h3 class="form-section-title">Permisos</h3>
+        <table class="issue-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver el hub Bridge en FILE GATE</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí (solo lectura)</td></tr>
+                <tr><td>Configurar el flag en el emisor</td><td>Sí*</td><td>Sí*</td><td>No</td><td>No</td></tr>
+                <tr><td>Ejecutar el emisor con bridge activo</td><td>Sí†</td><td>Sí†</td><td>Sí†</td><td>No</td></tr>
+                <tr><td>Saltar el pre-check</td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px">* En el proyecto <strong>emisor</strong>, no en FILE GATE. † Solo si el pre-check pasa. Configurar no equivale a bypassear.</p>
     </div>
 </div>
 {% endblock %}

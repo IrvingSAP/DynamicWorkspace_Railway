@@ -33,7 +33,9 @@
         <div class="page-actions">
             {% url 'file_gate:schema_step4_help' project_slug=project.slug as source_help_url %}
             {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+            {% include "file_gate/schema/_step4_import_cta.html" %}
             <button type="button" id="btn-add-field" class="btn btn-primary">+ Agregar campo</button>
+            <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
         </div>
     </div>
 

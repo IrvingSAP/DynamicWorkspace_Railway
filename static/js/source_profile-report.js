@@ -164,6 +164,41 @@
         previewEl.textContent = JSON.stringify(buildSampleOutput(config), null, 2);
     }
 
+    function flattenErrorDetail(err) {
+        const message = (err && err.message) || "No se pudo guardar.";
+        const errors = err && err.errors;
+        if (!errors || typeof errors !== "object") {
+            return message;
+        }
+        const parts = [];
+        Object.keys(errors).forEach(function (key) {
+            const value = errors[key];
+            if (Array.isArray(value)) {
+                value.forEach(function (item) {
+                    if (item) {
+                        parts.push(String(item));
+                    }
+                });
+            } else if (value) {
+                parts.push(String(value));
+            }
+        });
+        if (!parts.length) {
+            return message;
+        }
+        return message + " " + parts.join(" ");
+    }
+
+    function notifyUser(tags, text) {
+        if (window.dmsSourceProfile && typeof window.dmsSourceProfile.showUserMessage === "function") {
+            window.dmsSourceProfile.showUserMessage(tags, text);
+            return;
+        }
+        if (typeof window.dwShowMessage === "function") {
+            window.dwShowMessage(tags, text);
+        }
+    }
+
     function saveConfig(showMessage, strict, nextUrl) {
         const data = readForm();
         const goNext = function () {
@@ -178,6 +213,8 @@
         }
         if (nextUrl) {
             setStatus("Guardando…", false);
+        } else if (strict) {
+            setStatus("Validando el contrato…", false);
         }
         return window.dmsSourceProfile.save(
             { processing_report: data },
@@ -185,18 +222,19 @@
         ).then(function (result) {
             updatePreview();
             if (showMessage && !nextUrl) {
-                setStatus(result.message || "Borrador guardado en el servidor.", false);
+                const saved = result.message || "Contrato de validación guardado correctamente.";
+                const okText = strict
+                    ? saved + " Validación estricta superada. Aún no está publicado."
+                    : saved;
+                setStatus(okText, false);
+                notifyUser("success", okText);
             }
             goNext();
             return result;
         }).catch(function (err) {
-            const message = err.message || "No se pudo guardar.";
+            const message = flattenErrorDetail(err);
             setStatus(message, true);
-            if (window.dmsSourceProfile && typeof window.dmsSourceProfile.showUserMessage === "function") {
-                window.dmsSourceProfile.showUserMessage("error", message);
-            } else if (typeof window.dwShowMessage === "function") {
-                window.dwShowMessage("error", message);
-            }
+            notifyUser("error", message);
             throw err;
         });
     }
@@ -232,8 +270,11 @@
     if (btnSaveProfile) {
         btnSaveProfile.addEventListener("click", function (e) {
             e.preventDefault();
+            btnSaveProfile.disabled = true;
             saveConfig(true, true).catch(function () {
                 /* mensaje ya mostrado */
+            }).then(function () {
+                btnSaveProfile.disabled = false;
             });
         });
     }
@@ -242,6 +283,17 @@
     if (btnPublish && window.dmsSourcePublish) {
         btnPublish.addEventListener("click", function (e) {
             e.preventDefault();
+            const blockedReason = (btnPublish.dataset.blockedReason || "").trim();
+            if (blockedReason || btnPublish.getAttribute("aria-disabled") === "true") {
+                const text = blockedReason || "Complete los 6 pasos del contrato antes de publicar.";
+                setStatus(text, true);
+                if (window.dmsSourceProfile && typeof window.dmsSourceProfile.showUserMessage === "function") {
+                    window.dmsSourceProfile.showUserMessage("warning", text);
+                } else if (typeof window.dwShowMessage === "function") {
+                    window.dwShowMessage("warning", text);
+                }
+                return;
+            }
             const next = btnPublish.dataset.next || "";
             const draftLabel = btnPublish.dataset.draftLabel || "el borrador actual";
             const message = (

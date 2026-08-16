@@ -1,0 +1,109 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos JSON — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}">Contrato</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:schema_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 1 · paso 4 · <span class="role-badge">json</span></p>
+        <h2>Ayuda — Campos JSON</h2>
+        <p>Indica dónde está la lista de registros y la ruta de cada valor a validar. Tipo: <code class="mono">{{ file_type_code|default:"json" }}</code>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:schema_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve esta pantalla</h3>
+        <p class="help-intro">
+            El archivo es un documento JSON. FILE GATE recorre un <strong>arreglo de registros</strong>
+            y, en cada uno, lee propiedades por ruta con puntos. Cada ruta es un criterio de rechazo,
+            no un mapeo a otro JSON.
+        </p>
+
+        <h3 class="form-section-title">Parámetros JSON</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo en pantalla</th><th>Efecto en la validación</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Ruta de registros<br><code class="mono">record_path</code></td>
+                    <td>
+                        Camino hasta el array (u objeto repetido) que representa cada fila.
+                        Ejemplos: <code class="mono">empleados</code>, <code class="mono">data.items</code>.
+                        Cada elemento de esa lista se valida por separado.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Guarde con <strong>Guardar parámetros</strong> tras fijar la ruta de registros.</p>
+
+        <h3 class="form-section-title">Editor de cada campo</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo en pantalla</th><th>Efecto en la validación</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Nombre interno</td>
+                    <td>Identificador del criterio en el informe (puede diferir de la clave JSON).</td>
+                </tr>
+                <tr>
+                    <td><code class="mono">json_path</code></td>
+                    <td>
+                        Ruta relativa <em>dentro de cada registro</em> (notación con puntos).
+                        Si el registro es <code class="mono">{"documento":"A1","persona":{"edad":19}}</code>,
+                        use <code class="mono">documento</code> o <code class="mono">persona.edad</code>.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Tipo contenido</td>
+                    <td>Forma esperada del valor en esa ruta.</td>
+                </tr>
+                <tr>
+                    <td>Campo obligatorio</td>
+                    <td>Clave ausente o vacía → rechazo.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Ejemplo</h3>
+        <pre class="mono" style="padding:10px;background:var(--canvas);border-radius:8px;overflow:auto">{
+  "empleados": [
+    { "documento": "A1", "persona": { "edad": 19 } }
+  ]
+}</pre>
+        <ul class="help-list">
+            <li><code class="mono">record_path</code> = <code class="mono">empleados</code></li>
+            <li>Campo <code class="mono">documento</code> → <code class="mono">json_path</code> <code class="mono">documento</code></li>
+            <li>Campo <code class="mono">edad</code> → <code class="mono">json_path</code> <code class="mono">persona.edad</code>, tipo numérico</li>
+        </ul>
+        <p class="help-intro">Una ruta incorrecta deja el valor vacío y dispara obligatorio o tipo.</p>
+
+        {% include "file_gate/schema/_step4_help_criteria.html" %}
+    </div>
+</div>
+{% endblock %}

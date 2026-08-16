@@ -26,11 +26,19 @@ MSG_NO_SOURCES_GATE = (
     "No hay orígenes FILE GATE publicados visibles. "
     "Publique un esquema en FILE GATE o pida acceso a un proyecto GATE."
 )
+MSG_NO_SOURCES_GATE_OTHER = (
+    "No hay otros proyectos FILE GATE publicados visibles. "
+    "Publique un esquema en otro proyecto FILE GATE o pida acceso."
+)
 MSG_NO_SOURCES_CLEAN = (
     "No hay orígenes FILE CLEAN publicados visibles. "
     "Publique un perfil en FILE CLEAN o pida acceso a un proyecto Clean."
 )
 MSG_NO_SOURCES_DMS = (
+    "No hay orígenes FilePipe publicados visibles. "
+    "Publique una definición de origen en FilePipe o pida acceso."
+)
+MSG_NO_SOURCES_DMS_OTHER = (
     "No hay otros proyectos FilePipe publicados visibles. "
     "Publique un origen en otro proyecto FilePipe o pida acceso."
 )
@@ -107,6 +115,16 @@ SOURCE_KIND_CHOICES_DMS = (
     (SOURCE_KIND_SPLIT_MERGE, "FILE SPLIT/MERGE — Perfil de lectura"),
     (SOURCE_KIND_SCOUT, "STRUCTURE SCOUT — Borrador"),
 )
+SOURCE_KIND_CHOICES_GATE = (
+    (SOURCE_KIND_FILE_GATE, "FILE GATE — Otro esquema"),
+    (SOURCE_KIND_FILE_CLEAN, "FILE CLEAN — Perfil de lectura"),
+    (SOURCE_KIND_DMS, "FilePipe — Origen"),
+    (SOURCE_KIND_FILE_MATCH, "FILE MATCH — Perfil A"),
+    (SOURCE_KIND_FILE_MATCH_B, "FILE MATCH — Perfil B"),
+    (SOURCE_KIND_REVERSE, "Reverse Studio — Entrada"),
+    (SOURCE_KIND_SPLIT_MERGE, "FILE SPLIT/MERGE — Perfil de lectura"),
+    (SOURCE_KIND_SCOUT, "STRUCTURE SCOUT — Borrador"),
+)
 # Alias histórico P0 Match
 SOURCE_KIND_CHOICES_P0 = SOURCE_KIND_CHOICES_MATCH
 
@@ -115,6 +133,7 @@ SUPPORTED_TARGET_KINDS = frozenset(
         Project.KIND_FILE_MATCH,
         Project.KIND_FILE_SPLIT_MERGE,
         Project.KIND_DMS,
+        Project.KIND_FILE_GATE,
     }
 )
 
@@ -159,6 +178,13 @@ def _target_slot_meta(
             TARGET_SLOT_LABEL_READ_PROFILE,
             "Solo borrador del perfil de lectura — publicar Split/Merge es un módulo posterior",
         )
+    if target_project.project_kind == Project.KIND_FILE_GATE:
+        return (
+            "FILE GATE",
+            SOURCE_SLOT_SCHEMA,
+            SOURCE_SLOT_LABEL_SCHEMA,
+            "Solo borrador del contrato de validación — publicar FILE GATE es un paso aparte",
+        )
     if target_project.project_kind == Project.KIND_DMS and slot == TARGET_SLOT_TARGET:
         return (
             "FilePipe (Data Mapping)",
@@ -186,6 +212,27 @@ def get_seed_host(
 ) -> dict:
     """URL names / labels so shared templates/profile_seed work on any host app."""
     slug_kw = {"project_slug": target_project.slug}
+    if target_project.project_kind == Project.KIND_FILE_GATE:
+        return {
+            "app_label": "FILE GATE",
+            "app_list_url_name": "file_gate:project_list",
+            "project_hub_url_name": "file_gate:project_hub",
+            "profile_hub_url_name": "file_gate:schema_hub",
+            "profile_hub_label": "Contrato",
+            "scope_include": "file_gate/schema/_project_scope.html",
+            "seed_hub_url_name": "file_gate:schema_seed_hub",
+            "seed_hub_help_url_name": "file_gate:schema_seed_hub_help",
+            "seed_picker_url_name": "file_gate:schema_seed_picker",
+            "seed_picker_help_url_name": "file_gate:schema_seed_picker_help",
+            "seed_apply_url_name": "file_gate:schema_seed_apply",
+            "seed_apply_help_url_name": "file_gate:schema_seed_apply_help",
+            "seed_history_url_name": "file_gate:schema_seed_history",
+            "seed_history_help_url_name": "file_gate:schema_seed_history_help",
+            "seed_history_detail_url_name": "file_gate:schema_seed_history_detail",
+            "nav_active": "file_gate",
+            "nav_open_flag": "file_gate_nav_open",
+            **slug_kw,
+        }
     if target_project.project_kind == Project.KIND_FILE_SPLIT_MERGE:
         return {
             "app_label": "File Split/Merge",
@@ -307,6 +354,8 @@ def get_split_merge_seed_context(user, target_project: Project) -> dict:
 def _source_kind_choices_for(target_project: Project) -> tuple:
     if target_project.project_kind == Project.KIND_DMS:
         return SOURCE_KIND_CHOICES_DMS
+    if target_project.project_kind == Project.KIND_FILE_GATE:
+        return SOURCE_KIND_CHOICES_GATE
     if target_project.project_kind == Project.KIND_FILE_SPLIT_MERGE:
         return SOURCE_KIND_CHOICES_SPLIT_MERGE
     return SOURCE_KIND_CHOICES_MATCH
@@ -508,9 +557,11 @@ def list_eligible_sources(
     )
 
     if source_kind == SOURCE_KIND_FILE_GATE:
+        qs = gate_project_service.visible_projects_qs(user)
+        if target_project.project_kind == Project.KIND_FILE_GATE:
+            qs = qs.exclude(pk=target_project.pk)
         qs = (
-            gate_project_service.visible_projects_qs(user)
-            .filter(**published_filter)
+            qs.filter(**published_filter)
             .select_related(*select_related)
             .order_by("slug")
         )
@@ -708,6 +759,17 @@ def get_source_picker_context(
             "Misma compañía · visibles para usted. "
             "No se lista este mismo proyecto FilePipe."
         )
+    elif target_project.project_kind == Project.KIND_FILE_GATE:
+        picker_hint = (
+            "Otro FILE GATE (no este proyecto), FILE CLEAN (perfil de lectura publicado; "
+            "no clona reglas de limpieza), FilePipe (origen publicado; no clona destino ni mapeo), "
+            "FILE MATCH Perfil A o Perfil B (no clona reglas de cruce; A y B son slots distintos), "
+            "Reverse Studio (entrada publicada; no clona salida ni reglas de generación), "
+            "FILE SPLIT/MERGE (perfil de lectura publicado; no clona reglas de partición/fusión) "
+            "o STRUCTURE SCOUT (borrador actual; no es contrato publicado; distinto de Aplicar a destino en Explorador). "
+            "Misma compañía · visibles para usted. "
+            "No se lista este mismo proyecto FILE GATE. No clona políticas de gate."
+        )
     elif target_project.project_kind == Project.KIND_FILE_SPLIT_MERGE:
         picker_hint = (
             "FILE GATE (esquema) o FILE CLEAN (perfil) con versión publicada. "
@@ -729,7 +791,15 @@ def get_source_picker_context(
         "selected_source_id": selected["id"] if selected else None,
         "invalid_source": invalid_source,
         "has_sources": bool(sources),
-        "msg_no_sources": _msg_no_sources(kind),
+        "msg_no_sources": (
+            MSG_NO_SOURCES_GATE_OTHER
+            if kind == SOURCE_KIND_FILE_GATE
+            and target_project.project_kind == Project.KIND_FILE_GATE
+            else MSG_NO_SOURCES_DMS_OTHER
+            if kind == SOURCE_KIND_DMS
+            and target_project.project_kind == Project.KIND_DMS
+            else _msg_no_sources(kind)
+        ),
         "msg_kind_unsupported": MSG_KIND_UNSUPPORTED,
         "empty_origins_cta": empty_cta,
         "picker_hint": picker_hint,

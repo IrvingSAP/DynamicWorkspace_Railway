@@ -32,49 +32,98 @@
     {% elif bridge.is_company_viewer %}
     <span class="label">Rol</span><code>CO</code>
     {% endif %}
-    <span class="label">Kind</span><span>file_gate</span>
+    <span class="label">Esta pantalla</span><span>consulta el vínculo · no configura el emisor</span>
 </div>
 
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">FILE GATE · Módulo 6 · <span class="role-badge">dms_bridge</span></p>
-        <h2>Integración con emisores</h2>
-        <p>Los proyectos FilePipe o Reverse Studio de la misma compañía pueden exigir que este gate esté en verde (mismo hash) antes de transformar o generar. La configuración del flag vive en el emisor; aquí ve el vínculo.</p>
+        <p class="page-eyebrow">FILE GATE · Módulo 6 · Bridge</p>
+        <h2>Pre-check antes de FilePipe</h2>
+        <p>Los emisores (FilePipe, Reverse Studio o FILE MATCH) pueden exigir que este gate esté en verde <strong>antes</strong> de transformar, generar o conciliar. FILE GATE no genera el archivo de negocio: solo certifica el contenido.</p>
     </div>
     <div class="page-actions">
         {% url 'file_gate:bridge_hub_help' project_slug=project.slug as bridge_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=bridge_help_url %}
-        <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}" class="btn btn-secondary">Validar</a>
+        <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}" class="btn btn-primary">Validar archivo</a>
     </div>
 </div>
 
+<div class="bridge-context" aria-label="Qué es esta pantalla">
+    <article>
+        <p class="bridge-context-kicker">Qué es</p>
+        <h3>Un candado por contenido</h3>
+        <p>El emisor busca una corrida <strong>aceptada</strong> de este proyecto con el <strong>mismo hash</strong> (SHA-256) del archivo. El nombre del fichero no cuenta.</p>
+    </article>
+    <article>
+        <p class="bridge-context-kicker">Qué no es</p>
+        <h3>No se configura aquí</h3>
+        <p>El interruptor «Exigir FILE GATE» vive en el proyecto emisor. Desde esta pantalla solo ve quién apunta a este gate y con qué reglas.</p>
+    </article>
+    <article>
+        <p class="bridge-context-kicker">Qué desbloquea</p>
+        <h3>Passed (y avisos, si se permite)</h3>
+        <p>Nunca abre el paso un <code>failed</code>, un parcial o un error técnico. Además, la corrida debe estar dentro de la ventana de frescura (p. ej. 7 días).</p>
+    </article>
+</div>
+
+<ol class="bridge-flow" aria-label="Cómo se usa el bridge">
+    <li>
+        <span class="bridge-flow-n">1</span>
+        <div>
+            <strong>Validar aquí</strong>
+            <span>Suba el archivo en Validar y obtenga un resultado aceptado.</span>
+        </div>
+    </li>
+    <li>
+        <span class="bridge-flow-n">2</span>
+        <div>
+            <strong>Activar en el emisor</strong>
+            <span>En FilePipe / Reverse / Match: «Exigir FILE GATE» y elegir este proyecto.</span>
+        </div>
+    </li>
+    <li>
+        <span class="bridge-flow-n">3</span>
+        <div>
+            <strong>Mismo archivo, luego emitir</strong>
+            <span>Al subir el mismo contenido, el emisor pasa o queda bloqueado con enlace a validar.</span>
+        </div>
+    </li>
+</ol>
+
 {% if not bridge.has_links %}
 <div class="empty-bridge">
-    <h3>Sin proyectos emisores vinculados</h3>
-    <p>El flag «Exigir FILE GATE» se activa desde un proyecto FilePipe o Reverse Studio de la misma compañía. Cuando alguien lo configure, el vínculo aparecerá aquí.</p>
+    <p class="bridge-context-kicker">Estado</p>
+    <h3>Nadie exige este gate todavía</h3>
+    <p>No es un error. El vínculo aparece cuando un PA o ED de un proyecto FilePipe, Reverse Studio o FILE MATCH de <strong>esta compañía</strong> activa «Exigir FILE GATE» y elige <code>{{ project.slug }}</code>.</p>
+    <p class="empty-bridge-hint">Mientras tanto puede publicar el contrato y validar archivos aquí; esas corridas servirán de evidencia cuando el emisor se vincule.</p>
+    <div class="page-actions" style="justify-content:center;margin:0">
+        <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a Validar</a>
+    </div>
 </div>
 {% else %}
+<p class="bridge-links-heading">Proyectos que apuntan a este gate</p>
 <div class="bridge-grid">
     {% for link in bridge.links %}
     <article class="bridge-card">
         <h3>
             {{ link.dms_slug }}
             {% if link.enabled %}
-            <span class="status-pill is-on">activo</span>
+            <span class="status-pill is-on">pre-check activo</span>
             {% else %}
-            <span class="status-pill is-off">inactivo</span>
+            <span class="status-pill is-off">vínculo inactivo</span>
             {% endif %}
         </h3>
         <p>{{ link.dms_name }} · {{ link.product_label|default:"FilePipe" }}</p>
         <dl>
             <dt>Acepta</dt>
-            <dd>{% if link.accept == "passed" %}solo passed{% else %}passed + warnings{% endif %}</dd>
+            <dd>{% if link.accept == "passed" %}solo aprobado limpio{% else %}aprobado y con advertencias{% endif %}</dd>
             <dt>Frescura</dt>
-            <dd>{{ link.max_age_days }} días</dd>
+            <dd>{{ link.max_age_days }} días desde la validación</dd>
             <dt>Vinculado</dt>
             <dd>{% if link.linked_at %}{{ link.linked_at|date:"d M Y" }}{% if link.linked_by %} · {{ link.linked_by }}{% endif %}{% else %}—{% endif %}</dd>
             <dt>Último check</dt>
-            <dd>{{ link.last_status|default:"—" }}</dd>
+            <dd>{% if link.last_status %}{{ link.last_status }}{% else %}aún no se ejecutó un pre-check{% endif %}</dd>
         </dl>
         <div class="page-actions" style="margin:0">
             <a class="btn btn-secondary" href="{{ link.execute_url }}">{{ link.open_label|default:"Abrir Ejecutar" }}</a>

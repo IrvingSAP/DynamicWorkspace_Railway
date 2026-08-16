@@ -1,0 +1,8 @@
+{# CTA Importar estructura (Profile Seed) — paso 4 campos FILE GATE #}
+{% if can_seed_import %}
+<a href="{% url 'file_gate:schema_seed_hub' project_slug=project.slug %}"
+   class="btn btn-secondary"
+   title="Importar perfil publicado o borrador Scout al contrato FILE GATE">
+    Importar estructura
+</a>
+{% endif %}

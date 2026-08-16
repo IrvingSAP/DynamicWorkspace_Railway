@@ -51,27 +51,9 @@
     <div class="page-actions">
         {% url 'file_gate:project_hub_help' project_slug=project.slug as gate_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=gate_help_url %}
-        {% if can_edit_definition %}
-        <button type="button"
-                class="btn btn-primary"
-                data-action="publish-version"
-                data-draft-label="borrador v{{ version_publish.draft_version_number }}"
-                data-next="{% url 'file_gate:project_hub' project_slug=project.slug %}"
-                data-status-target="hub-publish-status"
-                {% if not hub.can_publish %}disabled title="Complete el contrato (6 pasos) y las políticas antes de publicar"{% endif %}>
-            Publicar contrato v{{ version_publish.draft_version_number }}
-        </button>
-        {% endif %}
         <a href="{% url 'file_gate:project_list' %}" class="btn btn-secondary">← Proyectos</a>
     </div>
 </div>
-
-<p id="hub-publish-status" class="step-save-status" aria-live="polite"></p>
-
-<div id="dms-source-publish-config"
-     data-publish-url="{{ source_publish_url }}"
-     data-csrf-token="{{ csrf_token }}"
-     hidden></div>
 
 <div class="version-strip">
     <strong>Borrador:</strong> v{{ version_publish.draft_version_number }}
@@ -130,7 +112,7 @@
         <ol class="lifecycle-steps">
             <li>
                 <a href="{% url 'file_gate:bridge_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.bridge_step_class }}">
-                    <span class="lifecycle-step-num">6</span> Bridge FilePipe
+                    <span class="lifecycle-step-num">{% if hub.bridge_complete %}✓{% else %}6{% endif %}</span> Bridge FilePipe
                 </a>
             </li>
         </ol>
@@ -161,7 +143,7 @@
             {% if hub.has_published_schema %}
             Hay una versión publicada lista para el motor de validación (módulo posterior).
             {% else %}
-            Publique el contrato cuando el esquema y las políticas estén listos.
+            Publique el contrato desde el hub del esquema cuando el contrato y las políticas estén listos.
             {% endif %}
         </p>
         <div class="page-actions" style="margin-top:12px">
@@ -200,8 +182,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'js/source_profile-publish.js' %}"></script>
 {% endblock %}

@@ -89,7 +89,7 @@ Usuario confirma · ajusta · publica en la app destino
 | Chasis — `Project` + `ProjectMembership` | Origen y destino filtrados por compañía + acceso |
 | DMS — `DmsSourceProfile` / versión publicada | **Origen** del snapshot |
 | DMS — `source_persistence_service.save_source` | **Escritura** del borrador destino (mismo patrón que Scout apply) |
-| FILE GATE | Origen P0 (esquema publicado) o destino (sembrar contrato) |
+| FILE GATE | Destino: contrato (mismo combo que FilePipe); origen: esquema publicado |
 | FILE MATCH | Destino P0 (Perfil A); también B / origen |
 | Reverse Studio | Destino: contrato de **entrada**; origen: entrada publicada |
 | FilePipe | Origen/destino: SourceProfile del origen (Fase 2+ si no entra MVP) |
@@ -130,9 +130,9 @@ Escenarios típicos:
 |----------|------|
 | GATE publicado → Match Perfil A | **P0** |
 | GATE / CLEAN publicados → File Split/Merge (perfil lectura) | **Implementado** (host SM) |
-| GATE / CLEAN / otro FilePipe / Match A+B / Reverse / Split-Merge → FilePipe origen | **Implementado** (host DMS `/origen/importar/`) |
-| GATE / CLEAN / otro FilePipe / Match A+B / Reverse / Split-Merge → FilePipe destino | **Implementado** (host DMS `/destino/importar/`) |
-| Más orígenes → FilePipe (Scout) | **Pendiente (evaluar)** — tablero en [`definition_app_DMS/source_definition.md`](definition_app_DMS/source_definition.md) § Importar estructura |
+| GATE / CLEAN / otro FilePipe / Match A+B / Reverse / Split-Merge / Scout → FilePipe origen | **Implementado** (host DMS `/origen/importar/`) |
+| GATE / CLEAN / otro FilePipe / Match A+B / Reverse / Split-Merge / Scout → FilePipe destino | **Implementado** (host DMS `/destino/importar/`) |
+| Otro GATE / CLEAN / FilePipe / Match A+B / Reverse / Split-Merge / Scout → FILE GATE | **Implementado** (host GATE `/esquema/importar/`; no clona políticas) |
 | GATE → Match Perfil B | P1 |
 | GATE → Reverse entrada | P2 |
 | Match A ↔ Match B / otro Match | P3 — **parcial:** A→B mismo proyecto en hub Perfil B |
@@ -160,13 +160,13 @@ Escenarios típicos:
 
 | Vertical | Relación |
 |----------|----------|
-| **FILE GATE** | Origen típico (esquema publicado) o destino (sembrar contrato) |
-| **FILE CLEAN** | Origen (perfil de lectura publicado) → Split/Merge u otros hosts |
-| **FILE MATCH** | Destino prioritario (Perfil A/B); origen posible (Fase 2 hacia SM) |
-| **FILE SPLIT/MERGE** | Destino (perfil de lectura); orígenes P0: Gate + Clean |
-| **Reverse Studio** | Destino: contrato de entrada; origen: entrada publicada |
-| **FilePipe** | Destino: definición de origen o destino. Combo: GATE, CLEAN, otro FilePipe, Match A/B, Reverse entrada, Split/Merge, Scout (borrador). |
-| **STRUCTURE SCOUT** | Origen FilePipe = `StructureDraft` current. «Aplicar a destino» en Scout sigue siendo Scout → GATE/Reverse. |
+| **FILE GATE** | Destino: contrato (esquema). Combo igual que FilePipe. No clona políticas. También origen típico. |
+| **FILE CLEAN** | Origen: perfil de lectura **publicado** (tipo + campos). No clona `clean_rules`. Destino FILE GATE / FilePipe / Split-Merge. |
+| **FILE MATCH** | Origen hacia GATE: Perfil A (`file_match`) o Perfil B (`file_match_b`) **publicado**. No clona reglas de cruce. Destino Match P0 sigue siendo GATE→A. |
+| **FILE SPLIT/MERGE** | Origen hacia GATE: perfil de lectura **publicado**. No clona `sm_rules`. Destino SM sigue con combo Gate+Clean. |
+| **Reverse Studio** | Origen hacia GATE: contrato de **entrada publicada**. No clona layout de salida ni reglas de generación. |
+| **FilePipe** | Origen hacia GATE: `DmsSourceProfile` **publicado** (no TargetProfile ni mapeo). Destino FilePipe: combo completo. |
+| **STRUCTURE SCOUT** | Origen hacia GATE y FilePipe: `StructureDraft` **current** (`payload.source`). No es `DmsMappingVersion`. Distinto de Scout M6 «Aplicar a destino» (Scout → GATE/Reverse). |
 | **Bridge GATE** | Distinto (hash de job vs clone de estructura) |
 
 ```mermaid

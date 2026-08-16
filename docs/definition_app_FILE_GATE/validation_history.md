@@ -44,11 +44,12 @@ flowchart LR
 | Listado paginado de jobs del proyecto | Ejecutar / re-subir (M3) |
 | Filtros: estado, rango de fechas, usuario, archivo, versión | Editar contrato o política |
 | Columnas de auditoría (quién, cuándo, hash, métricas) | Diff entre jobs / versiones |
-| Badge TTL vigente / expirado | Borrado físico de jobs (Fase 2) |
-| Enlaces a resultado, informe, certificado | Export masivo CSV de historial (Fase 2) |
-| Vacío / sin resultados de filtro | Historial cross-proyecto / compañía |
-| Aislamiento por proyecto + compañía | API de auditoría (Fase 3) |
-| CO ve metadatos; sin detalle de filas | Re-ejecutar sin re-subir (Fase 2, como DMS) |
+| Badge TTL vigente / expirado | Export masivo CSV de historial (Fase 2) |
+| Enlaces a resultado, informe, certificado | Historial cross-proyecto / compañía |
+| Vacío / sin resultados de filtro | API de auditoría (Fase 3) |
+| Aislamiento por proyecto + compañía | Re-ejecutar sin re-subir (Fase 2, como DMS) |
+| Borrado de corridas propias (`executed_by`) | Borrado de corridas de otros usuarios |
+| CO ve metadatos; sin detalle de filas | |
 
 ---
 
@@ -134,7 +135,7 @@ Query string propuesta (GET, sin Django Forms):
 | Filtrar / paginar | Sí | Sí | Sí | Sí |
 | Abrir resultado / evidencia | Según M3/M4 | Según M3/M4 | Según M3/M4 | Resumen/certificado; sin issues |
 | Descargar JSON/CSV desde fila | Según M4 | Según M4 | Según M4 | No |
-| Eliminar job del historial | Fase 2 (PA) | No | No | No |
+| Eliminar job del historial | Sí, solo si `executed_by` es el usuario | Sí, solo propias | Sí, solo propias | Sí, solo propias |
 
 ---
 

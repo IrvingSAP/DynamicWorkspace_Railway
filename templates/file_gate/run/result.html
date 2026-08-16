@@ -144,7 +144,7 @@
     <a class="btn btn-secondary" href="{{ view.downloads.report }}">Descargar JSON</a>
     {% endif %}
     {% if view.downloads.errors %}
-    <a class="btn btn-secondary" href="{{ view.downloads.errors }}">Descargar CSV</a>
+    <a class="btn btn-secondary" href="{{ view.downloads.errors }}">{% if view.issues_count %}Descargar CSV de incidencias{% else %}CSV (sin incidencias){% endif %}</a>
     {% endif %}
 </div>
 {% endblock %}

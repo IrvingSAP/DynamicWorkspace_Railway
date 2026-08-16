@@ -1,0 +1,108 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos Excel — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}">Contrato</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:schema_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 1 · paso 4 · <span class="role-badge">xlsx</span></p>
+        <h2>Ayuda — Campos Excel (XLSX)</h2>
+        <p>Asocia cada criterio del contrato a una columna de la hoja. Tipo: <code class="mono">{{ file_type_code|default:"xlsx" }}</code>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:schema_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve esta pantalla</h3>
+        <p class="help-intro">
+            El archivo es un libro Excel. FILE GATE lee <strong>una hoja</strong> y valida celdas por columna
+            (letra o encabezado). No genera una hoja de salida: solo acepta o rechaza valores.
+        </p>
+
+        <h3 class="form-section-title">Parámetros de hoja</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo en pantalla</th><th>Efecto en la validación</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Nombre de hoja</td>
+                    <td>Nombre exacto de la pestaña (<code class="mono">Hoja1</code>, <code class="mono">Datos</code>). Si no coincide, no hay filas que validar.</td>
+                </tr>
+                <tr>
+                    <td>Fila de encabezados</td>
+                    <td>Fila (1-based) con títulos. Permite referenciar columnas por el texto del encabezado además de por letra.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Guarde con <strong>Guardar parámetros</strong> tras fijar hoja y encabezado.</p>
+
+        <h3 class="form-section-title">Editor de cada campo</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo en pantalla</th><th>Efecto en la validación</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Columna</td>
+                    <td>Letra Excel (<code class="mono">A</code>, <code class="mono">B</code>, <code class="mono">AA</code>) o el texto del encabezado en esa fila. De ahí se lee el valor a validar.</td>
+                </tr>
+                <tr>
+                    <td>Nombre interno</td>
+                    <td>Identificador del criterio en el informe.</td>
+                </tr>
+                <tr>
+                    <td>Tipo contenido</td>
+                    <td>Forma esperada de la celda. Fechas en texto necesitan formato.</td>
+                </tr>
+                <tr>
+                    <td>Campo obligatorio</td>
+                    <td>Celda vacía → rechazo.</td>
+                </tr>
+                <tr>
+                    <td>Formato fecha</td>
+                    <td>Visible si el tipo es fecha/datetime: cómo interpretar celdas de texto.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Ejemplo</h3>
+        <ul class="help-list">
+            <li>Hoja <code class="mono">Nominas</code>, encabezados en fila 1: <code class="mono">DOC</code>, <code class="mono">MONTO</code>.</li>
+            <li>Campo <code class="mono">documento</code> → columna <code class="mono">A</code> o encabezado <code class="mono">DOC</code>.</li>
+            <li>Campo <code class="mono">monto</code> → columna <code class="mono">B</code>, tipo decimal.</li>
+        </ul>
+
+        <h3 class="form-section-title">Relación con captura (pasos 2–3)</h3>
+        <p class="help-intro">
+            La captura limita <em>qué filas</em> de la hoja entran. Aquí solo define <em>qué columnas</em>
+            se validan. Otras pestañas del libro se ignoran.
+        </p>
+
+        {% include "file_gate/schema/_step4_help_criteria.html" %}
+    </div>
+</div>
+{% endblock %}
