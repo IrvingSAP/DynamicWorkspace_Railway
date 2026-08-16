@@ -319,7 +319,7 @@ Misma estructura de carpetas que la app (`input/`), para espejo 1:1 con `templat
 | `prototype/reverse_studio/input/step3_capture_end.html` | `templates/reverse_studio/input/step3_capture_end.html` |
 | `prototype/reverse_studio/input/step3_help.html` | `templates/reverse_studio/input/step3_help.html` |
 | `prototype/reverse_studio/input/step4_fields.html` | `templates/reverse_studio/input/step4_fields.html` (+ parciales `_delimited` / `_xlsx` al implementar) |
-| `prototype/reverse_studio/input/step4_help.html` | `templates/reverse_studio/input/step4_help.html` |
+| `prototype/reverse_studio/input/step4_help.html` | `step4_help_xlsx.html` / `step4_help_delimited.html` (según tipo del paso 1) |
 | `prototype/reverse_studio/input/step5_content_rules.html` | `templates/reverse_studio/input/step5_content_rules.html` |
 | `prototype/reverse_studio/input/step5_help.html` | `templates/reverse_studio/input/step5_help.html` |
 | `prototype/reverse_studio/input/step6_report.html` | `templates/reverse_studio/input/step6_report.html` |
@@ -405,7 +405,18 @@ Checklist al implementar (patrón FILE GATE):
 | Entrada | `apps/reverse_studio/input/` · `templates/reverse_studio/input/` |
 | Kind | `Project.KIND_REVERSE = "reverse"` |
 | Whitelist | `input_whitelist.INPUT_FILE_TYPE_WHITELIST` + filtro en `save_source` |
-| URLs | `/app/reverse-studio/proyectos/`, `.../entrada/...`, `/app/reverse-studio/ayuda/` |
+| URLs | `/app/reverse-studio/proyectos/`, `.../entrada/...`, `.../entrada/importar/`, `/app/reverse-studio/ayuda/` |
+
+---
+
+## Importar estructura (Profile Seed)
+
+CTA **Importar estructura** (PA/ED) en el hub de entrada y en el **paso 4 (Campos)**. Reusa `apps.profile_seed` + templates `templates/profile_seed/` (host Reverse vía `seed_host`).
+
+- Destino: borrador del **contrato de entrada** (`save_source`). Nunca auto-publica.
+- Orígenes: otro Reverse (entrada publicada), FILE GATE, FILE CLEAN, FilePipe origen, FILE MATCH A/B, FILE SPLIT/MERGE, STRUCTURE SCOUT (borrador).
+- No clona layout de salida, mapeo, reglas de generación ni políticas GATE.
+- Whitelist de planilla (IN3): `csv`, `xlsx`, `txt_delimited`.
 
 ---
 

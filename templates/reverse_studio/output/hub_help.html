@@ -7,11 +7,10 @@
 <link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -28,49 +27,93 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Referencia · Salida · Módulo 2 · <span class="cell-badge">{{ project.slug }}</span></p>
-        <h2>Ayuda — Contrato de salida (layout de envío)</h2>
-        <p>Define el archivo que exige el receptor. No genera ni publica la definición completa.</p>
+        <p class="page-eyebrow">Referencia · Módulo 2 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Contrato de salida</h2>
+        <p>Define el layout rígido que exige el receptor (TXT posicional, JSON o XML). No genera ni publica.</p>
     </div>
     <div class="page-actions">
-        <a class="btn btn-secondary" href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}">← Volver al hub de salida</a>
+        <a class="btn btn-secondary" href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}">← Volver al hub</a>
+        <a class="btn btn-primary" href="{% url 'reverse_studio:mapping_hub' project_slug=project.slug %}">Ir a mapeo</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué es este módulo</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            Es el <strong>contrato de salida</strong>: cómo debe salir el archivo hacia el banco, ERP u otro destino
-            (TXT posicional / JSON / XML). Complementa la planilla de entrada (M1). El puente entre ambos es el
-            <strong>mapeo (M3)</strong>; la congelación es <strong>Publicar (M4)</strong>; emitir es <strong>Generar (M5)</strong>.
+            Asistente de 6 pasos que persiste el <strong>layout de envío</strong> en el <strong>borrador</strong>.
+            Complementa la planilla de entrada. El puente es el mapeo (M3); congelar es publicar (M4); emitir es generar (M5).
         </p>
 
-        <h3 class="form-section-title">Los 6 pasos</h3>
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Conviene tener la <strong>entrada</strong> avanzada (aviso en el hub si no está 6/6). Puede editar salida igual.</li>
+            <li>Recorra los 6 pasos y pulse <strong>Guardar borrador</strong> en cada uno.</li>
+            <li>En campos (paso 4) puede <strong>Cargar desde entrada</strong> y luego completar posiciones o paths.</li>
+            <li>Continúe al <strong>mapeo</strong> y luego <strong>publique</strong>.</li>
+        </ol>
+
+        <h3 class="form-section-title">Controles de esta pantalla</h3>
         <table class="help-table">
-            <thead><tr><th>#</th><th>Paso</th><th>Para qué</th></tr></thead>
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
             <tbody>
-                <tr><td class="mono">1</td><td>Tipo de layout</td><td>Whitelist: <code>txt_fixed</code>, <code>json</code>, <code>xml</code>.</td></tr>
-                <tr><td class="mono">2</td><td>Encoding</td><td>Codificación y fin de línea <strong>explícitos</strong> (sin <code>auto</code>).</td></tr>
-                <tr><td class="mono">3</td><td>Estructura</td><td>Longitud de registro, root JSON/XML, patrón de nombre de archivo…</td></tr>
-                <tr><td class="mono">4</td><td>Campos</td><td>Posiciones o paths; opcional «Cargar desde entrada».</td></tr>
-                <tr><td class="mono">5</td><td>Serialización</td><td>Padding, fechas, truncate, trim al escribir.</td></tr>
-                <tr><td class="mono">6</td><td>Validación escritura</td><td>Qué hacer si un valor no cabe o falla el tipo.</td></tr>
+                <tr>
+                    <td>Aviso de entrada incompleta</td>
+                    <td>Recomendación. No bloquea editar el layout.</td>
+                </tr>
+                <tr>
+                    <td>Pasos / tipo / campos</td>
+                    <td>Progreso del borrador. Campos vacíos dejan el paso 4 «en edición».</td>
+                </tr>
+                <tr>
+                    <td>Lista de pasos</td>
+                    <td>Completo / en edición / pendiente. Enlace a cada pantalla.</td>
+                </tr>
+                <tr>
+                    <td>Continuar a mapeo</td>
+                    <td>Cuando los 6 pasos están completos. Publicar sigue siendo el Módulo 4.</td>
+                </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Qué no hace</h3>
-        <ul>
-            <li>No lee la planilla ni define captura (eso es entrada).</li>
-            <li>No incluye “fila de encabezado” tipo Excel/CSV: la salida MVP no es CSV/Excel.</li>
-            <li>Completar M2 solo <strong>no</strong> habilita generar (faltan mapeo y publicar — OUT7).</li>
-        </ul>
+        <h3 class="form-section-title">Los 6 pasos</h3>
+        <table class="help-table">
+            <thead><tr><th>Paso</th><th>Decide</th></tr></thead>
+            <tbody>
+                <tr><td>1 · Tipo de layout</td><td><code>txt_fixed</code>, <code>json</code> o <code>xml</code>.</td></tr>
+                <tr><td>2 · Encoding</td><td>Codificación y fin de línea al escribir (sin <code>auto</code>).</td></tr>
+                <tr><td>3 · Estructura</td><td>Longitud de registro, raíz JSON/XML, patrón de nombre, BOM…</td></tr>
+                <tr><td>4 · Campos</td><td>Posiciones o paths; nombre interno para el mapeo.</td></tr>
+                <tr><td>5 · Serialización</td><td>Trim al escribir, fechas, decimales, truncado global.</td></tr>
+                <tr><td>6 · Validación escritura</td><td>Qué hacer si un valor no cabe o falla el tipo al generar.</td></tr>
+            </tbody>
+        </table>
 
-        <h3 class="form-section-title">Reglas clave</h3>
+        <h3 class="form-section-title">Si algo no encaja</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>El borrador se guardó pero faltan pasos</td><td>Revise campos vacíos o tipo sin elegir. El aviso no publica.</td></tr>
+                <tr><td>Generar no usa el layout nuevo</td><td>Publique (M4). Generar lee la versión publicada.</td></tr>
+                <tr><td>Quiere emitir CSV/Excel</td><td>Eso no es Reverse MVP (la planilla ya es entrada). Use FilePipe.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver el hub y los pasos</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Editar y guardar borrador</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+            </tbody>
+        </table>
+        <p class="hint">Completar solo salida no habilita Generar: faltan mapeo y publicar (OUT7).</p>
+
+        <h3 class="form-section-title">Qué no es</h3>
         <ul>
-            <li><strong>OUT1</strong> — Solo PA/ED editan.</li>
-            <li><strong>OUT3</strong> — Solo tipos whitelist; CSV/Excel como salida → FilePipe.</li>
-            <li><strong>OUT11</strong> — Encoding / fin de línea sin detección automática.</li>
+            <li>No lee la planilla ni define captura (entrada).</li>
+            <li>No mapea ni aplica reglas de negocio (M3).</li>
+            <li>No hay fila de encabezado tipo Excel: la salida MVP no es CSV/xlsx.</li>
         </ul>
     </div>
 </div>

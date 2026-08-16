@@ -226,8 +226,9 @@
                 const okText = strict
                     ? saved + " Validación estricta superada. Aún no está publicado."
                     : saved;
+                const level = result.level === "warning" ? "warning" : "success";
                 setStatus(okText, false);
-                notifyUser("success", okText);
+                notifyUser(level, okText);
             }
             goNext();
             return result;

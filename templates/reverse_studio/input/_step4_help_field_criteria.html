@@ -1,0 +1,35 @@
+{# Criterios de campo compartidos — ayudas paso 4 Reverse entrada (xlsx / delimitado) #}
+<h3 class="form-section-title">Nombre interno y tipo de contenido</h3>
+<p class="help-intro">
+    El <strong>nombre interno</strong> es la clave del contrato para mapeo (M3), reglas y generación.
+    No tiene que coincidir con el encabezado del archivo. Minúsculas, sin espacios.
+</p>
+<table class="help-table">
+    <thead><tr><th>Situación</th><th>Tipo sugerido</th></tr></thead>
+    <tbody>
+        <tr><td>Nombres con espacios</td><td><code>alphanumeric_spaces</code> o <code>free_text</code></td></tr>
+        <tr><td>Teléfonos / guiones</td><td><code>free_text</code> o <code>custom</code> con patrón</td></tr>
+        <tr><td>Montos <code>1.25</code> / <code>1,25</code></td><td><code>custom</code> + regex, p. ej. <code>^[0-9]+([.,][0-9]+)?$</code></td></tr>
+        <tr><td>Fechas</td><td><code>date</code> / <code>datetime</code> + <code>date_format</code> (<code>DD/MM/YYYY</code>, <code>YYYY-MM-DD</code>…)</td></tr>
+        <tr><td>Enteros (cantidad)</td><td><code>numeric</code></td></tr>
+        <tr><td>Patrón propio</td><td><code>custom</code> + regex <code>fullmatch</code> de todo el valor</td></tr>
+    </tbody>
+</table>
+<p class="hint">
+    Obligatorio vacío → error de campo requerido al generar. Fechas: el motor usa el formato del campo,
+    no el regional del equipo. La salida del banco puede usar otro formato (Módulo 2 / reglas).
+</p>
+
+<h3 class="form-section-title">Roles</h3>
+<table class="help-table">
+    <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+    <tbody>
+        <tr><td>Ver campos</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+        <tr><td>Agregar / editar / eliminar campos</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+        <tr><td>Importar estructura</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+    </tbody>
+</table>
+<p class="hint">
+    Importar estructura clona tipo, captura y campos al <strong>borrador</strong>. No publica Reverse ni copia salida o mapeo.
+    Tras editar, <strong>publique</strong> (M4) para que Generar use la versión nueva.
+</p>

@@ -1,0 +1,101 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos XML — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}">Salida</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:output_step4' project_slug=project.slug %}">Paso 4 · XML</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · Salida · Paso 4 de 6 · <span class="cell-badge">xml</span></p>
+        <h2>Ayuda — Campos del layout (XML)</h2>
+        <p>Cada campo se escribe como elemento hijo (<code>path</code>) dentro del registro. Raíz y tag de registro van en el paso 3.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'reverse_studio:output_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+        <a href="{% url 'reverse_studio:output_step5' project_slug=project.slug %}" class="btn btn-primary">Ir al paso 5</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es</h3>
+        <p class="help-intro">
+            El tipo del paso 1 es <strong>XML</strong>. El envoltorio (<code>root_element</code>, <code>record_element</code>,
+            namespace, declaración) se define en el <strong>paso 3</strong>. Aquí solo los hijos de cada registro.
+        </p>
+
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Fije en el paso 3 los nombres de raíz y de registro que exige el proveedor.</li>
+            <li>Opcional: <strong>Cargar desde entrada</strong>; luego ponga el elemento hijo real (<code>Documento</code>, <code>Monto</code>…).</li>
+            <li>El <code>path</code> es el tag (o ruta de hijos) <em>dentro</em> de cada registro, no el XPath del documento entero.</li>
+        </ol>
+
+        <h3 class="form-section-title">Campos de esta pantalla</h3>
+        <table class="help-table">
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Nombre</td>
+                    <td>Clave para el mapeo. Puede ser distinto del tag XML.</td>
+                </tr>
+                <tr>
+                    <td>Elemento hijo (path)</td>
+                    <td>Tag bajo el registro. Obligatorio. Ejemplo: con registro <code>pago</code>, path <code>documento</code> → <code>&lt;pago&gt;&lt;documento&gt;…</code>.</td>
+                </tr>
+                <tr>
+                    <td>Etiqueta / Order / Tipo / Oblig.</td>
+                    <td>Metadatos. El XML usa el path, no la etiqueta.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Relación con el paso 3</h3>
+        <p class="help-intro">
+            Namespace y declaración XML no se repiten por campo. Si el esquema usa prefijos, alinéelos con el namespace
+            del paso 3; no invente un segundo xmlns aquí.
+        </p>
+
+        <h3 class="form-section-title">Si algo no encaja</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>Tags en el nivel incorrecto</td><td>Revise <code>root_element</code> / <code>record_element</code> y el path hijo.</td></tr>
+                <tr><td>Path vacío</td><td>El editor lo exige. No use start/end de TXT posicional.</td></tr>
+                <tr><td>Cargar desde entrada deja path = nombre</td><td>Esperado: cámbielo al tag del XSD del receptor.</td></tr>
+            </tbody>
+        </table>
+
+        {% include "reverse_studio/output/_step4_help_field_criteria.html" %}
+
+        <h3 class="form-section-title">Qué no es</h3>
+        <ul>
+            <li>No es el editor JSON (puntos en un objeto) ni el posicional (columnas).</li>
+            <li>No define el mapeo ni genera el archivo.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

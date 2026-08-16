@@ -358,7 +358,7 @@ Misma estructura de carpetas que la app (`output/`). Espejo de `templates/dms/ta
 | `output/step4_fields.html` | `…/step4_fields.html` | Posicional + “Cargar desde entrada” |
 | `output/step4_fields_json.html` | `…/step4_fields_json.html` | |
 | `output/step4_fields_xml.html` | `…/step4_fields_xml.html` | |
-| `output/step4_help.html` | `…/step4_help.html` | |
+| `output/step4_help.html` | `step4_help_fixed.html` / `_json.html` / `_xml.html` (según tipo del paso 1) | |
 | `output/step5_serialization.html` | `…/step5_serialization.html` | |
 | `output/step5_help.html` | `…/step5_help.html` | |
 | `output/step6_write_validation.html` | `…/step6_write_validation.html` | Sin publish; Finalizar → hub |

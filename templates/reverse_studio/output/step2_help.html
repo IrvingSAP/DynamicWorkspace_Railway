@@ -7,11 +7,10 @@
 <link rel="stylesheet" href="{% static 'css/target_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -32,35 +31,72 @@
     <div>
         <p class="page-eyebrow">Referencia · Salida · Paso 2 de 6 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Codificación y final de línea</h2>
-        <p>Parámetros de texto al <strong>escribir</strong> el archivo de envío (no es captura de la planilla).</p>
+        <p>Parámetros de texto al <strong>escribir</strong> el archivo de envío. Deben ser explícitos: no hay detección automática.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:output_step2' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 2</a>
+        <a href="{% url 'reverse_studio:output_step3' project_slug=project.slug %}" class="btn btn-primary">Ir al paso 3</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué decide este paso</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            Cómo se codifican los bytes y qué fin de línea usa el receptor. Debe ser
-            <strong>explícito</strong>: no hay detección automática al escribir (OUT11).
+            Cómo se codifican los bytes y qué fin de línea usa el receptor. Puede ser distinto del encoding de
+            <em>lectura</em> de la planilla (entrada paso 1): UTF-8 en Excel y Latin-1 en el TXT del banco, si lo pide.
         </p>
 
-        <h3 class="form-section-title">Campos</h3>
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Copie encoding y CRLF/LF del manual del banco o de un archivo de muestra aceptado.</li>
+            <li>Evite <code>auto</code>: al escribir hay que saber exactamente qué sale.</li>
+            <li>Guarde y pase a estructura (paso 3).</li>
+        </ol>
+
+        <h3 class="form-section-title">Campos de esta pantalla</h3>
         <table class="help-table">
-            <thead><tr><th>Campo</th><th>Detalle</th></tr></thead>
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
             <tbody>
-                <tr><td>Codificación</td><td>p. ej. <code>utf-8</code>, <code>latin-1</code>. Elija lo que exige el banco/ERP.</td></tr>
-                <tr><td>Final de línea</td><td><code>LF</code>, <code>CRLF</code> u opción personalizada.</td></tr>
+                <tr>
+                    <td>Codificación</td>
+                    <td>p. ej. UTF-8, Latin-1. Lo que exige el receptor, no lo que usa Windows al abrir el Excel.</td>
+                </tr>
+                <tr>
+                    <td>Final de línea</td>
+                    <td>LF, CRLF u opción personalizada (secuencia tipo <code>\r\n</code>).</td>
+                </tr>
             </tbody>
         </table>
 
         <h3 class="form-section-title">No confundir</h3>
+        <table class="help-table">
+            <thead><tr><th>Esto (salida paso 2)</th><th>No es…</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Escritura del layout</td>
+                    <td>Encoding de lectura de la planilla (entrada paso 1)</td>
+                </tr>
+                <tr>
+                    <td>Fin de línea del archivo generado</td>
+                    <td>Inicio/fin de captura de filas (entrada pasos 2–3)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Guardar</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no es</h3>
         <ul>
-            <li>Este paso <strong>no</strong> define inicio/fin de captura de la planilla (eso es entrada, pasos 2–3).</li>
-            <li>El encoding de <em>lectura</em> de la planilla se configura en el contrato de entrada.</li>
-            <li>Pueden ser distintos: UTF-8 en la planilla y Latin-1 en el TXT del banco, si el receptor lo pide.</li>
+            <li>No define BOM (eso es el paso 3, si aplica).</li>
+            <li>No publica. Los cambios van al borrador.</li>
         </ul>
     </div>
 </div>

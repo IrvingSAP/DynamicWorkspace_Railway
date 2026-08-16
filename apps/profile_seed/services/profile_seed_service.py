@@ -54,6 +54,10 @@ MSG_NO_SOURCES_REVERSE = (
     "No hay orígenes Reverse Studio (entrada) publicados visibles. "
     "Publique el contrato de entrada en Reverse Studio o pida acceso."
 )
+MSG_NO_SOURCES_REVERSE_OTHER = (
+    "No hay otros proyectos Reverse Studio publicados visibles. "
+    "Publique el contrato de entrada en otro proyecto Reverse Studio o pida acceso."
+)
 MSG_NO_SOURCES_SPLIT_MERGE = (
     "No hay orígenes FILE SPLIT/MERGE publicados visibles. "
     "Publique un perfil de lectura en FILE SPLIT/MERGE o pida acceso."
@@ -125,6 +129,16 @@ SOURCE_KIND_CHOICES_GATE = (
     (SOURCE_KIND_SPLIT_MERGE, "FILE SPLIT/MERGE — Perfil de lectura"),
     (SOURCE_KIND_SCOUT, "STRUCTURE SCOUT — Borrador"),
 )
+SOURCE_KIND_CHOICES_REVERSE = (
+    (SOURCE_KIND_REVERSE, "Reverse Studio — Otra entrada"),
+    (SOURCE_KIND_FILE_GATE, "FILE GATE — Esquema"),
+    (SOURCE_KIND_FILE_CLEAN, "FILE CLEAN — Perfil de lectura"),
+    (SOURCE_KIND_DMS, "FilePipe — Origen"),
+    (SOURCE_KIND_FILE_MATCH, "FILE MATCH — Perfil A"),
+    (SOURCE_KIND_FILE_MATCH_B, "FILE MATCH — Perfil B"),
+    (SOURCE_KIND_SPLIT_MERGE, "FILE SPLIT/MERGE — Perfil de lectura"),
+    (SOURCE_KIND_SCOUT, "STRUCTURE SCOUT — Borrador"),
+)
 # Alias histórico P0 Match
 SOURCE_KIND_CHOICES_P0 = SOURCE_KIND_CHOICES_MATCH
 
@@ -134,6 +148,7 @@ SUPPORTED_TARGET_KINDS = frozenset(
         Project.KIND_FILE_SPLIT_MERGE,
         Project.KIND_DMS,
         Project.KIND_FILE_GATE,
+        Project.KIND_REVERSE,
     }
 )
 
@@ -185,6 +200,13 @@ def _target_slot_meta(
             SOURCE_SLOT_LABEL_SCHEMA,
             "Solo borrador del contrato de validación — publicar FILE GATE es un paso aparte",
         )
+    if target_project.project_kind == Project.KIND_REVERSE:
+        return (
+            "Reverse Studio",
+            SOURCE_SLOT_INPUT,
+            SOURCE_SLOT_LABEL_INPUT,
+            "Solo borrador del contrato de entrada — publicar la definición Reverse es el Módulo 4",
+        )
     if target_project.project_kind == Project.KIND_DMS and slot == TARGET_SLOT_TARGET:
         return (
             "FilePipe (Data Mapping)",
@@ -231,6 +253,27 @@ def get_seed_host(
             "seed_history_detail_url_name": "file_gate:schema_seed_history_detail",
             "nav_active": "file_gate",
             "nav_open_flag": "file_gate_nav_open",
+            **slug_kw,
+        }
+    if target_project.project_kind == Project.KIND_REVERSE:
+        return {
+            "app_label": "Reverse Studio",
+            "app_list_url_name": "reverse_studio:project_list",
+            "project_hub_url_name": "reverse_studio:project_hub",
+            "profile_hub_url_name": "reverse_studio:input_hub",
+            "profile_hub_label": "Entrada",
+            "scope_include": "reverse_studio/input/_project_scope.html",
+            "seed_hub_url_name": "reverse_studio:input_seed_hub",
+            "seed_hub_help_url_name": "reverse_studio:input_seed_hub_help",
+            "seed_picker_url_name": "reverse_studio:input_seed_picker",
+            "seed_picker_help_url_name": "reverse_studio:input_seed_picker_help",
+            "seed_apply_url_name": "reverse_studio:input_seed_apply",
+            "seed_apply_help_url_name": "reverse_studio:input_seed_apply_help",
+            "seed_history_url_name": "reverse_studio:input_seed_history",
+            "seed_history_help_url_name": "reverse_studio:input_seed_history_help",
+            "seed_history_detail_url_name": "reverse_studio:input_seed_history_detail",
+            "nav_active": "reverse_studio",
+            "nav_open_flag": "reverse_studio_nav_open",
             **slug_kw,
         }
     if target_project.project_kind == Project.KIND_FILE_SPLIT_MERGE:
@@ -356,6 +399,8 @@ def _source_kind_choices_for(target_project: Project) -> tuple:
         return SOURCE_KIND_CHOICES_DMS
     if target_project.project_kind == Project.KIND_FILE_GATE:
         return SOURCE_KIND_CHOICES_GATE
+    if target_project.project_kind == Project.KIND_REVERSE:
+        return SOURCE_KIND_CHOICES_REVERSE
     if target_project.project_kind == Project.KIND_FILE_SPLIT_MERGE:
         return SOURCE_KIND_CHOICES_SPLIT_MERGE
     return SOURCE_KIND_CHOICES_MATCH
@@ -770,6 +815,15 @@ def get_source_picker_context(
             "Misma compañía · visibles para usted. "
             "No se lista este mismo proyecto FILE GATE. No clona políticas de gate."
         )
+    elif target_project.project_kind == Project.KIND_REVERSE:
+        picker_hint = (
+            "Otra entrada Reverse Studio (no este proyecto), FILE GATE (esquema publicado; no clona políticas), "
+            "FILE CLEAN (perfil de lectura; no clona reglas), FilePipe (origen publicado; no destino ni mapeo), "
+            "FILE MATCH Perfil A o B (no reglas de cruce), FILE SPLIT/MERGE (perfil de lectura) "
+            "o STRUCTURE SCOUT (borrador actual). "
+            "Misma compañía · visibles para usted. "
+            "No se lista este mismo proyecto Reverse. No clona layout de salida ni mapeo."
+        )
     elif target_project.project_kind == Project.KIND_FILE_SPLIT_MERGE:
         picker_hint = (
             "FILE GATE (esquema) o FILE CLEAN (perfil) con versión publicada. "
@@ -795,6 +849,9 @@ def get_source_picker_context(
             MSG_NO_SOURCES_GATE_OTHER
             if kind == SOURCE_KIND_FILE_GATE
             and target_project.project_kind == Project.KIND_FILE_GATE
+            else MSG_NO_SOURCES_REVERSE_OTHER
+            if kind == SOURCE_KIND_REVERSE
+            and target_project.project_kind == Project.KIND_REVERSE
             else MSG_NO_SOURCES_DMS_OTHER
             if kind == SOURCE_KIND_DMS
             and target_project.project_kind == Project.KIND_DMS

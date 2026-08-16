@@ -1,16 +1,15 @@
 {% extends "app_base.html" %}
 {% load static %}
 
-{% block title %}Ayuda — Publicar {{ project.slug }}{% endblock %}
+{% block title %}Ayuda · Publicar — {{ project.name }}{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -33,79 +32,119 @@
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:publish_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver a publicar</a>
+        <a href="{% url 'reverse_studio:run_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a generar</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué es este módulo</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            Es el paso que convierte el trabajo de diseño en una <strong>definición publicada</strong>
-            contra la cual se generarán archivos (Módulo 5). Sin publicar, no hay emisión (RS2 / MAP7 / OUT7).
-            No es “publicar solo la planilla” ni “publicar solo el layout”: se congela todo junto (PUB2).
+            Convierte el diseño en una <strong>definición publicada</strong> contra la que se generan archivos (M5).
+            No hay publicación parcial de planilla o layout: se congela todo junto. Sin publicar no hay emisión.
         </p>
 
-        <h3 class="form-section-title">Borrador vs versión activa</h3>
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Deje el checklist en <strong>Listo</strong> (tarjetas enlazan a cada módulo).</li>
+            <li>Pulse <strong>Publicar vN</strong> y confirme el diálogo.</li>
+            <li>vN queda activa y se abre el borrador vN+1 (copia editable).</li>
+            <li>Use <strong>Continuar a generar</strong> para subir la planilla. Si ajusta el diseño, vuelva a publicar.</li>
+        </ol>
+
+        <h3 class="form-section-title">Controles de esta pantalla</h3>
         <table class="help-table">
-            <thead><tr><th>Concepto</th><th>Detalle</th></tr></thead>
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
             <tbody>
                 <tr>
-                    <td>Borrador</td>
-                    <td>Versión editable donde trabaja en M1–M3. Se publica con el botón <strong>Publicar vN</strong>.</td>
+                    <td>Borrador / Versión activa</td>
+                    <td>vN editable vs última <code>published</code>. Generar usa solo la activa.</td>
                 </tr>
                 <tr>
-                    <td>Versión activa</td>
-                    <td>Última definición <code>published</code>. Las generaciones usan solo esta.</td>
+                    <td>Aviso Pendiente</td>
+                    <td>Lista los ítems del checklist que aún bloquean el botón.</td>
                 </tr>
                 <tr>
-                    <td>Tras publicar</td>
-                    <td>vN queda activa y se abre un nuevo borrador vN+1 (copia editable) (PUB4).</td>
+                    <td>Checklist (4 tarjetas)</td>
+                    <td>Entrada, salida, mapeo, reglas. Listo o Pendiente; cada una abre el módulo.</td>
+                </tr>
+                <tr>
+                    <td>Publicar vN</td>
+                    <td>PA/ED. Deshabilitado si falta algún ítem. Confirma y valida en modo strict en el servidor.</td>
+                </tr>
+                <tr>
+                    <td>Continuar a generar</td>
+                    <td>Activo solo si ya hay versión publicada. Si no, el botón aparece deshabilitado.</td>
                 </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Checklist antes de publicar</h3>
-        <p class="help-intro">
-            El hub muestra ítems (entrada, salida, mapeo, reglas…). Cada tarjeta indica
-            <strong>Listo</strong> o <strong>Pendiente</strong> y enlaza al módulo correspondiente.
-            El botón publicar permanece deshabilitado hasta que no haya bloqueos; el servidor también valida en modo strict (PUB5).
-        </p>
-        <ul>
-            <li>Entrada: tipo whitelist, campos, pasos del asistente.</li>
-            <li>Salida: layout whitelist (posicional / JSON / XML), campos, encoding explícito.</li>
-            <li>Mapeo: obligatorios del layout cubiertos.</li>
-            <li>Reglas: opcionales; no bloquean si están vacías, pero se incluyen en el snapshot si existen.</li>
-        </ul>
+        <h3 class="form-section-title">Checklist — cuándo está Listo</h3>
+        <table class="help-table">
+            <thead><tr><th>Ítem</th><th>Criterio</th><th>¿Bloquea?</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Entrada</td>
+                    <td>6/6 pasos, campos, tipo csv / xlsx / delimitado.</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>Salida</td>
+                    <td>6/6, campos, tipo posicional / JSON / XML, encoding y fin de línea sin <code>auto</code>.</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>Mapeo</td>
+                    <td>Obligatorios del layout cubiertos (enlace, constante, generado o default de salida).</td>
+                    <td>Sí</td>
+                </tr>
+                <tr>
+                    <td>Reglas</td>
+                    <td>Pipelines vacíos = OK. Si hay pasos, las ops y params deben ser válidos.</td>
+                    <td>Sí, solo si hay reglas inválidas</td>
+                </tr>
+            </tbody>
+        </table>
 
         <h3 class="form-section-title">Qué se congela</h3>
         <table class="help-table">
             <thead><tr><th>Incluido</th><th>Notas</th></tr></thead>
             <tbody>
-                <tr><td>Contrato de entrada</td><td>Planilla csv / xlsx / delimitado + captura + campos + reglas de lectura.</td></tr>
-                <tr><td>Contrato de salida</td><td>Layout + campos + serialización + validación al escribir.</td></tr>
-                <tr><td>Mapeo + reglas</td><td>Enlaces planilla → layout y <code>transform_pipeline</code>.</td></tr>
+                <tr><td>Contrato de entrada</td><td>Tipo, captura, campos, reglas de lectura, informe.</td></tr>
+                <tr><td>Contrato de salida</td><td>Layout, campos, serialización, validación al escribir.</td></tr>
+                <tr><td>Mapeo + reglas</td><td>Enlaces y <code>transform_pipeline</code>.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint">La integración FILE GATE (flag, proyecto gate, frescura) no forma parte de este snapshot: se configura aparte y aplica al generar.</p>
+
+        <h3 class="form-section-title">Si algo no encaja</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>El botón está deshabilitado</td><td>Abra las tarjetas Pendiente y complete esos módulos.</td></tr>
+                <tr><td>Complete el contrato de entrada/salida…</td><td>Pasos, campos o tipo fuera de whitelist.</td></tr>
+                <tr><td>Corrija las reglas…</td><td>Ops o parámetros inválidos en un pipeline.</td></tr>
+                <tr><td>Generar sigue con el layout viejo</td><td>Publique de nuevo. La emisión no lee el borrador vN+1.</td></tr>
+                <tr><td>Sin permiso para publicar</td><td>Solo PA/ED. GE y CG generan contra lo ya publicado.</td></tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Quién puede publicar</h3>
-        <ul>
-            <li>Solo <span class="mono">PA</span> / <span class="mono">ED</span> (PUB1).</li>
-            <li><span class="mono">GE</span> genera contra la versión activa; no publica.</li>
-            <li><span class="mono">CO</span> consulta; no publica ni genera datos de negocio.</li>
-        </ul>
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CG</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver este hub</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Publicar vN</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td><td>No</td></tr>
+                <tr><td>Generar (después)</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td><td>No</td></tr>
+            </tbody>
+        </table>
+        <p class="hint">Tras publicar verá el mensaje de vN activa y nuevo borrador. Republicar sustituye la versión que usa Generar; las anteriores quedan históricas.</p>
 
-        <h3 class="form-section-title">Después de publicar</h3>
-        <ol>
-            <li>Confirme el diálogo; verá el mensaje de éxito con vN publicada y nuevo borrador.</li>
-            <li>Use <strong>Continuar a generar</strong> (Módulo 5) para subir la planilla y emitir el archivo.</li>
-            <li>Si necesita ajustes: edite el nuevo borrador → vuelva a publicar (la nueva activa sustituye la anterior para generar).</li>
-        </ol>
-
-        <h3 class="form-section-title">Qué no hace esta pantalla</h3>
+        <h3 class="form-section-title">Qué no es</h3>
         <ul>
-            <li>No edita campos ni mapeos (use M1–M3).</li>
-            <li>No sube planillas ni escribe el archivo de envío (eso es Generar).</li>
-            <li>Publicar no ejecuta un job: solo habilita la generación (PUB9).</li>
+            <li>No edita campos ni mapeos (use M1–M3 sobre el borrador).</li>
+            <li>No sube la planilla ni escribe el archivo de envío (Generar).</li>
+            <li>No es publicar solo el esquema FILE GATE. Publicar no ejecuta un job.</li>
         </ul>
     </div>
 </div>

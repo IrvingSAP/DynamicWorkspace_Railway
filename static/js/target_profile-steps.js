@@ -23,14 +23,18 @@
         statusEl.classList.toggle("step-save-status--error", Boolean(isError));
     }
 
-    function showErrorModal(message) {
+    function showUserMessage(tags, text) {
         if (window.dmsTargetProfile && typeof window.dmsTargetProfile.showUserMessage === "function") {
-            window.dmsTargetProfile.showUserMessage("error", message);
+            window.dmsTargetProfile.showUserMessage(tags, text);
             return;
         }
         if (typeof window.dwShowMessage === "function") {
-            window.dwShowMessage("error", message);
+            window.dwShowMessage(tags, text);
         }
+    }
+
+    function showErrorModal(message) {
+        showUserMessage("error", message);
     }
 
     function checkedValue(name) {
@@ -374,8 +378,13 @@
 
         setStatus("Guardando…", false);
         try {
-            await window.dmsTargetProfile.save(readCurrentStep());
-            setStatus("Borrador guardado.", false);
+            const result = await window.dmsTargetProfile.save(readCurrentStep());
+            const text = (result && result.message) || "Borrador guardado.";
+            const level = result && result.level === "warning" ? "warning" : "success";
+            setStatus(text, false);
+            if (!nextUrl) {
+                showUserMessage(level, text);
+            }
             if (nextUrl) {
                 window.location.href = nextUrl;
             }

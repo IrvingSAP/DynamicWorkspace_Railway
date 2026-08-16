@@ -9,9 +9,7 @@
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -30,59 +28,99 @@
     <div>
         <p class="page-eyebrow">Referencia · Módulo 1 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Contrato de entrada</h2>
-        <p>Describe cómo se lee la planilla de negocio. No genera el archivo del banco/ERP.</p>
+        <p>Describe cómo se lee la planilla de negocio (CSV, Excel o delimitado). No genera el archivo de envío.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-secondary" href="{% url 'reverse_studio:input_hub' project_slug=project.slug %}">← Volver al hub</a>
+        <a class="btn btn-primary" href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}">Ir a salida</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué es este módulo</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            Define el <strong>contrato de entrada</strong>: tipo de planilla, zona de captura, campos,
-            reglas de lectura e informe. El resultado queda en el <strong>borrador</strong> de la versión;
-            solo la <strong>definición publicada</strong> (Módulo 4) se usa al generar (M5).
+            Asistente de 6 pasos que persiste el <strong>contrato de lectura</strong> en el <strong>borrador</strong> de la versión.
+            Al generar (Módulo 5) se usa solo la <strong>definición publicada</strong> (Módulo 4). Completar solo esta entrada no habilita generar.
         </p>
+
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Opcional: <strong>Importar estructura</strong> (PA/ED) si ya modeló la planilla en otra app compatible.</li>
+            <li>Recorra los 6 pasos y pulse <strong>Guardar borrador</strong> (o Siguiente) en cada uno.</li>
+            <li>Continúe al <strong>contrato de salida</strong>, luego mapeo y <strong>publique</strong>.</li>
+            <li>Pruebe en <strong>Generar</strong> con una planilla real.</li>
+        </ol>
+
+        <h3 class="form-section-title">Controles de esta pantalla</h3>
+        <table class="help-table">
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Pasos completos / tipo / campos</td>
+                    <td>Progreso del borrador. Un paso puede quedar «en edición» si falta un dato (p. ej. campos vacíos).</td>
+                </tr>
+                <tr>
+                    <td>Importar estructura</td>
+                    <td>PA/ED: clona tipo, captura y campos al borrador de <strong>esta</strong> entrada. No publica Reverse. No copia salida ni mapeo. No es Integración FILE GATE.</td>
+                </tr>
+                <tr>
+                    <td>Historial de importaciones</td>
+                    <td>Quién importó qué y cuándo. GE/CO lo ven en lectura.</td>
+                </tr>
+                <tr>
+                    <td>Lista de pasos</td>
+                    <td>Enlace a cada pantalla. Completo / en edición / pendiente.</td>
+                </tr>
+                <tr>
+                    <td>Continuar a salida</td>
+                    <td>Aparece cuando los 6 pasos del borrador están completos. Publicar sigue siendo el Módulo 4.</td>
+                </tr>
+            </tbody>
+        </table>
 
         <h3 class="form-section-title">Los 6 pasos</h3>
         <table class="help-table">
             <thead><tr><th>Paso</th><th>Decide</th></tr></thead>
             <tbody>
-                <tr><td class="mono">1</td><td>Tipo de planilla (csv / xlsx / delimitado), encoding y fin de línea.</td></tr>
-                <tr><td class="mono">2</td><td>Inicio de captura (<code>capture_start</code>).</td></tr>
-                <tr><td class="mono">3</td><td>Fin de captura (<code>capture_end</code>).</td></tr>
-                <tr><td class="mono">4</td><td>Campos: dónde leer y nombre interno para el mapeo.</td></tr>
-                <tr><td class="mono">5</td><td>Reglas de contenido globales al leer.</td></tr>
-                <tr><td class="mono">6</td><td>Informe de lectura del job de generación.</td></tr>
+                <tr><td>1 · Tipo de planilla</td><td>csv / xlsx / txt_delimited, encoding y fin de línea.</td></tr>
+                <tr><td>2 · Inicio de captura</td><td>Dónde empiezan los datos útiles.</td></tr>
+                <tr><td>3 · Fin de captura</td><td>Dónde termina la lectura (por defecto, fin de archivo).</td></tr>
+                <tr><td>4 · Campos</td><td>Columnas, hoja, encabezados y nombre interno para el mapeo.</td></tr>
+                <tr><td>5 · Reglas de contenido</td><td>Limpieza global al leer (trim, vacías, comentarios…).</td></tr>
+                <tr><td>6 · Informe de lectura</td><td>Qué se registra en el job de generación.</td></tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Qué no hace</h3>
-        <ul>
-            <li>No define el layout de envío (Módulo 2 — Salida).</li>
-            <li>No mapea ni aplica reglas de transformación post-mapeo (Módulo 3).</li>
-            <li>No sube la planilla de producción ni genera el archivo (Módulo 5).</li>
-            <li>Completar solo M1 <strong>no</strong> habilita generar (IN7): hace falta salida + mapeo + publicar.</li>
-        </ul>
-
-        <h3 class="form-section-title">Roles y publicación</h3>
+        <h3 class="form-section-title">Si algo no encaja</h3>
         <table class="help-table">
-            <thead><tr><th>Tema</th><th>Detalle</th></tr></thead>
+            <thead><tr><th>Situación</th><th>Qué hacer</th></tr></thead>
             <tbody>
-                <tr><td>Edición</td><td>Solo <span class="mono">PA</span> / <span class="mono">ED</span> (IN1).</td></tr>
-                <tr><td>Tipos</td><td>Whitelist MVP: <code>csv</code>, <code>xlsx</code>, <code>txt_delimited</code> (IN3).</td></tr>
-                <tr><td>Borrador vs publicado</td><td>Los cambios del asistente van al borrador. Tras editar, <strong>publique</strong> (M4) para que Generar use la versión nueva.</td></tr>
+                <tr><td>El borrador se guardó pero faltan pasos</td><td>Revise el listado (campos vacíos, captura incoherente) y complete antes de publicar.</td></tr>
+                <tr><td>Generar no usa lo que acaba de editar</td><td>Publique de nuevo (M4). Generar lee la versión publicada, no el borrador.</td></tr>
+                <tr><td>No puede editar</td><td>Solo PA / ED. CO y GE ven el contrato en lectura.</td></tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Después de completar</h3>
-        <ol>
-            <li>Continúe al <strong>contrato de salida</strong> (Módulo 2).</li>
-            <li>Enlace campos en <strong>Mapeo</strong> y, si hace falta, <strong>Reglas</strong> (Módulo 3).</li>
-            <li><strong>Publique</strong> la definición y pruebe en <strong>Generar</strong>.</li>
-        </ol>
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver el hub y los pasos</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Editar y guardar borrador</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+                <tr><td>Importar estructura</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+            </tbody>
+        </table>
+        <p class="hint">Completar este módulo no habilita Generar: faltan salida, mapeo y publicar.</p>
+
+        <h3 class="form-section-title">Qué no es</h3>
+        <ul>
+            <li>No define el layout de envío (Salida).</li>
+            <li>No mapea campos ni aplica reglas post-mapeo.</li>
+            <li>No sube la planilla de producción (eso es Generar).</li>
+            <li>No es FILE GATE ni el pre-check del Módulo 7.</li>
+            <li>No admite entrada posicional, JSON ni XML (van en FilePipe o como <em>salida</em> Reverse).</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

@@ -50,6 +50,7 @@
             </button>
             <button type="button" id="btn-add-field" class="btn btn-primary">+ Agregar campo</button>
             {% endif %}
+            <a href="{% url 'reverse_studio:output_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
         </div>
     </div>
 

@@ -1,17 +1,16 @@
 {% extends "app_base.html" %}
 {% load static %}
 
-{% block title %}Ayuda — Editor de mapeo{% endblock %}
+{% block title %}Ayuda · Editor de mapeo — {{ project.name }}{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/field_mapping.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -32,76 +31,122 @@
     <div>
         <p class="page-eyebrow">Referencia · Módulo 3 · Editor de enlaces · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Editor de mapeo</h2>
-        <p>Relacione cada campo del layout con su fuente en la planilla (o constante / generador).</p>
+        <p>Relacione cada campo del layout con su fuente en la planilla (o constante / generador). Un destino, un enlace activo.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:mapping_editor' project_slug=project.slug %}" class="btn btn-secondary">← Volver al editor</a>
+        <a href="{% url 'reverse_studio:mapping_rules_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a reglas</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Cómo está organizada la pantalla</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            Panel izquierdo: campos de la <strong>planilla (entrada)</strong>.
-            Centro: tabla de mapeos activos.
-            Panel derecho (si aplica): campos del <strong>layout (salida)</strong> y detalle del enlace seleccionado.
+            Declara de dónde sale cada campo del archivo de envío. El valor se resuelve aquí; las limpiezas
+            (trim, pad, fechas) van en <strong>Reglas</strong> o, como atajo, en los checks del diálogo.
+            No publica ni genera.
         </p>
 
-        <h3 class="form-section-title">Tipos de mapeo</h3>
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Use <strong>Sugerir por nombre</strong> si planilla y layout comparten <code>name</code> (p. ej. tras cargar salida desde entrada).</li>
+            <li>Arrastre un campo de la planilla (panel izquierdo) hacia un campo del layout (derecha) para un <code>direct</code>.</li>
+            <li>Para datos del banco que no vienen en Excel: <strong>Añadir mapeo</strong> → constante o generado.</li>
+            <li>Cubra <strong>Obligatorios pendientes</strong>. Pulse <strong>Guardar</strong>.</li>
+            <li>Opcional: pruebe el preview de una fila; luego abra Reglas si hace falta más pipeline.</li>
+        </ol>
+
+        <h3 class="form-section-title">Controles de esta pantalla</h3>
         <table class="help-table">
-            <thead><tr><th>Tipo</th><th>Qué hace</th></tr></thead>
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
             <tbody>
-                <tr><td class="mono">direct</td><td>Copia un campo de la planilla a un campo del layout.</td></tr>
-                <tr><td class="mono">constant</td><td>Escribe un valor fijo (sin columna de entrada).</td></tr>
-                <tr><td class="mono">concat</td><td>Une varios campos y/o literales en un destino.</td></tr>
-                <tr><td class="mono">generated</td><td>Valor generado por el sistema (secuencia, UUID, etc.).</td></tr>
-                <tr><td class="mono">split / expression</td><td>Patrones avanzados del motor DMS (si están habilitados).</td></tr>
+                <tr>
+                    <td>Panel Origen</td>
+                    <td>Campos de la <strong>planilla</strong> (entrada). Arrastre para un enlace directo.</td>
+                </tr>
+                <tr>
+                    <td>Panel Destino</td>
+                    <td>Campos del <strong>layout</strong> (salida).</td>
+                </tr>
+                <tr>
+                    <td>Tabla Relaciones</td>
+                    <td>Enlaces activos: destino, tipo, fuente, si ya hay reglas, quitar.</td>
+                </tr>
+                <tr>
+                    <td>Sugerir por nombre</td>
+                    <td>Propone <code>direct</code> cuando el nombre interno coincide. No pisa destinos ya mapeados de forma ciega: revise antes de guardar.</td>
+                </tr>
+                <tr>
+                    <td>Añadir mapeo</td>
+                    <td>Abre el diálogo: campo layout, tipo de enlace, fuente o parámetros, checks de reglas rápidas.</td>
+                </tr>
+                <tr>
+                    <td>Aplicar (diálogo)</td>
+                    <td>Deja el enlace en la tabla. Aún debe <strong>Guardar</strong> el borrador.</td>
+                </tr>
+                <tr>
+                    <td>Preview valor por fila</td>
+                    <td>Prueba mapeo + reglas con literales o la 1ª fila muestra. No es un job de Generar.</td>
+                </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Indicadores del editor</h3>
+        <h3 class="form-section-title">Indicadores</h3>
         <table class="help-table">
             <thead><tr><th>Indicador</th><th>Significado</th></tr></thead>
             <tbody>
-                <tr><td>Mapeos activos</td><td>Enlaces guardados en el borrador.</td></tr>
+                <tr><td>Mapeos activos</td><td>Enlaces en el borrador.</td></tr>
                 <tr><td>Destino sin mapear</td><td>Campos del layout aún sin enlace.</td></tr>
-                <tr><td>Origen no usado</td><td>Campos de la planilla que no alimentan ningún mapeo (aviso, no error).</td></tr>
-                <tr><td>Obligatorios pendientes</td><td>Campos del layout requeridos sin fuente; deben resolverse antes de publicar.</td></tr>
+                <tr><td>Origen no usado</td><td>Columnas de planilla que no alimentan ningún mapeo (aviso, no error).</td></tr>
+                <tr><td>Obligatorios pendientes</td><td>Layout <code>required</code> sin fuente. Hay que resolverlos antes de publicar.</td></tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Acciones</h3>
+        <h3 class="form-section-title">Tipos de enlace</h3>
         <table class="help-table">
-            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <thead><tr><th>Tipo</th><th>Qué hace</th></tr></thead>
             <tbody>
-                <tr>
-                    <td>Sugerir por nombre</td>
-                    <td>Propone mapeos <code>direct</code> cuando el nombre de planilla y layout coinciden (útil tras «Cargar desde entrada»).</td>
-                </tr>
-                <tr><td>Añadir mapeo</td><td>Crea una nueva relación en la tabla.</td></tr>
-                <tr>
-                    <td>Guardar</td>
-                    <td>Persiste el borrador. Si todo está OK, el mensaje indica seguir con <strong>Reglas</strong> y luego <strong>publicar</strong>.</td>
-                </tr>
-                <tr><td>← Hub mapeo</td><td>Vuelve al resumen del módulo (enlaces + reglas).</td></tr>
+                <tr><td class="mono">direct</td><td>Copia un campo de la planilla. Exige origen.</td></tr>
+                <tr><td class="mono">constant</td><td>Valor fijo (código de banco, moneda). Sin columna de entrada.</td></tr>
+                <tr><td class="mono">concat</td><td>Une literales y/o campos (+ Literal / + Campo).</td></tr>
+                <tr><td class="mono">generated</td><td>Secuencia, UUID, plantilla <code>FAC-{seq:5}</code>, prefijo/sufijo, pad, reinicio por job.</td></tr>
+                <tr><td class="mono">split</td><td>Parte un origen (delimitador, substring o regex) hacia un destino. Caso 1:N avanzado.</td></tr>
+                <tr><td class="mono">expression</td><td>Árbol de expresión del motor. Inválida o demasiado profunda → error al guardar.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint">Algunos tipos aparecen como Fase 2 en el desplegable y pueden estar deshabilitados.</p>
+
+        <h3 class="form-section-title">Si el guardado rechaza</h3>
+        <table class="help-table">
+            <thead><tr><th>Mensaje típico</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>Directo sin origen</td><td>Elija el campo de la planilla.</td></tr>
+                <tr><td>Constante sin valor</td><td>Rellene el valor fijo.</td></tr>
+                <tr><td>Concat sin partes</td><td>Añada al menos un literal o campo.</td></tr>
+                <tr><td>Generado sin tipo</td><td>Elija el generador (secuencia, UUID…).</td></tr>
+                <tr><td>Campo de layout inexistente</td><td>El destino debe existir en salida; no invente nombres aquí.</td></tr>
+                <tr><td>Dos mapeos al mismo destino</td><td>Un solo enlace activo por campo (salvo split 1:N).</td></tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Buenas prácticas</h3>
-        <ul>
-            <li>Un solo mapeo activo por campo del layout (salvo patrones split 1:N).</li>
-            <li>Use <code>constant</code> / <code>generated</code> para datos del banco que no vienen en la planilla.</li>
-            <li>Las limpiezas tipo trim/upper van en <strong>Reglas</strong> (post-mapeo), no sustituyen el enlace.</li>
-            <li>Guarde con frecuencia; el trabajo vive en el borrador hasta publicar (M4).</li>
-        </ul>
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver el editor</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Sugerir, añadir, guardar</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+                <tr><td>Probar preview</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+            </tbody>
+        </table>
+        <p class="hint">El preview no persiste. Completar enlaces no habilita Generar: publique (M4).</p>
 
-        <h3 class="form-section-title">Qué sigue</h3>
-        <ol>
-            <li>Cubra los campos obligatorios del layout.</li>
-            <li>Opcional: abra <strong>Reglas</strong> para transformaciones (trim, pad, fechas…).</li>
-            <li><strong>Publique la definición</strong> (Módulo 4). Solo entonces podrá generar el archivo (M5).</li>
-        </ol>
+        <h3 class="form-section-title">Qué no es</h3>
+        <ul>
+            <li>No crea campos de entrada ni de salida.</li>
+            <li>Los checks de trim/fecha del diálogo son un atajo al pipeline; el editor de <strong>Reglas</strong> es el sitio para ordenar varios pasos.</li>
+            <li>No es serialización de salida ni lectura de planilla (pasos 5 de esos módulos).</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

@@ -132,9 +132,9 @@ Escenarios típicos:
 | GATE / CLEAN publicados → File Split/Merge (perfil lectura) | **Implementado** (host SM) |
 | GATE / CLEAN / otro FilePipe / Match A+B / Reverse / Split-Merge / Scout → FilePipe origen | **Implementado** (host DMS `/origen/importar/`) |
 | GATE / CLEAN / otro FilePipe / Match A+B / Reverse / Split-Merge / Scout → FilePipe destino | **Implementado** (host DMS `/destino/importar/`) |
-| Otro GATE / CLEAN / FilePipe / Match A+B / Reverse / Split-Merge / Scout → FILE GATE | **Implementado** (host GATE `/esquema/importar/`; no clona políticas) |
+| GATE / CLEAN / FilePipe / Match A+B / Reverse / Split-Merge / Scout → FILE GATE | **Implementado** (host GATE `/esquema/importar/`; no clona políticas) |
+| GATE / CLEAN / FilePipe / Match A+B / otro Reverse / Split-Merge / Scout → Reverse entrada | **Implementado** (host Reverse `/entrada/importar/`; no clona salida ni mapeo) |
 | GATE → Match Perfil B | P1 |
-| GATE → Reverse entrada | P2 |
 | Match A ↔ Match B / otro Match | P3 — **parcial:** A→B mismo proyecto en hub Perfil B |
 | Preview: tipo de archivo, # campos, nombres muestra | Diff suave |
 | Confirmación + warning overwrite si destino ya tiene campos | Como Scout apply |
@@ -287,7 +287,7 @@ flowchart LR
 - [ ] Hacia Split/Merge: Match A/B, Reverse entrada, FilePipe, SM→SM, Scout apply
 - [ ] Hub propio con kind `profile_seed` (si el MVP delgado no basta)
 - [ ] API / webhook de seed
-- [ ] CTA embebido también en GATE / Reverse / DMS de forma uniforme
+- [x] CTA embebido también en GATE / Reverse / DMS de forma uniforme
 
 ---
 

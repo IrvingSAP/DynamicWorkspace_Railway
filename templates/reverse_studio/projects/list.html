@@ -76,7 +76,7 @@
         </div>
     </div>
     <div class="table-dt-host">
-        <table id="rs-project-table" class="dw-datatable" data-dt-custom="true">
+        <table id="dms-project-table" class="dw-datatable" data-dt-custom="true">
             <thead>
                 <tr>
                     <th>Código</th>
@@ -84,6 +84,7 @@
                     <th>Visibilidad</th>
                     <th>Mi permiso</th>
                     <th>Versión</th>
+                    <th>Última ejecución</th>
                     <th class="col-actions">Acciones</th>
                 </tr>
             </thead>
@@ -107,6 +108,7 @@
                         {% endif %}
                     </td>
                     <td class="td-mono">{{ row.version_label }}</td>
+                    <td class="td-mono">{{ row.last_execution }}</td>
                     <td class="col-actions">
                         <a href="{% url 'reverse_studio:project_hub' project_slug=row.project.slug %}" class="btn btn-ghost btn-sm">Abrir</a>
                     </td>

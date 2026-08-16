@@ -1,0 +1,8 @@
+{# CTA Importar estructura (Profile Seed) — paso 4 campos Reverse entrada #}
+{% if can_seed_import %}
+<a href="{% url 'reverse_studio:input_seed_hub' project_slug=project.slug %}"
+   class="btn btn-secondary"
+   title="Importar perfil publicado o borrador Scout al contrato de entrada">
+    Importar estructura
+</a>
+{% endif %}

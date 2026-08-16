@@ -96,15 +96,15 @@
             <li>
                 {% if hub.has_published_version %}
                 <a href="{% url 'reverse_studio:run_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.run_step_class }}">
-                    <span class="lifecycle-step-num">5</span> Generar
+                    <span class="lifecycle-step-num">{% if hub.run_complete %}✓{% else %}5{% endif %}</span> Generar
                 </a>
                 {% else %}
-                <span class="lifecycle-step {{ hub.run_step_class }}"><span class="lifecycle-step-num">5</span> Generar</span>
+                <span class="lifecycle-step {{ hub.run_step_class }}"><span class="lifecycle-step-num">{% if hub.run_complete %}✓{% else %}5{% endif %}</span> Generar</span>
                 {% endif %}
             </li>
             <li>
                 <a href="{% url 'reverse_studio:history_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.history_step_class }}">
-                    <span class="lifecycle-step-num">6</span> Historial
+                    <span class="lifecycle-step-num">{% if hub.run_complete %}✓{% else %}6{% endif %}</span> Historial
                 </a>
             </li>
         </ol>

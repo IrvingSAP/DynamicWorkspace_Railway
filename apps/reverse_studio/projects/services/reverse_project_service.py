@@ -1,7 +1,9 @@
 import logging
 
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Max, Q
+from django.db.models.functions import Coalesce
+from django.utils import timezone as dj_timezone
 
 from apps.accounts.models import UserProfile
 from apps.core.services.operation_result import OperationResult
@@ -106,12 +108,24 @@ def _version_label(project: Project) -> str:
     return "Sin definición publicada"
 
 
+def _format_last_execution(value) -> str:
+    if value is None:
+        return "—"
+    when = value
+    if dj_timezone.is_aware(when):
+        when = dj_timezone.localtime(when)
+    return when.strftime("%Y-%m-%d %H:%M")
+
+
 def list_with_stats(user):
     projects = list(visible_projects_qs(user).order_by("-updated_at"))
     project_ids = [project.id for project in projects]
 
     member_counts: dict = {}
+    last_executions: dict = {}
     if project_ids:
+        from apps.dms.file_intake.models import DmsExecutionJob
+
         for row in (
             ProjectMembership.objects.filter(
                 project_id__in=project_ids,
@@ -121,6 +135,17 @@ def list_with_stats(user):
             .annotate(count=Count("id"))
         ):
             member_counts[row["project_id"]] = row["count"]
+
+        for row in (
+            DmsExecutionJob.objects.filter(
+                project_id__in=project_ids,
+                job_type=DmsExecutionJob.JOB_FULL,
+            )
+            .exclude(status=DmsExecutionJob.STATUS_UPLOADED)
+            .values("project_id")
+            .annotate(last_at=Max(Coalesce("finished_at", "created_at")))
+        ):
+            last_executions[row["project_id"]] = row["last_at"]
 
     rows = []
     for project in projects:
@@ -135,6 +160,9 @@ def list_with_stats(user):
                 "visibility": visibility,
                 "visibility_label": VISIBILITY_LABELS.get(visibility, visibility),
                 "version_label": _version_label(project),
+                "last_execution": _format_last_execution(
+                    last_executions.get(project.id)
+                ),
                 "member_count": member_counts.get(project.id, 0),
                 "is_pa": role_code == ProjectMembership.ROLE_PA,
             }
@@ -246,9 +274,10 @@ def create_project(user, data: dict) -> OperationResult:
 
 
 def get_hub_context(user, project: Project) -> dict:
-    from apps.dms.field_mapping.services import field_mapping_persistence_service
+    from apps.dms.file_intake.models import DmsExecutionJob
     from apps.dms.source_profile.services import version_publish_service
     from apps.reverse_studio.input.services import input_wizard_service
+    from apps.reverse_studio.mapping.services import mapping_hub_service
     from apps.reverse_studio.output.services import output_wizard_service
 
     membership = project_service.get_membership(user, project)
@@ -262,18 +291,28 @@ def get_hub_context(user, project: Project) -> dict:
 
     input_wizard = input_wizard_service.get_wizard_context(project, membership)
     output_wizard = output_wizard_service.get_wizard_context(project, membership)
+    mapping_summary = mapping_hub_service.get_mapping_hub_summary(project, membership)
     input_complete = input_wizard.steps_complete >= input_wizard.steps_total
     output_complete = output_wizard.steps_complete >= output_wizard.steps_total
-    mapping_complete = field_mapping_persistence_service.is_mappings_complete(project)
+    mapping_complete = bool(mapping_summary.get("is_complete"))
     publish_ctx = version_publish_service.get_publish_context(project)
     has_published = publish_ctx["has_published_version"]
+    run_complete = DmsExecutionJob.objects.filter(
+        project=project,
+        status__in={
+            DmsExecutionJob.STATUS_COMPLETED,
+            DmsExecutionJob.STATUS_PARTIAL,
+            DmsExecutionJob.STATUS_FAILED,
+            DmsExecutionJob.STATUS_CANCELLED,
+        },
+    ).exists()
 
+    pending = "is-pending"
     if input_complete:
         input_step_class = "is-done"
     else:
         input_step_class = "is-active"
 
-    pending = "is-pending"
     if output_complete:
         output_step_class = "is-done"
     elif input_complete:
@@ -295,11 +334,16 @@ def get_hub_context(user, project: Project) -> dict:
     else:
         publish_step_class = pending
 
-    if has_published:
+    if run_complete:
+        run_step_class = "is-done"
+    elif has_published:
         run_step_class = "is-active"
-        history_step_class = "is-active"
     else:
         run_step_class = pending
+
+    if run_complete:
+        history_step_class = "is-done"
+    else:
         history_step_class = pending
 
     return {
@@ -330,6 +374,7 @@ def get_hub_context(user, project: Project) -> dict:
         "has_published_version": has_published,
         "published_version_label": publish_ctx["published_version_label"],
         "publish_step_class": publish_step_class,
+        "run_complete": run_complete,
         "run_step_class": run_step_class,
         "history_step_class": history_step_class,
     }

@@ -1,10 +1,12 @@
 {% extends "app_base.html" %}
 {% load static %}
 
-{% block title %}Ayuda — Integración FILE GATE{% endblock %}
+{% block title %}Ayuda · Integración FILE GATE — {{ project.name }}{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 <link rel="stylesheet" href="{% static 'css/file_gate_bridge.css' %}">
 {% endblock %}
 
@@ -12,6 +14,10 @@
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'reverse_studio:project_list' %}">Reverse Studio</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
     <a href="{% url 'reverse_studio:bridge_hub' project_slug=project.slug %}">Integración FILE GATE</a>
     <span class="breadcrumb-sep">/</span>
     <span>Ayuda</span>
@@ -21,48 +27,100 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span></p>
+        <p class="page-eyebrow">Referencia · Módulo 7 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Integración FILE GATE</h2>
-        <p>Pre-check opcional de la planilla antes de emitir el archivo de envío.</p>
+        <p>Pre-check opcional: la planilla debe haber pasado FILE GATE (mismo contenido) antes de generar el archivo de envío.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'reverse_studio:bridge_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver a integración</a>
+        <a href="{% url 'reverse_studio:run_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a generar</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Propósito</h3>
+        <h3 class="form-section-title">Qué es</h3>
         <p class="help-intro">
-            Exige una corrida FILE GATE aceptada (mismo content hash) antes de <strong>generar</strong>.
-            No fusiona contratos ni sustituye al validador.
+            Reverse <strong>emite</strong> el layout; FILE GATE <strong>valida</strong> la planilla. El bridge no fusiona contratos ni vuelve a validar aquí:
+            busca una corrida FILE GATE <strong>aceptada</strong> con el mismo <code>content_hash</code> que el archivo que sube en Generar.
         </p>
 
         <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Publique el contrato FILE GATE (esquema + políticas) del proyecto vinculado.</li>
+            <li>Valide <strong>esa</strong> planilla en FILE GATE → Validar (resultado accepted según el umbral).</li>
+            <li>En Reverse, active el flag, elija el proyecto GATE, acepte y frescura, y <strong>guarde</strong>.</li>
+            <li>En <strong>Generar</strong>, suba el mismo contenido. Si el pre-check pasa, se emite el archivo de envío.</li>
+        </ol>
+
+        <h3 class="form-section-title">Campos de esta pantalla</h3>
         <table class="help-table">
-            <thead><tr><th>Paso</th><th>Dónde</th></tr></thead>
+            <thead><tr><th>Control</th><th>Significado</th></tr></thead>
             <tbody>
-                <tr><td>1. Validar planilla</td><td>FILE GATE → Validar</td></tr>
-                <tr><td>2. Gate en verde</td><td>passed / passed_with_warnings</td></tr>
-                <tr><td>3. Generar layout</td><td>Reverse Studio → Generar</td></tr>
+                <tr>
+                    <td>Exigir validación FILE GATE</td>
+                    <td>Interruptor. Apagado: Generar funciona como Módulo 5, sin pre-check. Encendido: nadie puede saltarlo (tampoco el PA).</td>
+                </tr>
+                <tr>
+                    <td>Proyecto FILE GATE</td>
+                    <td>Un solo gate, misma compañía, visible para usted. Debe tener contrato publicado para que el pre-check pase.</td>
+                </tr>
+                <tr>
+                    <td>Estados que abren el paso</td>
+                    <td><strong>Solo passed</strong>: aprobado limpio. <strong>Passed con advertencias</strong>: también <code>passed_with_warnings</code> (según el umbral del gate).</td>
+                </tr>
+                <tr>
+                    <td>Frescura máxima (días)</td>
+                    <td>Antigüedad máxima de la corrida GATE desde que terminó. Un aprobado fuera de ventana también bloquea. No es el TTL de descarga del informe.</td>
+                </tr>
+                <tr>
+                    <td>Guardar integración</td>
+                    <td>Persiste el flag y los campos. PA / ED. CO y GE solo ven el estado.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Matching por hash</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Resultado</th></tr></thead>
+            <tbody>
+                <tr><td>Mismo contenido, otro nombre de archivo</td><td>Mismo hash → el pre-check puede pasar.</td></tr>
+                <tr><td>Edita una celda y vuelve a subir</td><td>Hash distinto → hay que <strong>volver a validar</strong> en FILE GATE.</td></tr>
+                <tr><td>Valida en GATE y sube otro archivo en Generar</td><td>No hay corrida con ese hash → bloqueo.</td></tr>
+                <tr><td>Tipo de planilla Reverse ≠ tipo del contrato GATE</td><td>Aviso en esta pantalla; no impide guardar, pero suele indicar un gate equivocado.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Si Generar bloquea</h3>
+        <table class="help-table">
+            <thead><tr><th>Mensaje típico</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>Valide esta planilla en FILE GATE antes de generar</td><td>Valide <strong>ese</strong> archivo en el proyecto GATE vinculado y reintente.</td></tr>
+                <tr><td>La última validación no está aceptada</td><td>Corrija la planilla o revise la evidencia. <code>failed</code> / parcial no abren el paso.</td></tr>
+                <tr><td>Expiró por frescura</td><td>Vuelva a validar en FILE GATE dentro de la ventana configurada aquí.</td></tr>
+                <tr><td>El proyecto FILE GATE no tiene un contrato publicado</td><td>Publique esquema y políticas en GATE, luego reintente.</td></tr>
+                <tr><td>Integración mal configurada</td><td>Revise que el proyecto GATE exista, el flag esté guardado y tenga permiso.</td></tr>
             </tbody>
         </table>
 
         <h3 class="form-section-title">Roles</h3>
         <table class="help-table">
-            <thead><tr><th>Rol</th><th>Puede</th></tr></thead>
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
             <tbody>
-                <tr><td>PA / ED</td><td>Configurar bridge</td></tr>
-                <tr><td>PA / ED / GE</td><td>Generar si el pre-check pasa</td></tr>
-                <tr><td>Cualquiera</td><td>No saltar el check en MVP</td></tr>
+                <tr><td>Ver esta integración</td><td>Sí</td><td>Sí</td><td>Sí (lectura)</td><td>Sí (lectura)</td></tr>
+                <tr><td>Activar / guardar el bridge</td><td>Sí</td><td>Sí</td><td>No</td><td>No</td></tr>
+                <tr><td>Generar con bridge activo</td><td>Sí*</td><td>Sí*</td><td>Sí*</td><td>No</td></tr>
+                <tr><td>Saltar el pre-check</td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
             </tbody>
         </table>
+        <p class="hint">* Solo si el pre-check pasa. Desactivar el flag es la única forma de generar sin GATE.</p>
 
-        <h3 class="form-section-title">Qué no hace</h3>
+        <h3 class="form-section-title">Qué no es</h3>
         <ul>
             <li>No genera el archivo de envío desde FILE GATE.</li>
-            <li>No sincroniza el contrato de entrada con el esquema FG.</li>
-            <li>No es obligatorio: con el flag apagado, Generar funciona como M5.</li>
+            <li>No sincroniza el contrato de entrada Reverse con el esquema GATE (eso no es el bridge).</li>
+            <li>No es <strong>Importar estructura</strong> (PROFILE SEED): el seed clona campos al borrador; el bridge exige una <strong>corrida</strong> sobre un archivo.</li>
+            <li>No es obligatorio: con el interruptor apagado, Generar (M5) corre sin pre-check.</li>
         </ul>
     </div>
 </div>
