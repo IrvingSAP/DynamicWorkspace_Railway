@@ -100,7 +100,7 @@ failed          = measured_value &gt; configured_threshold</pre>
             <div class="wizard-footer-actions">
                 <a href="{% url 'file_gate:policy_step1' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
                 {% if can_edit_source %}
-                <button type="button" class="btn btn-ghost" data-action="save-policy" data-can-edit="1">Guardar borrador</button>
+                <button type="button" class="btn btn-secondary" data-action="save-policy" data-can-edit="1">Guardar borrador</button>
                 <button type="button" class="btn btn-primary" data-action="save-policy" data-can-edit="1"
                         data-next="{% url 'file_gate:policy_step3' project_slug=project.slug %}">Guardar y revisar →</button>
                 {% endif %}

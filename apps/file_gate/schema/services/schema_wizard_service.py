@@ -29,6 +29,19 @@ class SchemaWizardContext:
     steps: list[WizardStepStatus] = field(default_factory=list)
     continue_step_url_name: str = "file_gate:schema_step1"
 
+    @property
+    def is_complete(self) -> bool:
+        return self.steps_complete >= self.steps_total
+
+    @property
+    def publish_blocked_reason(self) -> str:
+        if self.is_complete:
+            return ""
+        return (
+            f"Complete los {self.steps_total} pasos del contrato "
+            f"({self.steps_complete}/{self.steps_total}) antes de publicar."
+        )
+
 
 _STEP_META = (
     (1, "paso-1", "Paso 1 — Tipo de archivo", "file_gate:schema_step1"),

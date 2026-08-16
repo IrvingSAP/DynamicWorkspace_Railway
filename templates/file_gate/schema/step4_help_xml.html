@@ -1,0 +1,110 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos XML — {{ project.name }}{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}">Contrato</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_gate:schema_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE GATE · Módulo 1 · paso 4 · <span class="role-badge">xml</span></p>
+        <h2>Ayuda — Campos XML</h2>
+        <p>Indica el elemento repetido y la etiqueta de cada valor a validar. Tipo: <code class="mono">{{ file_type_code|default:"xml" }}</code>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_gate:schema_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve esta pantalla</h3>
+        <p class="help-intro">
+            El archivo es un documento XML. FILE GATE recorre cada ocurrencia de un
+            <strong>elemento repetido</strong> (un registro) y lee el texto de etiquetas hijo.
+            Cada etiqueta es un criterio de rechazo, no un mapeo a otro XML.
+        </p>
+
+        <h3 class="form-section-title">Parámetros XML</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo en pantalla</th><th>Efecto en la validación</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Elemento repetido<br><code class="mono">record_element</code></td>
+                    <td>
+                        Nombre local del nodo que se repite por registro (sin namespace).
+                        Ej.: <code class="mono">empleado</code>, <code class="mono">item</code>.
+                        Cada ocurrencia es una fila a validar.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Guarde con <strong>Guardar parámetros</strong> tras fijar el elemento repetido.</p>
+
+        <h3 class="form-section-title">Editor de cada campo</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo en pantalla</th><th>Efecto en la validación</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Nombre interno</td>
+                    <td>Identificador del criterio en el informe (puede diferir de la etiqueta XML).</td>
+                </tr>
+                <tr>
+                    <td><code class="mono">element</code></td>
+                    <td>
+                        Etiqueta hijo (o ruta simple) dentro del registro de donde se toma el texto.
+                        Si el registro es <code class="mono">&lt;empleado&gt;&lt;documento&gt;A1&lt;/documento&gt;…</code>,
+                        use <code class="mono">documento</code>.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Tipo contenido</td>
+                    <td>Forma esperada del texto del elemento.</td>
+                </tr>
+                <tr>
+                    <td>Campo obligatorio</td>
+                    <td>Elemento ausente o vacío → rechazo.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Ejemplo</h3>
+        <pre class="mono" style="padding:10px;background:var(--canvas);border-radius:8px;overflow:auto">&lt;nomina&gt;
+  &lt;empleado&gt;
+    &lt;documento&gt;A1&lt;/documento&gt;
+    &lt;edad&gt;19&lt;/edad&gt;
+  &lt;/empleado&gt;
+&lt;/nomina&gt;</pre>
+        <ul class="help-list">
+            <li><code class="mono">record_element</code> = <code class="mono">empleado</code></li>
+            <li>Campo <code class="mono">documento</code> → <code class="mono">element</code> <code class="mono">documento</code></li>
+            <li>Campo <code class="mono">edad</code> → <code class="mono">element</code> <code class="mono">edad</code>, tipo numérico</li>
+        </ul>
+        <p class="help-intro">El nombre local no lleva prefijo de namespace. Una etiqueta distinta deja el valor vacío.</p>
+
+        {% include "file_gate/schema/_step4_help_criteria.html" %}
+    </div>
+</div>
+{% endblock %}

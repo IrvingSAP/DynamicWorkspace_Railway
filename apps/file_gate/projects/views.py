@@ -1,11 +1,9 @@
 from django.contrib import messages
 from django.shortcuts import redirect, render
-from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from apps.core.decorators import security_complete_required, user_type_required
 from apps.core.services.form_flash import clear_form_state, stash_form_state, take_form_state
-from apps.dms.source_profile.services import source_persistence_service
 from apps.file_gate.projects.services import gate_project_service
 from apps.file_gate.schema.services import schema_publish_service
 from apps.projects.services import project_service
@@ -104,12 +102,6 @@ def project_hub(request, project_slug: str):
             "hub": hub,
             "membership": membership,
             "company": project.company,
-            "can_edit_definition": source_persistence_service.user_can_edit_source(
-                request.user, project
-            ),
-            "source_publish_url": reverse(
-                "file_gate:schema_publish", kwargs={"project_slug": project.slug}
-            ),
             "version_publish": schema_publish_service.get_publish_context(project),
         }
     )

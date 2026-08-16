@@ -20,4 +20,29 @@ urlpatterns = [
     path("paso/5/", views.step5_content_rules, name="schema_step5"),
     path("paso/6/ayuda/", views.step6_help, name="schema_step6_help"),
     path("paso/6/", views.step6_report, name="schema_step6"),
+    path("importar/", views.schema_seed_hub, name="schema_seed_hub"),
+    path("importar/ayuda/", views.schema_seed_hub_help, name="schema_seed_hub_help"),
+    path("importar/origen/", views.schema_seed_picker, name="schema_seed_picker"),
+    path(
+        "importar/origen/ayuda/",
+        views.schema_seed_picker_help,
+        name="schema_seed_picker_help",
+    ),
+    path("importar/confirmar/", views.schema_seed_apply, name="schema_seed_apply"),
+    path(
+        "importar/confirmar/ayuda/",
+        views.schema_seed_apply_help,
+        name="schema_seed_apply_help",
+    ),
+    path("importar/historial/", views.schema_seed_history, name="schema_seed_history"),
+    path(
+        "importar/historial/ayuda/",
+        views.schema_seed_history_help,
+        name="schema_seed_history_help",
+    ),
+    path(
+        "importar/historial/<uuid:event_id>/",
+        views.schema_seed_history_detail,
+        name="schema_seed_history_detail",
+    ),
 ]

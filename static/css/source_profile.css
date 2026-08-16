@@ -66,6 +66,12 @@
     font-weight: 600;
 }
 
+.wizard-step.is-done.is-active {
+    color: var(--accent);
+    background: rgba(15, 92, 76, 0.14);
+    box-shadow: 0 0 0 1px var(--accent);
+}
+
 .wizard-step.is-pending {
     opacity: 0.55;
     pointer-events: none;

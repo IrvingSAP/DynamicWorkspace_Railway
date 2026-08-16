@@ -33,7 +33,8 @@
         <div class="page-actions">
             {% url 'file_gate:schema_step5_help' project_slug=project.slug as source_help_url %}
             {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
-            <button type="button" id="btn-save-content-rules" class="btn btn-ghost btn-sm">Guardar borrador</button>
+            <button type="button" id="btn-save-content-rules" class="btn btn-secondary">Guardar borrador</button>
+            <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
         </div>
     </div>
 

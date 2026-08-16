@@ -84,6 +84,7 @@
                     <th>Visibilidad</th>
                     <th>Mi permiso</th>
                     <th>Versión</th>
+                    <th>Última ejecución</th>
                     <th class="col-actions">Acciones</th>
                 </tr>
             </thead>
@@ -107,6 +108,7 @@
                         {% endif %}
                     </td>
                     <td class="td-mono">{{ row.version_label }}</td>
+                    <td class="td-mono">{{ row.last_execution }}</td>
                     <td class="col-actions">
                         <a href="{% url 'file_gate:project_hub' project_slug=row.project.slug %}" class="btn btn-ghost btn-sm">Abrir</a>
                     </td>

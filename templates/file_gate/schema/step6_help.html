@@ -29,38 +29,92 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">FILE GATE · Módulo 1 · paso 6 · ayuda</p>
-        <h2>Contrato de informe</h2>
-        <p>Define qué evidencia debe generar cada validación. Este paso no ejecuta el gate ni calcula el umbral de rechazo.</p>
+        <p class="page-eyebrow">FILE GATE · Módulo 1 · paso 6 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Contrato de informe</h2>
+        <p>Define qué evidencia debe dejar cada validación. No ejecuta el gate ni calcula el umbral de rechazo.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'file_gate:schema_step6' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 6</a>
     </div>
 </div>
 
-<div class="panel">
+<div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué configura</h3>
-        <table class="help-table">
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Aquí congela <strong>qué se documenta</strong> cuando alguien valida un archivo: resumen, detalle por fila y formato.
+            La corrida (Módulo 3) produce esa evidencia (Módulo 4) contra la versión <strong>publicada</strong> del contrato.
+        </p>
+        <p class="help-intro">
+            El recuadro de <strong>Política de decisión</strong> solo muestra el umbral vigente.
+            Edítelo en Políticas; se publica junto con este contrato, pero no se cambia en este paso.
+        </p>
+
+        <h3 class="form-section-title">Opciones del informe</h3>
+        <table class="help-table help-table--compact">
             <thead><tr><th>Opción</th><th>Efecto al validar</th></tr></thead>
             <tbody>
-                <tr><td>Informe habilitado</td><td>Si está apagado, la corrida puede validar pero no ofrecerá descargas de evidencia.</td></tr>
-                <tr><td>Resumen / contadores</td><td>Incluye métricas (filas leídas, válidas, rechazadas, % rechazo) en el informe.</td></tr>
-                <tr><td>Detalle por fila</td><td>Incluye incidencias (línea, campo, código, mensaje) en la evidencia y, si aplica, en CSV.</td></tr>
-                <tr><td>Formatos</td><td>JSON y/o CSV disponibles en el informe (Módulo 4), sujetos a TTL y roles.</td></tr>
+                <tr>
+                    <td>Informe habilitado<br><code class="mono">report_enabled</code></td>
+                    <td>Si está apagado, la corrida puede validar pero no ofrecerá descargas de evidencia. Al publicar, dejarlo en off genera advertencia (no bloquea).</td>
+                </tr>
+                <tr>
+                    <td>Incluir resumen<br><code class="mono">include_summary</code></td>
+                    <td>Métricas: filas leídas, válidas, rechazadas y % de rechazo.</td>
+                </tr>
+                <tr>
+                    <td>Detalle por fila<br><code class="mono">include_row_errors</code></td>
+                    <td>Incidencias: línea, campo, código de error y mensaje (el valor puede ofuscarse según el informe).</td>
+                </tr>
+                <tr>
+                    <td>Formato<br><code class="mono">report_format</code></td>
+                    <td><code class="mono">json</code>, <code class="mono">csv</code> o <code class="mono">html</code>. La descarga en el informe respeta este contrato, el TTL y los roles.</td>
+                </tr>
             </tbody>
         </table>
-        <p class="hint" style="margin-top:10px">El umbral que decide <code>passed</code> / <code>failed</code> / <code>partial</code> se define en <strong>Políticas</strong>. Tras completar este paso, publique el contrato desde el hub para habilitar <strong>Validar archivo</strong>.</p>
-    </div>
-</div>
 
-<div class="panel" style="margin-top:16px">
-    <div class="panel-body">
+        <h3 class="form-section-title">Este paso vs Políticas</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Dónde</th><th>Qué decide</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Paso 6 (aquí)</td>
+                    <td>Contenido y formato de la evidencia. Códigos de error del catálogo en cada incidencia.</td>
+                </tr>
+                <tr>
+                    <td>Políticas (Módulo 2)</td>
+                    <td>Veredicto del job: umbral de rechazo, recolectar todo, tope de errores, abortar en fatal.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Estados típicos del <strong>job</strong> (hub Validar / historial):
+            <code class="mono">passed</code>, <code class="mono">failed</code>, <code class="mono">partial</code>.
+            El bloque de <code class="mono">status</code> en la vista previa del contrato describe el resumen de procesamiento
+            (<code class="mono">ok</code> / <code class="mono">partial</code> / <code class="mono">failed</code> por aborto),
+            no reemplaza el umbral de Políticas.
+        </p>
+
+        <h3 class="form-section-title">Publicar el contrato</h3>
+        <ul class="help-list">
+            <li><strong>Validar borrador</strong> comprueba el contrato en modo estricto sin congelarlo.</li>
+            <li><strong>Publicar</strong> está en el <strong>Resumen</strong> del contrato (hub), no en este paso. Exige los 6 pasos completos y al menos un campo. Congela el snapshot y abre un borrador nuevo.</li>
+            <li>Sin versión publicada no hay <strong>Validar archivo</strong>.</li>
+            <li>Solo <strong>PA</strong> y <strong>ED</strong> publican. El resto consulta.</li>
+        </ul>
+
         <h3 class="form-section-title">Después de publicar</h3>
-        <ul class="hint">
-            <li>Las nuevas validaciones usan el snapshot publicado (no el borrador en edición).</li>
-            <li>Se crea un nuevo borrador para seguir mejorando el contrato sin afectar corridas en curso.</li>
-            <li>El informe y el certificado de cada job respetan lo congelado aquí.</li>
+        <ul class="help-list">
+            <li>Las nuevas validaciones usan el snapshot publicado, no el borrador que siga editando.</li>
+            <li>El informe, el certificado (hash + versión + resultado) y el TTL respetan lo congelado aquí.</li>
+            <li>Cambie Políticas si el umbral debe moverse; vuelva a publicar el contrato para que las corridas nuevas lo tomen.</li>
+        </ul>
+
+        <h3 class="form-section-title">Buenas prácticas</h3>
+        <ul class="help-list">
+            <li>Deje el informe habilitado con resumen y detalle: sin evidencia el gate no se puede auditar.</li>
+            <li>JSON cubre máquina e integración; CSV ayuda a revisar rechazos en hoja de cálculo.</li>
+            <li>Complete este paso y publique desde aquí o desde el hub del contrato.</li>
         </ul>
     </div>
 </div>

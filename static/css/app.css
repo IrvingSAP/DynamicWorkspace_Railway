@@ -470,6 +470,17 @@ body {
     background: var(--accent-hover);
 }
 
+.btn.is-blocked,
+.btn[aria-disabled="true"] {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.btn.is-blocked:hover,
+.btn[aria-disabled="true"]:hover {
+    background: var(--accent);
+}
+
 .btn-secondary {
     background: var(--surface);
     color: var(--ink-secondary);

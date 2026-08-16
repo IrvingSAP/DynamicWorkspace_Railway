@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from datetime import datetime, time, timedelta
 from urllib.parse import urlencode
+import logging
+import shutil
 
 from django.contrib.auth import get_user_model
 from django.db.models.functions import Coalesce
@@ -19,11 +21,19 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 
 from apps.dms.file_intake.models import DmsExecutionJob
-from apps.dms.file_intake.services import detection_service
+from apps.dms.file_intake.services import detection_service, storage_service
 from apps.file_gate.report.services import validation_report_service as report_svc
 from apps.file_gate.run.services import validation_engine_service as engine
 from apps.file_gate.run.services import validation_run_service as run_svc
 from apps.projects.models import Project, ProjectMembership
+
+logger = logging.getLogger(__name__)
+
+MSG_DELETED = "Corrida eliminada del historial."
+MSG_NOT_FOUND = "No se encontró la corrida en este proyecto."
+MSG_NOT_OWNER = "Solo puede eliminar corridas que usted ejecutó."
+MSG_NO_PERMISSION = "No tiene permiso para ver el historial de este proyecto."
+MSG_UNEXPECTED = "No se pudo eliminar la corrida. Si el problema continúa, contacte al administrador."
 
 PAGE_SIZE = 25
 
@@ -257,6 +267,85 @@ def build_row(project: Project, job: DmsExecutionJob) -> dict:
             "file_gate:report_certificate",
             kwargs={"project_slug": project.slug, "job_id": job.id},
         ),
+        "can_delete": False,
+    }
+
+
+def can_delete_job(user, job: DmsExecutionJob) -> bool:
+    if user is None or not getattr(user, "is_authenticated", False):
+        return False
+    if not job.executed_by_id:
+        return False
+    return job.executed_by_id == user.id
+
+
+def _job_storage_root(project: Project, job: DmsExecutionJob):
+    return storage_service.job_input_dir(
+        project.company_id, project.id, job.id
+    ).parent
+
+
+def _purge_job_storage(project: Project, job: DmsExecutionJob) -> None:
+    root = _job_storage_root(project, job)
+    if not root.exists():
+        return
+    try:
+        shutil.rmtree(root, ignore_errors=False)
+    except OSError:
+        logger.exception(
+            "purge_job_storage failed project=%s job=%s path=%s",
+            project.id,
+            job.id,
+            root,
+        )
+
+
+def delete_own_job(user, project: Project, job_id) -> dict:
+    if not report_svc.can_view_report(user, project):
+        return {
+            "ok": False,
+            "error_code": "permission_denied",
+            "user_message": MSG_NO_PERMISSION,
+            "errors": {},
+        }
+
+    job = (
+        DmsExecutionJob.objects.filter(project=project, pk=job_id)
+        .exclude(status__in=NON_FINAL_JOB_STATUSES)
+        .first()
+    )
+    if job is None:
+        return {
+            "ok": False,
+            "error_code": "not_found",
+            "user_message": MSG_NOT_FOUND,
+            "errors": {},
+        }
+    if not can_delete_job(user, job):
+        return {
+            "ok": False,
+            "error_code": "permission_denied",
+            "user_message": MSG_NOT_OWNER,
+            "errors": {},
+        }
+
+    try:
+        _purge_job_storage(project, job)
+        job.delete()
+    except Exception:
+        logger.exception("delete_own_job failed project=%s job=%s", project.id, job_id)
+        return {
+            "ok": False,
+            "error_code": "unexpected",
+            "user_message": MSG_UNEXPECTED,
+            "errors": {},
+        }
+
+    return {
+        "ok": True,
+        "error_code": None,
+        "user_message": MSG_DELETED,
+        "errors": {},
     }
 
 
@@ -302,6 +391,8 @@ def build_history_context(user, project: Project, params) -> dict:
     universe = [
         build_row(project, job) for job in jobs if report_svc.is_job_final(job)
     ]
+    for row in universe:
+        row["can_delete"] = can_delete_job(user, row["job"])
     rows = [row for row in universe if _matches_python_filters(row, filters)]
 
     # H10: los contadores describen el universo filtrado completo, no la página.

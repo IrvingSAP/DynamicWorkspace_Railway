@@ -24,6 +24,7 @@ THRESHOLD_MODE_COUNT = "count"
 MAX_ERRORS_MIN = 1
 MAX_ERRORS_MAX = 10_000
 THRESHOLD_COUNT_MAX = 10_000_000
+PROGRESS_KEY = "gate_policy_progress"
 
 
 def default_gate_policy() -> dict:
@@ -191,12 +192,41 @@ def get_policy_dict(project: Project, *, persist_defaults: bool = False) -> dict
     return policy
 
 
-def _write_policy(project: Project, policy: dict) -> None:
+def get_policy_progress(project: Project) -> dict:
+    source = source_persistence_service.get_source_dict(project)
+    raw = (source.get("config") or {}).get(PROGRESS_KEY) or {}
+    if not isinstance(raw, dict):
+        return {"collection": False, "threshold": False, "review": False}
+    return {
+        "collection": bool(raw.get("collection")),
+        "threshold": bool(raw.get("threshold")),
+        "review": bool(raw.get("review")),
+    }
+
+
+def _infer_progress_update(partial: dict | None) -> dict:
+    data = dict(partial or {})
+    step = str(data.pop("_wizard_step", "") or "").strip()
+    update = {}
+    if step == "1" or "on_error" in data or "max_errors" in data:
+        update["collection"] = True
+    if step == "2" or "reject_threshold" in data:
+        update["threshold"] = True
+    if step == "3":
+        update["review"] = True
+    return update
+
+
+def _write_policy(project: Project, policy: dict, *, progress_update: dict | None = None) -> None:
     version = source_persistence_service.get_or_create_draft_version(project)
     profile = version.source_profile
     current = source_persistence_service.profile_to_dict(profile)
     config = dict(current.get("config") or {})
     config["gate_policy"] = copy.deepcopy(policy)
+    if progress_update:
+        progress = dict(config.get(PROGRESS_KEY) or {})
+        progress.update(progress_update)
+        config[PROGRESS_KEY] = progress
     current["config"] = config
     source_persistence_service.apply_dict_to_profile(profile, current)
     profile.save()
@@ -216,12 +246,16 @@ def save_gate_policy(user, project: Project, partial: dict) -> OperationResult:
             "No tiene permiso para editar las políticas de este proyecto.",
         )
 
+    incoming = dict(partial or {})
+    progress_update = _infer_progress_update(incoming)
+    incoming.pop("_wizard_step", None)
+
     current = get_policy_dict(project, persist_defaults=False)
-    merged_input = {**current, **(partial or {})}
-    if "reject_threshold" in (partial or {}) and isinstance(partial.get("reject_threshold"), dict):
+    merged_input = {**current, **incoming}
+    if "reject_threshold" in incoming and isinstance(incoming.get("reject_threshold"), dict):
         merged_input["reject_threshold"] = {
             **(current.get("reject_threshold") or {}),
-            **partial["reject_threshold"],
+            **incoming["reject_threshold"],
         }
     policy = normalize_gate_policy(merged_input)
     errors, warnings = validate_gate_policy(policy)
@@ -234,7 +268,7 @@ def save_gate_policy(user, project: Project, partial: dict) -> OperationResult:
         )
 
     try:
-        _write_policy(project, policy)
+        _write_policy(project, policy, progress_update=progress_update or None)
     except Exception:
         logger.exception("save_gate_policy unexpected project=%s", project.slug)
         return OperationResult.failure(
@@ -259,8 +293,13 @@ def ensure_policy_for_publish(project: Project) -> tuple[dict, dict[str, list[st
     return policy, errors, warnings
 
 
-def step_statuses(policy: dict) -> list[str]:
-    """done | draft | pending para pasos 1–3."""
+def step_statuses(policy: dict, progress: dict | None = None) -> list[str]:
+    """done | draft | pending para pasos 1–3.
+
+    Los defaults válidos no marcan el paso como hecho: hace falta guardar
+    cada paso del asistente (`gate_policy_progress`).
+    """
+    progress = progress or {}
     errors, _warnings = validate_gate_policy(policy)
     collection_ok = not any(
         key in errors for key in ("on_error", "abort_on_first_fatal", "max_errors")
@@ -268,19 +307,27 @@ def step_statuses(policy: dict) -> list[str]:
     threshold_ok = not any(
         key in errors for key in ("reject_threshold_mode", "reject_threshold_value")
     )
-    if collection_ok:
+    collection_saved = bool(progress.get("collection"))
+    threshold_saved = bool(progress.get("threshold"))
+    review_saved = bool(progress.get("review"))
+
+    if collection_saved and collection_ok:
         s1 = "done"
-    else:
+    elif collection_saved:
         s1 = "draft"
-    if threshold_ok:
+    else:
+        s1 = "pending"
+
+    if threshold_saved and threshold_ok:
         s2 = "done"
-    elif collection_ok:
+    elif threshold_saved or collection_saved:
         s2 = "draft"
     else:
         s2 = "pending"
-    if collection_ok and threshold_ok:
+
+    if review_saved and collection_ok and threshold_ok:
         s3 = "done"
-    elif threshold_ok or collection_ok:
+    elif review_saved or threshold_saved or collection_saved:
         s3 = "draft"
     else:
         s3 = "pending"
@@ -329,10 +376,10 @@ class PolicyWizardContext:
 
 
 def get_wizard_context(project, membership=None) -> PolicyWizardContext:
-    policy = get_policy_dict(project, persist_defaults=True)
+    policy = get_policy_dict(project, persist_defaults=False)
     version = source_persistence_service.get_draft_version(project)
     role = membership.role if membership else "—"
-    statuses = step_statuses(policy)
+    statuses = step_statuses(policy, get_policy_progress(project))
 
     steps = [
         PolicyWizardStep(

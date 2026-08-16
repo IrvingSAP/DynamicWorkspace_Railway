@@ -133,11 +133,21 @@
 
         button.addEventListener("click", function (e) {
             e.preventDefault();
+            const blockedReason = (button.dataset.blockedReason || "").trim();
+            if (blockedReason || button.getAttribute("aria-disabled") === "true") {
+                const text = blockedReason || "Complete los 6 pasos del contrato antes de publicar.";
+                if (statusEl) {
+                    statusEl.textContent = text;
+                    statusEl.classList.add("step-save-status--error");
+                }
+                showUserMessage("warning", text);
+                return;
+            }
             const next = button.dataset.next || "";
             const draftLabel = button.dataset.draftLabel || "el borrador actual";
             const message = (
                 "¿Publicar " + draftLabel + "? "
-                + "La definición quedará congelada para ejecución y se creará un nuevo borrador."
+                + "El contrato quedará congelado para Validar y se creará un nuevo borrador."
             );
 
             const runPublish = function () {
@@ -183,11 +193,23 @@
         });
     }
 
-    document.querySelectorAll("[data-action='publish-version']").forEach(function (button) {
-        const statusId = button.dataset.statusTarget;
-        const statusEl = statusId ? document.getElementById(statusId) : null;
-        bindButton(button, statusEl);
-    });
+    function bindPublishButtons() {
+        document.querySelectorAll("[data-action='publish-version']").forEach(function (button) {
+            if (button.dataset.publishBound === "1") {
+                return;
+            }
+            button.dataset.publishBound = "1";
+            const statusId = button.dataset.statusTarget;
+            const statusEl = statusId ? document.getElementById(statusId) : null;
+            bindButton(button, statusEl);
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", bindPublishButtons);
+    } else {
+        bindPublishButtons();
+    }
 
     window.dmsSourcePublish = {
         publish: publishVersion,

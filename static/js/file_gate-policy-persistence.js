@@ -51,6 +51,7 @@
             const onError = document.querySelector('input[name="on_error"]:checked');
             const maxErrors = document.getElementById("max_errors");
             return {
+                _wizard_step: "1",
                 on_error: onError ? onError.value : "collect_all",
                 abort_on_first_fatal: true,
                 max_errors: maxErrors ? maxErrors.value : 500,
@@ -60,6 +61,7 @@
             const mode = document.querySelector('input[name="threshold_mode"]:checked');
             const value = document.getElementById("threshold_value");
             return {
+                _wizard_step: "2",
                 abort_on_first_fatal: true,
                 reject_threshold: {
                     mode: mode ? mode.value : "percent",
@@ -67,7 +69,7 @@
                 },
             };
         }
-        return { abort_on_first_fatal: true };
+        return { _wizard_step: "3", abort_on_first_fatal: true };
     }
 
     function savePolicy(options) {
@@ -114,6 +116,24 @@
         readPartialFromForm: readPartialFromForm,
     };
 
+    function markCurrentPolicyStepDone() {
+        const root = document.getElementById("policy-step-root");
+        const step = root && root.dataset.step ? Number(root.dataset.step) : 0;
+        if (!step) {
+            return;
+        }
+        const links = document.querySelectorAll(".wizard-stepper a.wizard-step");
+        const link = links[step - 1];
+        if (!link) {
+            return;
+        }
+        link.classList.add("is-done");
+        const num = link.querySelector(".wizard-step-num");
+        if (num) {
+            num.textContent = "✓";
+        }
+    }
+
     document.addEventListener("click", function (event) {
         const saveBtn = event.target.closest("[data-action='save-policy']");
         if (!saveBtn) {
@@ -132,6 +152,7 @@
                     return;
                 }
                 showMessage("success", data.message || "Política guardada.");
+                markCurrentPolicyStepDone();
             })
             .catch(function () {})
             .finally(function () {

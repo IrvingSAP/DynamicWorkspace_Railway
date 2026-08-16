@@ -27,44 +27,128 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">FILE GATE · Módulo 1 · ayuda</p>
-        <h2>Cómo definir el contrato de validación</h2>
-        <p>El contrato describe qué debe cumplir un archivo para considerarse válido. No genera salida de negocio: solo congela el criterio que usará Validar.</p>
+        <p class="page-eyebrow">FILE GATE · Módulo 1 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Contrato de validación</h2>
+        <p>Hub del esquema: indicadores, importar estructura, publicar y los 6 pasos del asistente.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al contrato</a>
     </div>
 </div>
 
-<div class="panel">
+<div class="panel help-panel">
     <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">
+            El contrato describe <strong>qué debe cumplir un archivo</strong> para considerarse válido en
+            <strong>{{ project.name }}</strong>. No transforma ni emite un archivo de negocio: congela el criterio
+            que usarán Validar, el informe y el bridge FilePipe.
+        </p>
+        <p class="help-intro">
+            Edita siempre el <strong>borrador</strong>. Las corridas usan solo la versión <strong>publicada</strong>.
+            Tras publicar se abre un borrador nuevo para seguir editando.
+        </p>
+
         <h3 class="form-section-title">Flujo recomendado</h3>
         <ol class="hint" style="margin:0;padding-left:1.2rem">
-            <li>Complete los 6 pasos del asistente en el <strong>borrador</strong>.</li>
-            <li>Guarde en cada paso (el progreso se refleja en el hub).</li>
+            <li>Opcional: <strong>Importar estructura</strong> desde otra app (solo PA/ED) para no rearmar el asistente.</li>
+            <li>Complete o revise los 6 pasos en el borrador y guarde en cada uno.</li>
             <li>Cuando el contrato esté listo, pulse <strong>Publicar contrato</strong>.</li>
-            <li>Solo la versión publicada alimenta Validar archivo, el informe y el bridge FilePipe.</li>
+            <li>Configure <strong>Políticas</strong> (umbral passed/failed) y luego <strong>Validar archivo</strong>.</li>
         </ol>
-    </div>
-</div>
 
-<div class="panel" style="margin-top:16px">
-    <div class="panel-body">
-        <h3 class="form-section-title">Indicadores del hub</h3>
+        <h3 class="form-section-title">Indicadores</h3>
         <table class="help-table">
-            <thead><tr><th>Indicador</th><th>Significado</th></tr></thead>
+            <thead><tr><th>Indicador</th><th>Qué muestra</th></tr></thead>
             <tbody>
                 <tr><td>Pasos completos</td><td>Cuántos de los 6 pasos tienen lo mínimo para avanzar.</td></tr>
-                <tr><td>Tipo de archivo</td><td>Formato del contrato (paso 1): posicional, CSV, Excel, etc.</td></tr>
-                <tr><td>Campos definidos</td><td>Cantidad de campos del paso 4. Al publicar hace falta al menos uno.</td></tr>
-                <tr><td>Borrador / activa</td><td>Edita siempre el borrador; las validaciones usan la versión publicada.</td></tr>
+                <tr><td>Tipo archivo</td><td>Formato del paso 1 (posicional, CSV, Excel, JSON, XML, …).</td></tr>
+                <tr><td>Campos definidos</td><td>Cantidad de campos del paso 4. Para publicar hace falta al menos uno.</td></tr>
+                <tr><td>Borrador / activa</td><td>Etiqueta del borrador que edita y, si existe, la versión publicada que usa Validar.</td></tr>
             </tbody>
         </table>
-    </div>
-</div>
 
-<div class="panel" style="margin-top:16px">
-    <div class="panel-body">
+        <h3 class="form-section-title">Acciones del hub</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Importar estructura</td>
+                    <td>PA/ED: abre el sembrador (PROFILE SEED). Clona tipo, captura y campos al <strong>borrador</strong> de este contrato. No publica FILE GATE. No copia políticas.</td>
+                </tr>
+                <tr>
+                    <td>¿Qué es esto?</td>
+                    <td>Ayuda del primer paso del sembrador.</td>
+                </tr>
+                <tr>
+                    <td>Historial de importaciones</td>
+                    <td>Auditoría de siembras a este contrato (éxito o fallo). Visible también en consulta.</td>
+                </tr>
+                <tr>
+                    <td>Publicar contrato vN</td>
+                    <td>PA/ED: en el panel <strong>Publicación</strong>. Congela el borrador. Validar usará esa versión y se crea un borrador nuevo.</td>
+                </tr>
+                <tr>
+                    <td>Continuar edición</td>
+                    <td>Abre el siguiente paso incompleto del asistente.</td>
+                </tr>
+                <tr>
+                    <td>← Proyecto</td>
+                    <td>Vuelve al hub FILE GATE (esquema, políticas, validar, historial, bridge).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Orígenes al importar</h3>
+        <p class="help-intro">
+            Misma compañía y proyectos que usted puede ver. El destino queda en borrador. Este mismo proyecto FILE GATE no aparece como origen.
+        </p>
+        <table class="help-table">
+            <thead><tr><th>Origen en el combo</th><th>Qué clona</th><th>Qué no clona</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>FILE GATE — Otro esquema</td>
+                    <td>Contrato publicado de <strong>otro</strong> proyecto GATE.</td>
+                    <td>Este proyecto. Políticas de gate.</td>
+                </tr>
+                <tr>
+                    <td>FILE CLEAN — Perfil de lectura</td>
+                    <td>Perfil de lectura publicado.</td>
+                    <td>Reglas de limpieza.</td>
+                </tr>
+                <tr>
+                    <td>FilePipe — Origen</td>
+                    <td>Definición de origen publicada.</td>
+                    <td>Destino, mapeo y reglas de transformación.</td>
+                </tr>
+                <tr>
+                    <td>FILE MATCH — Perfil A</td>
+                    <td>Perfil A publicado.</td>
+                    <td>Perfil B y reglas de cruce.</td>
+                </tr>
+                <tr>
+                    <td>FILE MATCH — Perfil B</td>
+                    <td>Perfil B publicado (no es el A del mismo proyecto).</td>
+                    <td>Reglas de cruce.</td>
+                </tr>
+                <tr>
+                    <td>Reverse Studio — Entrada</td>
+                    <td>Contrato de entrada publicado.</td>
+                    <td>Layout de salida y reglas de generación.</td>
+                </tr>
+                <tr>
+                    <td>FILE SPLIT/MERGE — Perfil de lectura</td>
+                    <td>Perfil de lectura publicado.</td>
+                    <td>Reglas de partición y fusión.</td>
+                </tr>
+                <tr>
+                    <td>STRUCTURE SCOUT — Borrador</td>
+                    <td>Borrador actual del Explorador (tipo y campos).</td>
+                    <td>No es un contrato publicado. Distinto de «Aplicar a destino» en Scout.</td>
+                </tr>
+            </tbody>
+        </table>
+
         <h3 class="form-section-title">Asistente (6 pasos)</h3>
         <table class="help-table">
             <thead><tr><th>Paso</th><th>Qué configura</th></tr></thead>
@@ -72,26 +156,32 @@
                 <tr><td>1 · Tipo</td><td>Formato, encoding y fin de línea del archivo a validar.</td></tr>
                 <tr><td>2 · Inicio</td><td>Desde dónde empiezan los datos útiles (salta cabeceras o títulos).</td></tr>
                 <tr><td>3 · Fin</td><td>Dónde termina la captura (EOF, línea o patrón).</td></tr>
-                <tr><td>4 · Campos</td><td>Estructura y criterios de rechazo por campo (<code>required</code>, tipo, patrón…).</td></tr>
+                <tr><td>4 · Campos</td><td>Estructura y criterios de rechazo por campo (obligatorio, tipo, patrón…). También tiene CTA de importar.</td></tr>
                 <tr><td>5 · Reglas</td><td>Normalización y exclusiones globales de contenido.</td></tr>
                 <tr><td>6 · Informe</td><td>Qué debe incluir la evidencia de cada validación (JSON/CSV, resumen, filas).</td></tr>
             </tbody>
         </table>
-        <p class="hint" style="margin-top:10px">El umbral que decide <code>passed</code> / <code>failed</code> no vive aquí: se configura en <strong>Políticas</strong> (Módulo 2).</p>
-    </div>
-</div>
+        <p class="hint" style="margin-top:10px">El umbral que decide <span class="mono">passed</span> / <span class="mono">failed</span> no vive aquí: se configura en <strong>Políticas</strong> (Módulo 2).</p>
 
-<div class="panel" style="margin-top:16px">
-    <div class="panel-body">
-        <h3 class="form-section-title">Roles y publicación</h3>
+        <h3 class="form-section-title">Roles</h3>
         <table class="help-table">
-            <thead><tr><th>Quién</th><th>Puede</th></tr></thead>
+            <thead><tr><th>Rol</th><th>En este hub</th></tr></thead>
             <tbody>
-                <tr><td><code>PA</code> / <code>ED</code></td><td>Editar el borrador y publicar el contrato.</td></tr>
-                <tr><td><code>GE</code> / <code>CO</code></td><td>Consultar el hub; no editan ni publican.</td></tr>
+                <tr><td><span class="role-code">PA</span> / <span class="role-code">ED</span></td><td>Editan el borrador, importan estructura y publican el contrato.</td></tr>
+                <tr><td><span class="role-code">GE</span> / <span class="role-code">CG</span></td><td>Consultan; pueden validar archivos cuando el contrato está publicado. No editan ni publican el esquema.</td></tr>
+                <tr><td><span class="role-code">CO</span></td><td>Solo consulta (hub, historial de importaciones en lectura).</td></tr>
             </tbody>
         </table>
-        <p class="hint" style="margin-top:10px">Publicar congela un snapshot. Luego se crea un nuevo borrador editable. Cambiar el tipo de archivo con campos ya definidos puede exigir limpiar o redefinir el paso 4.</p>
+        <p class="hint" style="margin-top:10px">Cambiar el tipo de archivo con campos ya definidos puede exigir limpiar o redefinir el paso 4.</p>
+
+        <h3 class="form-section-title">Qué no hace este hub</h3>
+        <ul>
+            <li>No valida un archivo (eso es <strong>Validar</strong>).</li>
+            <li>No define el umbral de aprobación (eso es <strong>Políticas</strong>).</li>
+            <li>No es el bridge FILE GATE (pre-check por hash hacia FilePipe).</li>
+            <li>No infiere desde una muestra aquí: Scout se usa como origen del sembrador o desde Explorador con «Aplicar a destino».</li>
+            <li>Importar no publica el contrato ni sustituye Políticas.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

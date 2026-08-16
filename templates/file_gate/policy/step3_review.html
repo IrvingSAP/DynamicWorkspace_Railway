@@ -22,7 +22,6 @@
 {% block content %}
 {% include "file_gate/policy/_project_scope.html" %}
 {% include "file_gate/policy/_policy_persistence.html" %}
-{% include "file_gate/schema/_source_publish.html" %}
 
 <div id="policy-step-root" data-step="3" data-can-edit="{% if can_edit_source %}1{% else %}0{% endif %}">
 <div class="page-header">
@@ -101,7 +100,7 @@
         <pre class="policy-json">{{ policy_json }}</pre>
 
         <div class="note-box" style="margin-top:18px">
-            <strong>Publicación conjunta:</strong> la política queda congelada al publicar el contrato (esquema + política).
+            <strong>Publicación conjunta:</strong> la política se congela al publicar el contrato desde el <strong>Resumen</strong> del esquema, no desde este paso.
         </div>
 
         <div class="wizard-footer">
@@ -109,15 +108,7 @@
             <div class="wizard-footer-actions">
                 <a href="{% url 'file_gate:policy_step2' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
                 {% if can_edit_source %}
-                <button type="button" class="btn btn-ghost" data-action="save-policy" data-can-edit="1">Confirmar revisión</button>
-                <button type="button"
-                        class="btn btn-primary"
-                        data-action="publish-version"
-                        data-draft-label="borrador v{{ version_publish.draft_version_number }}"
-                        data-next="{% url 'file_gate:schema_hub' project_slug=project.slug %}"
-                        data-status-target="step-save-status">
-                    Publicar contrato v{{ version_publish.draft_version_number }}
-                </button>
+                <button type="button" class="btn btn-secondary" data-action="save-policy" data-can-edit="1">Confirmar revisión</button>
                 {% else %}
                 <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}" class="btn btn-primary">Ir al contrato →</a>
                 {% endif %}
@@ -126,8 +117,4 @@
     </div>
 </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'js/source_profile-publish.js' %}"></script>
 {% endblock %}

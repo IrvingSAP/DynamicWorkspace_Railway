@@ -41,13 +41,6 @@
         {% url 'file_gate:schema_hub_help' project_slug=project.slug as source_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
         <a href="{% url 'file_gate:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
-        {% if can_edit_source %}
-        <button type="button"
-                class="btn btn-ghost"
-                data-action="publish-version"
-                data-draft-label="borrador v{{ version_publish.draft_version_number }}"
-                data-status-target="hub-publish-status">Publicar contrato</button>
-        {% endif %}
         <a href="{% url wizard.continue_step_url_name project_slug=project.slug %}" class="btn btn-primary">Continuar edición</a>
     </div>
 </div>
@@ -69,16 +62,47 @@
     </div>
 </div>
 
+{% if can_seed_import %}
+<div class="panel" style="margin-bottom:16px;border-color:#b7d4c8;background:#e4f0eb">
+    <div class="panel-body">
+        <h3 class="form-section-title">Importar estructura</h3>
+        <p class="hint">
+            ¿Ya modeló este layout en <strong>otro FILE GATE</strong> (no este proyecto), <strong>FILE CLEAN</strong> (perfil de lectura, no reglas), <strong>FilePipe</strong> (origen publicado, no destino ni mapeo), <strong>FILE MATCH</strong> (Perfil A o B, no reglas de cruce), <strong>Reverse Studio</strong> (entrada publicada, no salida), <strong>FILE SPLIT/MERGE</strong> (perfil de lectura, no reglas de partición) o <strong>STRUCTURE SCOUT</strong> (borrador actual, no contrato publicado)?
+            Importe la forma al <strong>borrador</strong> de este contrato. No publica FILE GATE ni copia políticas.
+        </p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'file_gate:schema_seed_hub' project_slug=project.slug %}" class="btn btn-primary">Importar estructura</a>
+            <a href="{% url 'file_gate:schema_seed_hub_help' project_slug=project.slug %}?from=hub" class="btn btn-secondary">¿Qué es esto?</a>
+            <a href="{% url 'file_gate:schema_seed_history' project_slug=project.slug %}" class="btn btn-secondary">Historial de importaciones</a>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="panel" style="margin-bottom:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Importaciones</h3>
+        <p class="hint">Consulte el historial de estructuras importadas a este contrato (solo lectura).</p>
+        <div class="page-actions" style="margin-top:12px">
+            <a href="{% url 'file_gate:schema_seed_history' project_slug=project.slug %}" class="btn btn-secondary">Historial de importaciones</a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="panel" style="margin-bottom:16px">
     <div class="panel-body">
         <h3 class="form-section-title">Publicación</h3>
         <p class="hint">Publicar congela el contrato del borrador actual. Las validaciones usarán la versión publicada. Tras publicar se crea automáticamente un nuevo borrador para seguir editando.</p>
         {% if can_edit_source %}
         <button type="button"
-                class="btn btn-primary"
+                class="btn btn-primary{% if not wizard.is_complete %} is-blocked{% endif %}"
+                {% if not wizard.is_complete %}aria-disabled="true" data-blocked-reason="{{ wizard.publish_blocked_reason }}"{% endif %}
                 data-action="publish-version"
                 data-draft-label="borrador v{{ version_publish.draft_version_number }}"
                 data-status-target="hub-publish-status">Publicar contrato v{{ version_publish.draft_version_number }}</button>
+        {% if not wizard.is_complete %}
+        <p class="hint" style="margin-top:8px">{{ wizard.publish_blocked_reason }}</p>
+        {% endif %}
         {% endif %}
     </div>
 </div>

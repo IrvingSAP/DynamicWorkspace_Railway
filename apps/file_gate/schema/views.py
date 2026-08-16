@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
+from uuid import UUID
 
 from apps.core.decorators import security_complete_required, user_type_required
 from apps.dms.source_profile.services import (
@@ -14,6 +15,11 @@ from apps.dms.source_profile.services import (
 )
 from apps.file_gate.projects.services import gate_project_service
 from apps.file_gate.schema.services import schema_publish_service, schema_wizard_service
+from apps.profile_seed.services import (
+    apply_seed_service,
+    profile_seed_service,
+    seed_history_service,
+)
 from apps.projects.services import project_service
 
 STEP4_TEMPLATES = {
@@ -22,6 +28,14 @@ STEP4_TEMPLATES = {
     "xlsx": "file_gate/schema/step4_fields_xlsx.html",
     "json": "file_gate/schema/step4_fields_json.html",
     "xml": "file_gate/schema/step4_fields_xml.html",
+}
+
+STEP4_HELP_TEMPLATES = {
+    "fixed": "file_gate/schema/step4_help_fixed.html",
+    "delimited": "file_gate/schema/step4_help_delimited.html",
+    "xlsx": "file_gate/schema/step4_help_xlsx.html",
+    "json": "file_gate/schema/step4_help_json.html",
+    "xml": "file_gate/schema/step4_help_xml.html",
 }
 
 
@@ -41,6 +55,11 @@ def _base_context(request, project, current_step: int | None = None) -> dict:
     membership = project_service.get_membership(request.user, project)
     wizard = schema_wizard_service.get_wizard_context(project, membership)
     source = source_persistence_service.get_source_dict(project)
+    seed_ctx = profile_seed_service.get_seed_context(
+        request.user,
+        project,
+        destination_slot=profile_seed_service.SOURCE_SLOT_SCHEMA,
+    )
     return {
         "project": project,
         "wizard": wizard,
@@ -56,6 +75,7 @@ def _base_context(request, project, current_step: int | None = None) -> dict:
             "file_gate:schema_publish", kwargs={"project_slug": project.slug}
         ),
         "version_publish": schema_publish_service.get_publish_context(project),
+        **seed_ctx,
     }
 
 
@@ -95,7 +115,28 @@ def step3_help(request, project_slug: str):
 
 @_schema_view
 def step4_help(request, project_slug: str):
-    return _render(request, project_slug, "file_gate/schema/step4_help.html", current_step=4)
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_gate:project_list")
+    source = source_persistence_service.get_source_dict(project)
+    file_type = (source.get("file_type_code") or "").strip()
+    variant = source_profile_service.get_step4_variant(file_type)
+    template = STEP4_HELP_TEMPLATES.get(variant)
+    if not template:
+        messages.warning(
+            request,
+            "El tipo de archivo seleccionado aún no tiene editor de campos. "
+            "Elija txt_fixed, csv, txt_delimited, xlsx, json o xml en el paso 1.",
+        )
+        return redirect("file_gate:schema_step1", project_slug=project_slug)
+    return _render(
+        request,
+        project_slug,
+        template,
+        current_step=4,
+        file_type_code=file_type or variant,
+        step4_variant=variant,
+    )
 
 
 @_schema_view
@@ -185,7 +226,7 @@ def step6_report(request, project_slug: str):
     ctx.update(source_profile_service.get_step6_report_context(project))
     from apps.file_gate.policy.services import gate_policy_service
 
-    policy = gate_policy_service.get_policy_dict(project, persist_defaults=True)
+    policy = gate_policy_service.get_policy_dict(project, persist_defaults=False)
     threshold = policy.get("reject_threshold") or {}
     ctx["gate_policy"] = policy
     ctx["policy_threshold_label"] = gate_policy_service.threshold_summary(policy)
@@ -366,3 +407,214 @@ def schema_publish(request, project_slug: str):
     else:
         messages.error(request, result.user_message)
     return redirect(redirect_to)
+
+
+@_schema_view
+def schema_seed_hub(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_gate:project_list")
+    if not profile_seed_service.user_can_import(request.user, project):
+        messages.error(request, profile_seed_service.MSG_NO_IMPORT)
+        return redirect("file_gate:schema_hub", project_slug=project_slug)
+    return _render(request, project_slug, "profile_seed/seed_entry.html")
+
+
+@_schema_view
+def schema_seed_hub_help(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_gate:project_list")
+    from_key = (request.GET.get("from") or "").strip().lower()
+    if from_key == "hub":
+        help_back_url_name = "file_gate:schema_hub"
+        help_back_label = "← Contrato"
+        help_from_hub = True
+    else:
+        can_import = profile_seed_service.user_can_import(request.user, project)
+        if can_import:
+            help_back_url_name = "file_gate:schema_seed_hub"
+            help_back_label = "← Volver a Importar"
+            help_from_hub = False
+        else:
+            help_back_url_name = "file_gate:schema_hub"
+            help_back_label = "← Contrato"
+            help_from_hub = True
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/seed_entry_help.html",
+        help_back_url_name=help_back_url_name,
+        help_back_label=help_back_label,
+        help_from_hub=help_from_hub,
+    )
+
+
+@_schema_view
+def schema_seed_picker(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_gate:project_list")
+    if not profile_seed_service.user_can_import(request.user, project):
+        messages.error(request, profile_seed_service.MSG_NO_IMPORT)
+        return redirect("file_gate:schema_hub", project_slug=project_slug)
+
+    source_kind = (request.GET.get("kind") or "").strip() or None
+    source_id_raw = (request.GET.get("source_id") or "").strip()
+    source_id = None
+    if source_id_raw:
+        source_id = profile_seed_service.parse_source_project_id(source_id_raw)
+        if source_id is None:
+            source_id = UUID("00000000-0000-0000-0000-000000000000")
+
+    picker = profile_seed_service.get_source_picker_context(
+        request.user,
+        project,
+        source_kind=source_kind,
+        source_id=source_id,
+        destination_slot=profile_seed_service.SOURCE_SLOT_SCHEMA,
+    )
+    if picker.get("invalid_source") or (
+        source_id_raw and profile_seed_service.parse_source_project_id(source_id_raw) is None
+    ):
+        messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
+        picker["invalid_source"] = True
+        picker["selected_source"] = None
+        picker["selected_source_id"] = None
+    if not picker.get("source_kind_supported"):
+        messages.warning(request, profile_seed_service.MSG_KIND_UNSUPPORTED)
+
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/source_picker.html",
+        **picker,
+    )
+
+
+@_schema_view
+def schema_seed_picker_help(request, project_slug: str):
+    return _render(request, project_slug, "profile_seed/source_picker_help.html")
+
+
+def _parse_source_id(raw: str | None):
+    return profile_seed_service.parse_source_project_id(raw)
+
+
+@_schema_view
+@require_http_methods(["GET", "POST"])
+def schema_seed_apply(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_gate:project_list")
+    if not profile_seed_service.user_can_import(request.user, project):
+        messages.error(request, profile_seed_service.MSG_NO_IMPORT)
+        return redirect("file_gate:schema_hub", project_slug=project_slug)
+
+    dest = profile_seed_service.SOURCE_SLOT_SCHEMA
+    if request.method == "POST":
+        source_id = _parse_source_id(request.POST.get("source_id"))
+        source_kind = (request.POST.get("kind") or "").strip() or None
+        action = (request.POST.get("action") or "").strip()
+        if action != "apply":
+            messages.error(request, apply_seed_service.MSG_APPLY_FAIL)
+            return redirect("file_gate:schema_seed_picker", project_slug=project_slug)
+        result = apply_seed_service.apply_seed_to_draft(
+            request.user,
+            project,
+            source_id=source_id,
+            destination_slot=dest,
+            source_kind=source_kind,
+        )
+        if result.ok:
+            messages.success(request, result.user_message)
+            return redirect("file_gate:schema_hub", project_slug=project_slug)
+        messages.error(request, result.user_message)
+        if source_id:
+            qs = f"?source_id={source_id}"
+            if source_kind:
+                qs += f"&kind={source_kind}"
+            return redirect(
+                reverse(
+                    "file_gate:schema_seed_apply",
+                    kwargs={"project_slug": project_slug},
+                )
+                + qs
+            )
+        return redirect("file_gate:schema_seed_picker", project_slug=project_slug)
+
+    source_id = _parse_source_id(request.GET.get("source_id"))
+    source_kind = (request.GET.get("kind") or "").strip() or None
+    if source_id is None:
+        messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
+        return redirect("file_gate:schema_seed_picker", project_slug=project_slug)
+
+    preview = apply_seed_service.get_apply_preview(
+        request.user,
+        project,
+        source_id,
+        destination_slot=dest,
+        source_kind=source_kind,
+    )
+    if preview is None:
+        messages.error(request, profile_seed_service.MSG_SOURCE_UNAVAILABLE)
+        return redirect("file_gate:schema_seed_picker", project_slug=project_slug)
+
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/apply_confirm.html",
+        **preview,
+    )
+
+
+@_schema_view
+def schema_seed_apply_help(request, project_slug: str):
+    return _render(request, project_slug, "profile_seed/apply_confirm_help.html")
+
+
+@_schema_view
+def schema_seed_history(request, project_slug: str):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_gate:project_list")
+    status = (request.GET.get("status") or "").strip()
+    history = seed_history_service.get_history_hub_context(
+        request.user,
+        project,
+        status=status,
+        destination_slot=profile_seed_service.SOURCE_SLOT_SCHEMA,
+    )
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/history_hub.html",
+        **history,
+    )
+
+
+@_schema_view
+def schema_seed_history_detail(request, project_slug: str, event_id):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_gate:project_list")
+    detail = seed_history_service.get_history_detail_context(
+        request.user,
+        project,
+        event_id,
+        destination_slot=profile_seed_service.SOURCE_SLOT_SCHEMA,
+    )
+    if detail is None:
+        messages.error(request, seed_history_service.MSG_EVENT_NOT_FOUND)
+        return redirect("file_gate:schema_seed_history", project_slug=project_slug)
+    return _render(
+        request,
+        project_slug,
+        "profile_seed/history_detail.html",
+        **detail,
+    )
+
+
+@_schema_view
+def schema_seed_history_help(request, project_slug: str):
+    return _render(request, project_slug, "profile_seed/history_help.html")

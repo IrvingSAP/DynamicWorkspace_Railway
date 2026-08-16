@@ -215,6 +215,7 @@ Fuente funcional: [`../definition_app_DMS/source_definition.md`](../definition_a
 | Sin permiso de edición | `error` | No tiene permiso para editar la definición de origen/destino / el mapeo de campos / las reglas de transformación. |
 | Estructura importada al origen | `success` | Estructura importada al borrador de la definición de origen. Revise los pasos del asistente y publique FilePipe cuando corresponda. |
 | Estructura importada al destino | `success` | Estructura importada al borrador de la definición de destino. Revise layout, serialización y publique FilePipe cuando corresponda. |
+| Estructura importada a FILE GATE | `success` | Estructura importada al borrador del contrato FILE GATE. Revise los pasos del asistente y publique el contrato cuando corresponda. |
 | Sin permiso importar estructura | `error` | No tiene permiso para importar estructuras en este proyecto. |
 | Archivo muestra subido | `success` | Archivo muestra subido correctamente. |
 | Archivo producción subido | `success` | Archivo de producción subido correctamente. |
@@ -268,6 +269,7 @@ Códigos adicionales usados en FILE GATE (además de §2):
 | Situación | Tag / canal | Texto al usuario |
 |-----------|-------------|------------------|
 | Contrato guardado (borrador) | `success` | Contrato de validación guardado correctamente. |
+| Validar borrador (strict) OK | `success` | Contrato de validación guardado correctamente. Validación estricta superada. Aún no está publicado. |
 | Validación bloqueante al guardar | `error` + inline | Revise los datos del contrato de validación. |
 | Sin permiso editar contrato | `error` | No tiene permiso para editar el contrato de este proyecto. |
 | JSON de contrato inválido (POST) | `error` | JSON de contrato inválido. |
@@ -277,6 +279,8 @@ Códigos adicionales usados en FILE GATE (además de §2):
 | Borrador sin perfil | `error` | El borrador no tiene contrato de validación. |
 | Publicar con esquema inválido | `error` + inline | Complete y corrija el contrato antes de publicar. |
 | Publicar con política inválida | `error` + inline | Complete y corrija la política de validación antes de publicar. |
+| Publicar bloqueado (contrato incompleto) | `warning` UI | Complete los {total} pasos del contrato ({n}/{total}) antes de publicar. |
+| Publicar bloqueado (políticas incompletas) | `warning` UI | Complete las políticas de validación antes de publicar. |
 | Informe deshabilitado al publicar | `warning` | El informe del gate está deshabilitado; se recomienda dejarlo activo. |
 | Publicación OK | `success` | Contrato v{N} publicado correctamente. Nuevo borrador v{N+1} listo para edición. |
 | Error al publicar | `error` | Ocurrió un error al publicar. Si persiste, contacte al administrador. |
@@ -335,8 +339,12 @@ Estados de `{estado}`: Aprobado · Aprobado con advertencias · Rechazado · Par
 | Versión no numérica (filtro) | inline | La versión debe ser un número. |
 | Rango de fechas invertido | inline | «Hasta» no puede ser anterior a «Desde». |
 | Fecha inválida | inline | Fecha inválida (formato AAAA-MM-DD). |
+| Corrida eliminada | `success` | Corrida eliminada del historial. |
+| Solo dueño puede eliminar | `error` | Solo puede eliminar corridas que usted ejecutó. |
+| Corrida no encontrada | `error` | No se encontró la corrida en este proyecto. |
+| No se pudo eliminar | `error` | No se pudo eliminar la corrida. Si el problema continúa, contacte al administrador. |
 
-> Vacío / sin resultados de filtro: copy en plantilla (no `messages`); no son errores.
+> Vacío / sin resultados de filtro: copy en plantilla (no `messages`); no son errores. Confirmación de borrado en plantilla (no `messages`).
 
 #### Módulo 6 — Bridge FilePipe
 
@@ -786,14 +794,15 @@ Mensajes de usuario para el Sembrador de perfiles. Alineados a [`../PROFILE_SEED
 | Sin orígenes elegibles | empty UI | No hay orígenes publicados visibles. Publique un esquema en FILE GATE o pida acceso a un proyecto GATE. |
 | Origen no elegible / no encontrado | `error` | El origen seleccionado no está disponible o no tiene versión publicada. |
 | Kind no soportado | `warning` / empty | Este tipo de origen aún no está disponible para importar. |
-| Sin orígenes FilePipe | empty UI | No hay otros proyectos FilePipe publicados visibles. Publique un origen en otro proyecto FilePipe o pida acceso. |
+| Sin orígenes FilePipe (destino FilePipe) | empty UI | No hay otros proyectos FilePipe publicados visibles. Publique un origen en otro proyecto FilePipe o pida acceso. |
+| Sin orígenes FilePipe | empty UI | No hay orígenes FilePipe publicados visibles. Publique una definición de origen en FilePipe o pida acceso. |
 | Sin orígenes Match Perfil A | empty UI | No hay orígenes FILE MATCH (Perfil A) publicados visibles. Publique el Perfil A en FILE MATCH o pida acceso a un proyecto Match. |
 | Sin orígenes Match Perfil B | empty UI | No hay orígenes FILE MATCH (Perfil B) publicados visibles. Publique el Perfil B en FILE MATCH o pida acceso a un proyecto Match. |
 | Sin orígenes Reverse entrada | empty UI | No hay orígenes Reverse Studio (entrada) publicados visibles. Publique el contrato de entrada en Reverse Studio o pida acceso. |
 | Sin orígenes Split/Merge | empty UI | No hay orígenes FILE SPLIT/MERGE publicados visibles. Publique un perfil de lectura en FILE SPLIT/MERGE o pida acceso. |
 | Sin orígenes Scout | empty UI | No hay borradores STRUCTURE SCOUT visibles. Guarde un borrador de estructura en Explorador o pida acceso al proyecto. |
 
-> Motor M2: `list_eligible_sources`. Host FilePipe: GATE + CLEAN + otro FilePipe + Match A/B + Reverse entrada + FILE SPLIT/MERGE + **STRUCTURE SCOUT** (borrador current). Apply pasa `kind` para no confundir Match A y B.
+> Motor M2: `list_eligible_sources`. Host FilePipe y **FILE GATE**: GATE + CLEAN + FilePipe + Match A/B + Reverse entrada + FILE SPLIT/MERGE + STRUCTURE SCOUT. Apply pasa `kind` para no confundir Match A y B.
 
 #### Módulo 3 — Preview y aplicar borrador
 
@@ -957,6 +966,7 @@ Mensajes de usuario para File Split/Merge. Alineados a [`../FILE_SPLIT_MERGE.md`
 | Origen no disponible | `error` | El origen seleccionado no está disponible o no tiene versión publicada. |
 | Kind origen no soportado | `warning` | Este tipo de origen aún no está disponible para importar. |
 | Sin orígenes GATE | empty | No hay orígenes FILE GATE publicados visibles. Publique un esquema en FILE GATE o pida acceso a un proyecto GATE. |
+| Sin otros GATE (destino GATE) | empty | No hay otros proyectos FILE GATE publicados visibles. Publique un esquema en otro proyecto FILE GATE o pida acceso. |
 | Sin orígenes CLEAN | empty | No hay orígenes FILE CLEAN publicados visibles. Publique un perfil en FILE CLEAN o pida acceso a un proyecto Clean. |
 | Import OK | `success` | Estructura importada al borrador del perfil de lectura. Revise los pasos del wizard y continue con reglas Split/Merge cuando corresponda. |
 | Import fallido | `error` | No se pudo importar la estructura. Si persiste, contacte al administrador. |

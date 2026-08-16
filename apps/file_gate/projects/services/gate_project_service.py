@@ -1,7 +1,9 @@
 import logging
 
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Max, Q
+from django.db.models.functions import Coalesce
+from django.utils import timezone as dj_timezone
 
 from apps.accounts.models import UserProfile
 from apps.core.services.operation_result import OperationResult
@@ -106,12 +108,24 @@ def _version_label(project: Project) -> str:
     return "Sin versión publicada"
 
 
+def _format_last_execution(value) -> str:
+    if value is None:
+        return "—"
+    when = value
+    if dj_timezone.is_aware(when):
+        when = dj_timezone.localtime(when)
+    return when.strftime("%Y-%m-%d %H:%M")
+
+
 def list_with_stats(user):
     projects = list(visible_projects_qs(user).order_by("-updated_at"))
     project_ids = [project.id for project in projects]
 
     member_counts: dict = {}
+    last_executions: dict = {}
     if project_ids:
+        from apps.dms.file_intake.models import DmsExecutionJob
+
         for row in (
             ProjectMembership.objects.filter(
                 project_id__in=project_ids,
@@ -121,6 +135,17 @@ def list_with_stats(user):
             .annotate(count=Count("id"))
         ):
             member_counts[row["project_id"]] = row["count"]
+
+        for row in (
+            DmsExecutionJob.objects.filter(
+                project_id__in=project_ids,
+                job_type=DmsExecutionJob.JOB_FULL,
+            )
+            .exclude(status=DmsExecutionJob.STATUS_UPLOADED)
+            .values("project_id")
+            .annotate(last_at=Max(Coalesce("finished_at", "created_at")))
+        ):
+            last_executions[row["project_id"]] = row["last_at"]
 
     rows = []
     for project in projects:
@@ -135,6 +160,9 @@ def list_with_stats(user):
                 "visibility": visibility,
                 "visibility_label": VISIBILITY_LABELS.get(visibility, visibility),
                 "version_label": _version_label(project),
+                "last_execution": _format_last_execution(
+                    last_executions.get(project.id)
+                ),
                 "member_count": member_counts.get(project.id, 0),
                 "is_pa": role_code == ProjectMembership.ROLE_PA,
             }
@@ -303,13 +331,12 @@ def get_hub_context(user, project: Project) -> dict:
 
     if run_complete:
         history_step_class = "is-done"
-    elif has_published:
-        history_step_class = "is-active"
     else:
         history_step_class = "is-pending"
 
-    if has_published:
-        bridge_step_class = "is-active"
+    has_bridge_link = DmsProjectConfig.objects.filter(file_gate_project=project).exists()
+    if has_bridge_link:
+        bridge_step_class = "is-done"
     else:
         bridge_step_class = "is-pending"
 
@@ -340,8 +367,19 @@ def get_hub_context(user, project: Project) -> dict:
         "report_complete": report_complete,
         "report_step_class": report_step_class,
         "history_step_class": history_step_class,
+        "bridge_complete": has_bridge_link,
         "bridge_step_class": bridge_step_class,
         "continue_schema_url_name": schema_wizard.continue_step_url_name,
         "version_label": schema_wizard.version_label,
         "can_publish": schema_complete and policy_complete,
+        "publish_blocked_reason": (
+            ""
+            if schema_complete and policy_complete
+            else (
+                f"Complete los {schema_wizard.steps_total} pasos del contrato "
+                f"({schema_wizard.steps_complete}/{schema_wizard.steps_total}) antes de publicar."
+                if not schema_complete
+                else "Complete las políticas de validación antes de publicar."
+            )
+        ),
     }

@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from apps.core.decorators import security_complete_required, user_type_required
 from apps.file_gate.history.services import validation_history_service
@@ -45,6 +46,21 @@ def hub(request, project_slug: str):
         request.user, project, request.GET
     )
     return render(request, "file_gate/history/hub.html", ctx)
+
+
+@_history_view
+@require_POST
+def delete_job(request, project_slug: str, job_id):
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_gate:project_list")
+
+    result = validation_history_service.delete_own_job(request.user, project, job_id)
+    if result["ok"]:
+        messages.success(request, result["user_message"])
+    else:
+        messages.error(request, result["user_message"])
+    return redirect("file_gate:history_hub", project_slug=project.slug)
 
 
 @_history_view

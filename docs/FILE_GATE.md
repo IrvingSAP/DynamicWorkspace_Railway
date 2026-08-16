@@ -165,6 +165,7 @@ Reutiliza en lo posible el asistente de **definición de origen** (pasos tipo So
 | 1 | Tipo de archivo (`SourceFileType`) + encoding / line ending |
 | 2–3 | Captura inicio / fin |
 | 4 | Campos (posicional, delimitado, xlsx, …) + tipos / required / pattern |
+| 4+ | **Importar estructura** (PA/ED): mismo PROFILE SEED que FilePipe — clona forma desde otras apps al **borrador**; no auto-publica ni copia políticas |
 | 5 | Reglas de contenido (excluded_chars, forbidden_patterns, …) |
 | 6 | Contrato de informe (qué reportar, umbrales de alerta) |
 

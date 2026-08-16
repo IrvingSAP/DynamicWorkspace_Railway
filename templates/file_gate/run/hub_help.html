@@ -29,18 +29,66 @@
 <div class="page-header">
     <div>
         <p class="page-eyebrow">FILE GATE · Módulo 3 · ayuda</p>
-        <h2>Cómo validar un archivo</h2>
-        <p>Ejecuta un archivo real contra el contrato y la política publicados y obtén el veredicto del gate.</p>
+        <h2>Cómo usar Validar</h2>
+        <p>El hub ya dice que se comprueba un archivo contra el contrato publicado y que no se genera salida de negocio. Esta guía cubre el flujo, la subida, los estados y qué hacer después del veredicto.</p>
     </div>
     <div class="page-actions">
-        <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver</a>
+        <a href="{% url 'file_gate:run_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver a Validar</a>
+        <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}" class="btn btn-secondary">Ver contrato</a>
     </div>
 </div>
 
 <div class="panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Prerrequisito</h3>
-        <p class="hint">Debe existir una versión <strong>publicada</strong> del contrato. Si no la hay, el hub muestra un bloqueo con acceso directo a publicar. Solo los roles <code>PA</code>, <code>ED</code> y <code>GE</code> pueden ejecutar validaciones.</p>
+        <h3 class="form-section-title">Qué es esta pantalla</h3>
+        <ul class="hint">
+            <li>Es el punto de partida para <strong>ejecutar</strong> una corrida: ver la versión publicada, las últimas ejecuciones y entrar a Subir y validar.</li>
+            <li>Valida contra el contrato y la política <strong>congelados al publicar</strong>, no contra el borrador que esté editando ahora.</li>
+            <li>El detalle de incidencias, el CSV y el certificado viven en <strong>Informe / evidencia</strong>. El listado filtrable, en <strong>Historial</strong>.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Flujo</h3>
+        <ol class="hint">
+            <li>Publique el contrato (esquema + políticas) desde el Resumen del esquema.</li>
+            <li>En Validar, pulse <strong>Subir y validar</strong> / <strong>Ejecutar ahora</strong>.</li>
+            <li>Arrastre o elija <strong>un</strong> archivo cuya extensión coincida con el tipo publicado.</li>
+            <li>La corrida es síncrona: al terminar abre el <strong>resultado</strong> (veredicto + métricas).</li>
+            <li>Desde ahí vaya a evidencia, certificado o valide otro archivo. Si un emisor FilePipe exige este gate, use el <strong>mismo contenido</strong> (mismo hash).</li>
+        </ol>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Si el hub está bloqueado</h3>
+        <table class="issue-table">
+            <thead><tr><th>Qué ve</th><th>Qué significa</th></tr></thead>
+            <tbody>
+                <tr><td>Publique el contrato primero</td><td>No hay versión publicada. Complete esquema y políticas y publique en el hub del contrato.</td></tr>
+                <tr><td>Su rol permite consultar…</td><td>Es consultor (CO) o no tiene PA/ED/GE: puede ver resultados, no subir archivos.</td></tr>
+                <tr><td>Aún no hay validaciones</td><td>Normal en un proyecto nuevo. No es un error.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Reglas de subida</h3>
+        <table class="issue-table">
+            <thead><tr><th>Regla</th><th>Detalle</th></tr></thead>
+            <tbody>
+                <tr><td>Un archivo por corrida</td><td>Clic o arrastrar en la zona de carga. No hay lote en este módulo.</td></tr>
+                <tr><td>Extensión</td><td>Debe coincidir con el tipo del contrato publicado (p. ej. <code>.csv</code> si el contrato es delimitado).</td></tr>
+                <tr><td>Tamaño</td><td>Tope del intake de producción (50 MB en el MVP). El máximo aparece en la tarjeta de política al subir.</td></tr>
+                <tr><td>Nombre y ruta</td><td>Se sanitizan. El archivo se lee; no se reescribe ni se transforma.</td></tr>
+                <tr><td>Tipo de contenido</td><td>Si cambia una celda y vuelve a subir, el hash cambia: para el bridge hay que validar de nuevo.</td></tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
@@ -50,10 +98,28 @@
         <table class="issue-table">
             <thead><tr><th>Estado</th><th>Significado</th></tr></thead>
             <tbody>
-                <tr><td><span class="sev sev-info">Aprobado</span></td><td>Sin errores; el archivo cumple el contrato.</td></tr>
-                <tr><td><span class="sev sev-info">Aprobado con advertencias</span></td><td>Dentro del umbral permitido; hay incidencias no bloqueantes.</td></tr>
-                <tr><td><span class="sev sev-error">Rechazado</span></td><td>Se superó el umbral de rechazo o hubo un error fatal de contrato.</td></tr>
-                <tr><td><span class="sev sev-warning">Parcial</span></td><td>Se alcanzó el máximo de errores antes del fin del archivo; recorrido incompleto.</td></tr>
+                <tr><td><span class="sev sev-info">Aprobado</span></td><td>Sin errores de contenido. El CSV de incidencias solo trae cabeceras.</td></tr>
+                <tr><td><span class="sev sev-info">Aprobado con advertencias</span></td><td>Hay avisos, pero el rechazo quedó dentro del umbral de la política.</td></tr>
+                <tr><td><span class="sev sev-error">Rechazado</span></td><td>Se superó el umbral o hubo un error fatal (archivo ilegible o incompatible con el contrato).</td></tr>
+                <tr><td><span class="sev sev-warning">Parcial</span></td><td>Se alcanzó el máximo de errores antes del fin del archivo; el recorrido quedó incompleto.</td></tr>
+                <tr><td><span class="sev sev-error">Error técnico</span></td><td>Falló la ejecución. Reintente o contacte al administrador.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px">Una fila con varios errores cuenta <strong>una vez</strong> en rechazadas. El % de rechazo es rechazadas / leídas.</p>
+    </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <h3 class="form-section-title">Botones de esta pantalla</h3>
+        <table class="issue-table">
+            <thead><tr><th>Control</th><th>Acción</th></tr></thead>
+            <tbody>
+                <tr><td><strong>← Proyecto</strong></td><td>Vuelve al ciclo del validador.</td></tr>
+                <tr><td><strong>Ver contrato</strong></td><td>Abre el Resumen del esquema (donde se publica).</td></tr>
+                <tr><td><strong>Subir y validar / Ejecutar ahora</strong></td><td>Abre la carga. Solo si hay versión publicada y su rol puede ejecutar.</td></tr>
+                <tr><td><strong>Resultado / Informe</strong> (tabla)</td><td>Veredicto inmediato o evidencia de esa corrida.</td></tr>
+                <tr><td><strong>Historial completo</strong></td><td>Filtros, TTL, certificado y, si es su corrida, eliminar.</td></tr>
             </tbody>
         </table>
     </div>
@@ -61,13 +127,16 @@
 
 <div class="panel" style="margin-top:16px">
     <div class="panel-body">
-        <h3 class="form-section-title">Reglas de subida</h3>
-        <ul class="hint">
-            <li>Solo archivos locales (clic o arrastrar); un job = un archivo.</li>
-            <li>La extensión debe coincidir con el tipo del contrato publicado.</li>
-            <li>Nombres inseguros y rutas se sanitizan; el archivo es de solo lectura.</li>
-            <li>Tamaño máximo alineado al intake de producción (50 MB en el MVP).</li>
-        </ul>
+        <h3 class="form-section-title">Permisos</h3>
+        <table class="issue-table">
+            <thead><tr><th>Acción</th><th>PA</th><th>ED</th><th>GE</th><th>CO</th></tr></thead>
+            <tbody>
+                <tr><td>Ver el hub y últimas corridas</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Subir y ejecutar</td><td>Sí</td><td>Sí</td><td>Sí</td><td>No</td></tr>
+                <tr><td>Ver resultado</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+                <tr><td>Descargar JSON / CSV de evidencia</td><td>Sí</td><td>Sí</td><td>Sí</td><td>No</td></tr>
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}

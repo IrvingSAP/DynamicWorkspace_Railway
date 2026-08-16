@@ -29,27 +29,132 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">FILE GATE · Módulo 1 · paso 2 · ayuda</p>
-        <h2>Inicio de captura</h2>
-        <p>Indica desde qué punto del archivo empiezan los datos a validar. Todo lo anterior (títulos, banners, metadatos) se ignora.</p>
+        <p class="page-eyebrow">FILE GATE · Módulo 1 · paso 2 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Inicio de captura</h2>
+        <p>Define desde qué punto del archivo empiezan las filas que el gate va a validar. Todo lo anterior se omite y no cuenta en el informe.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'file_gate:schema_step2' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 2</a>
     </div>
 </div>
 
-<div class="panel">
+<div class="panel help-panel">
     <div class="panel-body">
         <h3 class="form-section-title">Para qué sirve</h3>
-        <p class="hint">Muchos archivos traen cabeceras o líneas de control antes del detalle. Si el inicio está mal, el gate leerá basura como si fueran registros y fallará campos obligatorios o tipos.</p>
+        <p class="help-intro">
+            Un archivo de proveedor casi nunca es “solo datos”. Suele traer título, membrete, fecha de generación
+            o líneas de control <strong>antes</strong> del detalle. Si el inicio está mal, FILE GATE trata esa basura
+            como registros: fallan campos obligatorios, tipos y patrones, y el porcentaje de rechazo se dispara
+            aunque el detalle sea correcto.
+        </p>
+        <p class="help-intro">
+            Este paso guarda <code class="mono">capture_start</code> en el <strong>borrador</strong> del contrato.
+            Las corridas de Validar usan la versión <strong>publicada</strong>. La unidad es siempre
+            <strong>líneas</strong> (1 = primera línea del archivo).
+        </p>
+
+        <h3 class="form-section-title">Qué entra y qué se ignora</h3>
         <table class="help-table">
-            <thead><tr><th>Elemento</th><th>Uso típico</th></tr></thead>
+            <thead><tr><th>Zona del archivo</th><th>Efecto en la validación</th></tr></thead>
             <tbody>
-                <tr><td>Modo de inicio</td><td>Número de línea, tras un patrón, primera línea con datos, etc. (catálogo de límites de captura).</td></tr>
-                <tr><td>Parámetros</td><td>Valor del modo: número de línea, texto del patrón, etc.</td></tr>
+                <tr>
+                    <td>Antes del inicio</td>
+                    <td>Se omite. No genera errores de campo ni cuenta como fila validada.</td>
+                </tr>
+                <tr>
+                    <td>Desde el inicio hasta el fin (paso 3)</td>
+                    <td>Cada línea (o registro) se evalúa contra los campos y las reglas del contrato.</td>
+                </tr>
+                <tr>
+                    <td>Después del fin</td>
+                    <td>Lo define el paso 3 (pies, totales, firmas). Aquí solo fija el arranque.</td>
+                </tr>
             </tbody>
         </table>
-        <p class="hint" style="margin-top:10px">La unidad es <strong>líneas</strong>. El fin (paso 3) debe ser coherente con este inicio: el fin no puede quedar “antes” del inicio.</p>
+
+        <h3 class="form-section-title">Modos de inicio</h3>
+        <p class="help-intro">
+            Elija el modo que describe el archivo real del proveedor, no “el más flexible”.
+            Los parámetros aparecen en el paso según el modo.
+        </p>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Modo</th><th>Cuándo usarlo</th><th>Cómo arranca la captura</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Primera línea<br><code class="mono">first</code></td>
+                    <td>El archivo es puro detalle: no hay título ni cabecera que saltar.</td>
+                    <td>Línea 1 inclusive.</td>
+                </tr>
+                <tr>
+                    <td>Línea específica<br><code class="mono">line_number</code></td>
+                    <td>La cabecera tiene siempre el mismo número de líneas (membrete fijo).</td>
+                    <td>La línea indicada (1-based) inclusive. Ejemplo: línea 10 si las 9 primeras son corporativas.</td>
+                </tr>
+                <tr>
+                    <td>Tras N líneas iniciales<br><code class="mono">after_header_block</code></td>
+                    <td>Quiere expresar “saltar N líneas”, no “empezar en la línea N”.</td>
+                    <td>Tras saltar N líneas: con <code class="mono">skip_lines = 3</code> la primera fila validada es la 4.</td>
+                </tr>
+                <tr>
+                    <td>Marcador de inicio<br><code class="mono">marker_start</code></td>
+                    <td>Hay un texto fijo que anuncia el detalle (<code class="mono">=== DATOS ===</code>).</td>
+                    <td>La línea <strong>siguiente</strong> a la primera que contiene el texto. El marcador no se valida.</td>
+                </tr>
+                <tr>
+                    <td>Tras patrón regex<br><code class="mono">after_pattern</code></td>
+                    <td>El anuncio de datos varía un poco, pero encaja en una expresión (p. ej. <code class="mono">^REGISTRO\|</code>).</td>
+                    <td>La línea <strong>siguiente</strong> a la primera coincidencia. El patrón no se valida como fila.</td>
+                </tr>
+                <tr>
+                    <td>Tras líneas en blanco<br><code class="mono">after_blank_run</code></td>
+                    <td>El detalle empieza después de un bloque vacío que separa el encabezado.</td>
+                    <td>Tras N líneas consecutivas sin texto (solo espacios cuenta como vacía). Arranca en la inmediata siguiente.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Cómo elegir</h3>
+        <ol class="help-list">
+            <li>Si no hay nada que saltar → <strong>Primera línea</strong>.</li>
+            <li>Si el membrete mide siempre lo mismo → <strong>Línea específica</strong> o <strong>Tras N líneas</strong> (no mezcle ambos criterios).</li>
+            <li>Si hay un rótulo o una línea de control reconocible → <strong>Marcador</strong> (texto literal) o <strong>Patrón</strong> (regex).</li>
+            <li>Si el corte es un hueco en blanco → <strong>Tras líneas en blanco</strong>.</li>
+        </ol>
+
+        <h3 class="form-section-title">Coherencia con el paso 3</h3>
+        <p class="help-intro">
+            El fin de captura debe quedar <strong>después</strong> de este inicio, en la misma unidad (líneas).
+            Si ambos usan número de línea, un fin menor o igual que el inicio no publica.
+            Con fin en EOF se lee desde este arranque hasta la última línea.
+        </p>
+
+        <h3 class="form-section-title">Si el archivo no encaja</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Situación</th><th>Qué hace FILE GATE</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>La línea de inicio queda más allá del archivo</td>
+                    <td>No hay filas de captura. El informe avisa <code class="mono">CAPTURE_OUT_OF_RANGE</code>.</td>
+                </tr>
+                <tr>
+                    <td>No aparece el marcador ni el patrón</td>
+                    <td>No avanza el inicio: se lee desde el principio. Revise el texto o publique de nuevo tras corregir.</td>
+                </tr>
+                <tr>
+                    <td>No hay suficientes líneas en blanco</td>
+                    <td>Tampoco avanza el inicio. El detalle se mezclará con el encabezado.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Buenas prácticas</h3>
+        <ul class="help-list">
+            <li>Mida el archivo real del proveedor (una muestra), no un ejemplo “limpio” de laboratorio.</li>
+            <li>No use regex si un número de línea o un marcador literal bastan: es más estable ante cambios menores.</li>
+            <li>El marcador y el patrón <strong>no</strong> entran como fila validada; el detalle empieza en la línea siguiente.</li>
+            <li>Guarde el borrador. Solo <strong>PA</strong> y <strong>ED</strong> pueden editar; el resto ve el paso en solo lectura.</li>
+            <li>Tras publicar, Validar usa la versión congelada: un cambio de inicio en el borrador no afecta corridas hasta la próxima publicación.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

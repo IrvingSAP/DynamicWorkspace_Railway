@@ -152,7 +152,11 @@
     {% if view.downloads.errors %}
     <a class="download-card" href="{{ view.downloads.errors }}">
         <strong>CSV de incidencias</strong>
-        <span>gate_issues.csv · valores completos</span>
+        {% if view.issues_count %}
+        <span>gate_issues.csv · {{ view.issues_count }} fila{{ view.issues_count|pluralize:"s" }} con error o aviso</span>
+        {% else %}
+        <span>gate_issues.csv · sin filas: la validación no registró incidencias (solo cabeceras)</span>
+        {% endif %}
     </a>
     {% else %}
     <div class="download-card is-disabled" aria-disabled="true">

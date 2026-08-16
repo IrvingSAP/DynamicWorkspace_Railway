@@ -37,7 +37,19 @@
         <p class="page-eyebrow">PROFILE SEED · Elegir origen</p>
         <h2>Elegir origen publicado</h2>
         {% if source_kind == 'structure_scout' %}
-        <p>Seleccione el <strong>borrador Scout actual</strong> (no es un contrato publicado). El destino FilePipe queda en borrador; no se publica.</p>
+        <p>Seleccione el <strong>borrador Scout actual</strong> (no es un contrato publicado). Se clona tipo y campos al borrador destino; <strong>no</strong> se publica FILE GATE ni FilePipe. Distinto de «Aplicar a destino» dentro de Explorador.</p>
+        {% elif source_kind == 'file_clean' %}
+        <p>Seleccione un <strong>perfil de lectura FILE CLEAN publicado</strong>. Se clona tipo, captura y campos al borrador destino; <strong>no</strong> se copian las reglas de limpieza.</p>
+        {% elif source_kind == 'dms' %}
+        <p>Seleccione la <strong>definición de origen FilePipe publicada</strong>. Se clona tipo, captura y campos; <strong>no</strong> se copia el destino, el mapeo ni las reglas de transformación.</p>
+        {% elif source_kind == 'file_match' %}
+        <p>Seleccione el <strong>Perfil A publicado</strong> de FILE MATCH. Se clona tipo y campos de A; <strong>no</strong> se copia el Perfil B ni las reglas de cruce.</p>
+        {% elif source_kind == 'file_match_b' %}
+        <p>Seleccione el <strong>Perfil B publicado</strong> de FILE MATCH. Se clona tipo y campos de B (no es el Perfil A del mismo proyecto); <strong>no</strong> se copian las reglas de cruce.</p>
+        {% elif source_kind == 'reverse' %}
+        <p>Seleccione el <strong>contrato de entrada publicado</strong> de Reverse Studio. Se clona tipo y campos de la entrada; <strong>no</strong> se copia el layout de salida ni las reglas de generación.</p>
+        {% elif source_kind == 'file_split_merge' %}
+        <p>Seleccione el <strong>perfil de lectura publicado</strong> de FILE SPLIT/MERGE. Se clona tipo, captura y campos; <strong>no</strong> se copian las reglas de partición ni fusión.</p>
         {% else %}
         <p>Seleccione un contrato o perfil <strong>publicado</strong> de la misma compañía. No publica el destino.</p>
         {% endif %}

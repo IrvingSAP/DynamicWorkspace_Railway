@@ -94,7 +94,7 @@
             <div class="wizard-footer-actions">
                 <a href="{% url 'file_gate:policy_hub' project_slug=project.slug %}" class="btn btn-secondary">Cancelar</a>
                 {% if can_edit_source %}
-                <button type="button" class="btn btn-ghost" data-action="save-policy" data-can-edit="1">Guardar borrador</button>
+                <button type="button" class="btn btn-secondary" data-action="save-policy" data-can-edit="1">Guardar borrador</button>
                 <button type="button" class="btn btn-primary" data-action="save-policy" data-can-edit="1"
                         data-next="{% url 'file_gate:policy_step2' project_slug=project.slug %}">Guardar y continuar →</button>
                 {% endif %}

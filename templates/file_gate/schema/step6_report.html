@@ -21,7 +21,6 @@
 {% block content %}
 {% include "file_gate/schema/_project_scope.html" %}
 {% include "file_gate/schema/_source_persistence.html" %}
-{% include "file_gate/schema/_source_publish.html" %}
 
 <div id="processing-report-root" data-project-slug="{{ project.slug }}">
 
@@ -35,7 +34,8 @@
             {% url 'file_gate:schema_step6_help' project_slug=project.slug as source_help_url %}
             {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
             <a href="{% url 'file_gate:policy_hub' project_slug=project.slug %}" class="btn btn-secondary">Políticas</a>
-            <button type="button" id="btn-save-processing-report" class="btn btn-ghost btn-sm">Guardar borrador</button>
+            <button type="button" id="btn-save-processing-report" class="btn btn-secondary">Guardar borrador</button>
+            <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
         </div>
     </div>
 
@@ -106,13 +106,7 @@
                 <div class="wizard-footer-actions">
                     <a href="{% url 'file_gate:schema_step5' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
                     {% if can_edit_source %}
-                    <button type="button" id="btn-save-source-profile" class="btn btn-ghost">Validar borrador</button>
-                    <button type="button"
-                            id="btn-publish-version"
-                            class="btn btn-primary"
-                            data-draft-label="borrador v{{ version_publish.draft_version_number }}"
-                            data-next="{% url 'file_gate:schema_hub' project_slug=project.slug %}"
-                            data-status-target="processing-report-status">Publicar versión</button>
+                    <button type="button" id="btn-save-source-profile" class="btn btn-secondary" title="Comprueba el contrato completo (modo estricto) y guarda el borrador. No publica.">Validar borrador</button>
                     {% endif %}
                     <a href="{% url 'file_gate:schema_hub' project_slug=project.slug %}" class="btn btn-secondary">Volver al hub</a>
                 </div>
