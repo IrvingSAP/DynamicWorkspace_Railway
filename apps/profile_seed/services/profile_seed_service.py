@@ -104,6 +104,13 @@ SOURCE_SLOT_LABEL_DRAFT = "Borrador Scout"
 
 SOURCE_KIND_CHOICES_MATCH = (
     (SOURCE_KIND_FILE_GATE, "FILE GATE — Esquema"),
+    (SOURCE_KIND_FILE_CLEAN, "FILE CLEAN — Perfil de lectura"),
+    (SOURCE_KIND_DMS, "FilePipe — Origen"),
+    (SOURCE_KIND_FILE_MATCH, "FILE MATCH — Otro Perfil A"),
+    (SOURCE_KIND_FILE_MATCH_B, "FILE MATCH — Perfil B"),
+    (SOURCE_KIND_REVERSE, "Reverse Studio — Entrada"),
+    (SOURCE_KIND_SPLIT_MERGE, "FILE SPLIT/MERGE — Perfil de lectura"),
+    (SOURCE_KIND_SCOUT, "STRUCTURE SCOUT — Borrador"),
 )
 SOURCE_KIND_CHOICES_SPLIT_MERGE = (
     (SOURCE_KIND_FILE_GATE, "FILE GATE — Esquema"),
@@ -662,10 +669,11 @@ def list_eligible_sources(
         return rows
 
     if source_kind == SOURCE_KIND_FILE_MATCH_B:
+        qs = match_project_service.visible_projects_qs(user)
+        if target_project.project_kind != Project.KIND_FILE_MATCH:
+            qs = qs.exclude(pk=target_project.pk)
         qs = (
-            match_project_service.visible_projects_qs(user)
-            .exclude(pk=target_project.pk)
-            .filter(**published_filter)
+            qs.filter(**published_filter)
             .select_related(*select_related)
             .order_by("slug")
         )
@@ -831,7 +839,12 @@ def get_source_picker_context(
         )
     else:
         picker_hint = (
-            "P0: FILE GATE con esquema publicado. Misma compañía · proyectos visibles para usted."
+            "FILE GATE (esquema publicado; no clona políticas), FILE CLEAN (perfil; no clona reglas), "
+            "FilePipe (origen; no destino ni mapeo), otro FILE MATCH Perfil A (no este proyecto), "
+            "FILE MATCH Perfil B (incluye este proyecto si B está publicado; no clona reglas de cruce), "
+            "Reverse Studio (entrada), FILE SPLIT/MERGE (perfil de lectura) "
+            "o STRUCTURE SCOUT (borrador actual). "
+            "Misma compañía · visibles para usted. No se lista este mismo Perfil A."
         )
 
     return {

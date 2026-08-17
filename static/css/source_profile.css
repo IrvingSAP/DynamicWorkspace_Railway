@@ -113,7 +113,7 @@
     gap: 8px;
 }
 
-#btn-save-step {
+.wizard-footer-actions .btn-ghost {
     border-color: var(--rule-strong);
     color: var(--ink-secondary);
     padding: 0 12px;

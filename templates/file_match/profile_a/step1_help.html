@@ -3,8 +3,6 @@
 
 {% block title %}Ayuda · Paso 1 — {{ project.name }}{% endblock %}
 
-{% block main_class %}app-main--wide{% endblock %}
-
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
@@ -29,46 +27,102 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">FILE MATCH · Módulo 1 · paso 1 · ayuda</p>
-        <h2>tipo de archivo A</h2>
-        <p>Fija el formato, la codificación y el fin de línea con los que FILE MATCH interpretará cada archivo a validar.</p>
+        <p class="page-eyebrow">FILE MATCH · Perfil A · paso 1 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Tipo de archivo A</h2>
+        <p>Fija cómo FILE MATCH abre el archivo A (origen de referencia): formato, bytes y cortes de línea. Condiciona el paso 4 y las extensiones al conciliar.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'file_match:profile_a_step1' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 1</a>
     </div>
 </div>
 
-<div class="panel">
+<div class="panel help-panel">
     <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            El tipo declara <strong>qué archivo A espera el proveedor</strong>, no “el más cómodo de modelar”.
+            Encoding y fin de línea deciden cómo se leen los bytes <strong>antes</strong> de captura, campos o reglas.
+        </p>
+        <p class="help-intro">
+            Se guarda en el <strong>borrador del Perfil A</strong>. Conciliar usa la definición
+            <strong>publicada</strong> (A + B + reglas, Módulo 4). Este paso no publica solo el lado A.
+        </p>
+
         <h3 class="form-section-title">Qué decide este paso</h3>
-        <p class="hint">Sin tipo de archivo no se puede publicar el contrato. La elección condiciona la pantalla de campos (paso 4): posiciones fijas, columnas delimitadas, hoja Excel, JSON o XML.</p>
         <table class="help-table">
-            <thead><tr><th>Elemento</th><th>Efecto en la validación</th></tr></thead>
+            <thead><tr><th>Elemento</th><th>Efecto al conciliar</th></tr></thead>
             <tbody>
                 <tr>
                     <td>Tipo de archivo</td>
-                    <td>Formato esperado (<code>txt_fixed</code>, <code>csv</code>, <code>txt_delimited</code>, <code>xlsx</code>, …). Las extensiones permitidas al conciliar salen de este tipo.</td>
+                    <td>Parser del archivo A y extensiones permitidas al subir el lado A.</td>
                 </tr>
                 <tr>
-                    <td>Encoding</td>
-                    <td>Cómo se leen los bytes del archivo. Un encoding incorrecto suele producir caracteres inválidos o rechazos de contenido.</td>
+                    <td>Codificación</td>
+                    <td>Cómo se interpretan los bytes. Un encoding distinto produce caracteres rotos y rechazos al parsear A.</td>
                 </tr>
                 <tr>
                     <td>Fin de línea</td>
-                    <td>Cómo se parten las líneas (<code>LF</code>, <code>CRLF</code> o auto). Debe coincidir con el archivo real del proveedor.</td>
+                    <td>Cómo se parten las líneas (<code class="mono">LF</code>, <code class="mono">CRLF</code>, auto o secuencia propia). Si no coincide, captura y campos se desalinean.</td>
                 </tr>
             </tbody>
         </table>
-    </div>
-</div>
 
-<div class="panel" style="margin-top:16px">
-    <div class="panel-body">
+        <h3 class="form-section-title">Tipos permitidos (Perfil A) y paso 4</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Tipo</th><th>Extensiones típicas</th><th>En campos (paso 4)</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>TXT posicional<br><code class="mono">txt_fixed</code></td>
+                    <td class="mono">.txt</td>
+                    <td>Posiciones: inicio/fin, inicio/longitud o marcador.</td>
+                </tr>
+                <tr>
+                    <td>TXT delimitado<br><code class="mono">txt_delimited</code></td>
+                    <td class="mono">.txt</td>
+                    <td>Separador, comillas y columna por campo.</td>
+                </tr>
+                <tr>
+                    <td>CSV<br><code class="mono">csv</code></td>
+                    <td class="mono">.csv</td>
+                    <td>Igual que delimitado, con convención CSV.</td>
+                </tr>
+                <tr>
+                    <td>Excel<br><code class="mono">xlsx</code></td>
+                    <td class="mono">.xlsx / .xls</td>
+                    <td>Hoja y columna (letra o encabezado).</td>
+                </tr>
+                <tr>
+                    <td>JSON<br><code class="mono">json</code></td>
+                    <td class="mono">.json</td>
+                    <td>Ruta al arreglo de registros y ruta de cada campo.</td>
+                </tr>
+                <tr>
+                    <td>XML<br><code class="mono">xml</code></td>
+                    <td class="mono">.xml</td>
+                    <td>Elemento repetido y etiqueta hijo por campo.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Encoding y fin de línea</h3>
+        <ul class="help-list">
+            <li>Use el encoding del archivo A real (p. ej. <code class="mono">latin-1</code> en exports antiguos).</li>
+            <li>Windows suele enviar <code class="mono">CRLF</code>; Unix, <code class="mono">LF</code>. Auto sirve si el proveedor mezcla orígenes.</li>
+            <li>El Perfil B puede tener <strong>otro tipo</strong>; no tiene que coincidir con A.</li>
+        </ul>
+
+        <h3 class="form-section-title">Si cambia el tipo a mitad de diseño</h3>
+        <p class="help-intro">
+            Los campos del paso 4 dependen del tipo. Si ya hay estructura y cambia el formato,
+            revise el paso 4 antes de publicar la definición Match.
+        </p>
+
         <h3 class="form-section-title">Buenas prácticas</h3>
-        <ul class="hint">
-            <li>Elija el tipo que usa el proveedor; no “el más flexible”.</li>
-            <li>Si ya hay campos definidos y cambia el tipo, revise el paso 4: la estructura anterior puede quedar inválida.</li>
-            <li>Solo <code>PA</code> y <code>ED</code> pueden guardar. El resto ve el paso en solo lectura.</li>
+        <ul class="help-list">
+            <li>Elija el tipo que usa el archivo A de producción, no el más flexible.</li>
+            <li>Puede <strong>Importar estructura</strong> desde el hub A (GATE, FilePipe, otro Match, Scout…) al borrador; luego confirme tipo y campos.</li>
+            <li>Solo <strong>PA</strong> y <strong>ED</strong> pueden guardar. El resto ve el paso en solo lectura.</li>
+            <li>Completar los 6 pasos de A no habilita conciliar: faltan Perfil B, reglas y publicar.</li>
         </ul>
     </div>
 </div>

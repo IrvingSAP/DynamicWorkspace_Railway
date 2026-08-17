@@ -40,7 +40,7 @@
         {% url 'reverse_studio:bridge_hub_help' project_slug=project.slug as bridge_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=bridge_help_url %}
         <a href="{% url 'reverse_studio:run_hub' project_slug=project.slug %}" class="btn btn-secondary">Generar</a>
-        <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub Proyecto</a>
     </div>
 </div>
 

@@ -32,6 +32,7 @@
         <div class="page-actions">
             {% url 'file_match:profile_b_step6_help' project_slug=project.slug as source_help_url %}
             {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+            <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
             <button type="button" id="btn-save-processing-report" class="btn btn-ghost btn-sm"{% if not can_edit_source %} disabled{% endif %}>Guardar borrador</button>
         </div>
     </div>
@@ -43,7 +44,7 @@
             <p id="processing-report-status" class="content-rules-status" aria-live="polite"></p>
 
             <div class="note-box" style="margin-bottom:16px">
-                <strong>A7:</strong> completar el Perfil B no habilita conciliar. Faltan perfil B, reglas y publicar definición.
+                <strong>A7:</strong> completar el Perfil B no habilita conciliar. Faltan reglas y publicar la definición.
             </div>
 
             <form id="processing-report-form" novalidate>

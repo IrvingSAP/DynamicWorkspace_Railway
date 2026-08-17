@@ -32,6 +32,7 @@
         <div class="page-actions">
             {% url 'file_match:profile_a_step6_help' project_slug=project.slug as source_help_url %}
             {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+            <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
             <button type="button" id="btn-save-processing-report" class="btn btn-ghost btn-sm"{% if not can_edit_source %} disabled{% endif %}>Guardar borrador</button>
         </div>
     </div>

@@ -4,13 +4,12 @@
 {% block title %}Ayuda — Publicar {{ project.slug }}{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -27,27 +26,99 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span> · Módulo 4</p>
+        <p class="page-eyebrow">FILE MATCH · Módulo 4 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Publicar definición</h2>
-        <p>Qué se congela y quién puede publicar en el Conciliador.</p>
+        <p>Congela Perfil A + Perfil B + reglas de cruce en una versión activa. Conciliar es el módulo 5.</p>
     </div>
     <div class="page-actions">
-        <a href="{% url 'file_match:publish_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver</a>
+        <a href="{% url 'file_match:publish_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver a publicar</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <table class="help-table">
-            <thead><tr><th>Tema</th><th>Detalle</th></tr></thead>
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Hasta publicar, A, B y reglas viven en el <strong>borrador</strong>. El job de conciliación
+            <strong>no usa el borrador</strong>: solo la <strong>versión activa</strong> que sale de este paso.
+        </p>
+        <p class="help-intro">
+            No hay publicación parcial: o salen los tres bloques juntos, o no se publica.
+            Completar los wizards A/B no basta; hay que pulsar <strong>Publicar vN</strong> aquí.
+        </p>
+
+        <h3 class="form-section-title">Qué ve en esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Elemento</th><th>Significado</th></tr></thead>
             <tbody>
-                <tr><td>Roles</td><td>Solo <span class="mono">PA</span> / <span class="mono">ED</span>.</td></tr>
-                <tr><td>Snapshot</td><td>Perfil A + Perfil B + reglas de cruce del borrador (juntos; sin publish parcial).</td></tr>
-                <tr><td>Después</td><td>Versión activa + nuevo borrador (copia editable). Ejecutar = Módulo 5.</td></tr>
-                <tr><td>Motor</td><td>Servicio propio Match (<span class="mono">publish_match_definition</span>); chasis <span class="mono">DmsMappingVersion</span>.</td></tr>
-                <tr><td>Jobs</td><td>Solo contra la versión publicada activa.</td></tr>
+                <tr>
+                    <td>Borrador vN / Versión activa</td>
+                    <td>Número del borrador editable vs etiqueta de lo que ya está congelado (o «sin publicar»).</td>
+                </tr>
+                <tr>
+                    <td>Pendiente</td>
+                    <td>Si aparece, lista ítems del checklist aún no listos. El botón Publicar queda deshabilitado.</td>
+                </tr>
+                <tr>
+                    <td>Checklist</td>
+                    <td>Tres tarjetas con enlace: Perfil A, Perfil B y Reglas. <strong>Listo</strong> / <strong>Pendiente</strong>.</td>
+                </tr>
+                <tr>
+                    <td>Publicar vN</td>
+                    <td>Solo PA / ED. Confirma y congela el snapshot. Pide confirmación en pantalla.</td>
+                </tr>
+                <tr>
+                    <td>Continuar a ejecutar</td>
+                    <td>Va al módulo 5. Habilitado solo si ya hay versión activa.</td>
+                </tr>
             </tbody>
         </table>
+
+        <h3 class="form-section-title">Cuándo el checklist marca Listo</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Ítem</th><th>Criterio</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Perfil A</td>
+                    <td>6/6 pasos, tipo permitido y al menos un campo.</td>
+                </tr>
+                <tr>
+                    <td>Perfil B</td>
+                    <td>Igual para el lado B.</td>
+                </tr>
+                <tr>
+                    <td>Reglas de cruce</td>
+                    <td>Hay clave usable y las reglas pasan validación estricta (sin errores de nombres A/B).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué se congela</h3>
+        <ul class="help-list">
+            <li>Cómo leer A y B (tipo, captura, campos, reglas de contenido, informe de lectura).</li>
+            <li>Clave 1:1, campos a comparar y normalización de cruce.</li>
+            <li>No se congela el bridge FILE GATE como “definición de match”; el bridge se configura aparte y aplica al ejecutar.</li>
+        </ul>
+
+        <h3 class="form-section-title">Después de publicar</h3>
+        <ul class="help-list">
+            <li>La versión que acaba de publicar pasa a <strong>activa</strong>.</li>
+            <li>Se abre un <strong>nuevo borrador</strong> (copia editable). Puede seguir diseñando sin romper las corridas en curso.</li>
+            <li>Los jobs nuevos usan solo la activa. Para que un cambio de campos o clave entre en vigor, vuelva a publicar.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles</h3>
+        <ul class="help-list">
+            <li><strong>PA / ED</strong> publican.</li>
+            <li><strong>GE / CG / CO</strong> ven el estado; no confirman el publish.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace este módulo</h3>
+        <ul class="help-list">
+            <li>No sube archivos A/B ni ejecuta el cruce.</li>
+            <li>No publica “solo A” o “solo reglas”.</li>
+            <li>No sustituye FILE GATE: validar un archivo suelto es otra app (el bridge es opcional al conciliar).</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

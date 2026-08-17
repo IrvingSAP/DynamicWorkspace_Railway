@@ -6,12 +6,17 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
     <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}">Perfil B</a>
     <span class="breadcrumb-sep">/</span>
     <span>Ayuda</span>
@@ -23,25 +28,135 @@
 
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">FILE MATCH · Ayuda · Módulo 2</p>
-        <h2>Cómo usar el perfil B</h2>
-        <p>Describe cómo debe leerse el archivo B (contraparte / lado derecho). No redefine el archivo A ni publica la definición.</p>
+        <p class="page-eyebrow">Referencia · FILE MATCH · Módulo 2 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Perfil B</h2>
+        <p>Cómo debe leerse el archivo B (contraparte / lado derecho). No redefine el archivo A ni publica la definición.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver al hub</a>
     </div>
 </div>
 
-<div class="panel">
+<div class="panel help-panel">
     <div class="panel-body">
-        <ul class="hint" style="margin:0; padding-left:1.2rem">
-            <li>Seis pasos: tipo, inicio/fin de captura, campos, reglas e informe de lectura.</li>
-            <li><strong>B3</strong> — whitelist: CSV, Excel, TXT delimitado, TXT posicional, JSON, XML.</li>
-            <li><strong>B8</strong> — el tipo de B puede diferir del tipo de A.</li>
-            <li><strong>Copiar desde A:</strong> si el layout es el mismo, use el atajo del hub (clone al borrador B; opcional proponer reglas 1:1).</li>
-            <li>Los <code>name</code> de campo son propios de B; el enlace A↔B se declara en el Módulo 3.</li>
-            <li>Completar M2 no basta para conciliar: faltan reglas y publicar (B7).</li>
-            <li>No hay «Publicar solo B»; publicar es el Módulo 4.</li>
+        <h3 class="form-section-title">Qué es este hub</h3>
+        <p class="help-intro">
+            Es el <strong>Módulo 2</strong> del Conciliador: el asistente que describe el
+            <strong>archivo B</strong> (contraparte). El resultado es un perfil versionable
+            (forma <code>SourceProfile</code> del lado B) en el borrador del proyecto.
+        </p>
+        <ul>
+            <li><strong>Copy correcto:</strong> “Archivo B” / “Lado B” / “Perfil B”. No es “planilla de emisión” (Reverse), “contrato de validación” (FILE GATE) ni “origen para transformar” (FilePipe).</li>
+            <li>La edición ocurre siempre en el <strong>borrador</strong> de la versión.</li>
+            <li>En el hub ve progreso (pasos hechos), tipo de archivo, conteo de campos y el listado del asistente.</li>
+        </ul>
+
+        <h3 class="form-section-title">Los 6 pasos del asistente</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>#</th><th>Paso</th><th>Para qué sirve</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="mono">1</td>
+                    <td>Tipo de archivo B</td>
+                    <td>Formato, encoding y fin de línea. Condiciona la pantalla de campos (paso 4). Puede diferir del tipo de A.</td>
+                </tr>
+                <tr>
+                    <td class="mono">2</td>
+                    <td>Inicio de captura</td>
+                    <td>Dónde empieza a leerse el contenido útil del archivo B.</td>
+                </tr>
+                <tr>
+                    <td class="mono">3</td>
+                    <td>Fin de captura</td>
+                    <td>Dónde termina la captura (cola, marcador, etc.).</td>
+                </tr>
+                <tr>
+                    <td class="mono">4</td>
+                    <td>Campos del archivo B</td>
+                    <td>Columnas/campos con <code>name</code> estable. Alimentan las claves del Módulo 3. La ayuda del paso 4 cambia según el tipo.</td>
+                </tr>
+                <tr>
+                    <td class="mono">5</td>
+                    <td>Reglas de contenido</td>
+                    <td>Reglas globales al leer B (p. ej. filas vacías, validaciones de contenido).</td>
+                </tr>
+                <tr>
+                    <td class="mono">6</td>
+                    <td>Informe de lectura</td>
+                    <td>Qué reportar al parsear B en el job de conciliación.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Estados en el hub: <strong>Completo</strong> / <strong>En edición</strong> / <strong>Pendiente</strong>.
+            Cada paso tiene su propia ayuda contextual.
+        </p>
+
+        <h3 class="form-section-title">Tipos de archivo permitidos (MVP)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Código</th><th>Uso típico</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">csv</td><td>Extractos delimitados por coma (caso frecuente).</td></tr>
+                <tr><td class="mono">xlsx</td><td>Hojas Excel.</td></tr>
+                <tr><td class="mono">txt_delimited</td><td>TXT con delimitador (p. ej. pipe o tab).</td></tr>
+                <tr><td class="mono">txt_fixed</td><td>TXT posicional (libros / legados).</td></tr>
+                <tr><td class="mono">json</td><td>JSON (si el parser está activo en el tenant).</td></tr>
+                <tr><td class="mono">xml</td><td>XML (si el parser está activo en el tenant).</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            La UI solo ofrece esta whitelist; un tipo fuera de lista se rechaza al guardar.
+            Si cambia el tipo con campos ya definidos, revise el paso 4: la estructura anterior puede quedar inválida.
+        </p>
+
+        <h3 class="form-section-title">Copiar desde A</h3>
+        <ul>
+            <li>Si A y B tienen el <strong>mismo layout</strong>, use <strong>Copiar desde A</strong> en el hub (solo PA/ED).</li>
+            <li>Clona el borrador A al borrador B (snapshot, no vínculo vivo). Opcional: proponer reglas 1:1.</li>
+            <li>Después revise tipo, captura y campos: B puede divergir de A.</li>
+            <li>Los <code>name</code> de B son propios; el enlace A↔B se declara en el Módulo 3.</li>
+        </ul>
+
+        <h3 class="form-section-title">Orden de trabajo recomendado</h3>
+        <ol>
+            <li>Complete (o copie y revise) los 6 pasos del Perfil B.</li>
+            <li>Defina <strong>Reglas</strong> de cruce (Módulo 3) usando los <code>name</code> de A y B.</li>
+            <li><strong>Publique</strong> A + B + reglas juntos (Módulo 4).</li>
+            <li><strong>Concilie</strong> subiendo archivos A y B (Módulo 5).</li>
+        </ol>
+        <p class="help-intro">
+            Regla de producto: completar el Módulo 2 <strong>no basta</strong> para conciliar.
+            No existe “Publicar solo B”.
+        </p>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>En Perfil B</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">PA / ED</td><td>Editan y guardan el borrador; pueden copiar desde A.</td></tr>
+                <tr><td class="mono">GE / CO</td><td>Consulta del hub y pasos en solo lectura (sin guardar definición).</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Buenas prácticas</h3>
+        <ul>
+            <li>Los <code>name</code> de campo deben ser <strong>únicos y estables</strong>: alimentan las claves del Módulo 3.</li>
+            <li>Elija el tipo de archivo que usa el proveedor, no “el más flexible”.</li>
+            <li>Al menos un campo y tipo de archivo B son obligatorios al publicar la definición completa (M4).</li>
+            <li>Guarde borrador al cerrar cada paso; use <strong>Continuar edición</strong> para retomar el siguiente pendiente.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace este módulo</h3>
+        <ul>
+            <li>No redefine el <strong>Perfil A</strong> ni las reglas de cruce.</li>
+            <li>No sube archivos de producción ni ejecuta la conciliación.</li>
+            <li>No publica solo el lado B (publicar es el Módulo 4: A + B + reglas).</li>
         </ul>
     </div>
 </div>

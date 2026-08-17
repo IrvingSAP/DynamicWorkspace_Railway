@@ -1,22 +1,105 @@
 ﻿{% extends "app_base.html" %}
 {% load static %}
+
 {% block title %}Ayuda · Nuevo proyecto — FILE MATCH{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_create' %}">Nuevo</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div>
+        <p class="page-eyebrow">FILE MATCH · Conciliador · alta</p>
         <h2>Ayuda — Crear proyecto</h2>
-        <p>Nombre, código (slug) y visibilidad del conciliador.</p>
+        <p>Alta de un conciliador A vs B: código, nombre visible y visibilidad en la compañía.</p>
     </div>
-    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'file_match:project_create' %}">← Volver</a></div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:project_create' %}" class="btn btn-secondary">← Volver al formulario</a>
+        <a href="{% url 'file_match:project_list' %}" class="btn btn-secondary">Listado</a>
+    </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li>El slug es único por compañía (compartido entre apps).</li>
-    <li>Quien crea queda como <strong>PA</strong> del proyecto.</li>
-    <li><strong>Privado:</strong> solo miembros. <strong>Público:</strong> la compañía puede verlo; editar/ejecutar exige rol.</li>
-    <li>Tras crear: gestione miembros si hace falta y configure el <strong>Perfil A</strong> (6 pasos).</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Crea un proyecto con kind <code class="mono">file_match</code>: un espacio para definir
+            cómo se leen los archivos A y B, las reglas de cruce 1:1 y, más adelante, conciliar.
+            No es FILE GATE (un solo archivo), FilePipe (transformar) ni Reverse Studio (emitir).
+        </p>
+        <p class="help-intro">
+            Quien crea queda como <strong>administrador (PA)</strong>. El alta no publica ni habilita conciliar:
+            primero hay que completar Perfil A, Perfil B, Reglas y <strong>Publicar</strong>.
+        </p>
+
+        <h3 class="form-section-title">Campos de esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo</th><th>Qué hace</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Nombre corto (código)</td>
+                    <td>
+                        Slug único en la organización (compartido con Worksheets, FilePipe y el resto de apps).
+                        Use minúsculas y guiones; no se puede reutilizar un código ya tomado.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Nombre visible</td>
+                    <td>Título que verá el equipo en el listado y el hub (p. ej. «Conciliación banco vs ERP»).</td>
+                </tr>
+                <tr>
+                    <td>Descripción</td>
+                    <td>Opcional. Contexto del cruce (periodos, proveedores, qué es A y qué es B).</td>
+                </tr>
+                <tr>
+                    <td>Privado</td>
+                    <td>Solo miembros explícitos ven y trabajan el proyecto (según rol).</td>
+                </tr>
+                <tr>
+                    <td>Público</td>
+                    <td>
+                        Los UF de la compañía pueden <strong>ver</strong> el proyecto.
+                        Editar, publicar o conciliar siguen exigiendo membresía y rol.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones</h3>
+        <ul class="help-list">
+            <li><strong>Crear y continuar</strong> — alta el proyecto y abre el hub.</li>
+            <li><strong>Cancelar</strong> — vuelve al listado sin guardar.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué hacer después</h3>
+        <ol class="help-list">
+            <li>(PA) Invite miembros si otras personas deben diseñar o ejecutar.</li>
+            <li>Complete <strong>Perfil A</strong> (6 pasos) → <strong>Perfil B</strong> → <strong>Reglas</strong>.</li>
+            <li><strong>Publique</strong> A + B + reglas juntos.</li>
+            <li><strong>Concilie</strong> subiendo un archivo A y un archivo B.</li>
+        </ol>
+
+        <h3 class="form-section-title">Qué no hace este formulario</h3>
+        <ul class="help-list">
+            <li>No define campos, claves ni publica la definición.</li>
+            <li>No sube archivos de conciliación.</li>
+            <li>No crea un contrato FILE GATE ni un mapeo FilePipe.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

@@ -91,7 +91,7 @@
         <div class="wizard-footer">
             <span class="hint">Los cambios se guardan en el borrador del Perfil B.</span>
             <div class="wizard-footer-actions">
-                <button type="button" class="btn btn-secondary" disabled>← Anterior</button>
+                <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
                 {% if can_edit_source %}
                 <button type="button" id="btn-save-step" class="btn btn-ghost">Guardar borrador</button>
                 <button type="button" id="btn-step-next" class="btn btn-primary" data-next="{% url 'file_match:profile_b_step2' project_slug=project.slug %}">Siguiente →</button>

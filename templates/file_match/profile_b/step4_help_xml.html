@@ -1,0 +1,99 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos XML — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}">Perfil B</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_b_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Perfil B · paso 4 · <span class="role-badge">xml</span></p>
+        <h2>Ayuda — Campos XML</h2>
+        <p>Indica el elemento repetido y la etiqueta de cada valor del archivo B. Tipo: <code class="mono">{{ file_type_code|default:"xml" }}</code>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:profile_b_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve esta pantalla</h3>
+        <p class="help-intro">
+            El archivo B es un documento XML. FILE MATCH recorre cada ocurrencia de un
+            <strong>elemento repetido</strong> y lee el texto de etiquetas hijo.
+            Cada etiqueta es un criterio de lectura B, no un mapeo a otro XML.
+        </p>
+
+        <h3 class="form-section-title">Acciones de esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Control</th><th>Qué hace</th></tr></thead>
+            <tbody>
+                <tr><td>Guardar parámetros</td><td>Persiste el elemento repetido en el borrador B.</td></tr>
+                <tr><td>+ Agregar campo</td><td>Nuevo criterio con su etiqueta hijo.</td></tr>
+                <tr><td>← Resumen</td><td>Vuelve al hub del Perfil B.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Parámetros XML</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo en pantalla</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Elemento repetido<br><code class="mono">record_element</code></td>
+                    <td>Nombre local del nodo que se repite (sin namespace). Ej.: <code class="mono">empleado</code>, <code class="mono">item</code>.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Editor de cada campo</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo en pantalla</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>Nombre interno</td><td>Identificador en informe y reglas (puede diferir de la etiqueta XML).</td></tr>
+                <tr>
+                    <td><code class="mono">element</code></td>
+                    <td>Etiqueta hijo dentro del registro. Ej.: <code class="mono">documento</code>.</td>
+                </tr>
+                <tr><td>Tipo / obligatorio</td><td>Criterios de rechazo del texto del elemento.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Ejemplo</h3>
+        <pre class="mono" style="padding:10px;background:var(--canvas);border-radius:8px;overflow:auto">&lt;nomina&gt;
+  &lt;empleado&gt;
+    &lt;documento&gt;A1&lt;/documento&gt;
+    &lt;edad&gt;19&lt;/edad&gt;
+  &lt;/empleado&gt;
+&lt;/nomina&gt;</pre>
+        <ul class="help-list">
+            <li><code class="mono">record_element</code> = <code class="mono">empleado</code></li>
+            <li>Campo documento → <code class="mono">element</code> <code class="mono">documento</code></li>
+            <li>Campo edad → <code class="mono">edad</code>, tipo numérico</li>
+        </ul>
+        <p class="help-intro">El nombre local no lleva prefijo de namespace. Una etiqueta distinta deja el valor vacío.</p>
+
+        {% include "file_match/profile_b/_step4_help_criteria.html" %}
+    </div>
+</div>
+{% endblock %}

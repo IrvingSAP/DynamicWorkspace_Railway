@@ -128,7 +128,7 @@ Escenarios típicos:
 
 | Incluido | Nota |
 |----------|------|
-| GATE publicado → Match Perfil A | **P0** |
+| GATE / CLEAN / FilePipe / Match A+B / Reverse / Split-Merge / Scout → FILE MATCH Perfil A | **Implementado** (host Match `/perfil-a/importar/`) |
 | GATE / CLEAN publicados → File Split/Merge (perfil lectura) | **Implementado** (host SM) |
 | GATE / CLEAN / otro FilePipe / Match A+B / Reverse / Split-Merge / Scout → FilePipe origen | **Implementado** (host DMS `/origen/importar/`) |
 | GATE / CLEAN / otro FilePipe / Match A+B / Reverse / Split-Merge / Scout → FilePipe destino | **Implementado** (host DMS `/destino/importar/`) |
@@ -162,7 +162,7 @@ Escenarios típicos:
 |----------|----------|
 | **FILE GATE** | Destino: contrato (esquema). Combo igual que FilePipe. No clona políticas. También origen típico. |
 | **FILE CLEAN** | Origen: perfil de lectura **publicado** (tipo + campos). No clona `clean_rules`. Destino FILE GATE / FilePipe / Split-Merge. |
-| **FILE MATCH** | Origen hacia GATE: Perfil A (`file_match`) o Perfil B (`file_match_b`) **publicado**. No clona reglas de cruce. Destino Match P0 sigue siendo GATE→A. |
+| **FILE MATCH** | Destino Perfil A: mismo combo que GATE/FilePipe (publicado o borrador Scout). Origen hacia otras apps: Perfil A (`file_match`) o Perfil B (`file_match_b`) **publicado**. No clona reglas de cruce. |
 | **FILE SPLIT/MERGE** | Origen hacia GATE: perfil de lectura **publicado**. No clona `sm_rules`. Destino SM sigue con combo Gate+Clean. |
 | **Reverse Studio** | Origen hacia GATE: contrato de **entrada publicada**. No clona layout de salida ni reglas de generación. |
 | **FilePipe** | Origen hacia GATE: `DmsSourceProfile` **publicado** (no TargetProfile ni mapeo). Destino FilePipe: combo completo. |
@@ -215,7 +215,7 @@ flowchart LR
 - Filtros: kind (`file_gate`, `file_match`, `reverse`, …) + proyecto + versión **publicada** + slot.
 - Slots origen: GATE `schema`, Reverse `input`, Match `profile_a` / `profile_b`, DMS `source`.
 - Excluir proyectos sin versión publicada / sin membresía o visibilidad.
-- MVP UI P0: solo FILE GATE → hand-off a M3 (Continuar deshabilitado hasta M3).
+- Destino Match Perfil A: combo amplio (GATE, CLEAN, FilePipe, otro Match A, Match B, Reverse, Split/Merge, Scout).
 
 ### Módulo 3 — Preview y aplicar borrador
 
@@ -271,6 +271,7 @@ flowchart LR
 - [x] CTA “Importar estructura” en Match Perfil A (P0)
 - [x] Selector origen GATE publicado (+ preview en M3)
 - [x] Escritura borrador Match A vía persistencia destino
+- [x] GATE / CLEAN / FilePipe / Match A+B / Reverse / Split-Merge / Scout → Match Perfil A
 - [x] GATE / CLEAN → File Split/Merge (perfil de lectura)
 - [ ] GATE → Match B y/o Reverse entrada (al menos un segundo camino Match/Reverse)
 - [x] Warning overwrite + mensajes UI catálogo

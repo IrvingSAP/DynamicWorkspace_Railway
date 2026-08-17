@@ -29,6 +29,14 @@ STEP4_TEMPLATES = {
     "xml": "file_match/profile_a/step4_fields_xml.html",
 }
 
+STEP4_HELP_TEMPLATES = {
+    "fixed": "file_match/profile_a/step4_help_fixed.html",
+    "delimited": "file_match/profile_a/step4_help_delimited.html",
+    "xlsx": "file_match/profile_a/step4_help_xlsx.html",
+    "json": "file_match/profile_a/step4_help_json.html",
+    "xml": "file_match/profile_a/step4_help_xml.html",
+}
+
 
 def _profile_a_view(view_func):
     return security_complete_required(user_type_required("UF")(view_func))
@@ -308,7 +316,28 @@ def step3_help(request, project_slug: str):
 
 @_profile_a_view
 def step4_help(request, project_slug: str):
-    return _render(request, project_slug, "file_match/profile_a/step4_help.html", current_step=4)
+    project = _get_project_or_redirect(request, project_slug)
+    if project is None:
+        return redirect("file_match:project_list")
+    source = source_persistence_service.get_source_dict(project)
+    file_type = (source.get("file_type_code") or "").strip()
+    variant = source_profile_service.get_step4_variant(file_type)
+    template = STEP4_HELP_TEMPLATES.get(variant)
+    if not template:
+        messages.warning(
+            request,
+            "Elija un tipo de archivo permitido (CSV, Excel, TXT delimitado, "
+            "TXT posicional, JSON o XML) en el paso 1.",
+        )
+        return redirect("file_match:profile_a_step1", project_slug=project_slug)
+    return _render(
+        request,
+        project_slug,
+        template,
+        current_step=4,
+        file_type_code=file_type or variant,
+        step4_variant=variant,
+    )
 
 
 @_profile_a_view
@@ -490,6 +519,7 @@ def profile_a_save(request, project_slug: str):
                 {
                     "ok": True,
                     "message": result.user_message,
+                    "level": result.payload.get("message_level") or "success",
                     "source": result.payload.get("source", {}),
                     "warnings": result.payload.get("warning_messages") or [],
                 }
@@ -507,9 +537,14 @@ def profile_a_save(request, project_slug: str):
         )
 
     if result.ok:
-        messages.success(request, result.user_message)
+        level = result.payload.get("message_level") or "success"
+        if level == "warning":
+            messages.warning(request, result.user_message)
+        else:
+            messages.success(request, result.user_message)
         for warning in result.payload.get("warning_messages") or []:
-            messages.warning(request, warning)
+            if warning != result.user_message:
+                messages.warning(request, warning)
     else:
         messages.error(request, result.user_message)
     return redirect(redirect_to)

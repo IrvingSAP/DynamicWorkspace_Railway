@@ -173,14 +173,27 @@ def save_source_b(user, project: Project, partial: dict, *, strict: bool = False
             "Ocurrió un error al guardar. Si persiste, contacte al administrador.",
         )
 
+    saved = profile_to_dict(profile)
+    warning_messages = source_persistence_service.flatten_validation_messages(warnings)
+    success_msg = "Perfil B guardado correctamente."
+    message_level = "success"
+    if "processing_report" in (partial or {}):
+        missing = source_persistence_service.incomplete_step_labels(saved)
+        if missing:
+            success_msg = (
+                "El borrador se guardó. Faltan pasos por completar: "
+                + ", ".join(missing)
+                + "."
+            )
+            message_level = "warning"
+
     return OperationResult.success(
-        user_message="Perfil B guardado correctamente.",
+        user_message=success_msg,
         payload={
-            "source": profile_to_dict(profile),
+            "source": saved,
             "version": profile.version,
             "warnings": warnings,
-            "warning_messages": source_persistence_service.flatten_validation_messages(
-                warnings
-            ),
+            "warning_messages": warning_messages,
+            "message_level": message_level,
         },
     )

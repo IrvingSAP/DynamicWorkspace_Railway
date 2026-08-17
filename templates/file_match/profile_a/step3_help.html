@@ -3,8 +3,6 @@
 
 {% block title %}Ayuda · Paso 3 — {{ project.name }}{% endblock %}
 
-{% block main_class %}app-main--wide{% endblock %}
-
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
@@ -29,27 +27,95 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">FILE MATCH · Módulo 1 · paso 3 · ayuda</p>
-        <h2>Fin de captura</h2>
-        <p>Define dónde deja de leer FILE MATCH dentro del archivo. Lo que queda después (pies, totales, firmas) no entra en la validación.</p>
+        <p class="page-eyebrow">FILE MATCH · Perfil A · paso 3 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Fin de captura</h2>
+        <p>Define dónde deja de leer FILE MATCH en el archivo A. Lo que queda después (pies, totales, firmas) no entra al cruce.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'file_match:profile_a_step3' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 3</a>
     </div>
 </div>
 
-<div class="panel">
+<div class="panel help-panel">
     <div class="panel-body">
         <h3 class="form-section-title">Para qué sirve</h3>
-        <p class="hint">Si el archivo trae un pie o un bloque de control al final, un fin mal puesto mezclará esas líneas con los registros y distorsionará el % de rechazo.</p>
+        <p class="help-intro">
+            Si el archivo A cierra con un pie o un total y el fin está mal, esas líneas se parsean como filas A
+            y aparecen como “de más” o con clave inválida en el informe de conciliación.
+        </p>
+        <p class="help-intro">
+            Este paso guarda <code class="mono">capture_end</code> en el <strong>borrador A</strong>.
+            Debe ser <strong>posterior</strong> al inicio del paso 2, en la misma unidad (líneas).
+        </p>
+
+        <h3 class="form-section-title">Qué entra y qué se ignora</h3>
         <table class="help-table">
-            <thead><tr><th>Elemento</th><th>Uso típico</th></tr></thead>
+            <thead><tr><th>Zona del archivo A</th><th>Efecto al conciliar</th></tr></thead>
             <tbody>
-                <tr><td>Modo de fin</td><td>Fin de archivo (EOF), número de línea, hasta un patrón, etc.</td></tr>
-                <tr><td>Parámetros</td><td>Valor asociado al modo (línea, texto del patrón…).</td></tr>
+                <tr>
+                    <td>Antes del inicio (paso 2)</td>
+                    <td>Se omite. Lo fija el paso 2.</td>
+                </tr>
+                <tr>
+                    <td>Desde el inicio hasta este fin</td>
+                    <td>Zona leída: campos, reglas de contenido e informe de lectura A.</td>
+                </tr>
+                <tr>
+                    <td>Después del fin</td>
+                    <td>Se omite. No cuenta como fila A.</td>
+                </tr>
             </tbody>
         </table>
-        <p class="hint" style="margin-top:10px">Con <strong>EOF</strong> se lee hasta el final tras el inicio del paso 2. Debe ser posterior al inicio de captura (misma unidad: líneas).</p>
+
+        <h3 class="form-section-title">Modos de fin</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Modo</th><th>Cuándo usarlo</th><th>Dónde corta</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Final del archivo<br><code class="mono">eof</code></td>
+                    <td>No hay pie: el detalle llega hasta la última línea.</td>
+                    <td>Última línea. Sin parámetros.</td>
+                </tr>
+                <tr>
+                    <td>Línea específica<br><code class="mono">line_number</code></td>
+                    <td>El detalle termina siempre en la misma línea.</td>
+                    <td>Esa línea <strong>inclusive</strong>.</td>
+                </tr>
+                <tr>
+                    <td>Línea N o EOF<br><code class="mono">line_or_eof</code></td>
+                    <td>Quiere un tope, pero archivos cortos no deben fallar.</td>
+                    <td>La línea indicada o el final, lo que ocurra primero.</td>
+                </tr>
+                <tr>
+                    <td>Porcentaje / máximo de filas</td>
+                    <td>Pruebas o archivos enormes.</td>
+                    <td>Hasta ese recorte de captura, siempre después del inicio.</td>
+                </tr>
+                <tr>
+                    <td>Marcador o patrón de fin</td>
+                    <td>Hay un texto o regex que cierra el detalle.</td>
+                    <td>La captura termina <strong>antes</strong> de esa línea.</td>
+                </tr>
+                <tr>
+                    <td>Líneas en blanco<br><code class="mono">blank_run</code></td>
+                    <td>El pie empieza tras un hueco vacío.</td>
+                    <td>Fin exclusive al bloque de N vacías; si no hay bloque, hasta EOF.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Coherencia con el paso 2</h3>
+        <p class="help-intro">
+            Si ambos modos exponen una línea comparable, el fin debe ser mayor que el inicio.
+            Marcador y patrón de fin se buscan a partir del inicio, no desde la línea 1.
+        </p>
+
+        <h3 class="form-section-title">Buenas prácticas</h3>
+        <ul class="help-list">
+            <li>Mida el archivo A real, incluido el pie.</li>
+            <li>En producción prefiera EOF o un marcador estable antes que un porcentaje.</li>
+            <li>Solo <strong>PA</strong> y <strong>ED</strong> pueden guardar.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

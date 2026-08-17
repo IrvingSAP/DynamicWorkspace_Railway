@@ -4,13 +4,12 @@
 {% block title %}Ayuda — Ejecutar {{ project.slug }}{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -27,27 +26,99 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Referencia · Módulo 5</p>
+        <p class="page-eyebrow">FILE MATCH · Módulo 5 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Ejecutar conciliación</h2>
-        <p>Quién puede ejecutar y qué produce el job.</p>
+        <p>Suba el archivo A y el archivo B. El cruce usa solo la definición publicada, no el borrador.</p>
     </div>
     <div class="page-actions">
-        <a href="{% url 'file_match:run_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver</a>
+        <a href="{% url 'file_match:run_hub' project_slug=project.slug %}" class="btn btn-secondary">← Volver a ejecutar</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <table class="help-table">
-            <thead><tr><th>Tema</th><th>Detalle</th></tr></thead>
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Cada corrida parsea A y B con los perfiles publicados, cruza por la clave 1:1 y produce
+            un veredicto más el informe de diferencias. No valida un único archivo (FILE GATE) ni genera
+            un destino ETL (FilePipe).
+        </p>
+
+        <h3 class="form-section-title">Prerrequisitos</h3>
+        <ul class="help-list">
+            <li>Debe existir una <strong>versión publicada activa</strong>. Si no, verá el aviso y el CTA <strong>Ir a Publicar</strong>.</li>
+            <li>Permiso de ejecución: <strong>PA / ED / GE / CG</strong>. CO no ejecuta ni descarga filas de negocio.</li>
+            <li>Los archivos deben respetar tipo, extensión y tamaño máximo indicados en las tarjetas de carga.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué ve en esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Elemento</th><th>Significado</th></tr></thead>
             <tbody>
-                <tr><td>Roles</td><td>PA / ED / GE ejecutan. CO no descarga filas de negocio.</td></tr>
-                <tr><td>Prerrequisito</td><td>Versión publicada (A + B + reglas).</td></tr>
-                <tr><td>Motor</td><td>Parsers DMS ×2 + comparador Match 1:1.</td></tr>
-                <tr><td>Buckets</td><td>matched, value_mismatch, only_a, only_b, duplicate_key.</td></tr>
-                <tr><td>Descargas MVP</td><td>JSON informe + CSV de diferencias.</td></tr>
+                <tr>
+                    <td>Versión activa / tipos / clave</td>
+                    <td>Qué definición usará el job (número, tipo A y B, resumen de la clave).</td>
+                </tr>
+                <tr>
+                    <td>Lado A / Lado B</td>
+                    <td>Un archivo por lado. Extensiones permitidas salen del perfil publicado, no del borrador.</td>
+                </tr>
+                <tr>
+                    <td>Ejecutar conciliación</td>
+                    <td>Sube ambos archivos, lanza el job y abre el resultado.</td>
+                </tr>
+                <tr>
+                    <td>Corridas recientes</td>
+                    <td>Últimos jobs con veredicto, nombres de archivo, versión y % si aplica. Enlace al resultado.</td>
+                </tr>
+                <tr>
+                    <td>Bridge FILE GATE</td>
+                    <td>Si está activo, puede exigir un pre-check de A y/o B (proyecto GATE, frescura en días) antes de cruzar.</td>
+                </tr>
+                <tr>
+                    <td>Ver publicar / FILE GATE</td>
+                    <td>Atajos al módulo 4 y a los ajustes del bridge.</td>
+                </tr>
             </tbody>
         </table>
+
+        <h3 class="form-section-title">Qué produce el job</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Concepto</th><th>Detalle</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Lectura A y B</td>
+                    <td>Parseo con captura, campos e informe de lectura de cada perfil. Filas rechazadas no entran al cruce.</td>
+                </tr>
+                <tr>
+                    <td>Cruce 1:1</td>
+                    <td>Clave publicada. Buckets: <code class="mono">matched</code>, <code class="mono">value_mismatch</code>, <code class="mono">only_a</code>, <code class="mono">only_b</code>, <code class="mono">duplicate_key</code>.</td>
+                </tr>
+                <tr>
+                    <td>Veredicto</td>
+                    <td>Cuadra / no cuadra / parcial según política de reglas y errores fatales de lectura. Detalle en la ayuda del resultado.</td>
+                </tr>
+                <tr>
+                    <td>Descargas</td>
+                    <td>JSON del informe y CSV de diferencias (cruce). El CSV de lecturas es otro artefacto (parseo A/B).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Buenas prácticas</h3>
+        <ul class="help-list">
+            <li>Use archivos de producción (o una muestra real), no un CSV “limpio” de laboratorio.</li>
+            <li>Si acaba de cambiar campos o la clave, <strong>publique de nuevo</strong> antes de conciliar.</li>
+            <li>Un “no cuadra” puede ser parseo (informe de lectura) o cruce (buckets). Revise ambos en el resultado.</li>
+            <li>El historial completo está en el módulo 6; aquí solo las corridas recientes.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace este módulo</h3>
+        <ul class="help-list">
+            <li>No edita Perfil A/B ni reglas (vuelva al hub / wizards / publicar).</li>
+            <li>No publica la definición.</li>
+            <li>No sustituye la validación FILE GATE; el bridge es un pre-check opcional.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

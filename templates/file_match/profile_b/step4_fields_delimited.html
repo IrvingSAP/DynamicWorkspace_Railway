@@ -37,6 +37,7 @@
         <div class="page-actions">
             {% url 'file_match:profile_b_step4_help' project_slug=project.slug as source_help_url %}
             {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+            <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
             {% if can_edit_source %}
             <button type="button" id="btn-save-delimited-config" class="btn btn-ghost btn-sm">Guardar parámetros</button>
             <button type="button" id="btn-add-field" class="btn btn-primary">+ Agregar campo</button>

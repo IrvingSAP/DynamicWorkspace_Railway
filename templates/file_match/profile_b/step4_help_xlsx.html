@@ -1,0 +1,87 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos Excel — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}">Perfil B</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_b_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Perfil B · paso 4 · <span class="role-badge">xlsx</span></p>
+        <h2>Ayuda — Campos Excel (XLSX)</h2>
+        <p>Asocia cada criterio del Perfil B a una columna de la hoja. Tipo: <code class="mono">{{ file_type_code|default:"xlsx" }}</code>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:profile_b_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve esta pantalla</h3>
+        <p class="help-intro">
+            El archivo B es un libro Excel. FILE MATCH lee <strong>una hoja</strong> y toma celdas por columna
+            (letra o encabezado). No genera una hoja de salida: solo parsea B para el cruce.
+        </p>
+
+        <h3 class="form-section-title">Acciones de esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Control</th><th>Qué hace</th></tr></thead>
+            <tbody>
+                <tr><td>Guardar parámetros</td><td>Persiste hoja y fila de encabezados en el borrador B.</td></tr>
+                <tr><td>+ Agregar campo</td><td>Nuevo criterio ligado a una columna.</td></tr>
+                <tr><td>← Resumen</td><td>Vuelve al hub del Perfil B.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Parámetros de hoja</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo en pantalla</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>Nombre de hoja</td><td>Nombre exacto de la pestaña. Si no coincide, no hay filas B.</td></tr>
+                <tr><td>Fila de encabezados</td><td>Fila (1-based) con títulos. Permite referenciar columnas por texto además de por letra.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Editor de cada campo</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo en pantalla</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>Columna</td><td>Letra Excel (<code class="mono">A</code>, <code class="mono">AA</code>) o texto del encabezado.</td></tr>
+                <tr><td>Nombre interno</td><td>Identificador en informe B y reglas de cruce.</td></tr>
+                <tr><td>Tipo / obligatorio / fecha</td><td>Criterios de rechazo de la celda.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Ejemplo</h3>
+        <ul class="help-list">
+            <li>Hoja <code class="mono">Extracto</code>, encabezados en fila 1: <code class="mono">DOC</code>, <code class="mono">MONTO</code>.</li>
+            <li>Campo <code class="mono">documento</code> → columna <code class="mono">A</code> o encabezado <code class="mono">DOC</code>.</li>
+            <li>Campo <code class="mono">monto</code> → columna <code class="mono">B</code>, tipo decimal.</li>
+        </ul>
+        <p class="help-intro">Otras pestañas del libro se ignoran. La captura (pasos 2–3) limita qué filas de la hoja entran.</p>
+
+        {% include "file_match/profile_b/_step4_help_criteria.html" %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos JSON — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Perfil A · paso 4 · <span class="role-badge">json</span></p>
+        <h2>Ayuda — Campos JSON</h2>
+        <p>Indica dónde está la lista de registros A y la ruta de cada valor. Tipo: <code class="mono">{{ file_type_code|default:"json" }}</code>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:profile_a_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve esta pantalla</h3>
+        <p class="help-intro">
+            El archivo A es un documento JSON. FILE MATCH recorre un <strong>arreglo de registros</strong>
+            y, en cada uno, lee propiedades por ruta con puntos. Cada ruta es un criterio de lectura A,
+            no un mapeo a otro JSON.
+        </p>
+
+        <h3 class="form-section-title">Acciones de esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Control</th><th>Qué hace</th></tr></thead>
+            <tbody>
+                <tr><td>Guardar parámetros</td><td>Persiste la ruta de registros en el borrador A.</td></tr>
+                <tr><td>+ Agregar campo</td><td>Nuevo criterio con su <code class="mono">json_path</code>.</td></tr>
+                <tr><td>← Resumen</td><td>Vuelve al hub del Perfil A.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Parámetros JSON</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo en pantalla</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Ruta de registros<br><code class="mono">record_path</code></td>
+                    <td>Camino hasta el array. Ej.: <code class="mono">empleados</code>, <code class="mono">data.items</code>. Cada elemento es una fila A.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Editor de cada campo</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo en pantalla</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>Nombre interno</td><td>Identificador en informe y reglas (puede diferir de la clave JSON).</td></tr>
+                <tr>
+                    <td><code class="mono">json_path</code></td>
+                    <td>Ruta relativa dentro de cada registro (puntos). Ej.: <code class="mono">documento</code>, <code class="mono">persona.edad</code>.</td>
+                </tr>
+                <tr><td>Tipo / obligatorio</td><td>Criterios de rechazo del valor en esa ruta.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Ejemplo</h3>
+        <pre class="mono" style="padding:10px;background:var(--canvas);border-radius:8px;overflow:auto">{
+  "empleados": [
+    { "documento": "A1", "persona": { "edad": 19 } }
+  ]
+}</pre>
+        <ul class="help-list">
+            <li><code class="mono">record_path</code> = <code class="mono">empleados</code></li>
+            <li>Campo documento → <code class="mono">json_path</code> <code class="mono">documento</code></li>
+            <li>Campo edad → <code class="mono">persona.edad</code>, tipo numérico</li>
+        </ul>
+        <p class="help-intro">Una ruta incorrecta deja el valor vacío y dispara obligatorio o tipo.</p>
+
+        {% include "file_match/profile_a/_step4_help_criteria.html" %}
+    </div>
+</div>
+{% endblock %}

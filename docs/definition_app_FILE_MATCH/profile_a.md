@@ -439,7 +439,7 @@ Catálogo formal: [`UI_MESSAGES.md`](../definition_app/UI_MESSAGES.md) §3.11.
 | 1 | ¿json/xml en MVP? | Incluir si parsers DMS estables; si no, Fase 2 |
 | 2 | ¿Label del lado A editable? | Sí en lifecycle / hub proyecto (“Extracto banco”) |
 | 3 | ¿Un solo `DmsMappingVersion` con 2 sources? | Preferido; documentar en `fm_integration.md` |
-| 4 | Structure Scout “Aplicar a A” / **Profile Seed** import desde GATE | [`PROFILE_SEED.md`](../PROFILE_SEED.md) · Fase 2 |
+| 4 | Structure Scout / **Profile Seed** import hacia Perfil A | [`PROFILE_SEED.md`](../PROFILE_SEED.md) · combo amplio |
 
 ---
 

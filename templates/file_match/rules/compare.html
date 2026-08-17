@@ -98,9 +98,10 @@
         <p style="margin-top:10px"><button type="button" class="btn btn-ghost" id="add-compare-row">+ Añadir par a comparar</button></p>
         {% endif %}
         <p class="hint">Sin tolerancia numérica en MVP.</p>
-        <div class="form-actions">
-            <a href="{% url 'file_match:rules_keys' project_slug=project.slug %}" class="btn btn-secondary">Atrás</a>
-            <div class="form-actions-right">
+        <div class="wizard-footer">
+            <span class="hint">Los cambios se guardan en el borrador de reglas.</span>
+            <div class="wizard-footer-actions">
+                <a href="{% url 'file_match:rules_keys' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
                 {% if can_edit_source %}
                 <button type="submit" class="btn btn-ghost" name="next" value="{% url 'file_match:rules_compare' project_slug=project.slug %}">Guardar borrador</button>
                 <button type="submit" class="btn btn-primary">Guardar y continuar</button>

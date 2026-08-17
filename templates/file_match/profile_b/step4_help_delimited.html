@@ -1,0 +1,93 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos delimitados — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}">Perfil B</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_b_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Perfil B · paso 4 · <span class="role-badge">{{ file_type_code|default:"csv" }}</span></p>
+        <h2>Ayuda — Campos delimitados (CSV / TXT)</h2>
+        <p>Parte cada línea por un delimitador y lee columnas del archivo B. Tipo: <code class="mono">{{ file_type_code|default:"csv" }}</code>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:profile_b_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve esta pantalla</h3>
+        <p class="help-intro">
+            El archivo B es una tabla en texto. Primero se configuran delimitador, comillas y encabezado;
+            después cada campo apunta a una columna. El parser usa el <strong>índice 0-based</strong>;
+            el nombre de columna es referencia cuando hay encabezado.
+        </p>
+
+        <h3 class="form-section-title">Acciones de esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Control</th><th>Qué hace</th></tr></thead>
+            <tbody>
+                <tr><td>Guardar parámetros</td><td>Persiste delimitador, comillas, escape y encabezado en el borrador B.</td></tr>
+                <tr><td>+ Agregar campo</td><td>Nuevo criterio ligado a una columna.</td></tr>
+                <tr><td>← Resumen</td><td>Vuelve al hub del Perfil B.</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Guarde los parámetros <strong>antes</strong> de cargar muchos campos.</p>
+
+        <h3 class="form-section-title">Parámetros del archivo</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo en pantalla</th><th>Efecto al leer B</th></tr></thead>
+            <tbody>
+                <tr><td>Delimitador</td><td>Coma, punto y coma, tabulador o pipe. Si no coincide, todas las columnas se desalinean.</td></tr>
+                <tr><td>Carácter de comillas</td><td>Envuelve valores que contienen el delimitador (p. ej. <code class="mono">"Calle Sol, 12"</code>).</td></tr>
+                <tr><td>Carácter de escape</td><td>Opcional. Vacío si el archivo no lo usa.</td></tr>
+                <tr><td>Primera fila es encabezado</td><td>Esa fila no es un registro B. Permite etiquetar columnas por nombre.</td></tr>
+                <tr><td>Fila encabezado</td><td>Número de fila (1-based) de los títulos. Visible con encabezado activo.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Editor de cada campo</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo en pantalla</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr><td>Columna del archivo</td><td>Nombre del encabezado (referencia). El parseo usa el índice.</td></tr>
+                <tr><td>Nombre interno</td><td>Identificador en informe B y en reglas de cruce.</td></tr>
+                <tr><td>Índice (0-based)</td><td>Primera columna = 0. Obligatorio.</td></tr>
+                <tr><td>Tipo / obligatorio / fecha</td><td>Criterios de rechazo de esa columna.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Ejemplo</h3>
+        <pre class="mono" style="padding:10px;background:var(--canvas);border-radius:8px;overflow:auto">nombre,edad,direccion
+Beatriz Martinez,19,Calle Parque 282</pre>
+        <ul class="help-list">
+            <li>Delimitador: coma · Encabezado: sí · Fila 1</li>
+            <li><code class="mono">nombre</code> → índice 0 · <code class="mono">edad</code> → 1 · <code class="mono">direccion</code> → 2</li>
+        </ul>
+
+        {% include "file_match/profile_b/_step4_help_criteria.html" %}
+    </div>
+</div>
+{% endblock %}

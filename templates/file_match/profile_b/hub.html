@@ -39,7 +39,7 @@
     <div class="page-actions">
         {% url 'file_match:profile_b_hub_help' project_slug=project.slug as source_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
-        <a href="{% url 'file_match:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url 'file_match:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub Proyecto</a>
         <a href="{% url wizard.continue_step_url_name project_slug=project.slug %}" class="btn btn-primary">Continuar edición</a>
     </div>
 </div>
