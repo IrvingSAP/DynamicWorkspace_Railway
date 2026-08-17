@@ -4,13 +4,12 @@
 {% block title %}Ayuda — Miembros {{ project.slug }}{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -27,23 +26,36 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ project.slug }}</span> · <span class="perm-badge perm-badge--admin">PA</span></p>
+        <p class="page-eyebrow">FILE MATCH · Acceso · <span class="cell-badge">{{ project.slug }}</span> · <span class="perm-badge perm-badge--admin">PA</span></p>
         <h2>Ayuda — Miembros y permisos</h2>
-        <p>Quién puede ver y trabajar en este proyecto FILE MATCH y qué hace cada rol.</p>
+        <p>Quién puede ver y trabajar en este conciliador y qué hace cada rol. Solo el administrador (PA) abre esta pantalla.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'file_match:project_members' project_slug=project.slug %}" class="btn btn-secondary">← Volver a miembros</a>
+        <a href="{% url 'file_match:project_hub' project_slug=project.slug %}" class="btn btn-secondary">Hub</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Propósito</h3>
+        <h3 class="form-section-title">Para qué sirve</h3>
         <p class="help-intro">
-            Solo el <strong>administrador (PA)</strong> gestiona miembros. Se invitan usuarios UF de la compañía
-            {{ company.name_short }}. Misma membresía compartida con Worksheets / FilePipe / Reverse
-            (<code>ProjectMembership</code>).
+            Invite usuarios <strong>UF de {{ company.name_short }}</strong>. La membresía es la misma ficha
+            (<code class="mono">ProjectMembership</code>) que Worksheets / FilePipe / Reverse; el <strong>rol</strong>
+            decide qué pueden hacer en FILE MATCH.
         </p>
+        <p class="help-intro">
+            Un proyecto <strong>público</strong> se ve en el listado de la compañía sin ser miembro (consulta).
+            Editar, publicar o conciliar siguen exigiendo membresía activa y el rol adecuado.
+        </p>
+
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="help-list">
+            <li>En privado, invite al menos un ED (diseño) y un GE (corridas mensuales) antes de operar.</li>
+            <li>Elija usuario y rol → <strong>Autorizar miembro</strong>.</li>
+            <li>Si alguien ya estuvo y está inactivo, use <strong>Reactivar</strong> (no vuelve al desplegable de alta).</li>
+            <li>El rol no sustituye <strong>publicar</strong>: conciliar usa la versión activa, no el borrador.</li>
+        </ol>
 
         <h3 class="form-section-title">Roles en FILE MATCH</h3>
         <table class="help-table">
@@ -51,27 +63,63 @@
                 <tr><th>Código</th><th>Nombre</th><th>Permisos principales</th></tr>
             </thead>
             <tbody>
-                <tr><td class="mono">PA</td><td>Admin</td><td>Editar perfiles/reglas, publicar, miembros, conciliar, bridge.</td></tr>
-                <tr><td class="mono">ED</td><td>Editor</td><td>Editar Perfil A/B y reglas; publicar; conciliar.</td></tr>
-                <tr><td class="mono">GE</td><td>Ejecutar</td><td>Conciliar y descargar informe (sin editar definición).</td></tr>
-                <tr><td class="mono">CG</td><td>Consulta-Generar</td><td>Consulta del proyecto y conciliar / descargar (CO + GE).</td></tr>
-                <tr><td class="mono">CO</td><td>Consulta</td><td>Ver proyecto e historial; sin detalle de filas ni descarga de datos.</td></tr>
+                <tr><td class="mono">PA</td><td>Admin</td><td>Miembros, editar Perfil A/B y reglas, publicar, conciliar, bridge FILE GATE.</td></tr>
+                <tr><td class="mono">ED</td><td>Editor</td><td>Editar definición; publicar; conciliar. No gestiona miembros.</td></tr>
+                <tr><td class="mono">GE</td><td>Ejecutar</td><td>Conciliar y descargar informe. No edita perfiles ni publica.</td></tr>
+                <tr><td class="mono">CG</td><td>Consulta-Generar</td><td>Consulta + ejecutar (CO + GE).</td></tr>
+                <tr><td class="mono">CO</td><td>Consulta</td><td>Hub e historial; sin detalle de filas ni descarga de datos de negocio.</td></tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Tabla de miembros</h3>
-        <table class="help-table">
-            <thead>
-                <tr><th>Acción</th><th>Qué hace</th></tr>
-            </thead>
+        <h3 class="form-section-title">Controles de esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Control</th><th>Qué hace</th></tr></thead>
             <tbody>
-                <tr><td>Autorizar</td><td>Crea o reactiva membresía con el rol elegido.</td></tr>
-                <tr><td>Cambiar</td><td>Actualiza el rol (no aplica al propietario).</td></tr>
-                <tr><td>Revocar</td><td>Desactiva el acceso (con confirmación).</td></tr>
-                <tr><td>Reactivar</td><td>Vuelve a activar un miembro inactivo.</td></tr>
-                <tr><td>Propietario</td><td>El dueño no se revoca ni pierde PA desde esta pantalla.</td></tr>
+                <tr>
+                    <td>Stepper Datos / Visibilidad / Miembros</td>
+                    <td>Recordatorio del alta. La visibilidad se eligió al crear; aquí solo se gestionan personas.</td>
+                </tr>
+                <tr>
+                    <td>Usuario UF</td>
+                    <td>Candidatos de la compañía que aún no son miembros activos.</td>
+                </tr>
+                <tr>
+                    <td>Rol en el proyecto</td>
+                    <td>PA, ED, GE, CG o CO.</td>
+                </tr>
+                <tr>
+                    <td>Autorizar miembro</td>
+                    <td>Crea o reactiva la membresía con el rol elegido.</td>
+                </tr>
+                <tr>
+                    <td>Filtro estado</td>
+                    <td>Todos / Activo / Inactivo sobre la tabla.</td>
+                </tr>
+                <tr>
+                    <td>Cambiar</td>
+                    <td>Actualiza el rol. No aplica al propietario.</td>
+                </tr>
+                <tr>
+                    <td>Revocar</td>
+                    <td>Desactiva el acceso (pide confirmación). El usuario deja de editar/ejecutar.</td>
+                </tr>
+                <tr>
+                    <td>Reactivar</td>
+                    <td>Vuelve a activar un miembro inactivo.</td>
+                </tr>
+                <tr>
+                    <td>Propietario</td>
+                    <td>El dueño no se revoca ni pierde PA desde esta pantalla.</td>
+                </tr>
             </tbody>
         </table>
+
+        <h3 class="form-section-title">Qué no hace esta pantalla</h3>
+        <ul class="help-list">
+            <li>No cambia la visibilidad público/privado del proyecto.</li>
+            <li>No publica la definición ni ejecuta conciliaciones.</li>
+            <li>No invita usuarios de otra compañía ni cuentas que no sean UF.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

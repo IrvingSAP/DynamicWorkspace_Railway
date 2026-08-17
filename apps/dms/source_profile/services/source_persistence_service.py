@@ -683,7 +683,9 @@ def save_source(
     saved_source = profile_to_dict(profile)
     warning_messages = _flatten_messages(warnings)
     message_level = "success"
-    if is_reverse and "processing_report" in (partial or {}):
+    if "processing_report" in (partial or {}) and (
+        is_reverse or is_file_gate or is_file_match
+    ):
         missing = incomplete_step_labels(saved_source)
         if missing:
             success_msg = (

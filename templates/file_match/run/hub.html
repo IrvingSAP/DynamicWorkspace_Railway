@@ -59,7 +59,7 @@
     <div class="page-actions">
         {% url 'file_match:run_hub_help' project_slug=project.slug as run_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=run_help_url %}
-        <a href="{% url 'file_match:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url 'file_match:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub Proyecto</a>
         {% if run.has_published_version %}
         <a href="{% url 'file_match:publish_hub' project_slug=project.slug %}" class="btn btn-secondary">Ver publicar</a>
         {% else %}

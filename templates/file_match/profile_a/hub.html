@@ -39,7 +39,7 @@
     <div class="page-actions">
         {% url 'file_match:profile_a_hub_help' project_slug=project.slug as source_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
-        <a href="{% url 'file_match:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url 'file_match:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub Proyecto</a>
         <a href="{% url wizard.continue_step_url_name project_slug=project.slug %}" class="btn btn-primary">Continuar edición</a>
     </div>
 </div>
@@ -64,8 +64,8 @@
     <div class="panel-body">
         <h3 class="form-section-title">Importar estructura</h3>
         <p class="hint">
-            ¿Ya modeló este layout en <strong>FILE GATE</strong> u otro Match?
-            Importe un perfil <strong>publicado</strong> a este borrador Perfil A.
+            ¿Ya modeló este layout en <strong>FILE GATE</strong>, FilePipe, Reverse, CLEAN u otro Match?
+            Importe un perfil o contrato <strong>publicado</strong> (o un borrador Scout) a este borrador Perfil A.
             No publica la definición Match ni abre el bridge.
         </p>
         <div class="page-actions" style="margin-top:12px">

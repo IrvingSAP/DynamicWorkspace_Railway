@@ -33,12 +33,12 @@
 <div class="page-header">
     <div>
         <p class="page-eyebrow">FILE MATCH · <span class="role-badge">UF</span></p>
-        <h2>Conciliador</h2>
-        <p>Proyectos de conciliación A vs B. Empiece por el perfil A (Módulo 1).</p>
+        <h2>Conciliador de archivos</h2>
+        <p>Proyectos de conciliación A vs B. Defina los perfiles y, en módulos posteriores, cuadre archivos por clave.</p>
     </div>
     <div class="page-actions">
-        {% url 'file_match:project_list_help' as rs_help_url %}
-        {% include "projects/includes/project_help_link.html" with help_url=rs_help_url %}
+        {% url 'file_match:project_list_help' as match_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=match_help_url %}
         <a href="{% url 'file_match:project_create' %}" class="btn btn-primary">+ Nuevo proyecto</a>
     </div>
 </div>
@@ -76,7 +76,7 @@
         </div>
     </div>
     <div class="table-dt-host">
-        <table id="rs-project-table" class="dw-datatable" data-dt-custom="true">
+        <table id="dms-project-table" class="dw-datatable" data-dt-custom="true">
             <thead>
                 <tr>
                     <th>Código</th>
@@ -84,6 +84,7 @@
                     <th>Visibilidad</th>
                     <th>Mi permiso</th>
                     <th>Versión</th>
+                    <th>Última ejecución</th>
                     <th class="col-actions">Acciones</th>
                 </tr>
             </thead>
@@ -107,6 +108,7 @@
                         {% endif %}
                     </td>
                     <td class="td-mono">{{ row.version_label }}</td>
+                    <td class="td-mono">{{ row.last_execution }}</td>
                     <td class="col-actions">
                         <a href="{% url 'file_match:project_hub' project_slug=row.project.slug %}" class="btn btn-ghost btn-sm">Abrir</a>
                     </td>

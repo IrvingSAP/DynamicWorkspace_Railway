@@ -334,6 +334,7 @@ def schema_save(request, project_slug: str):
                 {
                     "ok": True,
                     "message": result.user_message,
+                    "level": result.payload.get("message_level") or "success",
                     "source": result.payload.get("source", {}),
                     "warnings": result.payload.get("warning_messages") or [],
                 }
@@ -351,9 +352,14 @@ def schema_save(request, project_slug: str):
         )
 
     if result.ok:
-        messages.success(request, result.user_message)
+        level = result.payload.get("message_level") or "success"
+        if level == "warning":
+            messages.warning(request, result.user_message)
+        else:
+            messages.success(request, result.user_message)
         for warning in result.payload.get("warning_messages") or []:
-            messages.warning(request, warning)
+            if warning != result.user_message:
+                messages.warning(request, warning)
     else:
         messages.error(request, result.user_message)
     return redirect(redirect_to)

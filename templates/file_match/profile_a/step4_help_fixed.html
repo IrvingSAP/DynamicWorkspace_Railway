@@ -1,0 +1,91 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda · Campos posicionales — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:profile_a_step4' project_slug=project.slug %}">Paso 4</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">FILE MATCH · Perfil A · paso 4 · <span class="role-badge">{{ file_type_code|default:"txt_fixed" }}</span></p>
+        <h2>Ayuda — Campos de ancho fijo</h2>
+        <p>Cada campo se corta por posiciones de carácter en la línea del archivo A. Tipo: <code class="mono">{{ file_type_code|default:"txt_fixed" }}</code>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_match:profile_a_step4' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 4</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve esta pantalla</h3>
+        <p class="help-intro">
+            El archivo A es una línea continua (TXT posicional). FILE MATCH extrae cada valor por
+            columnas de carácter (1 = primer carácter) y lo valida contra tipo, obligatoriedad y patrón.
+            La regla visual alinea rangos; no es el archivo del proveedor.
+        </p>
+
+        <h3 class="form-section-title">Acciones de esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Control</th><th>Qué hace</th></tr></thead>
+            <tbody>
+                <tr><td>+ Agregar campo</td><td>Abre el editor para un nuevo criterio posicional.</td></tr>
+                <tr><td>Editar / quitar en la tabla</td><td>Modifica o elimina un campo del borrador A.</td></tr>
+                <tr><td>← Resumen</td><td>Vuelve al hub del Perfil A sin publicar.</td></tr>
+                <tr><td>Anterior / Siguiente</td><td>Paso 3 (fin) o paso 5 (reglas globales).</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Editor de cada campo</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo en pantalla</th><th>Efecto al leer A</th></tr></thead>
+            <tbody>
+                <tr><td>Nombre (slug)</td><td>Identificador interno. Informe de lectura y reglas de cruce.</td></tr>
+                <tr><td>Etiqueta</td><td>Texto legible. No sustituye al nombre interno.</td></tr>
+                <tr>
+                    <td>Cómo definir la posición</td>
+                    <td>
+                        <ul class="help-list" style="margin:0">
+                            <li><strong>Inicio y fin</strong> — primera y última columna inclusive (1-based).</li>
+                            <li><strong>Inicio y longitud</strong> — <code class="mono">end = start + length − 1</code>.</li>
+                            <li><strong>Desde carácter</strong> — el valor empieza a partir de un marcador.</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr><td>Inicio / fin / longitud</td><td>Columnas 1-based. Los rangos numéricos no deben solaparse.</td></tr>
+                <tr><td>Marcador <code class="mono">char</code></td><td>En modo «desde carácter»: el campo inicia al encontrar ese texto.</td></tr>
+                <tr><td>Tipo / obligatorio / patrón</td><td>Criterios de rechazo del recorte.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Ejemplo</h3>
+        <pre class="mono" style="padding:10px;background:var(--canvas);border-radius:8px;overflow:auto">12345JUAN      2500001</pre>
+        <ul class="help-list">
+            <li><code class="mono">documento</code> → inicio 1, fin 5.</li>
+            <li><code class="mono">nombre</code> → inicio 6, longitud 10 (columnas 6–15).</li>
+        </ul>
+
+        {% include "file_match/profile_a/_step4_help_criteria.html" %}
+    </div>
+</div>
+{% endblock %}

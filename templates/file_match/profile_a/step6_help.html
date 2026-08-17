@@ -1,7 +1,7 @@
 ﻿{% extends "app_base.html" %}
 {% load static %}
 
-{% block title %}Ayuda · Informe de lectura — {{ project.name }}{% endblock %}
+{% block title %}Ayuda · Paso 6 — {{ project.name }}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
@@ -12,6 +12,10 @@
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_match:project_list' %}">FILE MATCH</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_match:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
     <a href="{% url 'file_match:profile_a_hub' project_slug=project.slug %}">Perfil A</a>
     <span class="breadcrumb-sep">/</span>
     <a href="{% url 'file_match:profile_a_step6' project_slug=project.slug %}">Paso 6</a>
@@ -21,25 +25,97 @@
 {% endblock %}
 
 {% block content %}
-{% include "file_match/profile_a/_project_scope.html" %}
-
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">FILE MATCH · Ayuda · Paso 6</p>
-        <h2>Informe de lectura del lado A</h2>
-        <p>Configura qué se registra al parsear el archivo A en una conciliación.</p>
+        <p class="page-eyebrow">FILE MATCH · Perfil A · paso 6 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Informe de lectura (lado A)</h2>
+        <p>Define qué evidencia se registra al parsear el archivo A en una conciliación. No es el informe de diferencias A vs B.</p>
     </div>
     <div class="page-actions">
-        <a href="{% url 'file_match:profile_a_step6' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso</a>
+        <a href="{% url 'file_match:profile_a_step6' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 6</a>
     </div>
 </div>
 
-<div class="panel">
+<div class="panel help-panel">
     <div class="panel-body">
-        <ul class="hint" style="margin:0; padding-left:1.2rem">
-            <li>No es el informe de diferencias del match (Módulo 6).</li>
-            <li>No publica la definición; eso es el Módulo 4 (A + B + reglas).</li>
-            <li>CTA de cierre: volver al hub del perfil A. Siguiente módulo: Perfil B.</li>
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Aquí congela <strong>qué se documenta al leer A</strong>: resumen de filas parseadas, detalle por fila y formato.
+            El job de conciliación (Módulo 5) produce esa evidencia contra la definición <strong>publicada</strong>.
+        </p>
+        <p class="help-intro">
+            Completar este paso <strong>no publica</strong> Match ni habilita conciliar.
+            Faltan Perfil B, Reglas y publicar (Módulo 4).
+        </p>
+
+        <h3 class="form-section-title">Opciones del informe</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Opción</th><th>Efecto al conciliar</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Informe habilitado<br><code class="mono">report_enabled</code></td>
+                    <td>Si está apagado, A puede parsearse pero con poca o ninguna evidencia de lectura.</td>
+                </tr>
+                <tr>
+                    <td>Incluir resumen<br><code class="mono">include_summary</code></td>
+                    <td>Filas leídas, OK y rechazadas al parsear A.</td>
+                </tr>
+                <tr>
+                    <td>Detalle por fila<br><code class="mono">include_row_errors</code></td>
+                    <td>Incidencias: línea, campo, código y mensaje del parseo A.</td>
+                </tr>
+                <tr>
+                    <td>Umbral de alerta</td>
+                    <td>Aviso si hay demasiados rechazos de lectura (cantidad o %). No es el veredicto del match.</td>
+                </tr>
+                <tr>
+                    <td>Formato<br><code class="mono">report_format</code></td>
+                    <td><code class="mono">json</code>, <code class="mono">csv</code> o <code class="mono">html</code>.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Este paso vs el resto de FILE MATCH</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Dónde</th><th>Qué decide</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Paso 6 Perfil A (aquí)</td>
+                    <td>Evidencia de <strong>lectura</strong> del archivo A.</td>
+                </tr>
+                <tr>
+                    <td>Reglas (Módulo 3)</td>
+                    <td>Clave 1:1, campos a comparar y normalización de cruce.</td>
+                </tr>
+                <tr>
+                    <td>Informe de conciliación (Módulo 6)</td>
+                    <td>Qué faltó, qué sobró y qué no coincidió entre A y B.</td>
+                </tr>
+                <tr>
+                    <td>Publicar (Módulo 4)</td>
+                    <td>Congela A + B + reglas. Sin versión publicada no se concilia.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Guardar este paso</h3>
+        <ul class="help-list">
+            <li><strong>Guardar borrador</strong> persiste el informe de lectura. Si faltan pasos del Perfil A (p. ej. Campos), verá un <strong>aviso</strong>: el borrador se guardó, pero el ciclo de 6 pasos no está completo.</li>
+            <li><strong>Finalizar perfil A</strong> vuelve al hub A. El stepper marca Informe ✓ cuando hay <code class="mono">processing_report</code> guardado.</li>
+            <li>Solo <strong>PA</strong> y <strong>ED</strong> pueden guardar.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace este paso</h3>
+        <ul class="help-list">
+            <li>No publica la definición Match.</li>
+            <li>No ejecuta la conciliación ni sube archivos A/B.</li>
+            <li>No configura el Perfil B ni las reglas de cruce.</li>
+        </ul>
+
+        <h3 class="form-section-title">Buenas prácticas</h3>
+        <ul class="help-list">
+            <li>Deje el informe habilitado con resumen y detalle: sin evidencia de parseo A es difícil auditar un “no cuadra”.</li>
+            <li>Siguiente en el ciclo: hub Perfil A → <strong>Perfil B</strong>.</li>
         </ul>
     </div>
 </div>

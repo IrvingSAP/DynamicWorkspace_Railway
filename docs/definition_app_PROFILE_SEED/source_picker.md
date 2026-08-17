@@ -78,9 +78,9 @@ flowchart LR
 | Incluido | Excluido |
 |----------|----------|
 | Listar orígenes GATE publicados (P0) | Escritura `save_source` / overwrite (M3) |
-| Filtro kind (UI; P0 locked a GATE) | Historial de semillas (M4) |
+| Filtro kind (UI; destino Match A = combo amplio) | Historial de semillas (M4) |
 | Metadata fila: slug, nombre, vN, tipo, N campos | Diff campo a campo (Fase 2) |
-| Empty: sin orígenes publicados | Orígenes Match / Reverse en UI MVP (documentados; UI Fase P1+) |
+| Empty: sin orígenes publicados | Destino Match B (otro slot) |
 | Ayuda del paso | Kind propio `profile_seed` |
 | Hand-off a M3 (`source_project_id` / slug) | Publicar origen o destino |
 
@@ -90,12 +90,10 @@ flowchart LR
 
 | Prioridad | Kind | Slot | Condición “publicado” | MVP UI |
 |-----------|------|------|------------------------|--------|
-| **P0** | `file_gate` | `schema` | `get_published_version(project)` | **Sí** |
+| **P0** | `file_gate` | `schema` | `get_published_version(project)` | **Sí** (también destinos GATE/FilePipe/Reverse/Match A) |
 | P1 | `file_gate` | `schema` | idem → destino Match B | No (otro destino) |
-| P2 | `file_gate` / `file_match` | `schema` / `profile_a` | publicado → Reverse input | No |
-| P3 | `file_match` | `profile_a` / `profile_b` | `get_published_version` + lado A/B | Extensión |
-| Fase 2 | `reverse` | `input` | publicado `source_profile` | Extensión |
-| Fase 2 | `dms` | `source` | publicado | Extensión |
+| P2 | `file_clean` / `dms` / `reverse` / `file_split_merge` / `structure_scout` | varios | publicado o borrador Scout | **Sí** hacia Match Perfil A |
+| P3 | `file_match` / `file_match_b` | `profile_a` / `profile_b` | `get_published_version` + lado A/B | **Sí** hacia Match Perfil A (otro A; B puede ser este proyecto) |
 
 ### Elegibilidad de un origen (P0 GATE)
 

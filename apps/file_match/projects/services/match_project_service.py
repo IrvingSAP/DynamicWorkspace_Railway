@@ -1,7 +1,9 @@
 import logging
 
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Max, Q
+from django.db.models.functions import Coalesce
+from django.utils import timezone as dj_timezone
 
 from apps.accounts.models import UserProfile
 from apps.core.services.operation_result import OperationResult
@@ -106,12 +108,24 @@ def _version_label(project: Project) -> str:
     return "Sin definición publicada"
 
 
+def _format_last_execution(value) -> str:
+    if value is None:
+        return "—"
+    when = value
+    if dj_timezone.is_aware(when):
+        when = dj_timezone.localtime(when)
+    return when.strftime("%Y-%m-%d %H:%M")
+
+
 def list_with_stats(user):
     projects = list(visible_projects_qs(user).order_by("-updated_at"))
     project_ids = [project.id for project in projects]
 
     member_counts: dict = {}
+    last_executions: dict = {}
     if project_ids:
+        from apps.file_match.models import FileMatchJob
+
         for row in (
             ProjectMembership.objects.filter(
                 project_id__in=project_ids,
@@ -121,6 +135,14 @@ def list_with_stats(user):
             .annotate(count=Count("id"))
         ):
             member_counts[row["project_id"]] = row["count"]
+
+        for row in (
+            FileMatchJob.objects.filter(project_id__in=project_ids)
+            .exclude(status=FileMatchJob.STATUS_RUNNING)
+            .values("project_id")
+            .annotate(last_at=Max(Coalesce("finished_at", "created_at")))
+        ):
+            last_executions[row["project_id"]] = row["last_at"]
 
     rows = []
     for project in projects:
@@ -135,6 +157,9 @@ def list_with_stats(user):
                 "visibility": visibility,
                 "visibility_label": VISIBILITY_LABELS.get(visibility, visibility),
                 "version_label": _version_label(project),
+                "last_execution": _format_last_execution(
+                    last_executions.get(project.id)
+                ),
                 "member_count": member_counts.get(project.id, 0),
                 "is_pa": role_code == ProjectMembership.ROLE_PA,
             }

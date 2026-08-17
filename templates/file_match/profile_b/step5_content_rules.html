@@ -33,7 +33,7 @@
         <div class="page-actions">
             {% url 'file_match:profile_b_step5_help' project_slug=project.slug as source_help_url %}
             {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
-            <button type="button" id="btn-save-content-rules" class="btn btn-ghost btn-sm">Guardar borrador</button>
+            <a href="{% url 'file_match:profile_b_hub' project_slug=project.slug %}" class="btn btn-secondary">← Resumen</a>
         </div>
     </div>
 
@@ -88,10 +88,15 @@
             </div>
 
             <div class="wizard-footer">
-                <span class="hint">Política de error del proyecto: <code>skip_row</code> / <code>abort</code></span>
+                <span class="hint">Los cambios se guardan en el borrador del Perfil B.</span>
                 <div class="wizard-footer-actions">
                     <a href="{% url 'file_match:profile_b_step4' project_slug=project.slug %}" class="btn btn-secondary">← Anterior</a>
+                    {% if can_edit_source %}
+                    <button type="button" id="btn-save-content-rules" class="btn btn-ghost">Guardar borrador</button>
                     <button type="button" id="btn-content-rules-next" class="btn btn-primary" data-next="{% url 'file_match:profile_b_step6' project_slug=project.slug %}">Siguiente →</button>
+                    {% else %}
+                    <a href="{% url 'file_match:profile_b_step6' project_slug=project.slug %}" class="btn btn-primary">Siguiente →</a>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -269,6 +269,7 @@ Códigos adicionales usados en FILE GATE (además de §2):
 | Situación | Tag / canal | Texto al usuario |
 |-----------|-------------|------------------|
 | Contrato guardado (borrador) | `success` | Contrato de validación guardado correctamente. |
+| Contrato guardado con pasos pendientes (paso 6) | `warning` | El borrador se guardó. Faltan pasos por completar: {pasos}. |
 | Validar borrador (strict) OK | `success` | Contrato de validación guardado correctamente. Validación estricta superada. Aún no está publicado. |
 | Validación bloqueante al guardar | `error` + inline | Revise los datos del contrato de validación. |
 | Sin permiso editar contrato | `error` | No tiene permiso para editar el contrato de este proyecto. |
@@ -530,6 +531,7 @@ Mensajes de usuario para el Conciliador. Alineados a [`../FILE_MATCH.md`](../FIL
 | Situación | Tag / canal | Texto al usuario |
 |-----------|-------------|------------------|
 | Perfil A guardado (borrador) | `success` | Perfil A guardado correctamente. |
+| Perfil A guardado con pasos pendientes (paso 6) | `warning` | El borrador se guardó. Faltan pasos por completar: {pasos}. |
 | Sin permiso editar | `error` | No tiene permiso para editar el contrato de este proyecto. |
 | Validación formulario | `error` + inline | Revise los datos del perfil A. |
 | JSON inválido | `error` / JSON | JSON de perfil A inválido. |
@@ -543,6 +545,7 @@ Mensajes de usuario para el Conciliador. Alineados a [`../FILE_MATCH.md`](../FIL
 | Situación | Tag / canal | Texto al usuario |
 |-----------|-------------|------------------|
 | Perfil B guardado (borrador) | `success` | Perfil B guardado correctamente. |
+| Perfil B guardado con pasos pendientes (paso 6) | `warning` | El borrador se guardó. Faltan pasos por completar: {pasos}. |
 | Sin permiso editar | `error` | No tiene permiso para editar el contrato de este proyecto. |
 | Validación formulario | `error` + inline | Revise los datos del perfil B. |
 | JSON inválido | `error` / JSON | JSON de perfil B inválido. |
@@ -806,7 +809,7 @@ Mensajes de usuario para el Sembrador de perfiles. Alineados a [`../PROFILE_SEED
 | Sin orígenes Split/Merge | empty UI | No hay orígenes FILE SPLIT/MERGE publicados visibles. Publique un perfil de lectura en FILE SPLIT/MERGE o pida acceso. |
 | Sin orígenes Scout | empty UI | No hay borradores STRUCTURE SCOUT visibles. Guarde un borrador de estructura en Explorador o pida acceso al proyecto. |
 
-> Motor M2: `list_eligible_sources`. Host FilePipe, FILE GATE y **Reverse Studio**: GATE + CLEAN + FilePipe + Match A/B + Reverse entrada + FILE SPLIT/MERGE + STRUCTURE SCOUT. Apply pasa `kind` para no confundir Match A y B.
+> Motor M2: `list_eligible_sources`. Host FilePipe, FILE GATE, Reverse Studio y **FILE MATCH Perfil A**: GATE + CLEAN + FilePipe + Match A/B + Reverse entrada + FILE SPLIT/MERGE + STRUCTURE SCOUT. Apply pasa `kind` para no confundir Match A y B.
 
 #### Módulo 3 — Preview y aplicar borrador
 

@@ -1,10 +1,11 @@
 {% extends "app_base.html" %}
 {% load static %}
 
-{% block title %}Ayuda — Validador FILE GATE{% endblock %}
+{% block title %}Ayuda · Listado — FILE GATE{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
 
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
@@ -13,6 +14,8 @@
 <nav class="breadcrumb" aria-label="Ruta">
     <a href="{% url 'file_gate:project_list' %}">FILE GATE</a>
     <span class="breadcrumb-sep">/</span>
+    <span>Validador</span>
+    <span class="breadcrumb-sep">/</span>
     <span>Ayuda</span>
 </nav>
 {% endblock %}
@@ -20,15 +23,106 @@
 {% block content %}
 <div class="page-header">
     <div>
+        <p class="page-eyebrow">Referencia · FILE GATE · Validador</p>
         <h2>Ayuda — Listado de proyectos</h2>
-        <p>Proyectos FILE GATE de su compañía. Cada uno tiene un contrato de validación versionable.</p>
+        <p>Proyectos de contrato de validación de su compañía: qué ve, qué significan las columnas y cómo empezar.</p>
     </div>
     <div class="page-actions">
-        <a href="{% url 'file_gate:project_list' %}" class="btn btn-secondary">← Volver</a>
+        <a class="btn btn-secondary" href="{% url 'file_gate:project_list' %}">← Volver al listado</a>
+        <a class="btn btn-primary" href="{% url 'file_gate:project_create' %}">+ Nuevo proyecto</a>
     </div>
 </div>
-<div class="panel help-panel"><div class="panel-body">
-    <p>Cree un proyecto, defina el contrato (6 pasos) y publíquelo. Luego valide archivos contra esa versión publicada.</p>
-    <p><strong>Última ejecución</strong> muestra fecha y hora de la última validación completa (no un archivo solo cargado). «—» si aún no hay corrida.</p>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es este listado</h3>
+        <p class="help-intro">
+            Es la puerta de entrada a <strong>FILE GATE</strong> (Validador). Cada fila es un proyecto
+            con un <strong>contrato de validación versionable</strong>: define cómo debe leerse el archivo
+            y qué se acepta o rechaza. <strong>No transforma</strong> ni genera un archivo de salida.
+            Está aislado de FilePipe, FILE MATCH y Reverse Studio.
+        </p>
+        <ul>
+            <li>Solo se listan proyectos de <strong>su compañía</strong> (alcance UF).</li>
+            <li>Aparecen los proyectos donde usted es <strong>miembro</strong> y los <strong>públicos</strong> de la compañía (aunque no sea miembro).</li>
+            <li>Desde aquí crea un proyecto nuevo o abre el <strong>hub</strong> de uno existente.</li>
+        </ul>
+
+        <h3 class="form-section-title">Tarjetas de resumen</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Indicador</th><th>Significado</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Total</td><td>Proyectos FILE GATE visibles para usted en esta compañía.</td></tr>
+                <tr><td>Activos</td><td>No archivados (disponibles para trabajo).</td></tr>
+                <tr><td>Como admin (PA)</td><td>Proyectos donde su rol es administrador.</td></tr>
+                <tr><td>Públicos compañía</td><td>Visibilidad pública: cualquier UF de la compañía puede verlos.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columnas de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Qué muestra</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Código</td><td>Slug único del proyecto en la compañía; enlace al hub.</td></tr>
+                <tr><td>Nombre</td><td>Nombre visible del validador.</td></tr>
+                <tr><td>Visibilidad</td><td><strong>Privado</strong> (solo miembros) o <strong>Público</strong> (la compañía puede verlo).</td></tr>
+                <tr><td>Mi permiso</td><td>Su rol en el proyecto (PA / ED / GE / CO) o consulta si solo lo ve por ser público.</td></tr>
+                <tr><td>Versión</td><td>Estado del contrato: borrador y/o versión publicada activa.</td></tr>
+                <tr><td>Última ejecución</td><td>Fecha y hora de la última validación <strong>completa</strong> (no un archivo solo cargado). «—» si aún no hay corrida.</td></tr>
+                <tr><td>Acciones</td><td>Abrir el hub del proyecto.</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            El filtro de <strong>Visibilidad</strong> en la barra de la tabla permite restringir a públicos o privados.
+            La tabla admite búsqueda y paginación.
+        </p>
+
+        <h3 class="form-section-title">Visibilidad y acceso</h3>
+        <ul>
+            <li><strong>Privado:</strong> solo la membresía activa puede ver y trabajar según el rol.</li>
+            <li><strong>Público:</strong> UF de la misma compañía pueden <strong>ver</strong> el proyecto sin ser miembros (consulta). Editar, publicar o validar siguen exigiendo el rol adecuado.</li>
+            <li>El creador queda siempre como <strong>PA</strong>, independientemente de la visibilidad.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles (resumen)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Permisos principales</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">PA</td><td>Admin: miembros, editar esquema y políticas, publicar, validar, bridge.</td></tr>
+                <tr><td class="mono">ED</td><td>Editar esquema y políticas; publicar; validar.</td></tr>
+                <tr><td class="mono">GE</td><td>Validar y descargar informe (sin editar el contrato).</td></tr>
+                <tr><td class="mono">CO</td><td>Consulta: ver hub e historial; sin descargas de filas de negocio.</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Los miembros se gestionan dentro de cada proyecto (hub → <strong>Miembros</strong>, solo PA).
+        </p>
+
+        <h3 class="form-section-title">Cómo empezar</h3>
+        <ol>
+            <li>Pulse <strong>+ Nuevo proyecto</strong> (nombre, código/slug y visibilidad).</li>
+            <li>En el hub, complete el <strong>esquema</strong> (6 pasos) y las <strong>políticas</strong>.</li>
+            <li>Opcional: <strong>Importar estructura</strong> desde otra app (GATE, CLEAN, FilePipe, Match, Reverse, Scout) al borrador del esquema; no clona políticas.</li>
+            <li><strong>Publique</strong> el contrato (esquema + política). Validar usa solo la versión publicada.</li>
+            <li><strong>Valide</strong> un archivo; revise informe e historial. El bridge FILE GATE es un extra opcional para otras apps.</li>
+        </ol>
+        <p class="help-intro">
+            Regla de producto: no se valida contra un borrador. Guía completa: menú FILE GATE → <strong>Ayuda</strong>.
+        </p>
+
+        <h3 class="form-section-title">Qué no es este listado</h3>
+        <ul>
+            <li>No muestra proyectos de FilePipe, FILE MATCH ni Reverse Studio.</li>
+            <li>No edita el esquema ni las políticas (eso ocurre en el hub de cada proyecto).</li>
+            <li>No ejecuta validaciones ni sube archivos de producción.</li>
+            <li>No transforma ni emite layouts: solo valida.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

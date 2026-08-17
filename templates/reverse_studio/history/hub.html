@@ -47,7 +47,7 @@
     <div class="page-actions">
         {% url 'reverse_studio:history_hub_help' project_slug=project.slug as history_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=history_help_url %}
-        <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url 'reverse_studio:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub Proyecto</a>
         <a href="{{ history.run_hub_url }}" class="btn btn-secondary">Generar</a>
     </div>
 </div>

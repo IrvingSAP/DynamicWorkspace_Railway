@@ -89,7 +89,7 @@
         <p class="hint">{{ picker_hint }}</p>
 
         <form method="get" class="form-grid" style="margin-top:12px">
-            <div class="field" style="max-width:280px">
+            <div class="field" style="max-width:420px">
                 <label for="kind">Tipo de origen</label>
                 <select id="kind" name="kind" onchange="this.form.submit()">
                     {% for code, label in source_kind_choices %}

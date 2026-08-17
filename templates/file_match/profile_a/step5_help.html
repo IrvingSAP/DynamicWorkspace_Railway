@@ -3,8 +3,6 @@
 
 {% block title %}Ayuda · Paso 5 — {{ project.name }}{% endblock %}
 
-{% block main_class %}app-main--wide{% endblock %}
-
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
@@ -29,26 +27,89 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">FILE MATCH · Módulo 1 · paso 5 · ayuda</p>
-        <h2>Reglas globales de contenido</h2>
-        <p>Normalización y exclusiones a nivel de archivo o línea, aplicadas al leer el archivo. Complementan (no sustituyen) las reglas por campo del paso 4.</p>
+        <p class="page-eyebrow">FILE MATCH · Perfil A · paso 5 · <span class="cell-badge">{{ project.slug }}</span></p>
+        <h2>Ayuda — Reglas globales de contenido</h2>
+        <p>Normalización y exclusiones a nivel de línea o archivo A, aplicadas al leer. Complementan los campos del paso 4; no son las reglas de cruce A vs B.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'file_match:profile_a_step5' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 5</a>
     </div>
 </div>
 
-<div class="panel">
+<div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Bloques</h3>
-        <table class="help-table">
-            <thead><tr><th>Bloque</th><th>Ejemplos</th></tr></thead>
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            El paso 4 declara <strong>qué debe cumplir cada campo A</strong>. Este paso declara
+            <strong>qué líneas ni siquiera deberían parsearse como dato</strong> (vacías, comentarios)
+            y qué caracteres o patrones invalidan la línea entera.
+        </p>
+        <p class="help-intro">
+            Se guarda como <code class="mono">content_rules</code> en el <strong>borrador A</strong>.
+            Las violaciones salen en el <strong>informe de lectura del lado A</strong> (paso 6) al conciliar.
+            El veredicto del match (cuadra / no cuadra) lo deciden las <strong>Reglas de cruce</strong> (Módulo 3), no este paso.
+        </p>
+
+        <h3 class="form-section-title">Normalización de líneas</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Opción</th><th>Efecto al leer A</th></tr></thead>
             <tbody>
-                <tr><td>Normalización de líneas</td><td>Recortar espacios, unificar vacíos, homogenizar saltos antes de validar campos.</td></tr>
-                <tr><td>Caracteres y patrones</td><td>Caracteres prohibidos o patrones que marcan la línea como inválida.</td></tr>
+                <tr>
+                    <td>Quitar espacios<br><code class="mono">trim_lines</code></td>
+                    <td>Recorta espacios al inicio y al final <strong>antes</strong> de validar campos.</td>
+                </tr>
+                <tr>
+                    <td>Ignorar líneas en blanco<br><code class="mono">skip_empty_lines</code></td>
+                    <td>Las líneas vacías (tras el trim, si está activo) no se parsean ni entran al cruce.</td>
+                </tr>
+                <tr>
+                    <td>Prefijo de comentarios<br><code class="mono">comment_prefix</code></td>
+                    <td>Líneas que empiezan por ese texto se omiten. Vacío = no hay comentarios.</td>
+                </tr>
             </tbody>
         </table>
-        <p class="hint" style="margin-top:10px">Las violaciones aparecen en el informe de lectura del lado A (paso 6) al parsear en la conciliación (Módulo 5). Aquí no se decide el veredicto del match.</p>
+
+        <h3 class="form-section-title">Caracteres y patrones</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Opción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Caracteres permitidos<br><code class="mono">allowed_chars</code></td>
+                    <td>Lista blanca opcional. Vacío = no restringe.</td>
+                </tr>
+                <tr>
+                    <td>Caracteres excluidos<br><code class="mono">excluded_chars</code></td>
+                    <td>Lista negra (uno por línea; p. ej. <code class="mono">\x00</code>). Rechazo <code class="mono">FORBIDDEN_CHAR</code>.</td>
+                </tr>
+                <tr>
+                    <td>Patrones prohibidos<br><code class="mono">forbidden_patterns</code></td>
+                    <td>Regex, una por línea. Si coincide, se rechaza la línea entera.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Orden al conciliar el archivo A</h3>
+        <ol class="help-list">
+            <li>Captura (pasos 2 y 3): solo esa franja se lee.</li>
+            <li>Estas reglas globales (trim, vacías, comentarios, caracteres, patrones).</li>
+            <li>Campos del paso 4.</li>
+            <li>Informe de lectura A (paso 6). Luego el motor cruza con B según Reglas.</li>
+        </ol>
+
+        <h3 class="form-section-title">Qué no hace este paso</h3>
+        <ul class="help-list">
+            <li>No define tipos ni obligatoriedad por campo: eso es el paso 4.</li>
+            <li>No define clave 1:1 ni campos a comparar: eso es el módulo Reglas.</li>
+            <li>No decide el veredicto del conciliador ni publica la definición.</li>
+        </ul>
+
+        <h3 class="form-section-title">Buenas prácticas</h3>
+        <ul class="help-list">
+            <li>Active trim y saltar vacías si el proveedor rellena o deja huecos.</li>
+            <li>No ponga en lista negra un delimitador que el paso 4 necesita.</li>
+            <li>Use patrones prohibidos para marcas de error del archivo, no para validar un campo concreto.</li>
+            <li>Solo <strong>PA</strong> y <strong>ED</strong> pueden guardar. El stepper marca este paso ✓ cuando hay reglas persistidas.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

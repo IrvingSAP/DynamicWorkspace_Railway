@@ -1,0 +1,33 @@
+{# Criterios comunes — ayudas paso 4 FILE MATCH Perfil B #}
+<h3 class="form-section-title">Criterios de rechazo (todos los tipos)</h3>
+<p class="help-intro">
+    En FILE MATCH cada campo es un criterio de <strong>lectura del archivo B</strong>, no un origen para mapear a un destino.
+    Al publicar la definición (A + B + reglas) se exige al menos un campo en B. Las incidencias de parseo usan el <strong>nombre interno</strong>.
+</p>
+<table class="help-table">
+    <thead><tr><th>Propiedad</th><th>Significado al conciliar</th></tr></thead>
+    <tbody>
+        <tr>
+            <td>Nombre interno</td>
+            <td>Identificador único. Sale en el informe de lectura B y en las reglas de cruce (clave / comparar). Puede coincidir con A o no: el enlace A↔B se declara en Reglas.</td>
+        </tr>
+        <tr>
+            <td>Tipo de contenido</td>
+            <td>Forma esperada. Un valor incompatible genera error de contenido al parsear B.</td>
+        </tr>
+        <tr>
+            <td>Campo obligatorio</td>
+            <td>Vacío → rechazo de lectura. No es el veredicto del match 1:1.</td>
+        </tr>
+        <tr>
+            <td>Patrón / formato fecha</td>
+            <td>Si el tipo es <code class="mono">custom</code>, regex. Si es fecha, indique el formato (p. ej. <code class="mono">DD/MM/YYYY</code>).</td>
+        </tr>
+    </tbody>
+</table>
+<p class="help-intro">
+    Acciones de esta pantalla: <strong>+ Agregar campo</strong>, editar/quitar filas,
+    <strong>Guardar parámetros</strong> (si aplica al tipo) y <strong>Siguiente</strong> al paso 5.
+    El stepper marca Campos ✓ solo si hay al menos un campo guardado.
+    Opcional: <strong>Copiar desde A</strong> en el hub B si el layout es el mismo. Solo <strong>PA</strong> y <strong>ED</strong> editan.
+</p>
