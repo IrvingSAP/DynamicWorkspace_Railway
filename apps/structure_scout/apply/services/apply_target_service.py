@@ -33,14 +33,24 @@ MSG_APPLY_VALIDATION = (
 )
 
 MVP_KINDS = (
-    (ScoutApply.KIND_FILE_GATE, "FILE GATE"),
-    (ScoutApply.KIND_REVERSE, "Reverse Studio"),
+    (ScoutApply.KIND_FILE_GATE, "FILE GATE — Esquema"),
+    (ScoutApply.KIND_FILE_CLEAN, "FILE CLEAN — Perfil de lectura"),
+    (ScoutApply.KIND_DMS, "FilePipe — Origen"),
+    (ScoutApply.KIND_FILE_MATCH, "FILE MATCH — Perfil A"),
+    (ScoutApply.KIND_REVERSE, "Reverse Studio — Entrada"),
+    (ScoutApply.KIND_FILE_SPLIT_MERGE, "FILE SPLIT/MERGE — Perfil de lectura"),
 )
 
 KIND_TO_PROJECT = {
     ScoutApply.KIND_FILE_GATE: Project.KIND_FILE_GATE,
     ScoutApply.KIND_REVERSE: Project.KIND_REVERSE,
+    ScoutApply.KIND_FILE_MATCH: Project.KIND_FILE_MATCH,
+    ScoutApply.KIND_FILE_CLEAN: Project.KIND_FILE_CLEAN,
+    ScoutApply.KIND_DMS: Project.KIND_DMS,
+    ScoutApply.KIND_FILE_SPLIT_MERGE: Project.KIND_FILE_SPLIT_MERGE,
 }
+
+ALLOWED_TARGET_KINDS = frozenset(KIND_TO_PROJECT.values())
 
 
 def user_can_apply_from_scout(user, project: Project) -> bool:
@@ -200,6 +210,20 @@ def target_deep_link(target: Project) -> str:
         return reverse(
             "reverse_studio:input_hub", kwargs={"project_slug": target.slug}
         )
+    if target.project_kind == Project.KIND_FILE_MATCH:
+        return reverse(
+            "file_match:profile_a_hub", kwargs={"project_slug": target.slug}
+        )
+    if target.project_kind == Project.KIND_FILE_CLEAN:
+        return reverse(
+            "file_clean:profile_hub", kwargs={"project_slug": target.slug}
+        )
+    if target.project_kind == Project.KIND_DMS:
+        return reverse("dms:source_hub", kwargs={"project_slug": target.slug})
+    if target.project_kind == Project.KIND_FILE_SPLIT_MERGE:
+        return reverse(
+            "file_split_merge:profile_hub", kwargs={"project_slug": target.slug}
+        )
     return reverse("dashboard:home")
 
 
@@ -271,10 +295,7 @@ def _resolve_target(user, scout_project: Project, target_id: str) -> Project | N
         return None
     if target.company_id != scout_project.company_id:
         return None
-    if target.project_kind not in {
-        Project.KIND_FILE_GATE,
-        Project.KIND_REVERSE,
-    }:
+    if target.project_kind not in ALLOWED_TARGET_KINDS:
         return None
     if not user_can_edit_target(user, target):
         return None

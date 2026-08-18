@@ -242,9 +242,17 @@ class ScoutApply(models.Model):
 
     KIND_FILE_GATE = "file_gate"
     KIND_REVERSE = "reverse"
+    KIND_FILE_MATCH = "file_match"
+    KIND_FILE_CLEAN = "file_clean"
+    KIND_DMS = "dms"
+    KIND_FILE_SPLIT_MERGE = "file_split_merge"
     KIND_CHOICES = (
         (KIND_FILE_GATE, "FILE GATE"),
         (KIND_REVERSE, "Reverse Studio"),
+        (KIND_FILE_MATCH, "FILE MATCH"),
+        (KIND_FILE_CLEAN, "FILE CLEAN"),
+        (KIND_DMS, "FilePipe"),
+        (KIND_FILE_SPLIT_MERGE, "FILE SPLIT/MERGE"),
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

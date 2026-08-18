@@ -777,9 +777,12 @@ Mensajes de usuario para el Explorador de estructura. Alineados a [`../STRUCTURE
 | Draft no encontrado | `error` | Versión de borrador no encontrada. |
 | Apply no encontrado | `error` | Registro de aplicación no encontrado. |
 | Sin permiso exportar | `error` | No tiene permiso para exportar el borrador. |
+| Registro eliminado | `success` | Registro eliminado del historial. |
+| Solo propias | `error` | Solo puede eliminar registros que usted creó. |
+| Error al eliminar | `error` + log | No se pudo eliminar el registro. Si el problema continúa, contacte al administrador. |
 | Sin eventos | empty UI | Guarde un borrador o aplique a un destino para ver el historial. |
 
-> Motor: `history_service` (solo lectura). Fuentes: `StructureDraft` + `ScoutApply`. Timeline filtrable por tipo. Export por versión: `history_draft_export` → `export_draft_json`.
+> Motor: `history_service` (timeline + borrado de registros propios). Fuentes: `StructureDraft` + `ScoutApply`. Timeline filtrable por tipo. Export por versión: `history_draft_export` → `export_draft_json`. Eliminar: POST `history_draft_delete` / `history_apply_delete` (solo `created_by` = usuario). Borrar un apply no deshace la siembra en el destino; borrar el draft current promociona la versión anterior.
 
 ### 3.13 Mensajes específicos — `apps.profile_seed` (PROFILE_SEED)
 

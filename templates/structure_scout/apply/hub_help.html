@@ -1,29 +1,123 @@
 {% extends "app_base.html" %}
 {% load static %}
-{% block title %}Ayuda · Aplicar — STRUCTURE SCOUT{% endblock %}
+
+{% block title %}Ayuda · Aplicar — {{ project.name }}{% endblock %}
+
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
+
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:apply_hub' project_slug=project.slug %}">Aplicar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div>
+        <p class="page-eyebrow">STRUCTURE SCOUT · paso 5 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Aplicar a destino</h2>
-        <p>Siembra el borrador Scout en otra app — solo como borrador.</p>
+        <p>Siembra el borrador Scout en un perfil de lectura de la suite (GATE, CLEAN, FilePipe, Match A, Reverse, Split/Merge). Nunca publica.</p>
     </div>
     <div class="page-actions">
-        <a class="btn btn-secondary" href="{% url 'structure_scout:apply_hub' project_slug=project.slug %}">← Volver</a>
+        <a class="btn btn-secondary" href="{% url 'structure_scout:apply_hub' project_slug=project.slug %}">← Volver a aplicar</a>
     </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li>Requiere un <strong>borrador Scout</strong> guardado.</li>
-    <li>Destinos MVP: <strong>FILE GATE</strong> y <strong>Reverse Studio</strong> (misma compañía).</li>
-    <li>Solo escribe el <strong>borrador</strong> del destino — <strong>nunca publica</strong>.</li>
-    <li>Si el destino ya tiene campos, verá aviso de sobrescritura.</li>
-    <li>Si el draft era <code>txt_fixed</code>, se siembran las longitudes confirmadas en Campos (no placeholders ciegos).</li>
-    <li>Tras aplicar, abra el destino: revise captura, políticas y el contrato; publique cuando corresponda.</li>
-    <li>Roles: PA / ED en Scout y en el destino.</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Copia el snapshot del <strong>borrador actual</strong> (tipo, encoding, campos, posiciones si aplica)
+            al perfil de lectura / entrada de otro proyecto de la <strong>misma compañía</strong>.
+            El destino queda en edición: hay que revisar el asistente y <strong>publicar allí</strong>.
+        </p>
+        <p class="help-intro">
+            No es Profile Seed (clonar un contrato ya publicado) ni FILE GATE (validar producción).
+            El stepper marca Aplicar ✓ cuando hay al menos un apply <strong>correcto</strong>.
+        </p>
+
+        <h3 class="form-section-title">Prerrequisito</h3>
+        <p class="help-intro">
+            Hace falta un <strong>borrador Scout guardado</strong>. Si no, verá el aviso y un atajo a Borrador.
+            Puede aplicar un draft en «revisión pendiente»; conviene revisar el destino antes de publicar.
+        </p>
+
+        <h3 class="form-section-title">Qué ve en esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Elemento</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Draft / Estado / Confianza / Campos</td>
+                    <td>Versión que se sembrará (<code class="mono">vN</code>), si está listo o en revisión, y cuántos campos lleva.</td>
+                </tr>
+                <tr>
+                    <td>Tipo de proyecto</td>
+                    <td>
+                        Destinos que aceptan un perfil de lectura: <strong>FILE GATE</strong>,
+                        <strong>FILE CLEAN</strong>, <strong>FilePipe</strong> (origen),
+                        <strong>FILE MATCH</strong> (Perfil A), <strong>Reverse Studio</strong> (entrada)
+                        y <strong>FILE SPLIT/MERGE</strong>. Al cambiar, recarga la lista de proyectos.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Proyecto destino</td>
+                    <td>Solo proyectos no archivados de ese tipo, misma compañía, donde usted es <strong>PA o ED</strong>. Muestra conteo de campos ya existentes.</td>
+                </tr>
+                <tr>
+                    <td>Aviso de sobrescritura</td>
+                    <td>Si el destino ya tiene campos, aplicar los reemplaza en el <strong>borrador</strong> del destino (no toca una versión ya publicada hasta que publiquen de nuevo allí).</td>
+                </tr>
+                <tr>
+                    <td>Aplicar borrador al destino</td>
+                    <td>Ejecuta la siembra. Tras el OK, aparece el enlace <strong>Abrir destino</strong> (esquema GATE o planilla Reverse).</td>
+                </tr>
+                <tr>
+                    <td>Applies recientes</td>
+                    <td>Auditoría corta (fecha, versión, destino, OK/fallido). <strong>Ver</strong> abre el detalle; el timeline completo está en Historial.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué se siembra</h3>
+        <ul class="help-list">
+            <li>Tipo de archivo, encoding, fin de línea, delimitador/encabezado según el draft.</li>
+            <li>Campos con nombre interno y tipo. En CSV/Excel, columna o índice. En <code class="mono">txt_fixed</code>, Inicio / Fin / Long. confirmados en Campos (no placeholders a ciegas si ya estaban definidos).</li>
+            <li>No copia políticas GATE, reglas Match ni el mapeo Reverse: solo la estructura de lectura.</li>
+        </ul>
+
+        <h3 class="form-section-title">Después de aplicar</h3>
+        <ol class="help-list">
+            <li>Abra el destino y revise captura (inicio/fin), campos y el resto del asistente.</li>
+            <li><strong>Publique</strong> en esa app cuando el contrato o la planilla estén listos.</li>
+            <li>Puede aplicar el mismo draft a otro destino (otro GATE, Match, FilePipe, etc.).</li>
+        </ol>
+
+        <h3 class="form-section-title">Roles</h3>
+        <ul class="help-list">
+            <li>En Scout: solo <strong>PA / ED</strong> aplican.</li>
+            <li>En el destino: también <strong>PA / ED</strong> (si no, el proyecto no aparece en el combo).</li>
+            <li><strong>GE / CO</strong> ven el hub si hay acceso; no siembran.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace este módulo</h3>
+        <ul class="help-list">
+            <li>No siembra Perfil B de Match (use Copiar A→B o Importar estructura en el destino) ni el mapeo/target de FilePipe.</li>
+            <li>No publica FILE GATE, Reverse, Match ni FilePipe.</li>
+            <li>No valida un archivo de producción ni concilia A vs B.</li>
+            <li>No edita el draft Scout: vuelva a Campos / Borrador si hay que corregir y guardar otra versión.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

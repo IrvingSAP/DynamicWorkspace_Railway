@@ -78,6 +78,8 @@ def get_hub_context(
             kwargs={"project_slug": project.slug},
         ),
         "uploaded_jobs": uploaded_jobs,
+        "history_ttl_days": 7,
+        "history_stats": _history_stats(history, uploaded_jobs),
         "history_jobs": [
             {
                 "id": str(job.id),
@@ -89,9 +91,12 @@ def get_hub_context(
                 "version_number": job.version.version_number if job.version_id else None,
                 "input_filename": job.input_original_filename,
                 "output_filename": job.output_filename,
+                "size_label": detection_service.human_size(job.input_size_bytes),
+                "content_hash_short": _hash_short(job.input_content_hash),
                 "rows_ok": job.rows_ok,
                 "rows_rejected": job.rows_rejected,
                 "status_label": _status_label(job.status),
+                "severity": _history_severity(job.status),
                 "expired": execution_service.is_download_expired(job),
                 "can_delete": execution_service.can_delete_job(actor, job),
                 "file_gate_check": (job.input_suggestions or {}).get("file_gate_check"),
@@ -132,6 +137,34 @@ def _preview_row(raw) -> dict | None:
         "rows_read": raw.get("rows_read") or 0,
         "rows_ok": raw.get("rows_ok") or 0,
         "rows_rejected": raw.get("rows_rejected") or 0,
+    }
+
+
+def _history_severity(status: str) -> str:
+    if status == "completed":
+        return "info"
+    if status == "partial":
+        return "warning"
+    return "error"
+
+
+def _history_stats(history, uploaded_jobs) -> dict:
+    completed = 0
+    problems = 0
+    expired = 0
+    for job in history:
+        if job.status == "completed":
+            completed += 1
+        elif job.status in {"partial", "failed", "cancelled"}:
+            problems += 1
+        if execution_service.is_download_expired(job):
+            expired += 1
+    return {
+        "total": len(history),
+        "completed": completed,
+        "problems": problems,
+        "expired": expired,
+        "pending": len(uploaded_jobs),
     }
 
 

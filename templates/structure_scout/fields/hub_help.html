@@ -1,65 +1,144 @@
 {% extends "app_base.html" %}
 {% load static %}
-{% block title %}Ayuda · Campos — STRUCTURE SCOUT{% endblock %}
+
+{% block title %}Ayuda · Campos — {{ project.name }}{% endblock %}
+
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
+
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:fields_hub' project_slug=project.slug %}">Campos</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div>
+        <p class="page-eyebrow">STRUCTURE SCOUT · paso 3 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Campos y tipos</h2>
-        <p>Qué se propone en este paso y qué se afina después en el destino.</p>
+        <p>Revise y confirme el catálogo de columnas propuesto. No valida producción ni publica el destino.</p>
     </div>
     <div class="page-actions">
-        <a class="btn btn-secondary" href="{% url 'structure_scout:fields_hub' project_slug=project.slug %}">← Volver</a>
+        <a class="btn btn-secondary" href="{% url 'structure_scout:fields_hub' project_slug=project.slug %}">← Volver a campos</a>
     </div>
 </div>
-<div class="panel"><div class="panel-body">
-<h3 class="form-section-title">Qué es este paso</h3>
-<ul>
-    <li>Parte del <strong>patrón confirmado</strong> (Detectar) y la <strong>muestra</strong> subida.</li>
-    <li>Infiere columnas: nombre, tipo de contenido, ejemplos y confianza.</li>
-    <li>Si el patrón es <code>txt_fixed</code>, también propone <strong>Inicio / Fin / Long.</strong> estimados (editables).</li>
-    <li>Usted revisa y <strong>confirma</strong>. No valida producción ni publica nada.</li>
-</ul>
 
-<h3 class="form-section-title">Qué puede editar aquí</h3>
-<ul>
-    <li><strong>Nombre</strong> del campo.</li>
-    <li><strong>Tipo</strong> (<code>content_type</code> del catálogo DMS).</li>
-    <li><strong>Obligatorio</strong> y notas.</li>
-    <li>Con <code>txt_fixed</code>: <strong>Inicio</strong>, <strong>Fin</strong> y <strong>Longitud</strong> (se sincronizan entre sí).</li>
-    <li>Con <code>txt_fixed</code>: la columna <strong>Ejemplos</strong> muestra un solo valor del registro de prueba (misma fila que Origen), según Inicio / Long.</li>
-    <li>Agregar / quitar filas si hace falta; <strong>Re-inferir</strong> vuelve a calcular tipos y longitudes desde la muestra.</li>
-</ul>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Detectar define <em>cómo se lee</em> el archivo. Este paso convierte esa lectura en una
+            <strong>lista de campos</strong>: nombre, tipo de contenido, obligatorio, ejemplos y,
+            si es TXT posicional, Inicio / Fin / Longitud estimados.
+        </p>
+        <p class="help-intro">
+            Usted <strong>corrige y confirma</strong>. El snapshot versionado es el paso <strong>Borrador</strong>;
+            la siembra en GATE, CLEAN, FilePipe, Match A, Reverse o Split/Merge es <strong>Aplicar</strong>.
+        </p>
 
-<h3 class="form-section-title">Vista posicional (txt_fixed)</h3>
-<ul>
-    <li><strong>Origen</strong> — dígitos de posición y un registro crudo de la muestra.</li>
-    <li><strong>Construcción</strong> — misma regla; arma la línea leyendo cada campo (Inicio / Long.) y colocando los trozos en secuencia.</li>
-    <li>«Actualizar vista posicional» refresca Construcción tras editar la tabla (no guarda hasta Confirmar).</li>
-</ul>
+        <h3 class="form-section-title">Prerrequisito</h3>
+        <p class="help-intro">
+            Hace falta una <strong>muestra activa</strong> y un <strong>patrón confirmado</strong> en Detectar.
+            Si falta alguno, verá el aviso y un atajo. El stepper marca Campos cuando hay una propuesta confirmada.
+        </p>
 
-<h3 class="form-section-title">Longitudes estimadas</h3>
-<ul>
-    <li>Heurística por espacios (H1), max longitud observada (H2) o placeholders de 1 columna (H3).</li>
-    <li>Badge «estimado» = confianza media/baja: revise antes de aplicar.</li>
-    <li>Al confirmar, los bounds van al <strong>borrador</strong> y luego al destino al Aplicar.</li>
-    <li>CSV / Excel <strong>no</strong> muestran estas columnas.</li>
-</ul>
+        <h3 class="form-section-title">Qué ve en esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Elemento</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Estado / Confianza / Campos / Patrón</td>
+                    <td>
+                        Listo vs revisión pendiente, confianza agregada, cuántas columnas hay y el tipo
+                        confirmado en Detectar (delimitador y encabezado si aplica).
+                    </td>
+                </tr>
+                <tr>
+                    <td>Aviso de revisión pendiente</td>
+                    <td>
+                        Cobertura incompleta, tipos mixtos, patrón dudoso o longitudes estimadas.
+                        No bloquea: revise y confirme con cuidado. Use <strong>¿Qué significa?</strong> si aparece.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Vista posicional</td>
+                    <td>
+                        Solo con <code class="mono">txt_fixed</code>: <strong>Origen</strong> (registro crudo + regla 1-based)
+                        y <strong>Construcción</strong> (trozos según Inicio / Long. de la tabla, en secuencia).
+                    </td>
+                </tr>
+                <tr>
+                    <td>Actualizar vista posicional</td>
+                    <td>Refresca Construcción y ejemplos tras editar la tabla. <strong>No guarda</strong> hasta Confirmar.</td>
+                </tr>
+                <tr>
+                    <td>Re-inferir desde muestra</td>
+                    <td>Vuelve a calcular columnas, tipos y longitudes. <strong>Borra overrides</strong> no confirmados.</td>
+                </tr>
+                <tr>
+                    <td>Tabla de campos</td>
+                    <td>Catálogo editable. En CSV / Excel no hay Inicio / Fin / Long.</td>
+                </tr>
+                <tr>
+                    <td>Confirmar campos</td>
+                    <td>Persiste la propuesta de trabajo. Luego puede continuar a Borrador.</td>
+                </tr>
+            </tbody>
+        </table>
 
-<h3 class="form-section-title">Qué no hace Scout</h3>
-<ul>
-    <li>No publica el destino (GATE / Reverse).</li>
-    <li>No reemplaza el editor completo del contrato en el destino.</li>
-    <li>Políticas GATE, reglas Match ni target Reverse quedan fuera.</li>
-</ul>
+        <h3 class="form-section-title">Qué puede editar</h3>
+        <ul class="help-list">
+            <li><strong>Nombre</strong> interno del campo (máx. 80).</li>
+            <li><strong>Tipo</strong> — códigos del catálogo DMS (<code class="mono">content_type</code>), no tipos inventados.</li>
+            <li><strong>Obligatorio</strong> (Req.) y <strong>notas</strong> por fila.</li>
+            <li>Con <code class="mono">txt_fixed</code>: <strong>Inicio</strong>, <strong>Fin</strong> y <strong>Long.</strong> (se sincronizan: al cambiar inicio o longitud se recalcula el fin, y al cambiar el fin se recalcula la longitud).</li>
+            <li><strong>+ Agregar campo</strong> / <strong>Quitar</strong> filas si la inferencia se quedó corta o de más.</li>
+        </ul>
+        <p class="help-intro">La columna Confianza es informativa (heurística). Los ejemplos se toman de la muestra; en posicional, un valor recortado con Inicio / Long. de esa fila.</p>
 
-<h3 class="form-section-title">Siguiente</h3>
-<ul>
-    <li>Confirmar campos → <strong>Borrador</strong> → <strong>Aplicar</strong> a GATE/Reverse → afinar y publicar en el destino.</li>
-    <li>Roles: PA / ED editan; PA / ED / GE confirman; CO sin ejemplos de celdas.</li>
-</ul>
-</div></div>
+        <h3 class="form-section-title">Longitudes estimadas (<code class="mono">txt_fixed</code>)</h3>
+        <ul class="help-list">
+            <li>Heurística por espacios (H1), máxima longitud observada (H2) o placeholder de 1 columna (H3).</li>
+            <li>El distintivo <strong>estimado</strong> (confianza media/baja) pide revisión antes de aplicar.</li>
+            <li>Revise solapes: dos campos no deben ocupar las mismas posiciones.</li>
+            <li>Al confirmar, los bounds van al estado de Campos; al guardar Borrador y Aplicar, al destino (ya no placeholders 1..N a ciegas).</li>
+            <li>CSV / Excel <strong>no</strong> muestran estas columnas.</li>
+        </ul>
+        <p class="help-intro">Excel tiene preview limitado en MVP: confirme tipos con más cuidado.</p>
+
+        <h3 class="form-section-title">Roles</h3>
+        <ul class="help-list">
+            <li><strong>PA / ED</strong> editan la tabla, agregan/quitan, re-infieren y confirman.</li>
+            <li><strong>GE</strong> puede confirmar la propuesta actual si el hub lo permite; no edita filas.</li>
+            <li><strong>CO</strong> ve nombres y tipos; <strong>sin</strong> ejemplos de celdas ni la fila de muestra alineada.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace este paso</h3>
+        <ul class="help-list">
+            <li>No vuelve a subir la muestra ni cambia el patrón de archivo (Muestra / Detectar).</li>
+            <li>No congela un snapshot versionado (Borrador) ni siembra destinos (Aplicar).</li>
+            <li>No publica FILE GATE, Reverse, Match ni FilePipe.</li>
+            <li>No configura políticas GATE, reglas Match, mapeo FilePipe ni captura avanzada de inicio/fin de archivo.</li>
+        </ul>
+
+        <h3 class="form-section-title">Orden sugerido</h3>
+        <ol class="help-list">
+            <li>Si el tipo o el delimitador están mal, vuelva a <strong>Detectar</strong> y confirme de nuevo.</li>
+            <li>Revise nombres y tipos. En posicional, alinee Inicio / Long. con Origen y Construcción.</li>
+            <li><strong>Confirmar campos</strong> → <strong>Borrador</strong> → <strong>Aplicar</strong> → afinar y publicar en el destino.</li>
+        </ol>
+    </div>
+</div>
 {% endblock %}

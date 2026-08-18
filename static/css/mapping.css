@@ -59,8 +59,12 @@ button.lifecycle-step:disabled {
     cursor: not-allowed;
 }
 
-.lifecycle-step:hover {
+a.lifecycle-step:hover {
     border-color: rgba(15, 92, 76, 0.35);
+}
+
+span.lifecycle-step {
+    cursor: default;
 }
 
 .lifecycle-step.is-done {

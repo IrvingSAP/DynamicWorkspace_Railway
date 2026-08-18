@@ -6,13 +6,23 @@
 {% block main_class %}app-main--wide{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_run.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_gate_history.css' %}">
+<style>
+.history-filters--compact {
+  grid-template-columns: minmax(180px, 240px) auto;
+  margin-top: 16px;
+}
+.history-filters--compact .filter-actions {
+  grid-column: auto;
+}
+</style>
 {% endblock %}
 
-{% block sidebar_nav %}
-{% include "includes/sidebar_uf.html" %}
-{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="breadcrumb" aria-label="Ruta">
@@ -25,123 +35,176 @@
 {% endblock %}
 
 {% block content %}
-<div class="project-scope-strip" aria-label="Proyecto">
-    <span class="label">Proyecto</span>
-    <span class="cell-badge">{{ project.slug }}</span>
+<div class="run-scope" aria-label="Alcance del historial">
+    <span class="label">Proyecto</span><strong>{{ project.slug }}</strong>
     <span>{{ project.name }}</span>
     {% if membership %}
-    <span class="hint">·</span>
-    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    <span class="label">Rol</span><code>{{ membership.role }}</code>
     {% endif %}
 </div>
 
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">STRUCTURE SCOUT · Historial</p>
-        <h2>Historial</h2>
-        <p>Versiones de borrador y aplicaciones a destino de este proyecto.</p>
+        <p class="page-eyebrow">STRUCTURE SCOUT · Módulo 7 · <span class="role-badge">Historial</span></p>
+        <h2>Historial y auditoría</h2>
+        <p>Consulte versiones de borrador y aplicaciones a destino. Solo lectura: no deshace ni re-aplica.</p>
     </div>
     <div class="page-actions">
         {% url 'structure_scout:history_hub_help' project_slug=project.slug as ss_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=ss_help_url %}
+        <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
         {% if hub.has_draft %}
         <a href="{% url 'structure_scout:apply_hub' project_slug=project.slug %}" class="btn btn-secondary">Aplicar</a>
         {% endif %}
-        <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
     </div>
 </div>
 
-<div class="lifecycle-stepper" aria-label="Ciclo del proyecto">
-    <div class="lifecycle-phase">
-        <p class="lifecycle-phase-label">Aplicación</p>
-        <ol class="lifecycle-steps">
-            <li><span class="lifecycle-step {{ hub.apply_step_class }}"><span class="lifecycle-step-num">{% if hub.has_apply %}✓{% else %}5{% endif %}</span> Aplicar</span></li>
-            <li><span class="lifecycle-step {{ hub.history_step_class }}"><span class="lifecycle-step-num">{% if hub.has_history %}✓{% else %}6{% endif %}</span> Historial</span></li>
-        </ol>
+{% include "structure_scout/projects/_lifecycle_stepper.html" with stepper_mode="apply" current_step="history" %}
+
+{% if not has_any_history and not has_active_filters %}
+<div class="empty-history" style="margin-top:16px">
+    <h3>Sin eventos registrados</h3>
+    <p>Este proyecto todavía no tiene borradores guardados ni aplicaciones a destino. Guarde un borrador o aplique para empezar la auditoría.</p>
+    <a href="{% url 'structure_scout:sample_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a muestra</a>
+    {% if hub.has_fields %}
+    <a href="{% url 'structure_scout:draft_hub' project_slug=project.slug %}" class="btn btn-secondary">Ir a borrador</a>
+    {% endif %}
+</div>
+{% else %}
+
+<div class="history-stats" aria-label="Resumen del historial" style="margin-top:16px">
+    <div class="metric-card">
+        <p class="label">Total</p>
+        <p class="value">{{ history_stats.total }}</p>
+    </div>
+    <div class="metric-card">
+        <p class="label">Borradores</p>
+        <p class="value">{{ history_stats.drafts }}</p>
+    </div>
+    <div class="metric-card">
+        <p class="label">Applies OK</p>
+        <p class="value">{{ history_stats.applies_ok }}</p>
+    </div>
+    <div class="metric-card">
+        <p class="label">Applies fallidos</p>
+        <p class="value">{{ history_stats.applies_failed }}</p>
     </div>
 </div>
 
-<form method="get" class="panel" style="margin-top:16px">
-    <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:12px;align-items:end">
-        <div>
-            <label for="tipo">Tipo</label>
-            <select id="tipo" name="tipo">
-                {% for value, label in tipo_choices %}
-                <option value="{{ value }}"{% if tipo == value %} selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <button type="submit" class="btn btn-secondary">Filtrar</button>
+<form method="get" class="history-filters history-filters--compact" aria-label="Filtros del historial">
+    <div>
+        <label for="tipo">Tipo</label>
+        <select id="tipo" name="tipo">
+            {% for value, label in tipo_choices %}
+            <option value="{{ value }}"{% if tipo == value %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-actions">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        <a href="{% url 'structure_scout:history_hub' project_slug=project.slug %}" class="btn btn-secondary">Limpiar</a>
     </div>
 </form>
 
-{% if not has_any_history %}
-<div class="empty-state" style="margin-top:16px">
-    <h3>Sin eventos aún</h3>
-    <p>Guarde un borrador o aplique a un destino para ver el historial.</p>
-    <div class="page-actions" style="margin-top:12px">
-        <a href="{% url 'structure_scout:sample_hub' project_slug=project.slug %}" class="btn btn-primary">Ir a muestra</a>
-        {% if hub.has_fields %}
-        <a href="{% url 'structure_scout:draft_hub' project_slug=project.slug %}" class="btn btn-secondary">Ir a borrador</a>
+<div class="panel">
+    <div class="panel-body">
+        {% if events %}
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Resumen</th>
+                    <th>Usuario</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ev in events %}
+                <tr>
+                    <td>{{ ev.created_at|date:"d M Y · H:i" }}</td>
+                    <td>
+                        {% if ev.event_type == 'draft' %}
+                        <span class="ttl-badge is-active">Borrador</span>
+                        {% else %}
+                        <span class="sev sev-info">Apply</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if ev.event_type == 'draft' %}
+                        {{ ev.status_label }}
+                        {% if ev.is_current %}<span class="ttl-badge is-active" style="margin-left:6px">current</span>{% endif %}
+                        {% elif ev.status == 'ok' %}
+                        <span class="ttl-badge is-active">OK</span>
+                        {% else %}
+                        <span class="sev sev-error">Fallido</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if ev.event_type == 'draft' %}
+                        <code>v{{ ev.version }}</code>
+                        <span class="file-meta">{{ ev.sample_filename }} · {{ ev.fields_count }} campos</span>
+                        {% else %}
+                        <code>{{ ev.target_slug }}</code>
+                        <span class="file-meta">{{ ev.kind_label }} · draft v{{ ev.draft_version }}{% if ev.message_short %} · {{ ev.message_short }}{% endif %}</span>
+                        {% endif %}
+                    </td>
+                    <td><code>{{ ev.user_label }}</code></td>
+                    <td class="history-actions">
+                        {% if ev.event_type == 'draft' %}
+                        <a href="{% url 'structure_scout:history_draft' project_slug=project.slug draft_id=ev.draft.id %}">Ver</a>
+                        {% if ev.can_delete %}
+                        <form method="post" action="{% url 'structure_scout:history_draft_delete' project_slug=project.slug draft_id=ev.draft.id %}" class="js-history-delete-form" data-confirm="¿Eliminar esta versión de borrador? Desaparece del historial. Si era la current, se marcará la versión anterior. No deshace un destino ya sembrado.">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-link-danger">Eliminar</button>
+                        </form>
+                        {% endif %}
+                        {% else %}
+                        <a href="{% url 'structure_scout:history_apply' project_slug=project.slug apply_id=ev.apply.id %}">Ver</a>
+                        {% if ev.can_delete %}
+                        <form method="post" action="{% url 'structure_scout:history_apply_delete' project_slug=project.slug apply_id=ev.apply.id %}" class="js-history-delete-form" data-confirm="¿Eliminar este apply? Solo borra la auditoría. No deshace la siembra en el destino.">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-link-danger">Eliminar</button>
+                        </form>
+                        {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-history">
+            <h3>Sin resultados</h3>
+            <p>Ningún evento coincide con el filtro aplicado. Pruebe otro tipo o limpie el filtro.</p>
+            <a href="{% url 'structure_scout:history_hub' project_slug=project.slug %}" class="btn btn-secondary">Limpiar filtros</a>
+        </div>
         {% endif %}
     </div>
 </div>
-{% elif is_empty %}
-<div class="alert alert-info" style="margin-top:16px">
-    No hay eventos de este tipo. Pruebe otro filtro.
-</div>
-{% else %}
-<div class="panel" style="margin-top:16px">
-    <div class="panel-body">
-        <div class="table-wrap" style="overflow-x:auto">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Tipo</th>
-                        <th>Resumen</th>
-                        <th>Usuario</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for ev in events %}
-                    <tr>
-                        <td class="mono">{{ ev.created_at|date:"d/m/Y H:i" }}</td>
-                        <td>
-                            {% if ev.event_type == 'draft' %}
-                            <span class="cell-badge">Borrador</span>
-                            {% else %}
-                            <span class="cell-badge">Apply</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if ev.event_type == 'draft' %}
-                            {{ ev.summary }}
-                            {% if ev.is_current %}<span class="cell-badge" style="margin-left:6px">current</span>{% endif %}
-                            <span class="hint" style="display:block">{{ ev.sample_filename }}</span>
-                            {% else %}
-                            {% if ev.status == 'ok' %}OK{% else %}Fallido{% endif %}
-                            · {{ ev.summary }}
-                            {% if ev.message_short %}
-                            <span class="hint" style="display:block">{{ ev.message_short }}</span>
-                            {% endif %}
-                            {% endif %}
-                        </td>
-                        <td>{{ ev.user_label }}</td>
-                        <td>
-                            {% if ev.event_type == 'draft' %}
-                            <a class="btn btn-secondary btn-sm" href="{% url 'structure_scout:history_draft' project_slug=project.slug draft_id=ev.draft.id %}">Ver</a>
-                            {% else %}
-                            <a class="btn btn-secondary btn-sm" href="{% url 'structure_scout:history_apply' project_slug=project.slug apply_id=ev.apply.id %}">Ver</a>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+
+{% if membership and membership.role == 'CO' %}
+<p class="hint" style="margin-top:14px">Como consultor (CO) ve metadatos del historial; los ejemplos de celdas en el detalle de un borrador no están disponibles. Puede eliminar solo los registros que usted creó.</p>
 {% endif %}
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("form.js-history-delete-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            if (typeof dwConfirmWarning !== "function") {
+                return;
+            }
+            e.preventDefault();
+            var message = form.getAttribute("data-confirm") || "¿Eliminar?";
+            dwConfirmWarning(message, function () {
+                HTMLFormElement.prototype.submit.call(form);
+            });
+        });
+    });
+});
+</script>
 {% endblock %}

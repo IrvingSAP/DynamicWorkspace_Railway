@@ -100,7 +100,32 @@
             {% if hub.has_draft %}
             <a href="{% url 'structure_scout:apply_hub' project_slug=project.slug %}" class="btn btn-secondary">Aplicar de nuevo</a>
             {% endif %}
+            {% if can_delete %}
+            <form method="post" action="{% url 'structure_scout:history_apply_delete' project_slug=project.slug apply_id=apply.id %}" class="js-history-delete-form" data-confirm="¿Eliminar este apply? Solo borra la auditoría. No deshace la siembra en el destino." style="display:inline;margin:0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-secondary">Eliminar registro</button>
+            </form>
+            {% endif %}
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("form.js-history-delete-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            if (typeof dwConfirmWarning !== "function") {
+                return;
+            }
+            e.preventDefault();
+            var message = form.getAttribute("data-confirm") || "¿Eliminar?";
+            dwConfirmWarning(message, function () {
+                HTMLFormElement.prototype.submit.call(form);
+            });
+        });
+    });
+});
+</script>
 {% endblock %}

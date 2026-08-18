@@ -1,28 +1,127 @@
 {% extends "app_base.html" %}
 {% load static %}
-{% block title %}Ayuda · Borrador — STRUCTURE SCOUT{% endblock %}
+
+{% block title %}Ayuda · Borrador — {{ project.name }}{% endblock %}
+
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
+
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:draft_hub' project_slug=project.slug %}">Borrador</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div>
+        <p class="page-eyebrow">STRUCTURE SCOUT · paso 4 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Borrador de estructura</h2>
-        <p>Congela lo confirmado en Detectar + Campos en una versión exportable.</p>
+        <p>Congela el patrón detectado y los campos confirmados en una versión exportable. No publica el destino.</p>
     </div>
     <div class="page-actions">
-        <a class="btn btn-secondary" href="{% url 'structure_scout:draft_hub' project_slug=project.slug %}">← Volver</a>
+        <a class="btn btn-secondary" href="{% url 'structure_scout:draft_hub' project_slug=project.slug %}">← Volver a borrador</a>
     </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li>Requiere <strong>campos confirmados</strong>. Aquí no se edita la tabla (vuelva a Campos para nombres, tipos o longitudes).</li>
-    <li>Cada «Guardar» crea una <strong>versión nueva</strong> (no pisa en silencio).</li>
-    <li>El snapshot incluye el bloque <code>source</code> listo para sembrar en un destino (con bounds si era <code>txt_fixed</code>).</li>
-    <li>Exportar descarga la versión actual (CO: sin ejemplos de celdas).</li>
-    <li>Siguiente: <strong>Aplicar</strong> a GATE/Reverse (solo borrador). La <strong>publicación</strong> se hace en el destino.</li>
-    <li>Roles: PA / ED guardan; GE / CO ven y exportan.</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Detectar y Campos son propuestas que usted confirma. Este paso <strong>congela</strong> ese estado
+            en un snapshot versionado (bloque <code class="mono">source</code> listo para sembrar).
+            Sin borrador no hay <strong>Aplicar</strong> a FILE GATE o Reverse.
+        </p>
+        <p class="help-intro">
+            Aquí <strong>no se edita</strong> la tabla de campos. Si hay que cambiar un nombre, tipo o
+            Inicio/Fin/Long. (TXT posicional), vuelva a <strong>Campos</strong> y luego guarde una versión nueva.
+        </p>
+
+        <h3 class="form-section-title">Prerrequisito</h3>
+        <p class="help-intro">
+            Hace falta <strong>campos confirmados</strong>. Si no, verá el aviso y un atajo a Campos.
+            El stepper marca Borrador ✓ cuando existe una versión <code class="mono">current</code>.
+        </p>
+
+        <h3 class="form-section-title">Qué ve en esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Elemento</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Versión actual / Estado / Confianza / Campos</td>
+                    <td>
+                        Número de versión (<code class="mono">vN</code> o «Sin borrador»),
+                        Listo vs revisión pendiente, confianza agregada y conteo de campos.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Aviso de revisión pendiente</td>
+                    <td>El snapshot hereda dudas de Campos. Revise antes de aplicar a un destino.</td>
+                </tr>
+                <tr>
+                    <td>Snapshot</td>
+                    <td>Tipo, encoding, delimitador, encabezado y hash corto de la muestra al momento de guardar.</td>
+                </tr>
+                <tr>
+                    <td>Notas</td>
+                    <td>Opcional. Motivo de esta versión (queda en el historial).</td>
+                </tr>
+                <tr>
+                    <td>Guardar nueva versión</td>
+                    <td>Crea <code class="mono">vN+1</code> y la marca actual. <strong>No pisa</strong> la versión previa.</td>
+                </tr>
+                <tr>
+                    <td>Exportar JSON</td>
+                    <td>Descarga la versión actual. CO no recibe ejemplos de celdas.</td>
+                </tr>
+                <tr>
+                    <td>Continuar a aplicar</td>
+                    <td>Pasa al paso 5 cuando ya hay un borrador guardado.</td>
+                </tr>
+                <tr>
+                    <td>Versiones del proyecto</td>
+                    <td>Historial corto. <strong>Ver</strong> abre el detalle en Historial. La fila <strong>actual</strong> es la que se aplicará.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué entra en el snapshot</h3>
+        <ul class="help-list">
+            <li>Patrón confirmado (tipo, encoding, delimitador, encabezado).</li>
+            <li>Campos: nombre interno, tipo, obligatoriedad; en <code class="mono">txt_fixed</code>, posiciones/longitudes.</li>
+            <li>Referencia a la muestra (nombre y hash) para auditar de qué archivo salió.</li>
+        </ul>
+
+        <h3 class="form-section-title">Siguiente en el ciclo</h3>
+        <ol class="help-list">
+            <li><strong>Aplicar</strong> — siembra este borrador en un proyecto FILE GATE o Reverse de la misma compañía.</li>
+            <li>En el destino, revise el esquema y <strong>publique allí</strong>. Scout nunca auto-publica.</li>
+            <li>El timeline completo (borradores + applies) está en <strong>Historial</strong>.</li>
+        </ol>
+
+        <h3 class="form-section-title">Roles</h3>
+        <ul class="help-list">
+            <li><strong>PA / ED</strong> guardan nuevas versiones.</li>
+            <li><strong>GE / CO</strong> ven el hub y pueden exportar (CO sin ejemplos de celdas). GE no guarda ni aplica.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace este módulo</h3>
+        <ul class="help-list">
+            <li>No edita campos ni el patrón de detección.</li>
+            <li>No valida un archivo de producción.</li>
+            <li>No publica FILE GATE ni Reverse ni siembra el destino (eso es Aplicar).</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

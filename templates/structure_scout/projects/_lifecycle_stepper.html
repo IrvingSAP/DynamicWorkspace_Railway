@@ -1,0 +1,88 @@
+{% comment %}
+  Stepper STRUCTURE SCOUT.
+  stepper_mode: explore | apply | (vacío = ambas fases).
+  current_step: sample | detect | fields | draft | apply | history
+  — el paso actual es indicador (sin enlace); el resto navega.
+{% endcomment %}
+<div class="lifecycle-stepper" aria-label="Ciclo del proyecto">
+    {% if stepper_mode != "apply" %}
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">{% if stepper_mode == "explore" %}Exploración{% else %}Exploración · pasos 1–4{% endif %}</p>
+        <ol class="lifecycle-steps">
+            <li>
+                {% if current_step == "sample" %}
+                <span class="lifecycle-step {{ hub.sample_step_class }}" aria-current="page">
+                    <span class="lifecycle-step-num">{% if hub.has_sample %}✓{% else %}1{% endif %}</span> Muestra
+                </span>
+                {% else %}
+                <a href="{% url 'structure_scout:sample_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.sample_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.has_sample %}✓{% else %}1{% endif %}</span> Muestra
+                </a>
+                {% endif %}
+            </li>
+            <li>
+                {% if current_step == "detect" %}
+                <span class="lifecycle-step {{ hub.detect_step_class }}" aria-current="page">
+                    <span class="lifecycle-step-num">{% if hub.has_detection %}✓{% else %}2{% endif %}</span> Detectar
+                </span>
+                {% else %}
+                <a href="{% url 'structure_scout:detect_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.detect_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.has_detection %}✓{% else %}2{% endif %}</span> Detectar
+                </a>
+                {% endif %}
+            </li>
+            <li>
+                {% if current_step == "fields" %}
+                <span class="lifecycle-step {{ hub.fields_step_class }}" aria-current="page">
+                    <span class="lifecycle-step-num">{% if hub.has_fields %}✓{% else %}3{% endif %}</span> Campos
+                </span>
+                {% else %}
+                <a href="{% url 'structure_scout:fields_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.fields_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.has_fields %}✓{% else %}3{% endif %}</span> Campos
+                </a>
+                {% endif %}
+            </li>
+            <li>
+                {% if current_step == "draft" %}
+                <span class="lifecycle-step {{ hub.draft_step_class }}" aria-current="page">
+                    <span class="lifecycle-step-num">{% if hub.has_draft %}✓{% else %}4{% endif %}</span> Borrador
+                </span>
+                {% else %}
+                <a href="{% url 'structure_scout:draft_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.draft_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.has_draft %}✓{% else %}4{% endif %}</span> Borrador
+                </a>
+                {% endif %}
+            </li>
+        </ol>
+    </div>
+    {% endif %}
+    {% if stepper_mode != "explore" %}
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">{% if stepper_mode == "apply" %}Aplicación{% else %}Aplicación · pasos 5–6{% endif %}</p>
+        <ol class="lifecycle-steps">
+            <li>
+                {% if current_step == "apply" %}
+                <span class="lifecycle-step {{ hub.apply_step_class }}" aria-current="page">
+                    <span class="lifecycle-step-num">{% if hub.has_apply %}✓{% else %}5{% endif %}</span> Aplicar
+                </span>
+                {% else %}
+                <a href="{% url 'structure_scout:apply_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.apply_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.has_apply %}✓{% else %}5{% endif %}</span> Aplicar
+                </a>
+                {% endif %}
+            </li>
+            <li>
+                {% if current_step == "history" %}
+                <span class="lifecycle-step {{ hub.history_step_class }}" aria-current="page">
+                    <span class="lifecycle-step-num">{% if hub.has_history %}✓{% else %}6{% endif %}</span> Historial
+                </span>
+                {% else %}
+                <a href="{% url 'structure_scout:history_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.history_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.has_history %}✓{% else %}6{% endif %}</span> Historial
+                </a>
+                {% endif %}
+            </li>
+        </ol>
+    </div>
+    {% endif %}
+</div>

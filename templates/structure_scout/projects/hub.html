@@ -64,24 +64,7 @@
     · <strong>Miembros:</strong> {{ hub.member_count }}
 </div>
 
-<div class="lifecycle-stepper" aria-label="Ciclo del proyecto">
-    <div class="lifecycle-phase">
-        <p class="lifecycle-phase-label">Exploración · pasos 1–4</p>
-        <ol class="lifecycle-steps">
-            <li><span class="lifecycle-step {{ hub.sample_step_class }}"><span class="lifecycle-step-num">{% if hub.has_sample %}✓{% else %}1{% endif %}</span> Muestra</span></li>
-            <li><span class="lifecycle-step {{ hub.detect_step_class }}"><span class="lifecycle-step-num">{% if hub.has_detection %}✓{% else %}2{% endif %}</span> Detectar</span></li>
-            <li><span class="lifecycle-step {{ hub.fields_step_class }}"><span class="lifecycle-step-num">{% if hub.has_fields %}✓{% else %}3{% endif %}</span> Campos</span></li>
-            <li><span class="lifecycle-step {{ hub.draft_step_class }}"><span class="lifecycle-step-num">{% if hub.has_draft %}✓{% else %}4{% endif %}</span> Borrador</span></li>
-        </ol>
-    </div>
-    <div class="lifecycle-phase">
-        <p class="lifecycle-phase-label">Aplicación · pasos 5–6</p>
-        <ol class="lifecycle-steps">
-            <li><span class="lifecycle-step {{ hub.apply_step_class }}"><span class="lifecycle-step-num">{% if hub.has_apply %}✓{% else %}5{% endif %}</span> Aplicar</span></li>
-            <li><span class="lifecycle-step {{ hub.history_step_class }}"><span class="lifecycle-step-num">{% if hub.has_history %}✓{% else %}6{% endif %}</span> Historial</span></li>
-        </ol>
-    </div>
-</div>
+{% include "structure_scout/projects/_lifecycle_stepper.html" %}
 
 {% if hub.modules_pending_note %}
 <div class="alert alert-info">
