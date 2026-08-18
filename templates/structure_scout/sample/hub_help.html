@@ -1,27 +1,129 @@
 {% extends "app_base.html" %}
 {% load static %}
-{% block title %}Ayuda · Muestra — STRUCTURE SCOUT{% endblock %}
+
+{% block title %}Ayuda · Muestra — {{ project.name }}{% endblock %}
+
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
+
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:sample_hub' project_slug=project.slug %}">Muestra</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div>
+        <p class="page-eyebrow">STRUCTURE SCOUT · paso 1 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Cargar muestra</h2>
-        <p>El archivo de ejemplo con el que el Explorador propone la estructura.</p>
+        <p>El archivo de ejemplo con el que el Explorador propone tipo, encoding y campos. No es validación ni producción.</p>
     </div>
     <div class="page-actions">
-        <a class="btn btn-secondary" href="{% url 'structure_scout:sample_hub' project_slug=project.slug %}">← Volver</a>
+        <a class="btn btn-secondary" href="{% url 'structure_scout:sample_hub' project_slug=project.slug %}">← Volver a muestra</a>
     </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li>La <strong>muestra</strong> es un ejemplo para descubrir columnas. <strong>No</strong> valida ni transforma producción.</li>
-    <li>Límite: <strong>10 MB</strong>. Extensiones MVP: CSV, Excel, TXT/TSV.</li>
-    <li>Tras subir verá un preview y sugerencias (tipo, encoding, delimitador).</li>
-    <li>Siguiente: <strong>Detectar patrón</strong> → <strong>Campos</strong> (nombres/tipos; si es <code>txt_fixed</code>, también Inicio / Fin / Long. estimados).</li>
-    <li>Roles: PA / ED / GE pueden subir. CO no ve filas de preview en el MVP.</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            STRUCTURE SCOUT no parte de un contrato publicado: parte de un <strong>archivo de ejemplo</strong>.
+            Esa muestra alimenta Detectar y Campos. Si la muestra no representa el layout real,
+            el borrador (y lo que se siembre en GATE o Reverse) saldrá desalineado.
+        </p>
+        <p class="help-intro">
+            Subir aquí <strong>no valida</strong> el archivo (eso es FILE GATE) ni lo transforma (FilePipe).
+            El stepper marca Muestra ✓ cuando hay al menos una muestra; la exploración usa la <strong>última subida</strong>.
+        </p>
+
+        <h3 class="form-section-title">Qué ve en esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Elemento</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Tarjetas Muestras / Límite / Activa</td>
+                    <td>Cuántos archivos hay, tope de tamaño (10 MB) y el nombre de la muestra que usa el ciclo.</td>
+                </tr>
+                <tr>
+                    <td>Arrastrar / Seleccionar archivo</td>
+                    <td>Elige el fichero. Aún no se guarda hasta <strong>Subir muestra</strong>.</td>
+                </tr>
+                <tr>
+                    <td>Quitar</td>
+                    <td>Limpia la selección en el recuadro (no borra una muestra ya guardada).</td>
+                </tr>
+                <tr>
+                    <td>Subir muestra</td>
+                    <td>Persiste el archivo, calcula hash y sugiere tipo / encoding / fin de línea / delimitador.</td>
+                </tr>
+                <tr>
+                    <td>Muestra activa</td>
+                    <td>Última subida: nombre, tamaño, hash corto, fecha, quién subió y sugerencias. CTA a Detectar.</td>
+                </tr>
+                <tr>
+                    <td>Lista del proyecto</td>
+                    <td>Historial de subidas. La marcada <strong>activa</strong> es la más reciente.</td>
+                </tr>
+                <tr>
+                    <td>Preview</td>
+                    <td>Primeras líneas (hasta 20) para comprobar que eligió el archivo correcto. CO no ve filas.</td>
+                </tr>
+                <tr>
+                    <td>Eliminar</td>
+                    <td>Quita esa muestra del proyecto. Si borra la activa, pasa a ser activa la siguiente más reciente.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Archivos permitidos</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Extensión</th><th>Uso típico</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">.csv</td><td>Tabla delimitada por coma (caso frecuente).</td></tr>
+                <tr><td class="mono">.xlsx / .xls</td><td>Hoja Excel.</td></tr>
+                <tr><td class="mono">.txt / .tsv</td><td>Texto delimitado (tab, pipe, etc.) o posicional.</td></tr>
+            </tbody>
+        </table>
+        <ul class="help-list">
+            <li>El archivo no puede estar vacío ni superar <strong>10 MB</strong>.</li>
+            <li>Use una muestra <strong>realista</strong> (cabecera, pie, encoding del proveedor), no un CSV de laboratorio.</li>
+            <li>JSON y XML no entran en la whitelist MVP de Scout.</li>
+        </ul>
+
+        <h3 class="form-section-title">Siguiente en el ciclo</h3>
+        <ol class="help-list">
+            <li><strong>Detectar patrón</strong> — confirma tipo, encoding, delimitador y encabezado (parte de las sugerencias).</li>
+            <li><strong>Campos</strong> — nombres y tipos; en TXT posicional, Inicio / Fin / Long. estimados.</li>
+            <li><strong>Borrador</strong> y luego <strong>Aplicar</strong> a GATE o Reverse (sin auto-publicar).</li>
+        </ol>
+        <p class="help-intro">
+            Las pastillas del stepper también navegan a esos módulos. Detectar exige una muestra activa.
+        </p>
+
+        <h3 class="form-section-title">Roles</h3>
+        <ul class="help-list">
+            <li><strong>PA / ED / GE / CG</strong> suben, previsualizan y eliminan.</li>
+            <li><strong>CO</strong> ve el hub de muestra pero no las filas del preview ni sube archivos.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace este módulo</h3>
+        <ul class="help-list">
+            <li>No valida el archivo contra un contrato publicado (FILE GATE).</li>
+            <li>No confirma el patrón ni los campos: eso es Detectar y Campos.</li>
+            <li>No publica ni siembra el destino.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

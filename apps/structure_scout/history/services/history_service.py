@@ -2,14 +2,26 @@
 
 from __future__ import annotations
 
+import logging
+
+from django.db import transaction
+
+from apps.core.services.operation_result import OperationResult
 from apps.projects.models import Project
 from apps.structure_scout.apply.services import apply_target_service
 from apps.structure_scout.draft.services import save_draft_service
 from apps.structure_scout.models import ScoutApply, StructureDraft
 
+logger = logging.getLogger(__name__)
+
 MSG_NO_ACCESS = "No tiene acceso a este proyecto Explorador."
 MSG_DRAFT_NOT_FOUND = "Versión de borrador no encontrada."
 MSG_APPLY_NOT_FOUND = "Registro de aplicación no encontrado."
+MSG_DELETE_OWN_ONLY = "Solo puede eliminar registros que usted creó."
+MSG_DELETE_OK = "Registro eliminado del historial."
+MSG_DELETE_FAIL = (
+    "No se pudo eliminar el registro. Si el problema continúa, contacte al administrador."
+)
 
 TIPO_ALL = "all"
 TIPO_DRAFT = "draft"
@@ -46,6 +58,15 @@ def _user_label(user) -> str:
     return str(user)
 
 
+def _user_created(user, obj) -> bool:
+    if user is None or not getattr(user, "is_authenticated", False):
+        return False
+    creator_id = getattr(obj, "created_by_id", None)
+    if not creator_id:
+        return False
+    return creator_id == user.id
+
+
 def _draft_event(draft: StructureDraft) -> dict:
     return {
         "event_type": TIPO_DRAFT,
@@ -64,6 +85,7 @@ def _draft_event(draft: StructureDraft) -> dict:
             f"v{draft.version} · {STATUS_LABELS.get(draft.status, draft.status)} · "
             f"{_field_count(draft)} campos"
         ),
+        "can_delete": False,
     }
 
 
@@ -89,6 +111,7 @@ def _apply_event(apply: ScoutApply) -> dict:
             f"{target_slug} · {kind_label} · {status_label} · draft v{apply.draft_version}"
         ),
         "message_short": (apply.message or "")[:120],
+        "can_delete": False,
     }
 
 
@@ -126,13 +149,30 @@ def get_hub_context(user, project: Project, *, tipo: str = TIPO_ALL) -> dict:
     if tipo not in {TIPO_ALL, TIPO_DRAFT, TIPO_APPLY}:
         tipo = TIPO_ALL
     events = build_timeline(project, tipo=tipo)
+    for ev in events:
+        obj = ev["draft"] if ev["event_type"] == TIPO_DRAFT else ev["apply"]
+        ev["can_delete"] = _user_created(user, obj)
     has_any = has_history_events(project)
+    drafts_count = StructureDraft.objects.filter(project=project).count()
+    applies_ok = ScoutApply.objects.filter(
+        project=project, status=ScoutApply.STATUS_OK
+    ).count()
+    applies_failed = ScoutApply.objects.filter(
+        project=project, status=ScoutApply.STATUS_FAILED
+    ).count()
     return {
         "tipo": tipo,
         "tipo_choices": TIPO_CHOICES,
         "events": events,
         "has_any_history": has_any,
+        "has_active_filters": tipo != TIPO_ALL,
         "is_empty": not events,
+        "history_stats": {
+            "total": drafts_count + applies_ok + applies_failed,
+            "drafts": drafts_count,
+            "applies_ok": applies_ok,
+            "applies_failed": applies_failed,
+        },
         "can_view_examples": save_draft_service.user_can_view_examples(user, project),
         "can_export": save_draft_service.user_can_export(user, project),
     }
@@ -164,6 +204,7 @@ def get_draft_detail(user, project: Project, draft_id) -> dict | None:
         "can_export": save_draft_service.user_can_export(user, project),
         "can_view_examples": save_draft_service.user_can_view_examples(user, project),
         "pattern_chips": _pattern_chips(source),
+        "can_delete": _user_created(user, draft),
     }
 
 
@@ -219,4 +260,50 @@ def get_apply_detail(user, project: Project, apply_id) -> dict | None:
             if apply.draft is not None
             else ""
         ),
+        "can_delete": _user_created(user, apply),
     }
+
+
+def delete_own_draft(user, project: Project, draft_id) -> OperationResult:
+    try:
+        draft = StructureDraft.objects.get(pk=draft_id, project=project)
+    except (StructureDraft.DoesNotExist, ValueError, TypeError):
+        return OperationResult.failure("not_found", MSG_DRAFT_NOT_FOUND)
+    if not _user_created(user, draft):
+        return OperationResult.failure("permission_denied", MSG_DELETE_OWN_ONLY)
+    try:
+        with transaction.atomic():
+            was_current = draft.is_current
+            draft.delete()
+            if was_current:
+                nxt = (
+                    StructureDraft.objects.filter(project=project)
+                    .order_by("-version")
+                    .first()
+                )
+                if nxt is not None and not nxt.is_current:
+                    nxt.is_current = True
+                    nxt.save(update_fields=["is_current"])
+    except Exception:
+        logger.exception(
+            "delete_own_draft failed project=%s draft=%s", project.id, draft_id
+        )
+        return OperationResult.failure("delete_failed", MSG_DELETE_FAIL)
+    return OperationResult.success(MSG_DELETE_OK)
+
+
+def delete_own_apply(user, project: Project, apply_id) -> OperationResult:
+    try:
+        apply = ScoutApply.objects.get(pk=apply_id, project=project)
+    except (ScoutApply.DoesNotExist, ValueError, TypeError):
+        return OperationResult.failure("not_found", MSG_APPLY_NOT_FOUND)
+    if not _user_created(user, apply):
+        return OperationResult.failure("permission_denied", MSG_DELETE_OWN_ONLY)
+    try:
+        apply.delete()
+    except Exception:
+        logger.exception(
+            "delete_own_apply failed project=%s apply=%s", project.id, apply_id
+        )
+        return OperationResult.failure("delete_failed", MSG_DELETE_FAIL)
+    return OperationResult.success(MSG_DELETE_OK)

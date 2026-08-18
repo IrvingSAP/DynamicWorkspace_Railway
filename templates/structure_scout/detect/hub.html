@@ -54,17 +54,7 @@
     </div>
 </div>
 
-<div class="lifecycle-stepper" aria-label="Progreso exploración">
-    <div class="lifecycle-phase">
-        <p class="lifecycle-phase-label">Exploración</p>
-        <ol class="lifecycle-steps">
-            <li><span class="lifecycle-step {{ hub.sample_step_class }}"><span class="lifecycle-step-num">{% if hub.has_sample %}✓{% else %}1{% endif %}</span> Muestra</span></li>
-            <li><span class="lifecycle-step {{ hub.detect_step_class }}"><span class="lifecycle-step-num">{% if hub.has_detection %}✓{% else %}2{% endif %}</span> Detectar</span></li>
-            <li><span class="lifecycle-step {{ hub.fields_step_class }}"><span class="lifecycle-step-num">{% if hub.has_fields %}✓{% else %}3{% endif %}</span> Campos</span></li>
-            <li><span class="lifecycle-step {{ hub.draft_step_class }}"><span class="lifecycle-step-num">{% if hub.has_draft %}✓{% else %}4{% endif %}</span> Borrador</span></li>
-        </ol>
-    </div>
-</div>
+{% include "structure_scout/projects/_lifecycle_stepper.html" with stepper_mode="explore" current_step="detect" %}
 
 {% if not has_sample %}
 <div class="alert alert-warning" style="margin-top:16px">

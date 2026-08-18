@@ -1,27 +1,140 @@
 {% extends "app_base.html" %}
 {% load static %}
-{% block title %}Ayuda · Historial — STRUCTURE SCOUT{% endblock %}
+
+{% block title %}Ayuda · Historial — {{ project.name }}{% endblock %}
+
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
+
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'structure_scout:history_hub' project_slug=project.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div>
+        <p class="page-eyebrow">STRUCTURE SCOUT · historial · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Historial</h2>
-        <p>Auditoría de borradores guardados y semillas aplicadas a destinos.</p>
+        <p>Bitácora de versiones de borrador y semillas aplicadas a destinos. Solo lectura: no deshace ni re-aplica.</p>
     </div>
     <div class="page-actions">
-        <a class="btn btn-secondary" href="{% url 'structure_scout:history_hub' project_slug=project.slug %}">← Volver</a>
+        <a class="btn btn-secondary" href="{% url 'structure_scout:history_hub' project_slug=project.slug %}">← Volver al historial</a>
     </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li>Une <strong>versiones de borrador</strong> y <strong>aplicaciones</strong> (ok/fallido) en una timeline.</li>
-    <li>Filtro: Todos / Borradores / Applies. Solo lectura — no deshace ni re-aplica.</li>
-    <li>Desde el detalle puede exportar un borrador o abrir el destino aplicado.</li>
-    <li>Scout propone estructura (incl. longitudes estimadas en posicional); la <strong>publicación</strong> del contrato es en el destino (p. ej. FILE GATE).</li>
-    <li>Roles: PA / ED / GE / CO ven el listado. CO sin examples en el detalle de draft.</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Une en una sola línea de tiempo lo que se <strong>congeló</strong> (cada guardado de borrador)
+            y lo que se <strong>sembró</strong> (cada apply a un destino: OK o fallido).
+            Sirve para auditar quién, cuándo y qué versión se usó — no para ejecutar producción.
+        </p>
+        <p class="help-intro">
+            No es el historial de validaciones FILE GATE ni de conciliaciones FILE MATCH.
+            Scout propone estructura; la <strong>publicación</strong> del contrato o planilla ocurre en el destino.
+        </p>
+
+        <h3 class="form-section-title">Cómo se llena</h3>
+        <p class="help-intro">
+            Cada vez que guarda un borrador o aplica a un destino aparece un evento aquí.
+            Si aún no hay ninguno, verá el vacío con atajos a Muestra o Borrador.
+            El stepper marca Historial cuando ya existe al menos un evento.
+        </p>
+
+        <h3 class="form-section-title">Qué ve en esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Elemento</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Filtro Tipo</td>
+                    <td>
+                        <strong>Todos</strong>, <strong>Borradores</strong> o <strong>Applies</strong>.
+                        Pulse Filtrar. Si el filtro no tiene filas pero sí hay historial, pruebe otro tipo.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Fecha</td>
+                    <td>Momento en que se guardó el draft o se ejecutó el apply (más reciente primero).</td>
+                </tr>
+                <tr>
+                    <td>Tipo</td>
+                    <td>
+                        <strong>Borrador</strong> = snapshot versionado.
+                        <strong>Apply</strong> = siembra en un proyecto destino.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Resumen (borrador)</td>
+                    <td>
+                        Versión, estado y nombre de la muestra.
+                        El distintivo <code class="mono">current</code> marca la versión que Aplicar usaría ahora.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Resumen (apply)</td>
+                    <td>
+                        <strong>OK</strong> o <strong>Fallido</strong>, destino y versión de draft usada.
+                        Si falló, suele verse un mensaje corto debajo.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Usuario</td>
+                    <td>Quién guardó o aplicó.</td>
+                </tr>
+                <tr>
+                    <td>Ver</td>
+                    <td>Abre el detalle de esa versión o de ese apply.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Detalle de un borrador</h3>
+        <ul class="help-list">
+            <li>Metadatos de esa versión: fecha, muestra, hash corto, notas, chips de patrón, conteo de campos.</li>
+            <li><strong>Exportar JSON</strong> descarga <em>esa</em> versión (no solo la current). Consulta (CO) no incluye ejemplos de celdas.</li>
+            <li><strong>Ir al hub borrador</strong> lleva a la versión actual (no edita el snapshot histórico).</li>
+            <li>Si hay current, puede ir a <strong>Aplicar a destino</strong> (siembra la current, no necesariamente la versión que está viendo).</li>
+            <li><strong>Eliminar</strong> (solo si usted creó el registro): quita esa versión del historial. Si era <code class="mono">current</code>, la versión anterior pasa a ser la actual. No deshace destinos ya sembrados.</li>
+        </ul>
+
+        <h3 class="form-section-title">Detalle de un apply</h3>
+        <ul class="help-list">
+            <li>Estado, destino (slug y nombre), tipo de proyecto, versión de draft sembrada y mensaje.</li>
+            <li><strong>Abrir destino</strong> solo si el proyecto sigue activo; si está archivado verá el slug histórico sin enlace.</li>
+            <li>Puede abrir el detalle del borrador <code class="mono">vN</code> usado en esa siembra.</li>
+            <li><strong>Aplicar de nuevo</strong> vuelve al hub Aplicar (otra siembra; no es un deshacer).</li>
+            <li><strong>Eliminar</strong> (solo si usted creó el apply): borra la auditoría. <strong>No</strong> revierte la siembra en GATE, Match, FilePipe, etc.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles</h3>
+        <ul class="help-list">
+            <li><strong>PA / ED / GE / CO</strong> ven el listado y los detalles (metadatos).</li>
+            <li>Eliminar un registro: solo el usuario que lo <strong>creó</strong> (mismo criterio que FILE GATE).</li>
+            <li><strong>CO</strong>: sin ejemplos de celdas en el detalle de draft ni en el JSON exportado.</li>
+            <li>Exportar JSON sigue la misma política que en Borrador (CO restringido).</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace este módulo</h3>
+        <ul class="help-list">
+            <li>No guarda borradores ni aplica a destinos: eso es Borrador y Aplicar.</li>
+            <li>No re-aplica desde la fila ni hace rollback en el destino. Eliminar un apply solo quita el registro de auditoría.</li>
+            <li>No compara campo a campo dos versiones ni filtra por rango de fechas.</li>
+            <li>No lista validaciones de producción, conciliaciones Match ni ejecuciones FilePipe.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

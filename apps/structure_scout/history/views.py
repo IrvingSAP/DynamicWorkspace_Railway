@@ -1,6 +1,14 @@
 from django.contrib import messages
 from django.shortcuts import redirect, render
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
+
+from apps.core.decorators import security_complete_required, user_type_required
+from apps.projects.services import project_service
+from apps.structure_scout.draft.services import save_draft_service
+from apps.structure_scout.history.services import history_service
+from apps.structure_scout.projects.services import scout_project_service
+
+MSG_NO_ACCESS = history_service.MSG_NO_ACCESS
 
 from apps.core.decorators import security_complete_required, user_type_required
 from apps.projects.services import project_service
@@ -139,3 +147,33 @@ def history_apply(request, project_slug: str, apply_id):
         }
     )
     return render(request, "structure_scout/history/apply_detail.html", ctx)
+
+
+def _delete_and_redirect(request, project_slug: str, result):
+    if result.ok:
+        messages.success(request, result.user_message)
+    else:
+        messages.error(request, result.user_message)
+    return redirect("structure_scout:history_hub", project_slug=project_slug)
+
+
+@_ss_view
+@require_POST
+def history_draft_delete(request, project_slug: str, draft_id):
+    project = scout_project_service.get_project_for_user(request.user, project_slug)
+    if project is None:
+        messages.error(request, MSG_NO_ACCESS)
+        return redirect("structure_scout:project_list")
+    result = history_service.delete_own_draft(request.user, project, draft_id)
+    return _delete_and_redirect(request, project_slug, result)
+
+
+@_ss_view
+@require_POST
+def history_apply_delete(request, project_slug: str, apply_id):
+    project = scout_project_service.get_project_for_user(request.user, project_slug)
+    if project is None:
+        messages.error(request, MSG_NO_ACCESS)
+        return redirect("structure_scout:project_list")
+    result = history_service.delete_own_apply(request.user, project, apply_id)
+    return _delete_and_redirect(request, project_slug, result)

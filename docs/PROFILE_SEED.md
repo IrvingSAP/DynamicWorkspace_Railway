@@ -166,7 +166,7 @@ Escenarios típicos:
 | **FILE SPLIT/MERGE** | Origen hacia GATE: perfil de lectura **publicado**. No clona `sm_rules`. Destino SM sigue con combo Gate+Clean. |
 | **Reverse Studio** | Origen hacia GATE: contrato de **entrada publicada**. No clona layout de salida ni reglas de generación. |
 | **FilePipe** | Origen hacia GATE: `DmsSourceProfile` **publicado** (no TargetProfile ni mapeo). Destino FilePipe: combo completo. |
-| **STRUCTURE SCOUT** | Origen hacia GATE y FilePipe: `StructureDraft` **current** (`payload.source`). No es `DmsMappingVersion`. Distinto de Scout M6 «Aplicar a destino» (Scout → GATE/Reverse). |
+| **STRUCTURE SCOUT** | Origen hacia GATE y FilePipe: `StructureDraft` **current** (`payload.source`). No es `DmsMappingVersion`. Scout M6 «Aplicar a destino» siembra el mismo `source` en GATE, CLEAN, FilePipe (origen), Match A, Reverse y Split/Merge. |
 | **Bridge GATE** | Distinto (hash de job vs clone de estructura) |
 
 ```mermaid

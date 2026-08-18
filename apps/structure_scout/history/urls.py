@@ -16,8 +16,18 @@ urlpatterns = [
         name="history_draft_export",
     ),
     path(
+        "borrador/<uuid:draft_id>/eliminar/",
+        views.history_draft_delete,
+        name="history_draft_delete",
+    ),
+    path(
         "apply/<uuid:apply_id>/",
         views.history_apply,
         name="history_apply",
+    ),
+    path(
+        "apply/<uuid:apply_id>/eliminar/",
+        views.history_apply_delete,
+        name="history_apply_delete",
     ),
 ]

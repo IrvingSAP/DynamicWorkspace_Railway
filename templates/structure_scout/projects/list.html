@@ -34,7 +34,7 @@
     <div>
         <p class="page-eyebrow">STRUCTURE SCOUT · <span class="role-badge">UF</span></p>
         <h2>Explorador de estructura</h2>
-        <p>Proyectos de exploración de muestra → borrador de estructura. Empiece por una nueva exploración desde el hub.</p>
+        <p>Proyectos de exploración de muestra. Detecte campos, guarde un borrador y, en módulos posteriores, aplique la estructura sin validar producción.</p>
     </div>
     <div class="page-actions">
         {% url 'structure_scout:project_list_help' as ss_help_url %}
@@ -76,14 +76,15 @@
         </div>
     </div>
     <div class="table-dt-host">
-        <table id="ss-project-table" class="dw-datatable" data-dt-custom="true">
+        <table id="dms-project-table" class="dw-datatable" data-dt-custom="true">
             <thead>
                 <tr>
                     <th>Código</th>
                     <th>Nombre</th>
                     <th>Visibilidad</th>
                     <th>Mi permiso</th>
-                    <th>Draft / exploración</th>
+                    <th>Versión</th>
+                    <th>Última ejecución</th>
                     <th class="col-actions">Acciones</th>
                 </tr>
             </thead>
@@ -106,7 +107,8 @@
                         <span class="perm-badge">{{ row.role_label }}</span>
                         {% endif %}
                     </td>
-                    <td class="td-mono">{{ row.exploration_label }}</td>
+                    <td class="td-mono">{{ row.version_label }}</td>
+                    <td class="td-mono">{{ row.last_execution }}</td>
                     <td class="col-actions">
                         <a href="{% url 'structure_scout:project_hub' project_slug=row.project.slug %}" class="btn btn-ghost btn-sm">Abrir</a>
                     </td>

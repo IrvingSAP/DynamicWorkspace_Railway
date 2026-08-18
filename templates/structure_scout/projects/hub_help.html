@@ -2,35 +2,159 @@
 {% load static %}
 
 {% block title %}Ayuda · Proyecto — {{ project.name }}{% endblock %}
+
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
+
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
 {% block breadcrumb %}
-<nav class="breadcrumb">
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'structure_scout:project_list' %}">STRUCTURE SCOUT</a>
+    <span class="breadcrumb-sep">/</span>
     <a href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
-    <span class="breadcrumb-sep">/</span><span>Ayuda</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
 </nav>
 {% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div>
+        <p class="page-eyebrow">STRUCTURE SCOUT · Explorador · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Hub del proyecto</h2>
-        <p>Stepper: Muestra → Detectar → Campos → Borrador → Aplicar → Historial.</p>
+        <p>Tablero del ciclo: exploración (muestra → detectar → campos → borrador) y aplicación (aplicar → historial).</p>
     </div>
     <div class="page-actions">
-        <a class="btn btn-secondary" href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">← Volver</a>
+        <a class="btn btn-secondary" href="{% url 'structure_scout:project_hub' project_slug=project.slug %}">← Volver al hub</a>
     </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li><strong>Objetivo:</strong> descubrir la estructura de un archivo a partir de una muestra y sembrar un <em>borrador</em> en otra app.</li>
-    <li><strong>Muestra / Detectar / Campos:</strong> proponen; usted confirma. No validan producción.</li>
-    <li><strong>Campos:</strong> nombres y tipos; con <code>txt_fixed</code> también <strong>Inicio / Fin / Long.</strong> estimados (editables).</li>
-    <li><strong>Aplicar:</strong> solo borrador en GATE / Reverse (nunca auto-publica).</li>
-    <li><strong>Historial:</strong> versiones de borrador y aplicaciones.</li>
-    <li><strong>Miembros:</strong> solo PA invita UF y asigna roles.</li>
-    <li>Guía completa: menú STRUCTURE SCOUT → <strong>Ayuda</strong>.</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es este hub</h3>
+        <p class="help-intro">
+            Es el <strong>punto de entrada</strong> del Explorador. Agrupa la muestra, el patrón detectado,
+            los campos, el borrador de estructura, la siembra a un destino y el historial.
+            No valida un archivo de producción (FILE GATE) ni cruza A vs B (FILE MATCH).
+        </p>
+        <ul class="help-list">
+            <li><strong>Objetivo:</strong> descubrir la estructura de un archivo a partir de una muestra y sembrar un borrador en otra app.</li>
+            <li><strong>Strip:</strong> estado del draft, nombre de la última muestra y conteo de miembros.</li>
+            <li><strong>Stepper + paneles:</strong> cada pastilla del stepper abre el módulo (como en FILE GATE). Los paneles inferiores también llevan al mismo sitio; los siguientes se marcan pendientes hasta confirmar el anterior.</li>
+            <li><strong>Miembros:</strong> botón visible solo para el administrador (PA).</li>
+        </ul>
+
+        <h3 class="form-section-title">Fases del ciclo</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Fase</th><th>Qué cubre</th><th>En el hub</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Exploración (pasos 1–4)</td>
+                    <td>Muestra → Detectar → Campos → Borrador</td>
+                    <td>Primera franja del stepper</td>
+                </tr>
+                <tr>
+                    <td>Aplicación (pasos 5–6)</td>
+                    <td>Aplicar a destino → Historial</td>
+                    <td>Segunda franja del stepper</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Stepper — qué hace cada paso</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>#</th><th>Paso</th><th>Para qué sirve</th><th>Cuándo marca ✓</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="mono">1</td>
+                    <td>Muestra</td>
+                    <td>Sube un CSV, Excel o TXT de ejemplo. No es el archivo de producción.</td>
+                    <td>Hay una muestra activa.</td>
+                </tr>
+                <tr>
+                    <td class="mono">2</td>
+                    <td>Detectar</td>
+                    <td>Sugiere encoding, tipo, delimitador y encabezado. Usted confirma.</td>
+                    <td>Patrón de detección confirmado.</td>
+                </tr>
+                <tr>
+                    <td class="mono">3</td>
+                    <td>Campos</td>
+                    <td>Nombres y tipos propuestos. En TXT posicional también Inicio / Fin / Long. (editables).</td>
+                    <td>Campos confirmados.</td>
+                </tr>
+                <tr>
+                    <td class="mono">4</td>
+                    <td>Borrador</td>
+                    <td>Congela patrón + campos en una versión exportable. No publica destinos.</td>
+                    <td>Existe un borrador actual.</td>
+                </tr>
+                <tr>
+                    <td class="mono">5</td>
+                    <td>Aplicar</td>
+                    <td>Siembra el borrador en FILE GATE o Reverse (misma compañía). Nunca auto-publica.</td>
+                    <td>Hay al menos un apply correcto.</td>
+                </tr>
+                <tr>
+                    <td class="mono">6</td>
+                    <td>Historial</td>
+                    <td>Versiones de borrador y aplicaciones a destino.</td>
+                    <td>Hay eventos (borrador o apply).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Paneles y acciones</h3>
+        <ul class="help-list">
+            <li><strong>Nueva exploración — muestra:</strong> cargar o cambiar la muestra activa.</li>
+            <li><strong>Detectar patrón / Campos:</strong> proponen; usted confirma. Reabrir para ajustar o re-inferir.</li>
+            <li><strong>Borrador:</strong> guardar nueva versión o exportar JSON.</li>
+            <li><strong>Aplicar:</strong> sembrar otro destino GATE / Reverse; el destino debe revisarse y publicarse allí.</li>
+            <li><strong>Historial:</strong> auditoría; no sustituye el informe de validación GATE.</li>
+        </ul>
+
+        <h3 class="form-section-title">Orden de trabajo recomendado</h3>
+        <ol class="help-list">
+            <li>Revise miembros (PA) si otras personas deben explorar o aplicar.</li>
+            <li>Muestra → Detectar → Campos (confirme, no deje todo en automático a ciegas).</li>
+            <li>Guarde el <strong>borrador</strong>.</li>
+            <li><strong>Aplique</strong> a un proyecto GATE o Reverse donde tenga rol PA/ED en el destino.</li>
+            <li>Abra el destino, revise el esquema sembrado y <strong>publique</strong> allí si corresponde.</li>
+        </ol>
+        <p class="help-intro">Regla de producto: Scout <strong>no valida producción</strong> y <strong>no publica</strong> el destino.</p>
+
+        <h3 class="form-section-title">Roles (resumen)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>En este hub</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">PA</td><td>Ve todo; gestiona miembros; explora, guarda borrador y aplica.</td></tr>
+                <tr><td class="mono">ED</td><td>Explora, guarda borrador y aplica; no gestiona miembros.</td></tr>
+                <tr><td class="mono">GE</td><td>Sube muestra y explora (pasos 1–3); no guarda borrador ni aplica.</td></tr>
+                <tr><td class="mono">CO</td><td>Consulta hub e historial; sin preview de filas de muestra.</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Detalle de invitaciones: <strong>Miembros</strong> → Ayuda.
+            Listado: STRUCTURE SCOUT → Ayuda del listado.
+        </p>
+
+        <h3 class="form-section-title">Qué no hace este hub</h3>
+        <ul class="help-list">
+            <li>No edita el detalle de cada módulo (hay que entrar a Muestra, Detectar, etc.).</li>
+            <li>No publica FILE GATE ni Reverse.</li>
+            <li>No concilia ni transforma archivos.</li>
+            <li>No sustituye Importar estructura desde un contrato ya publicado (Profile Seed).</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

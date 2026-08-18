@@ -82,12 +82,14 @@ flowchart LR
 | Prioridad | Kind | Writer | Deep-link (orientativo) |
 |-----------|------|--------|-------------------------|
 | **P0** | `file_gate` | `save_source` | `/app/file-gate/proyectos/<slug>/esquema/` (`schema_hub`) |
-| **P1** | `reverse` | `save_source` | Hub source / schema Reverse equivalente |
-| Extensión | `file_match` (Perfil A) | `save_source` | Documentar; UI puede listar si se habilita |
-| Fase 2 | Match B | `save_source_b` | Otro modelo |
-| Fase 2 | FilePipe / `dms` | `save_source` | Menor prioridad producto |
+| **P0** | `reverse` | `save_source` | Hub entrada Reverse |
+| **P0** | `file_match` (Perfil A) | `save_source` | Hub Perfil A |
+| **P0** | `file_clean` | `save_source` | Hub perfil CLEAN |
+| **P0** | `dms` (FilePipe origen) | `save_source` | Hub origen FilePipe |
+| **P0** | `file_split_merge` | `save_source` | Hub perfil Split/Merge |
+| Fase 2 | Match B | `save_source_b` | Otro slot |
 
-MVP de implementación (post-OK): **GATE + Reverse**. Match A opcional si el listado reusa el mismo writer.
+Implementado: combo alineado a PROFILE_SEED (destinos de perfil de lectura). Match B y target FilePipe quedan fuera.
 
 ### Elegibilidad de un destino
 
@@ -106,7 +108,7 @@ MVP de implementación (post-OK): **GATE + Reverse**. Match A opcional si el lis
 | Incluido | Excluido |
 |----------|----------|
 | Requiere draft current | Editar / versionar draft Scout (M5) |
-| Listar destinos GATE + Reverse | Match B / FilePipe write |
+| Listar destinos de perfil de lectura (GATE, CLEAN, FilePipe, Match A, Reverse, Split/Merge) | Match B / target FilePipe |
 | Resumen overwrite (conteos) | Diff campo-a-campo (Fase 2) |
 | Aplicar → `save_source` borrador | Publicar destino |
 | `ScoutApply` auditoría | Historial UI completo (M7) |
