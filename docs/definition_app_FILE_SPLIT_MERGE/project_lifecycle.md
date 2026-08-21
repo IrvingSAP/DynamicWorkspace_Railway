@@ -2,12 +2,12 @@
 
 Ciclo de vida del **proyecto File Split/Merge**: alta, visibilidad, miembros, hub y orden del flujo definición / ejecución / historial.
 
-> **Estado:** borrador de definición (listo para prototipo)  
+> **Estado:** implementado (M1)  
 > **Producto:** [`../FILE_SPLIT_MERGE.md`](../FILE_SPLIT_MERGE.md)  
 > **Integración:** [`sm_integration.md`](sm_integration.md)  
 > **Plataforma:** reutiliza [`Project` y `ProjectMembership`](../definition_app/DynamicWorkspace_Model.md#project)  
 > **Patrón:** hermano de File Clean M1 / File Match M1  
-> **Rama:** `feature/file-split-merge`
+> **Rama:** fusionada a `main` (PR #13)
 
 ---
 
