@@ -115,6 +115,12 @@ SOURCE_KIND_CHOICES_MATCH = (
 SOURCE_KIND_CHOICES_SPLIT_MERGE = (
     (SOURCE_KIND_FILE_GATE, "FILE GATE — Esquema"),
     (SOURCE_KIND_FILE_CLEAN, "FILE CLEAN — Perfil de lectura"),
+    (SOURCE_KIND_DMS, "FilePipe — Origen"),
+    (SOURCE_KIND_FILE_MATCH, "FILE MATCH — Perfil A"),
+    (SOURCE_KIND_FILE_MATCH_B, "FILE MATCH — Perfil B"),
+    (SOURCE_KIND_REVERSE, "Reverse Studio — Entrada"),
+    (SOURCE_KIND_SPLIT_MERGE, "FILE SPLIT/MERGE — Otro perfil"),
+    (SOURCE_KIND_SCOUT, "STRUCTURE SCOUT — Borrador"),
 )
 SOURCE_KIND_CHOICES_DMS = (
     (SOURCE_KIND_FILE_GATE, "FILE GATE — Esquema"),
@@ -234,6 +240,180 @@ def _target_slot_meta(
         TARGET_SLOT_LABEL_PROFILE_A,
         "Solo borrador del Perfil A — la publicación Match sigue siendo el Módulo 4",
     )
+
+
+SEED_ORIGINS_HELP = (
+    "FILE GATE (esquema, no políticas), FILE CLEAN (perfil, no reglas), "
+    "FilePipe (origen publicado, no destino ni mapeo), FILE MATCH A o B (no reglas de cruce), "
+    "Reverse Studio (entrada, no salida), FILE SPLIT/MERGE (perfil, no reglas) o "
+    "STRUCTURE SCOUT (borrador actual). Salvo Scout, el origen debe estar publicado."
+)
+
+
+def _seed_entry_help_copy(
+    target_project: Project, destination_slot: str | None = None
+) -> dict:
+    """Copy for seed_entry_help.html (host-aware; not Match-only)."""
+    slot = (destination_slot or "").strip()
+    kind = target_project.project_kind
+    if kind == Project.KIND_FILE_SPLIT_MERGE:
+        return {
+            "effect_future": (
+                "solo borrador del perfil de lectura. Publicar Split/Merge (perfil + reglas) "
+                "sigue siendo un módulo posterior."
+            ),
+            "origins": SEED_ORIGINS_HELP,
+            "step1": "Confirma destino File Split/Merge · perfil de lectura y permisos. Continuar abre el selector de origen.",
+            "step2": "Elige kind y un proyecto visible de su compañía (publicado, o borrador Scout).",
+            "step3": "Preview, aviso si hay overwrite, y siembra el borrador del perfil. Queda auditado en historial.",
+            "app_row": "File Split/Merge",
+            "slot_row": "Perfil de lectura",
+            "write_row": "Solo borrador del perfil — nunca publica la versión Split/Merge ni copia reglas sm_rules",
+            "after_seed": (
+                "Revise o ajuste el perfil en el asistente; defina reglas Split/Merge y publique "
+                "cuando el borrador esté listo."
+            ),
+            "publish_title": "Publicar Split/Merge",
+            "publish_body": "Congela perfil + operación + reglas. Seed no publica; solo rellena el borrador de lectura.",
+            "scout_body": (
+                "Parte de una muestra y propone estructura. Seed puede clonar el borrador Scout actual "
+                "al perfil de lectura (no infiere la muestra aquí)."
+            ),
+            "bridge_body": "Pre-check por hash de job. Seed clona forma/campos al borrador del perfil.",
+            "no_publish": "No publica la definición Split/Merge ni configura el bridge FILE GATE.",
+            "not_clone": (
+                "No clona políticas GATE, reglas de limpieza, reglas de cruce Match, destino Reverse "
+                "ni reglas Split/Merge — solo la forma del origen/entrada."
+            ),
+            "history": (
+                "Cada siembra queda en Importar → Historial (auditoría del Sembrador), "
+                "independiente del historial de jobs Split/Merge."
+            ),
+        }
+    if kind == Project.KIND_FILE_GATE:
+        return {
+            "effect_future": "solo borrador del contrato. Publicar FILE GATE es un paso aparte y no copia políticas.",
+            "origins": SEED_ORIGINS_HELP,
+            "step1": "Confirma destino FILE GATE · contrato y permisos. Continuar abre el selector de origen.",
+            "step2": "Elige kind y un proyecto visible de su compañía (publicado, o borrador Scout).",
+            "step3": "Preview, aviso si hay overwrite, y siembra el borrador del contrato. Queda auditado en historial.",
+            "app_row": "FILE GATE (Validador)",
+            "slot_row": "Esquema / contrato",
+            "write_row": "Solo borrador del contrato — nunca publica FILE GATE ni copia políticas",
+            "after_seed": "Revise el contrato en el wizard; publique FILE GATE cuando esté listo.",
+            "publish_title": "Publicar FILE GATE",
+            "publish_body": "Congela el contrato y habilita validación. Seed no publica; no clona políticas.",
+            "scout_body": (
+                "Parte de una muestra y propone estructura. Seed puede clonar el borrador Scout actual "
+                "al contrato (no infiere la muestra aquí)."
+            ),
+            "bridge_body": "Pre-check por hash de job. Seed clona forma/campos al borrador del contrato.",
+            "no_publish": "No publica FILE GATE ni configura el bridge.",
+            "not_clone": "No clona políticas GATE ni reglas de otras apps — solo la forma del origen/entrada.",
+            "history": (
+                "Cada siembra queda en Importar → Historial, independiente del historial de validaciones."
+            ),
+        }
+    if kind == Project.KIND_REVERSE:
+        return {
+            "effect_future": "solo borrador del contrato de entrada. Publicar Reverse es el Módulo 4.",
+            "origins": SEED_ORIGINS_HELP,
+            "step1": "Confirma destino Reverse Studio · entrada y permisos. Continuar abre el selector de origen.",
+            "step2": "Elige kind y un proyecto visible de su compañía (publicado, o borrador Scout).",
+            "step3": "Preview, aviso si hay overwrite, y siembra el borrador de entrada. Queda auditado en historial.",
+            "app_row": "Reverse Studio",
+            "slot_row": "Contrato de entrada",
+            "write_row": "Solo borrador de entrada — nunca publica Reverse ni copia salida o mapeo",
+            "after_seed": "Revise la entrada; complete salida/mapeo y publique cuando la definición esté lista.",
+            "publish_title": "Publicar Reverse",
+            "publish_body": "Congela entrada + salida + mapeo. Seed no publica; solo rellena el borrador de entrada.",
+            "scout_body": (
+                "Parte de una muestra y propone estructura. Seed puede clonar el borrador Scout actual "
+                "a la entrada (no infiere la muestra aquí)."
+            ),
+            "bridge_body": "Pre-check por hash de job. Seed clona forma/campos al borrador de entrada.",
+            "no_publish": "No publica Reverse ni configura el bridge FILE GATE.",
+            "not_clone": "No clona layout de salida ni reglas de generación — solo la forma de entrada.",
+            "history": (
+                "Cada siembra queda en Importar → Historial, independiente del historial de generación."
+            ),
+        }
+    if kind == Project.KIND_DMS and slot == TARGET_SLOT_TARGET:
+        return {
+            "effect_future": "solo borrador de la definición de destino. Publicar FilePipe es un paso aparte.",
+            "origins": SEED_ORIGINS_HELP,
+            "step1": "Confirma destino FilePipe · destino y permisos. Continuar abre el selector de origen.",
+            "step2": "Elige kind y un proyecto visible de su compañía (publicado, o borrador Scout).",
+            "step3": "Preview, aviso si hay overwrite, y siembra el borrador de destino. Queda auditado en historial.",
+            "app_row": "FilePipe (Data Mapping)",
+            "slot_row": "Definición de destino",
+            "write_row": "Solo borrador de destino — nunca publica FilePipe ni copia mapeo",
+            "after_seed": "Revise el destino; complete mapeo y publique FilePipe cuando esté listo.",
+            "publish_title": "Publicar FilePipe",
+            "publish_body": "Congela origen + destino + mapeo. Seed no publica; solo rellena el borrador de destino.",
+            "scout_body": (
+                "Parte de una muestra y propone estructura. Seed puede clonar el borrador Scout actual "
+                "(no infiere la muestra aquí)."
+            ),
+            "bridge_body": "Pre-check por hash de job. Seed clona forma/campos al borrador de destino.",
+            "no_publish": "No publica FilePipe ni configura el bridge FILE GATE.",
+            "not_clone": "No clona mapeo ni reglas de otras apps — solo la forma del perfil destino.",
+            "history": (
+                "Cada siembra queda en Importar → Historial, independiente del historial de transformaciones."
+            ),
+        }
+    if kind == Project.KIND_DMS:
+        return {
+            "effect_future": "solo borrador de la definición de origen. Publicar FilePipe es un paso aparte.",
+            "origins": SEED_ORIGINS_HELP,
+            "step1": "Confirma destino FilePipe · origen y permisos. Continuar abre el selector de origen.",
+            "step2": "Elige kind y un proyecto visible de su compañía (publicado, o borrador Scout).",
+            "step3": "Preview, aviso si hay overwrite, y siembra el borrador de origen. Queda auditado en historial.",
+            "app_row": "FilePipe (Data Mapping)",
+            "slot_row": "Definición de origen",
+            "write_row": "Solo borrador de origen — nunca publica FilePipe ni copia destino o mapeo",
+            "after_seed": "Revise el origen; complete destino/mapeo y publique FilePipe cuando esté listo.",
+            "publish_title": "Publicar FilePipe",
+            "publish_body": "Congela origen + destino + mapeo. Seed no publica; solo rellena el borrador de origen.",
+            "scout_body": (
+                "Parte de una muestra y propone estructura. Seed puede clonar el borrador Scout actual "
+                "(no infiere la muestra aquí)."
+            ),
+            "bridge_body": "Pre-check por hash de job. Seed clona forma/campos al borrador de origen.",
+            "no_publish": "No publica FilePipe ni configura el bridge FILE GATE.",
+            "not_clone": "No clona destino ni mapeo — solo la forma del origen.",
+            "history": (
+                "Cada siembra queda en Importar → Historial, independiente del historial de transformaciones."
+            ),
+        }
+    return {
+        "effect_future": "solo borrador del Perfil A. La publicación Match sigue siendo el Módulo 4 del Conciliador.",
+        "origins": SEED_ORIGINS_HELP,
+        "step1": "Confirma destino Match · Perfil A y permisos. Continuar abre el selector de origen.",
+        "step2": "Elige kind y un proyecto visible de su compañía (publicado, o borrador Scout).",
+        "step3": "Preview, aviso si hay overwrite, y siembra el borrador A. Queda auditado en historial.",
+        "app_row": "FILE MATCH (Conciliador)",
+        "slot_row": "Perfil A (archivo A / referencia)",
+        "write_row": "Solo borrador del Perfil A — nunca publica la definición Match",
+        "after_seed": (
+            "Revise o ajuste el Perfil A en el wizard; publique Match cuando la definición esté lista."
+        ),
+        "publish_title": "Publicar Match",
+        "publish_body": "Congela A + B + reglas. Seed no publica; solo rellena el borrador A.",
+        "scout_body": (
+            "Parte de una muestra y propone estructura; «Aplicar a destino» siembra GATE/Reverse desde Scout. "
+            "Seed también puede clonar el borrador Scout actual (no infiere la muestra aquí)."
+        ),
+        "bridge_body": "Pre-check por hash de job al conciliar. Seed clona forma/campos al borrador A.",
+        "no_publish": "No publica la definición Match ni configura el bridge FILE GATE.",
+        "not_clone": (
+            "No clona políticas GATE, reglas de cruce Match ni destino Reverse — solo la forma del origen/entrada."
+        ),
+        "history": (
+            "Cada siembra queda en Importar → Historial (auditoría del Sembrador), "
+            "independiente del historial de conciliaciones."
+        ),
+    }
 
 
 def get_seed_host(
@@ -389,6 +569,9 @@ def get_seed_context(
             target_project, destination_slot=destination_slot
         ),
         "destination_slot": slot,
+        "seed_help": _seed_entry_help_copy(
+            target_project, destination_slot
+        ),
     }
 
 

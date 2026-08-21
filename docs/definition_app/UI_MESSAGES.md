@@ -1007,6 +1007,7 @@ Mensajes de usuario para File Split/Merge. Alineados a [`../FILE_SPLIT_MERGE.md`
 | Situación | Tag / canal | Texto al usuario |
 |-----------|-------------|------------------|
 | Versión publicada | `success` / JSON | Versión v{N} publicada correctamente. Nuevo borrador v{N+1} listo para edición. |
+| Perfil y/o Reglas incompletos | `warning` (modal) | No puede publicar. Pasos no completados: {Perfil y/o Reglas}. |
 | Sin permiso publicar | `error` / JSON 403 | No tiene permiso para publicar la versión de este proyecto. |
 | Kind incorrecto | `error` | Este proyecto no es de tipo File Split/Merge. |
 | Sin borrador | `error` | No hay borrador disponible para publicar. |

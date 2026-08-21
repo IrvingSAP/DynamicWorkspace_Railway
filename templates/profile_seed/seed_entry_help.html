@@ -50,8 +50,8 @@
         </p>
         <ul>
             <li><strong>Copy correcto:</strong> “Importar estructura”. No es “sincronizar”, “vincular”, “bridge” ni “aplicar Scout”.</li>
-            <li><strong>Efecto futuro:</strong> solo borrador del {{ seed_host.profile_hub_label }}. La publicación Match sigue siendo el Módulo 4 del Conciliador.</li>
-            <li><strong>Prioridad P0:</strong> origen típico FILE GATE (esquema publicado) → este {{ seed_host.profile_hub_label }}.</li>
+            <li><strong>Efecto futuro:</strong> {{ seed_help.effect_future }}</li>
+            <li><strong>Orígenes posibles:</strong> {{ seed_help.origins }}</li>
         </ul>
 
         <h3 class="form-section-title">Flujo completo (3 pasos)</h3>
@@ -63,40 +63,40 @@
                 <tr>
                     <td class="mono">1</td>
                     <td>Entrada (esta pantalla)</td>
-                    <td>Confirma destino Match · {{ seed_host.profile_hub_label }} y permisos. Continuar abre el selector de origen.</td>
+                    <td>{{ seed_help.step1 }}</td>
                 </tr>
                 <tr>
                     <td class="mono">2</td>
                     <td>Origen</td>
-                    <td>Elige un proyecto/versión <strong>publicada</strong> de su compañía (p. ej. FILE GATE).</td>
+                    <td>{{ seed_help.step2 }}</td>
                 </tr>
                 <tr>
                     <td class="mono">3</td>
                     <td>Confirmar</td>
-                    <td>Preview, aviso si hay overwrite, y siembra el borrador A. Queda auditado en historial.</td>
+                    <td>{{ seed_help.step3 }}</td>
                 </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Contexto destino (P0)</h3>
+        <h3 class="form-section-title">Contexto destino</h3>
         <table class="help-table">
             <thead>
                 <tr><th>Campo</th><th>Valor en este flujo</th></tr>
             </thead>
             <tbody>
-                <tr><td>App</td><td>{{ seed_host.app_label }} (Conciliador)</td></tr>
+                <tr><td>App</td><td>{{ seed_help.app_row }}</td></tr>
                 <tr><td>Proyecto</td><td><span class="mono">{{ project.slug }}</span> — {{ project.name }}</td></tr>
-                <tr><td>Slot</td><td>{{ seed_host.profile_hub_label }} (archivo A / referencia)</td></tr>
-                <tr><td>Escritura</td><td>Solo borrador del {{ seed_host.profile_hub_label }} — nunca publica la definición Match</td></tr>
+                <tr><td>Slot</td><td>{{ seed_help.slot_row }}</td></tr>
+                <tr><td>Escritura</td><td>{{ seed_help.write_row }}</td></tr>
             </tbody>
         </table>
 
         <h3 class="form-section-title">Qué hará a continuación</h3>
         <ol>
             <li>Pulse <strong>Continuar a elegir origen</strong> (Módulo 2).</li>
-            <li>Seleccione un origen publicado que pueda ver (misma compañía).</li>
+            <li>Seleccione un origen que pueda ver (misma compañía).</li>
             <li>Revise el preview y confirme (Módulo 3): se siembra el borrador; si ya había campos, verá aviso de overwrite.</li>
-            <li>Revise o ajuste el {{ seed_host.profile_hub_label }} en el wizard de 6 pasos; publique Match cuando la definición esté lista.</li>
+            <li>{{ seed_help.after_seed }}</li>
         </ol>
 
         <h3 class="form-section-title">Fronteras (no confundir)</h3>
@@ -107,15 +107,15 @@
             <tbody>
                 <tr>
                     <td>STRUCTURE SCOUT</td>
-                    <td>Parte de una <strong>muestra</strong> y propone estructura; «Aplicar a destino» siembra GATE/Reverse desde Scout. En FilePipe, Seed también puede clonar el <strong>borrador Scout actual</strong> (no infiere la muestra aquí).</td>
+                    <td>{{ seed_help.scout_body }}</td>
                 </tr>
                 <tr>
                     <td>Bridge FILE GATE</td>
-                    <td>Pre-check por <strong>hash</strong> de job al conciliar. Seed <strong>clona</strong> forma/campos al borrador A.</td>
+                    <td>{{ seed_help.bridge_body }}</td>
                 </tr>
                 <tr>
-                    <td>Publicar Match</td>
-                    <td>Congela A + B + reglas. Seed no publica; solo rellena el borrador A.</td>
+                    <td>{{ seed_help.publish_title }}</td>
+                    <td>{{ seed_help.publish_body }}</td>
                 </tr>
             </tbody>
         </table>
@@ -139,16 +139,13 @@
         <ul>
             <li>No lista orígenes ni elige versión publicada (eso es <strong>Origen</strong>).</li>
             <li>No muestra preview ni escribe el borrador (eso es <strong>Confirmar</strong>).</li>
-            <li>No publica la definición Match ni configura el bridge FILE GATE.</li>
+            <li>{{ seed_help.no_publish }}</li>
             <li>No abre STRUCTURE SCOUT ni sube una muestra.</li>
-            <li>No clona políticas GATE, reglas de cruce Match ni destino Reverse — solo la forma del origen/entrada.</li>
+            <li>{{ seed_help.not_clone }}</li>
         </ul>
 
         <h3 class="form-section-title">Historial</h3>
-        <p class="help-intro">
-            Cada siembra exitosa o fallida queda en <strong>Importar → Historial</strong> (auditoría del Sembrador),
-            independiente del historial de conciliaciones del Conciliador.
-        </p>
+        <p class="help-intro">{{ seed_help.history }}</p>
     </div>
 </div>
 {% endblock %}

@@ -36,6 +36,7 @@ MSG_PROFILE = "Complete y corrija el perfil de lectura antes de publicar."
 MSG_NO_FIELDS = "Complete el perfil de lectura con al menos un campo antes de publicar."
 MSG_NO_RULES = "Complete la operación y las reglas Split/Merge antes de publicar."
 MSG_RULES = "Corrija las reglas habilitadas antes de publicar."
+MSG_STEPS_INCOMPLETE_PREFIX = "No puede publicar. Pasos no completados:"
 MSG_UNEXPECTED = "Ocurrió un error al publicar. Si persiste, contacte al administrador."
 
 
@@ -55,6 +56,7 @@ class PublishHubContext:
     published_version_number: int | None
     has_published_version: bool
     can_publish: bool
+    publish_blocked_reason: str = ""
     checklist: list[ChecklistItem] = field(default_factory=list)
     blocking_reasons: list[str] = field(default_factory=list)
     summary: dict = field(default_factory=dict)
@@ -259,6 +261,17 @@ def get_hub_context(user, project: Project, membership=None) -> PublishHubContex
     checklist = get_checklist(project, membership)
     can_edit = source_persistence_service.user_can_edit_source(user, project)
     blocking = [item.label for item in checklist if not item.ready]
+    pending_steps = []
+    for item in checklist:
+        if item.ready:
+            continue
+        pending_steps.append("Perfil" if item.code == "profile" else "Reglas")
+    if pending_steps:
+        publish_blocked_reason = (
+            f"{MSG_STEPS_INCOMPLETE_PREFIX} {', '.join(pending_steps)}."
+        )
+    else:
+        publish_blocked_reason = ""
     source = source_persistence_service.get_source_dict(project)
     rules_ctx = rules_svc.get_hub_context(project)
     wizard = profile_wizard_service.get_wizard_context(project, membership)
@@ -286,6 +299,7 @@ def get_hub_context(user, project: Project, membership=None) -> PublishHubContex
         published_version_number=publish["published_version_number"],
         has_published_version=publish["has_published_version"],
         can_publish=can_publish,
+        publish_blocked_reason=publish_blocked_reason,
         checklist=checklist,
         blocking_reasons=blocking,
         summary=summary,
