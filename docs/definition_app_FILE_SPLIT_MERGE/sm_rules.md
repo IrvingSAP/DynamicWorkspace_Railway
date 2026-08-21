@@ -6,7 +6,7 @@ Definición de la **operación** (`split` \| `merge`) y el **catálogo ordenado 
 > **Producto:** [`../FILE_SPLIT_MERGE.md`](../FILE_SPLIT_MERGE.md) §7–§8  
 > **Integración:** [`sm_integration.md`](sm_integration.md)  
 > **Dependencia:** M2 implementado (`sm_profile.md`) — hub exige `profile_complete`  
-> **Rama:** fusionada a `main` (PR #13)  
+> **Rama:** `feature/file-split-merge`  
 > **Patrón hermano:** [`../definition_app_FILE_CLEAN/clean_rules.md`](../definition_app_FILE_CLEAN/clean_rules.md)
 
 ---

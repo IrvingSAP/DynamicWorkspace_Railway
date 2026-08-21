@@ -6,7 +6,7 @@ Definición e implementación de **publicar** el borrador: congela **perfil de l
 > **Producto:** [`../FILE_SPLIT_MERGE.md`](../FILE_SPLIT_MERGE.md)  
 > **Integración:** [`sm_integration.md`](sm_integration.md)  
 > **Dependencia:** M2 + M3 (`sm_profile.md`, `sm_rules.md`)  
-> **Rama:** fusionada a `main` (PR #13)  
+> **Rama:** `feature/file-split-merge`  
 > **Patrón hermano:** [`../definition_app_FILE_CLEAN/clean_publish.md`](../definition_app_FILE_CLEAN/clean_publish.md)
 
 ---

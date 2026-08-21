@@ -6,7 +6,7 @@ Definición e implementación de **upload → preview → job → artifacts** (S
 > **Producto:** [`../FILE_SPLIT_MERGE.md`](../FILE_SPLIT_MERGE.md)  
 > **Integración:** [`sm_integration.md`](sm_integration.md)  
 > **Dependencia:** M4 publicado (`sm_publish.md`)  
-> **Rama:** fusionada a `main` (PR #13)  
+> **Rama:** `feature/file-split-merge`  
 > **Patrón hermano:** [`../definition_app_FILE_CLEAN/clean_run.md`](../definition_app_FILE_CLEAN/clean_run.md)
 
 ---

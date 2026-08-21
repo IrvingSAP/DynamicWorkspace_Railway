@@ -5,7 +5,7 @@ Listado y detalle de corridas `SplitMergeJob`: quién, cuándo, operación, hash
 > **Estado:** implementado (M6)  
 > **Producto:** [`../FILE_SPLIT_MERGE.md`](../FILE_SPLIT_MERGE.md)  
 > **Dependencia:** M5 Ejecutar (`sm_run.md`)  
-> **Rama:** fusionada a `main` (PR #13)  
+> **Rama:** `feature/file-split-merge`  
 > **Patrón hermano:** [`../definition_app_FILE_CLEAN/clean_history.md`](../definition_app_FILE_CLEAN/clean_history.md)
 
 ---

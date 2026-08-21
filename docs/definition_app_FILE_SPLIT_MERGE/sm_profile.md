@@ -6,7 +6,7 @@ Definición de **cómo se lee** el archivo en un proyecto File Split/Merge: tipo
 > **Producto:** [`../FILE_SPLIT_MERGE.md`](../FILE_SPLIT_MERGE.md)  
 > **Integración:** [`sm_integration.md`](sm_integration.md)  
 > **Reuso:** [`../definition_app_DMS/source_definition.md`](../definition_app_DMS/source_definition.md) · patrón [`../definition_app_FILE_CLEAN/clean_profile.md`](../definition_app_FILE_CLEAN/clean_profile.md)  
-> **Rama:** fusionada a `main` (PR #13)  
+> **Rama:** `feature/file-split-merge`  
 > **Dependencia:** M1 implementado (`project_lifecycle.md`)
 
 ---

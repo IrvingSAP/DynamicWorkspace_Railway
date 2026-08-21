@@ -3,7 +3,7 @@
 > **Nombre mnemotécnico:** `FILE_SPLIT_MERGE`  
 > Alias: *File Split* · *File Merge* · *Utilidad dual de lotes*  
 > Archivo: [`docs/FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md)  
-> Estado: **hecho** · M1–M6 en `main` / Railway (PR #13)  
+> Estado: **definición de producto** · M1–M6 (proyecto → historial) **implementados** (`feature/file-split-merge`)  
 > Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §5–§6 · prioridad ⭐⭐⭐⭐  
 > Specs por módulo: [`definition_app_FILE_SPLIT_MERGE/`](definition_app_FILE_SPLIT_MERGE/)  
 > Estilo: hermano de [`FILE_CLEAN.md`](FILE_CLEAN.md) / [`FILE_MATCH.md`](FILE_MATCH.md)
@@ -12,10 +12,10 @@
 
 | Ítem | Valor |
 |------|--------|
-| **Rama Git** | Fusionada: `feature/file-split-merge` → `main` |
-| **Base / producción** | `main` (Railway) |
-| **Despliegues Railway** | Desde `main` |
-| **API pública** | **Después** de las apps FILE_OPS; runner ya API-ready — ver [`PLATFORM_API.md`](PLATFORM_API.md) · contrato HTTP en [`sm_integration.md`](definition_app_FILE_SPLIT_MERGE/sm_integration.md) (ampliar en esa fase) |
+| **Rama Git** | `feature/file-split-merge` |
+| **Base** | `main` |
+| **Despliegues Railway** | Solo desde `main` tras merge del MVP |
+| **API pública** | **Después** de las apps FILE_OPS; Split/Merge debe nacer **API-ready** (Job + `kind`) — ver [`PLATFORM_API.md`](PLATFORM_API.md) |
 
 ---
 
@@ -166,7 +166,7 @@ Descargar salida(s) + log / métricas
 | 4 | Publicar | [`definition_app_FILE_SPLIT_MERGE/sm_publish.md`](definition_app_FILE_SPLIT_MERGE/sm_publish.md) | Borrador → versión publicada |
 | 5 | Ejecución | [`definition_app_FILE_SPLIT_MERGE/sm_run.md`](definition_app_FILE_SPLIT_MERGE/sm_run.md) | Upload, preview, job, artifacts |
 | 6 | Historial | [`definition_app_FILE_SPLIT_MERGE/sm_history.md`](definition_app_FILE_SPLIT_MERGE/sm_history.md) | Listado y detalle de jobs |
-| — | Integración | [`definition_app_FILE_SPLIT_MERGE/sm_integration.md`](definition_app_FILE_SPLIT_MERGE/sm_integration.md) | Kind/URLs vivos; contrato HTTP **diferido** a PLATFORM_API |
+| — | Integración | [`definition_app_FILE_SPLIT_MERGE/sm_integration.md`](definition_app_FILE_SPLIT_MERGE/sm_integration.md) | Kind, URLs, roles, reuso DMS, **API-ready** |
 
 Método: **definir → prototipar → revisar → implementar solo con «Desarrolla el módulo»**.
 
@@ -305,10 +305,12 @@ files[]=<bytes>…
 
 | Orden | Paso |
 |-------|------|
-| 1 | ~~Specs + prototipos M1–M6~~ — **hecho** |
-| 2 | ~~Implementación Django + merge a `main` / Railway~~ — **hecho** (PR #13) |
-| 3 | (Oleada FILE_OPS) **Data Profiler** → Repair → Watch… |
-| 4 | **Al finalizar apps FILE_OPS** → [`PLATFORM_API`](PLATFORM_API.md); ampliar `sm_integration.md` § API |
+| 1 | Cerrar specs M1–M3 (`project_lifecycle`, `sm_profile`, `sm_rules`) |
+| 2 | Prototipos `prototype/file_split_merge/` |
+| 3 | Implementar por módulo con OK explícito |
+| 4 | Publicar + run + history |
+| 5 | (Oleada) Data Profiler → Repair → Watch… |
+| 6 | **Al finalizar FILE_OPS apps** → [`PLATFORM_API`](PLATFORM_API.md) |
 
 ---
 
