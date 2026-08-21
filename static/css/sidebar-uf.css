@@ -127,6 +127,221 @@ html.sidebar-icons .sidebar-nav-group-toggle[title]:hover::after {
     }
 }
 
+/* P2 — familias (Archivos / Pipeline / API) */
+.sb-family {
+    margin: 6px 0 10px;
+    padding: 4px 0 6px;
+    border-top: 1px solid var(--rule);
+}
+
+.sb-family:first-of-type {
+    border-top: none;
+    padding-top: 0;
+}
+
+.sb-family-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 8px 6px;
+    border: none;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+    text-align: left;
+    color: var(--ink);
+}
+
+.sb-family-toggle:hover {
+    color: var(--accent);
+}
+
+.sb-family-mark {
+    display: none;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.sb-family-name {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+}
+
+.sb-family-hint {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--ink-tertiary);
+    margin-top: 1px;
+}
+
+.sb-family-chevron {
+    width: 14px;
+    height: 14px;
+    margin-left: auto;
+    opacity: 0.5;
+    transition: transform 0.15s ease;
+}
+
+.sb-family.is-open .sb-family-chevron {
+    transform: rotate(180deg);
+}
+
+.sb-family-body {
+    display: none;
+}
+
+.sb-family.is-open .sb-family-body {
+    display: block;
+}
+
+.sb-family-list {
+    display: flex;
+    margin-left: 12px;
+    border-left-color: var(--accent-ring);
+}
+
+.sb-family.is-open .sb-family-list {
+    display: flex;
+}
+
+.sb-soon {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--surface-inset);
+    color: var(--ink-muted);
+}
+
+.sidebar-sublink.is-disabled {
+    opacity: 0.55;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.sb-app-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    width: 100%;
+    gap: 2px;
+    min-height: 32px;
+}
+
+.sb-app-row .sidebar-sublink {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.sb-app-help {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    color: var(--ink-muted);
+    text-decoration: none;
+    flex-shrink: 0;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+}
+
+.sb-app-help svg {
+    width: 15px;
+    height: 15px;
+    pointer-events: none;
+}
+
+.sb-app-help:hover,
+.sb-app-help.is-active {
+    color: var(--accent);
+    background: var(--accent-subtle);
+}
+
+.sb-app-help:focus-visible {
+    outline: 2px solid var(--accent-ring);
+    outline-offset: 1px;
+}
+
+html.sidebar-icons .sb-family-hint,
+html.sidebar-icons .sb-family-chevron,
+html.sidebar-icons .sb-family-toggle span,
+html.sidebar-icons .sb-app-help,
+html.sidebar-icons .sb-soon,
+html.sidebar-icons .sb-family-body,
+html.sidebar-icons .sb-family.is-open .sb-family-body {
+    display: none;
+}
+
+html.sidebar-icons .sb-family-mark {
+    display: block;
+}
+
+html.sidebar-icons .sb-family-toggle {
+    justify-content: center;
+    padding: 10px;
+    position: relative;
+}
+
+html.sidebar-icons .sb-family-toggle[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--ink);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    z-index: 20;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(28, 25, 23, 0.18);
+}
+
+@media (max-width: 768px) {
+    html.sidebar-icons .sb-family-hint,
+    html.sidebar-icons .sb-family-chevron,
+    html.sidebar-icons .sb-family-toggle span,
+    html.sidebar-icons .sb-app-help {
+        display: block;
+    }
+    html.sidebar-icons .sb-family-body {
+        display: none;
+    }
+    html.sidebar-icons .sb-family.is-open .sb-family-body {
+        display: block;
+    }
+    html.sidebar-icons .sb-family-mark {
+        display: none;
+    }
+    html.sidebar-icons .sb-family-toggle {
+        justify-content: flex-start;
+        padding: 8px 8px 6px;
+    }
+    html.sidebar-icons .sb-family-toggle[title]:hover::after {
+        content: none;
+    }
+}
+
 .sidebar-sublink.is-active {
     color: var(--accent);
     background: var(--accent-subtle);
