@@ -76,14 +76,15 @@
         </div>
     </div>
     <div class="table-dt-host">
-        <table id="sm-project-table" class="dw-datatable" data-dt-custom="true">
+        <table id="dms-project-table" class="dw-datatable" data-dt-custom="true">
             <thead>
                 <tr>
                     <th>Código</th>
                     <th>Nombre</th>
                     <th>Visibilidad</th>
                     <th>Mi permiso</th>
-                    <th>Definición</th>
+                    <th>Versión</th>
+                    <th>Última ejecución</th>
                     <th class="col-actions">Acciones</th>
                 </tr>
             </thead>
@@ -106,7 +107,8 @@
                         <span class="perm-badge">{{ row.role_label }}</span>
                         {% endif %}
                     </td>
-                    <td class="td-mono">{{ row.definition_label }}</td>
+                    <td class="td-mono">{{ row.version_label }}</td>
+                    <td class="td-mono">{{ row.last_execution }}</td>
                     <td class="col-actions">
                         <a href="{% url 'file_split_merge:project_hub' project_slug=row.project.slug %}" class="btn btn-ghost btn-sm">Abrir</a>
                     </td>

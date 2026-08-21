@@ -85,7 +85,7 @@
     <div class="page-actions">
         {% url 'file_split_merge:history_hub_help' project_slug=project.slug as history_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=history_help_url %}
-        <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub Proyecto</a>
         <a href="{% url 'file_split_merge:run_hub' project_slug=project.slug %}" class="btn btn-primary">Ejecutar</a>
     </div>
 </div>

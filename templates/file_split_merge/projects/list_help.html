@@ -34,11 +34,30 @@
 <div class="help-panel panel">
     <div class="panel-body">
         <h3 class="form-section-title">Qué ve en el listado</h3>
-        <p>
+        <p class="help-intro">
             Solo proyectos <strong>File Split/Merge</strong> de su compañía donde usted es miembro,
             o proyectos <strong>públicos</strong> (visibilidad compañía) aunque no sea miembro.
             No aparecen proyectos de File Gate, Clean, Match ni FilePipe.
         </p>
+        <p class="help-intro">
+            El filtro de <strong>Visibilidad</strong> restringe a públicos o privados. La tabla admite búsqueda y paginación (mismo patrón que FILE GATE).
+        </p>
+
+        <h3 class="form-section-title">Columnas de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Qué muestra</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Código</td><td>Slug único; enlace al hub.</td></tr>
+                <tr><td>Nombre</td><td>Nombre visible del proyecto.</td></tr>
+                <tr><td>Visibilidad</td><td><strong>Privado</strong> (solo miembros) o <strong>Público</strong> (la compañía puede verlo).</td></tr>
+                <tr><td>Mi permiso</td><td>Su rol (PA / ED / GE / CO) o consulta si solo lo ve por ser público.</td></tr>
+                <tr><td>Versión</td><td>Borrador actual (p. ej. borrador v2) o versión publicada si no hay borrador.</td></tr>
+                <tr><td>Última ejecución</td><td>Fecha y hora del último Split/Merge <strong>completo</strong> (no vista previa). «—» si aún no hay corrida.</td></tr>
+                <tr><td>Acciones</td><td>Abrir el hub del proyecto.</td></tr>
+            </tbody>
+        </table>
 
         <h3 class="form-section-title">Split vs Merge</h3>
         <table class="issue-table">
