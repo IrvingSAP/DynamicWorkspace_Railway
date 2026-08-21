@@ -42,6 +42,15 @@ MSG_APPLY_OK_GATE = (
     "Estructura importada al borrador del contrato FILE GATE. "
     "Revise los pasos del asistente y publique el contrato cuando corresponda."
 )
+MSG_APPLY_OK_CLEAN = (
+    "Estructura importada al borrador del perfil de lectura. "
+    "Revise los pasos del asistente; las reglas de limpieza no se copian. "
+    "Publique File Clean cuando corresponda."
+)
+MSG_TYPE_UNSUPPORTED_CLEAN = (
+    "El tipo de archivo seleccionado aún no tiene editor de campos en "
+    "FILE CLEAN. Elija txt_fixed, csv, txt_delimited, xlsx, json o xml."
+)
 MSG_APPLY_OK_REVERSE = (
     "Estructura importada al borrador del contrato de entrada. "
     "Revise los pasos del asistente y publique la definición Reverse cuando corresponda."
@@ -328,6 +337,8 @@ def _apply_ok_message(
     slot = (destination_slot or "").strip()
     if target_project.project_kind == Project.KIND_FILE_SPLIT_MERGE:
         return MSG_APPLY_OK_SPLIT_MERGE
+    if target_project.project_kind == Project.KIND_FILE_CLEAN:
+        return MSG_APPLY_OK_CLEAN
     if target_project.project_kind == Project.KIND_FILE_GATE:
         return MSG_APPLY_OK_GATE
     if target_project.project_kind == Project.KIND_REVERSE:
@@ -355,6 +366,11 @@ def _check_file_type_for_target(
         variant = get_step4_variant(file_type)
         if variant == "unsupported" or not file_type:
             return OperationResult.failure("validation_form", MSG_TYPE_UNSUPPORTED_SM)
+        return None
+    if target_project.project_kind == Project.KIND_FILE_CLEAN:
+        variant = get_step4_variant(file_type)
+        if variant == "unsupported" or not file_type:
+            return OperationResult.failure("validation_form", MSG_TYPE_UNSUPPORTED_CLEAN)
         return None
     if target_project.project_kind == Project.KIND_DMS:
         variant = get_step4_variant(file_type)
@@ -647,6 +663,15 @@ def apply_seed_to_profile_a(
 
 
 def apply_seed_to_split_merge(
+    user,
+    target_project: Project,
+    *,
+    source_id: UUID | None,
+) -> OperationResult:
+    return apply_seed_to_draft(user, target_project, source_id=source_id)
+
+
+def apply_seed_to_file_clean(
     user,
     target_project: Project,
     *,

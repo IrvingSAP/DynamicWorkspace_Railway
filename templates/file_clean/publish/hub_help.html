@@ -1,23 +1,134 @@
 {% extends "app_base.html" %}
 {% load static %}
-{% block title %}Ayuda · Publicar — File Clean{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+
+{% block title %}Ayuda · Publicar — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">File Clean</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:publish_hub' project_slug=project.slug %}">Publicar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div>
+        <p class="page-eyebrow">File Clean · Módulo 4 · <span class="role-badge">Publish</span></p>
         <h2>Ayuda — Publicar versión</h2>
-        <p>Congela el perfil de lectura y las reglas en una versión inmutable.</p>
+        <p>Congela perfil de lectura y reglas. Ejecutar usa solo esa versión activa.</p>
     </div>
-    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'file_clean:publish_hub' project_slug=project.slug %}">← Volver</a></div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_clean:publish_hub' project_slug=project.slug %}">← Volver a publicar</a>
+        <a class="btn btn-secondary" href="{% url 'file_clean:project_hub' project_slug=project.slug %}">Hub proyecto</a>
+    </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li><strong>P1</strong> — Al menos un campo en el perfil.</li>
-    <li><strong>P2</strong> — Al menos una regla habilitada.</li>
-    <li><strong>P5</strong> — Toda regla habilitada debe tener params válidos (replace_map, replace, compose…).</li>
-    <li>Tras publicar se crea un nuevo borrador (copia) para seguir editando.</li>
-    <li>Los jobs usarán solo la versión activa (FC1).</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Publicar toma el <strong>borrador</strong> (perfil + reglas) y lo deja <strong>inmutable</strong> como versión
+            <code class="mono">vN</code>. A partir de ahí, Ejecutar e Historial usan solo esa versión activa (FC1),
+            no lo que siga editando en el borrador.
+        </p>
+        <p class="help-intro">
+            Tras publicar se crea un <strong>nuevo borrador</strong> (copia) para seguir editando. Los jobs que ya
+            estaban en curso siguen con la versión con la que arrancaron (P4).
+        </p>
+
+        <h3 class="form-section-title">Qué ve en esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Elemento</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Publicar vN</td>
+                    <td>PA/ED. Pide confirmación y congela el borrador. Si Perfil o Reglas no están listos, el botón
+                        sigue siendo clicable y muestra una <strong>alerta</strong> (no queda inerte).</td>
+                </tr>
+                <tr>
+                    <td>Franja de versión</td>
+                    <td>Qué número se va a publicar y cuál es la <strong>versión activa</strong> (la que usa Ejecutar). Si aún no hay, verá «Sin versión publicada».</td>
+                </tr>
+                <tr>
+                    <td>Pendiente</td>
+                    <td>Aviso si falta el perfil, las reglas o ambos. Complete el checklist.</td>
+                </tr>
+                <tr>
+                    <td>Reglas inválidas (P5)</td>
+                    <td>Reglas <strong>habilitadas</strong> con parámetros incompletos (p. ej. <code class="mono">replace</code> sin find). Corríjalas en Reglas antes de publicar.</td>
+                </tr>
+                <tr>
+                    <td>Checklist</td>
+                    <td>Tarjetas a Perfil y Reglas: Listo o Pendiente, con un detalle (campos, reglas ON, etc.).</td>
+                </tr>
+                <tr>
+                    <td>Resumen del borrador</td>
+                    <td>Tipo, encoding, cantidad de campos y reglas habilitadas (y cuántas están OFF).</td>
+                </tr>
+                <tr>
+                    <td>Historial de versiones</td>
+                    <td>vN, estado (borrador / publicada), fecha y quién publicó.</td>
+                </tr>
+                <tr>
+                    <td>Ir a Ejecutar</td>
+                    <td>Solo si ya hay una versión publicada.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Requisitos para publicar</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Código</th><th>Qué exige</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>P1 · Perfil</td>
+                    <td>Al menos un campo en el perfil de lectura (los 4 pasos del wizard coherentes).</td>
+                </tr>
+                <tr>
+                    <td>P2 · Reglas</td>
+                    <td>Al menos una regla <strong>habilitada</strong>. Las desactivadas no cuentan.</td>
+                </tr>
+                <tr>
+                    <td>P5 · Params</td>
+                    <td>Toda regla ON debe tener parámetros válidos (<code class="mono">replace_map</code>, <code class="mono">replace</code>, <code class="mono">compose</code>, etc.).</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Si pulsa Publicar sin completar Perfil y Reglas, el mensaje es:
+            «Complete los pasos anteriores (Perfil y Reglas) antes de publicar.»
+            (o el paso concreto que falte).
+        </p>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Rol</th><th>En este hub</th></tr></thead>
+            <tbody>
+                <tr><td>PA / ED</td><td>Ven el botón Publicar y pueden congelar el borrador.</td></tr>
+                <tr><td>GE / CO</td><td>Consultan checklist, resumen e historial de versiones. No publican.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no hace este módulo</h3>
+        <ul class="help-list">
+            <li>No edita el perfil ni las reglas (use esos módulos y vuelva a publicar).</li>
+            <li>No sube ni limpia un archivo (eso es <strong>Ejecutar</strong>, y exige versión publicada).</li>
+            <li>No valida un contrato FILE GATE ni mapea a FilePipe.</li>
+            <li>No sustituye Importar estructura: el seed deja borrador; aquí se congela.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

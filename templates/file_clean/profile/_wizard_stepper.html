@@ -1,7 +1,11 @@
-﻿{# Contexto: project, current_step (1-4) #}
+﻿{# Contexto: project, wizard, current_step (1-4). Verde + ✓ si el paso ya está aplicado, no según la página actual. #}
 <nav class="wizard-stepper" aria-label="Pasos del perfil de lectura">
-    <a href="{% url 'file_clean:profile_step1' project_slug=project.slug %}" class="wizard-step{% if current_step == 1 %} is-active{% elif current_step > 1 %} is-done{% endif %}"><span class="wizard-step-num">{% if current_step > 1 %}✓{% else %}1{% endif %}</span> Tipo archivo</a>
-    <a href="{% url 'file_clean:profile_step2' project_slug=project.slug %}" class="wizard-step{% if current_step == 2 %} is-active{% elif current_step > 2 %} is-done{% endif %}"><span class="wizard-step-num">{% if current_step > 2 %}✓{% else %}2{% endif %}</span> Inicio</a>
-    <a href="{% url 'file_clean:profile_step3' project_slug=project.slug %}" class="wizard-step{% if current_step == 3 %} is-active{% elif current_step > 3 %} is-done{% endif %}"><span class="wizard-step-num">{% if current_step > 3 %}✓{% else %}3{% endif %}</span> Fin</a>
-    <a href="{% url 'file_clean:profile_step4' project_slug=project.slug %}" class="wizard-step{% if current_step == 4 %} is-active{% endif %}"><span class="wizard-step-num">4</span> Campos</a>
+    {% for step in wizard.steps %}
+    <a href="{% url step.url_name project_slug=project.slug %}"
+       class="wizard-step{% if current_step == step.number %} is-active{% endif %}{% if step.status == 'done' %} is-done{% endif %}"
+       {% if current_step == step.number %}aria-current="step"{% endif %}>
+        <span class="wizard-step-num">{% if step.status == 'done' %}✓{% else %}{{ step.number }}{% endif %}</span>
+        {% if step.number == 1 %}Tipo archivo{% elif step.number == 2 %}Inicio{% elif step.number == 3 %}Fin{% else %}Campos{% endif %}
+    </a>
+    {% endfor %}
 </nav>

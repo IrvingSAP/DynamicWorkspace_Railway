@@ -30,47 +30,103 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">File Clean · Módulo 2 · paso 1 · ayuda</p>
-        <h2>Tipo de archivo a limpiar</h2>
-        <p>Fija el formato, la codificación y el fin de línea con los que File Clean interpretará cada archivo.</p>
+        <p class="page-eyebrow">File Clean · Módulo 2 · paso 1 · <span class="role-badge">SourceFileType</span></p>
+        <h2>Ayuda — Tipo de archivo a limpiar</h2>
+        <p>Fija formato, codificación y fin de línea. Sin este paso no se completa el perfil ni se publica.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'file_clean:profile_step1' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 1</a>
+        <a href="{% url 'file_clean:profile_hub' project_slug=project.slug %}" class="btn btn-secondary">Resumen</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            El tipo declara <strong>qué archivo envía el proveedor</strong>, no “el más cómodo de modelar”.
+            Condiciona las extensiones al Ejecutar, el parser y la pantalla de campos (paso 4).
+            Encoding y fin de línea deciden cómo se leen los bytes <strong>antes</strong> de aplicar captura, campos o reglas.
+        </p>
+        <p class="help-intro">
+            Se guarda en el <strong>borrador</strong>. Las limpiezas usan solo la versión <strong>publicada</strong>.
+        </p>
+
         <h3 class="form-section-title">Qué decide este paso</h3>
-        <p class="help-intro">Sin tipo de archivo no se puede completar el perfil ni publicar. La elección condiciona el paso 4 (posiciones, columnas, hoja, JSON o XML) y las extensiones permitidas al Ejecutar.</p>
-        <table class="help-table">
+        <table class="help-table help-table--compact">
             <thead><tr><th>Elemento</th><th>Efecto en File Clean</th></tr></thead>
             <tbody>
                 <tr>
                     <td>Tipo de archivo</td>
-                    <td>Formato esperado (<code>txt_fixed</code>, <code>csv</code>, <code>txt_delimited</code>, <code>xlsx</code>, <code>json</code>, <code>xml</code>). Condiciona el parseo al limpiar.</td>
+                    <td>Formato y parser. Las extensiones permitidas al subir salen de este tipo.</td>
                 </tr>
                 <tr>
-                    <td>Encoding</td>
-                    <td>Cómo se leen los bytes. Un encoding incorrecto suele producir caracteres raros o basura en los campos.</td>
+                    <td>Codificación</td>
+                    <td>Cómo se interpretan los bytes. Un encoding incorrecto produce caracteres raros en los campos y reglas que no coinciden.</td>
                 </tr>
                 <tr>
                     <td>Fin de línea</td>
-                    <td>Cómo se parten las líneas (<code>LF</code>, <code>CRLF</code> o auto). Debe coincidir con el archivo del proveedor.</td>
+                    <td>Cómo se parten las líneas (<code class="mono">LF</code>, <code class="mono">CRLF</code>, auto o secuencia propia). Si no coincide, captura y campos se desalinean.</td>
                 </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Buenas prácticas</h3>
-        <ul>
-            <li>Elija el tipo que usa el proveedor; no “el más flexible”.</li>
-            <li>Si ya hay campos definidos y cambia el tipo, revise el <strong>paso 4</strong>: la estructura anterior puede quedar inválida.</li>
-            <li>Los cambios se guardan en el <strong>borrador</strong>; Ejecutar solo usa lo publicado.</li>
-            <li>Solo <code>PA</code> y <code>ED</code> pueden guardar. El resto ve el paso en solo lectura.</li>
+        <h3 class="form-section-title">Tipos y qué implica el paso 4</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Tipo</th><th>Extensiones típicas</th><th>En campos (paso 4)</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>TXT posicional<br><code class="mono">txt_fixed</code></td>
+                    <td class="mono">.txt</td>
+                    <td>Posiciones: inicio/fin, inicio/longitud o marcador.</td>
+                </tr>
+                <tr>
+                    <td>TXT delimitado<br><code class="mono">txt_delimited</code></td>
+                    <td class="mono">.txt</td>
+                    <td>Separador, comillas y columna por campo.</td>
+                </tr>
+                <tr>
+                    <td>CSV<br><code class="mono">csv</code></td>
+                    <td class="mono">.csv</td>
+                    <td>Igual que delimitado, con convención CSV.</td>
+                </tr>
+                <tr>
+                    <td>Excel<br><code class="mono">xlsx</code></td>
+                    <td class="mono">.xlsx / .xls</td>
+                    <td>Hoja, fila de inicio y columna (letra o encabezado).</td>
+                </tr>
+                <tr>
+                    <td>JSON<br><code class="mono">json</code></td>
+                    <td class="mono">.json</td>
+                    <td>Ruta al arreglo de registros y ruta de cada campo.</td>
+                </tr>
+                <tr>
+                    <td>XML<br><code class="mono">xml</code></td>
+                    <td class="mono">.xml</td>
+                    <td>Elemento repetido y etiqueta hijo por campo.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Encoding y fin de línea</h3>
+        <ul class="help-list">
+            <li>Use el encoding del archivo real (p. ej. <code class="mono">latin-1</code> en exports antiguos, no UTF-8 “por si acaso”).</li>
+            <li>Windows suele enviar <code class="mono">CRLF</code>; Unix, <code class="mono">LF</code>. Auto sirve si el proveedor mezcla orígenes.</li>
+            <li>La secuencia personalizada solo si el catálogo lo permite y el archivo no usa un fin de línea estándar.</li>
         </ul>
 
-        <h3 class="form-section-title">Navegación</h3>
-        <p><strong>← Anterior</strong> vuelve al hub del perfil. <strong>Siguiente</strong> guarda (si puede editar) y avanza al inicio de captura.</p>
+        <h3 class="form-section-title">Si cambia el tipo a mitad de diseño</h3>
+        <p class="help-intro">
+            Los campos del paso 4 dependen del tipo. Si ya hay estructura y cambia de formato, esa definición puede quedar inválida.
+            Revise el paso 4 antes de publicar. Las reglas que apuntan a campos desaparecidos quedarán huérfanas.
+        </p>
+
+        <h3 class="form-section-title">Navegación y roles</h3>
+        <ul class="help-list">
+            <li><strong>← Resumen</strong> vuelve al hub del perfil. <strong>Siguiente</strong> guarda (si puede editar) y avanza al inicio de captura.</li>
+            <li>Solo <strong>PA</strong> y <strong>ED</strong> pueden guardar. El resto ve el paso en solo lectura.</li>
+            <li>El stepper de 4 pasos marca este como activo; no es el ciclo Perfil/Reglas/Publicar del proyecto.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

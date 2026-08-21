@@ -52,6 +52,7 @@ def hub_help(request, project_slug: str):
     if project is None:
         return redirect("file_clean:project_list")
     ctx = _base_context(request, project)
+    ctx["ttl_days"] = clean_run_service.ARTIFACT_TTL.days
     return render(request, "file_clean/run/hub_help.html", ctx)
 
 
@@ -133,6 +134,7 @@ def result_help(request, project_slug: str, job_id):
         return redirect("file_clean:run_hub", project_slug=project_slug)
     ctx = _base_context(request, project)
     ctx["view"] = clean_run_service.build_job_view(project, job)
+    ctx["ttl_days"] = clean_run_service.ARTIFACT_TTL.days
     return render(request, "file_clean/run/result_help.html", ctx)
 
 

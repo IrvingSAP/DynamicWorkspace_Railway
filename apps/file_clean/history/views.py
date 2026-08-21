@@ -31,6 +31,7 @@ def _base_context(request, project) -> dict:
         "company": project.company,
         "app_nav_active": "file_clean",
         "file_clean_nav_open": True,
+        "lifecycle": clean_project_service.get_hub_context(request.user, project),
     }
 
 

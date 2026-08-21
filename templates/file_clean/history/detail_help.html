@@ -1,9 +1,10 @@
 {% extends "app_base.html" %}
 {% load static %}
 
-{% block title %}Ayuda · Detalle — {{ project.name }}{% endblock %}
+{% block title %}Ayuda · Detalle de limpieza — {{ project.name }}{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
@@ -27,25 +28,104 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">File Clean · Módulo 6</p>
-        <h2>Ayuda · Detalle del job</h2>
-        <p>Lectura de metadatos, snapshot de reglas y descargas.</p>
+        <p class="page-eyebrow">File Clean · Módulo 6 · <span class="role-badge">Detail</span></p>
+        <h2>Ayuda — Detalle de limpieza</h2>
+        <p>Lectura de una corrida ya finalizada: metadatos, métricas, snapshot de reglas y descargas.</p>
     </div>
     <div class="page-actions">
-        <a href="{% url 'file_clean:history_detail' project_slug=project.slug job_id=detail.job_id %}" class="btn btn-secondary">← Detalle</a>
+        <a href="{% url 'file_clean:history_detail' project_slug=project.slug job_id=detail.job_id %}" class="btn btn-secondary">← Volver al detalle</a>
+        <a href="{% url 'file_clean:history_hub' project_slug=project.slug %}" class="btn btn-secondary">Historial</a>
     </div>
 </div>
 
-<div class="help-panel panel">
+<div class="panel help-panel">
     <div class="panel-body">
-        <h3>Contenido</h3>
-        <ul>
-            <li>Hashes de entrada/salida y versión publicada.</li>
-            <li>Métricas y conteo por <code>code</code> de regla.</li>
-            <li>Snapshot de reglas habilitadas en esa corrida.</li>
-            <li>Descargas solo si TTL vigente y rol PA/ED/GE.</li>
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Esta pantalla documenta <strong>una ejecución concreta</strong> (job), no el borrador actual del perfil ni de las reglas.
+            Lo que ve aquí quedó congelado al correr <strong>Ejecutar</strong> con la versión publicada de ese momento.
+        </p>
+        <p class="help-intro">
+            Los metadatos (quién, cuándo, hashes, métricas) permanecen. Los archivos de salida y logs caducan a los
+            <strong>{{ ttl_days }} días</strong> desde que el job finalizó. Una <strong>vista previa</strong> (<code>dry_run</code>)
+            no genera artifacts definitivos.
+        </p>
+
+        <h3 class="form-section-title">Qué ve en esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Bloque</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Franja del job</td>
+                    <td>Identificador corto, versión publicada usada, marca de vista previa y estado del TTL (vigente o expirado).</td>
+                </tr>
+                <tr>
+                    <td>Metadatos</td>
+                    <td>Estado, nombre de archivo, versión, ejecutor, fecha de fin, hashes de entrada/salida y plazo de artifacts.</td>
+                </tr>
+                <tr>
+                    <td>Filas leídas / escritas</td>
+                    <td>Cuántas filas parseó el perfil publicado y cuántas escribió el archivo limpio. Difieren si hubo <code class="mono">dedupe_rows</code> u omisiones.</td>
+                </tr>
+                <tr>
+                    <td>Celdas cambiadas</td>
+                    <td>Cuántos valores reescribió alguna regla. Cero no es error: el archivo pudo coincidir ya con las reglas.</td>
+                </tr>
+                <tr>
+                    <td>Dedupe</td>
+                    <td>Filas eliminadas por la regla global de duplicados, si estaba habilitada en esa versión.</td>
+                </tr>
+                <tr>
+                    <td>Cambios por regla</td>
+                    <td>Conteo de celdas tocadas por cada <code class="mono">code</code> (trim, replace, etc.). Sirve para auditar qué regla impactó más.</td>
+                </tr>
+                <tr>
+                    <td>Reglas aplicadas (snapshot)</td>
+                    <td>Pipeline <strong>habilitado</strong> en esa corrida (orden, código, campo). No es el borrador de hoy; si luego cambió reglas y no volvió a publicar/ejecutar, aquí sigue el antiguo.</td>
+                </tr>
+                <tr>
+                    <td>Descargas</td>
+                    <td>Archivo limpio, log JSON y log CSV, si el TTL sigue vigente y su rol lo permite.</td>
+                </tr>
+                <tr>
+                    <td>Resultado</td>
+                    <td>Atajo a la pantalla de resultado de Ejecutar de este mismo job (resumen de la corrida).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Hashes</h3>
+        <p class="help-intro">
+            El hash de <strong>entrada</strong> identifica el archivo subido; el de <strong>salida</strong>, el archivo limpio.
+            Sirven para demostrar integridad y para buscar la misma corrida desde el listado del historial. Si el job falló o es solo vista previa, el hash de salida puede ir vacío.
+        </p>
+
+        <h3 class="form-section-title">Descargas y TTL</h3>
+        <ul class="help-list">
+            <li>Plazo: <strong>{{ ttl_days }} días</strong> desde la finalización. Después el aviso «TTL expirado»: metadatos sí, archivos no.</li>
+            <li><strong>Archivo limpio</strong> — resultado de la limpieza (no el original).</li>
+            <li><strong>Log JSON / CSV</strong> — bitácora de cambios por celda/regla, para auditoría o conciliación.</li>
+            <li><strong>Vista previa</strong> — no hay descargas de salida definitiva; use Ejecutar en modo real para generarlas.</li>
+            <li>Si el TTL está vigente y no ve botones, su rol es consultor (CO) o el job no dejó artifacts.</li>
         </ul>
-        <p>TTL de artifacts: <strong>{{ ttl_days }} días</strong> desde la finalización del job.</p>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Rol</th><th>En el detalle</th></tr></thead>
+            <tbody>
+                <tr><td>PA / ED / GE</td><td>Ven metadatos, métricas, snapshot y pueden descargar artifacts vigentes.</td></tr>
+                <tr><td>CO</td><td>Ven metadatos y métricas. No descargan contenido (archivo limpio ni logs).</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Eliminar esta corrida solo aparece si <strong>usted</strong> la ejecutó. Pide confirmación y borra registro y artifacts. No borra corridas de otros.</p>
+
+        <h3 class="form-section-title">Qué no hace este detalle</h3>
+        <ul class="help-list">
+            <li>No vuelve a limpiar el archivo ni cambia el borrador de perfil o reglas.</li>
+            <li>No publica una versión nueva (eso es <strong>Publicar</strong>).</li>
+            <li>No es el listado filtrable (eso es <strong>Historial</strong>).</li>
+            <li>No valida un contrato FILE GATE ni mapea a FilePipe.</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

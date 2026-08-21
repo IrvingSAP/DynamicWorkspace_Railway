@@ -4,6 +4,7 @@
 {% block title %}Ayuda · Resultado — {{ project.name }}{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 {% endblock %}
@@ -27,31 +28,116 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">File Clean · Módulo 5</p>
-        <h2>Ayuda · Resultado</h2>
-        <p>Cómo leer métricas, preview y descargas de un job.</p>
+        <p class="page-eyebrow">File Clean · Módulo 5 · <span class="role-badge">Result</span></p>
+        <h2>Ayuda — Resultado de limpieza</h2>
+        <p>Cómo leer el estado, las métricas, la vista previa y las descargas de esta corrida.</p>
     </div>
     <div class="page-actions">
-        <a href="{% url 'file_clean:run_result' project_slug=project.slug job_id=view.id %}" class="btn btn-secondary">← Resultado</a>
+        <a href="{% url 'file_clean:run_result' project_slug=project.slug job_id=view.id %}" class="btn btn-secondary">← Volver al resultado</a>
+        <a href="{% url 'file_clean:run_hub' project_slug=project.slug %}" class="btn btn-secondary">Nueva corrida</a>
     </div>
 </div>
 
-<div class="help-panel panel">
+<div class="panel help-panel">
     <div class="panel-body">
-        <h3>Estado</h3>
-        <p><strong>Completado</strong> = limpieza OK. <strong>Fallido</strong> = parseo / serialización / regla; no hay output engañoso.</p>
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Resume <strong>esta ejecución</strong> contra la versión publicada indicada en el encabezado (p. ej. v3),
+            no el borrador actual. Si es <strong>vista previa</strong>, verá la marca preview: no hay artifacts definitivos.
+        </p>
+        <p class="help-intro">
+            El detalle de auditoría (snapshot de reglas, TTL, borrar corrida) está en <strong>Historial → Detalle</strong>.
+            Esta pantalla es el resultado inmediato tras Ejecutar.
+        </p>
 
-        <h3>Artifacts</h3>
-        <table class="issue-table">
-            <thead><tr><th>Archivo</th><th>Contenido</th></tr></thead>
+        <h3 class="form-section-title">Estado (banner)</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Estado</th><th>Significado</th></tr></thead>
             <tbody>
-                <tr><td>Archivo limpio</td><td>Mismo tipo que el perfil, con reglas aplicadas.</td></tr>
-                <tr><td>Log JSON / CSV</td><td>Fila, campo, código de regla, before, after.</td></tr>
+                <tr>
+                    <td>Completado</td>
+                    <td>La limpieza terminó. Hay métricas; si no es preview, hay archivo de salida.</td>
+                </tr>
+                <tr>
+                    <td>Completado · vista previa</td>
+                    <td>La muestra se procesó. No se generó archivo limpio ni logs descargables.</td>
+                </tr>
+                <tr>
+                    <td>Fallido</td>
+                    <td>Falló el parseo, la serialización o una regla. El mensaje del banner explica el motivo.
+                        No hay output engañoso: no descargue un “limpio” si el job falló.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">El hash de entrada (y de salida si hay) identifica el contenido. Duración en milisegundos si está disponible.</p>
+
+        <h3 class="form-section-title">Métricas</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Indicador</th><th>Qué mide</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Filas leídas</td>
+                    <td>Registros parseados tras captura (inicio/fin) y layout publicado.</td>
+                </tr>
+                <tr>
+                    <td>Filas escritas</td>
+                    <td>Filas en el archivo limpio. Puede ser menor si hubo <code class="mono">dedupe_rows</code>.</td>
+                </tr>
+                <tr>
+                    <td>Celdas cambiadas</td>
+                    <td>Valores que alguna regla reescribió. Cero no es error: el archivo ya coincidía con las reglas.</td>
+                </tr>
+                <tr>
+                    <td>Dedupe</td>
+                    <td>Filas eliminadas por la regla global de duplicados, si estaba ON en esa versión.</td>
+                </tr>
             </tbody>
         </table>
 
-        <h3>Preview</h3>
-        <p>En corridas <code>dry_run</code> no hay descargas; use Ejecutar para artifacts.</p>
+        <h3 class="form-section-title">Avisos de lectura</h3>
+        <p class="help-intro">
+            Si hay incidencias de layout o captura (línea, campo, código, mensaje), aparecen aquí.
+            File Clean <strong>no rechaza filas por content_type</strong>; eso es FILE GATE.
+            Un delimitador o captura mal publicados suelen dejar cero filas leídas.
+        </p>
+
+        <h3 class="form-section-title">Cambios por regla</h3>
+        <p class="help-intro">
+            Conteo de celdas tocadas por cada <code class="mono">code</code> (trim, replace, compose…).
+            Sirve para ver qué regla impactó más en esta corrida.
+        </p>
+
+        <h3 class="form-section-title">Vista previa (tablas Antes / Después)</h3>
+        <p class="help-intro">
+            Primeras filas según las reglas publicadas. En preview, <code class="mono">{seq}</code> arranca en
+            <code class="mono">seq_start</code> de la regla compose. No sustituye descargar el archivo entero.
+        </p>
+
+        <h3 class="form-section-title">Descargas</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Archivo</th><th>Contenido</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Archivo limpio</td>
+                    <td>Mismo tipo que el perfil, con reglas aplicadas. Caduca a los <strong>{{ ttl_days }} días</strong>.</td>
+                </tr>
+                <tr>
+                    <td>Log JSON / CSV</td>
+                    <td>Bitácora: fila, campo, código de regla, valor antes y después.</td>
+                </tr>
+            </tbody>
+        </table>
+        <ul class="help-list">
+            <li>Solo en jobs <strong>completados</strong> que no son vista previa, y si su rol puede descargar (PA / ED / GE).</li>
+            <li>CO no descarga contenido. Tras el TTL, use Historial: los metadatos siguen; los archivos no.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace este resultado</h3>
+        <ul class="help-list">
+            <li>No vuelve a limpiar ni cambia el borrador de perfil o reglas.</li>
+            <li>No es el informe de FILE GATE (no hay umbral passed/failed).</li>
+            <li>No lista todas las corridas (eso es <strong>Historial</strong>).</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

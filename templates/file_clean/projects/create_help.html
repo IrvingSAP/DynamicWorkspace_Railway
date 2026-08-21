@@ -1,21 +1,108 @@
 {% extends "app_base.html" %}
 {% load static %}
-{% block title %}Ayuda · Nuevo — File Clean{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+
+{% block title %}Ayuda — Nuevo proyecto FILE CLEAN{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">FILE CLEAN</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_create' %}">Nuevo</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div>
-        <h2>Ayuda — Nuevo proyecto</h2>
-        <p>Al crear queda como administrador (PA). El slug es único por compañía entre todas las apps.</p>
+        <p class="page-eyebrow">FILE CLEAN · Limpieza · alta</p>
+        <h2>Ayuda — Crear proyecto</h2>
+        <p>Código único, nombre visible y visibilidad (privado / público compañía).</p>
     </div>
-    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'file_clean:project_create' %}">← Volver</a></div>
+    <div class="page-actions">
+        <a href="{% url 'file_clean:project_create' %}" class="btn btn-secondary">← Volver al formulario</a>
+        <a href="{% url 'file_clean:project_list' %}" class="btn btn-secondary">Listado</a>
+    </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li><strong>Privado:</strong> solo miembros autorizados.</li>
-    <li><strong>Público:</strong> visible para UF de la compañía (consulta); la edición sigue roles de membresía.</li>
-    <li>Tras crear, use el hub para continuar el ciclo cuando los módulos estén disponibles.</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Crea un proyecto FILE CLEAN: un espacio para definir un <strong>perfil de lectura</strong>
+            y <strong>reglas explícitas</strong> (trim, mapas de códigos, reemplazos, plantillas…)
+            y luego ejecutar una limpieza que entrega archivo limpio + log de cambios.
+        </p>
+        <p class="help-intro">
+            Quien crea queda como <strong>administrador (PA)</strong>. El alta no sube archivo ni aplica reglas:
+            el siguiente paso es el hub → <strong>Perfil de lectura</strong>.
+            No es un validador (FILE GATE) ni un mapeo a destino de negocio (FilePipe).
+        </p>
+
+        <h3 class="form-section-title">Campos de esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Campo</th><th>Qué hace</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Nombre corto (código)</td>
+                    <td>
+                        Slug único en la organización (compartido con Worksheets, FilePipe y el resto de apps).
+                        Use minúsculas y guiones; no se puede reutilizar un código ya tomado.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Nombre visible</td>
+                    <td>Título que verá el equipo en el listado y el hub (p. ej. «Limpieza nómina mensual»).</td>
+                </tr>
+                <tr>
+                    <td>Descripción</td>
+                    <td>Opcional. Contexto del archivo de origen, periodo o qué espera normalizar.</td>
+                </tr>
+                <tr>
+                    <td>Privado</td>
+                    <td>Solo miembros explícitos ven y trabajan el proyecto (según rol). Tras crear, PA agrega miembros.</td>
+                </tr>
+                <tr>
+                    <td>Público</td>
+                    <td>
+                        Los UF de la compañía pueden <strong>ver</strong> el proyecto.
+                        Editar perfil, publicar o ejecutar siguen exigiendo membresía y rol.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones</h3>
+        <ul class="help-list">
+            <li><strong>Crear y continuar</strong> — da de alta el proyecto y abre el hub.</li>
+            <li><strong>Cancelar</strong> — vuelve al listado sin guardar.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué hacer después</h3>
+        <ol class="help-list">
+            <li>(PA) Invite miembros si otras personas deben editar o ejecutar.</li>
+            <li>Complete el <strong>perfil de lectura</strong> (tipo de archivo, captura, campos).</li>
+            <li>Defina las <strong>reglas</strong> y el orden de aplicación.</li>
+            <li><strong>Publique</strong> una versión. Ejecutar usa solo la publicada, no el borrador.</li>
+            <li><strong>Ejecute</strong> un archivo de producción; revise salida, log e historial.</li>
+        </ol>
+
+        <h3 class="form-section-title">Qué no hace este formulario</h3>
+        <ul class="help-list">
+            <li>No define el perfil ni las reglas de limpieza.</li>
+            <li>No valida un contrato GATE ni transforma a un layout FilePipe.</li>
+            <li>No clona un perfil ya publicado (eso es Importar estructura / Profile Seed, en el perfil).</li>
+            <li>No sube ni limpia un archivo de producción.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

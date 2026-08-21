@@ -33,6 +33,7 @@
         <div class="page-actions">
             {% url 'file_clean:profile_step4_help' project_slug=project.slug as source_help_url %}
             {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
+            {% include "file_clean/profile/_step4_import_cta.html" %}
             <button type="button" id="btn-add-field" class="btn btn-primary">+ Agregar campo</button>
         </div>
     </div>
