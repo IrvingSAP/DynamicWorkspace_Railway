@@ -1,0 +1,100 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Nuevo pipeline{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_list' %}">File Pipeline</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_create' %}">Nuevo</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">UF</span></p>
+        <h2>Ayuda — Nuevo pipeline</h2>
+        <p>Qué significa cada campo del alta y qué valores acepta el sistema.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_pipeline:pipeline_create' %}" class="btn btn-secondary">← Volver al formulario</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Crea un <strong>contenedor de orquestación</strong> (no un proyecto Clean ni Gate).
+            Al guardar queda como <strong>administrador del pipeline (PA)</strong> y pasa al hub para diseñar los pasos.
+        </p>
+        <ul class="help-list">
+            <li>Solo usuarios <strong>UF</strong> pueden crear pipelines.</li>
+            <li>El pipeline queda en su compañía; no se comparten miembros entre organizaciones.</li>
+            <li>Este formulario cubre identidad y visibilidad. Los pasos se definen en el diseñador (módulo 2), no aquí.</li>
+            <li>El estado inicial es <strong>En proceso</strong>. Publicar una versión más adelante no lo pone en Activo.</li>
+        </ul>
+
+        <h3 class="form-section-title">Campos del formulario</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Obligatorio</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Nombre corto (código)</td>
+                    <td>Sí</td>
+                    <td>Identificador en la URL (slug). Debe ser estable.</td>
+                    <td class="mono">Minúsculas, números y guiones. Único en la compañía <em>entre pipelines y proyectos de otras apps</em>. Ej. nomina-diaria</td>
+                </tr>
+                <tr>
+                    <td>Nombre visible</td>
+                    <td>Sí</td>
+                    <td>Título en listados y hub.</td>
+                    <td>Texto hasta 200 caracteres. Ej. «Nómina diaria»</td>
+                </tr>
+                <tr>
+                    <td>Descripción</td>
+                    <td>No</td>
+                    <td>Propósito; se muestra en el hub.</td>
+                    <td>Texto libre opcional. Ej. Orquestar Clean → Gate → Pipe.</td>
+                </tr>
+                <tr>
+                    <td>Visibilidad</td>
+                    <td>Sí</td>
+                    <td>Quién ve el pipeline en el listado File Pipeline.</td>
+                    <td><strong>Privado</strong> (solo miembros) · <strong>Público</strong> (UF de la compañía en consulta)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Crear pipeline</td>
+                    <td>Guarda el pipeline y abre el hub. Queda PA y owner (ese rol no se revoca).</td>
+                </tr>
+                <tr>
+                    <td>Cancelar / ← Listado</td>
+                    <td>Vuelve al listado sin crear.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

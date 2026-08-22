@@ -1,0 +1,126 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Publicar — {{ pipeline.slug }}{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_pipeline.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_list' %}">File Pipeline</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">{{ pipeline.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Publicar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Pipeline · Publicar · <span class="cell-badge">{{ pipeline.slug }}</span></p>
+        <h2>Publicar v{{ pub.next_version_number }}</h2>
+        <p>Congela el snapshot de pasos. Los runs usarán solo la versión publicada, no el borrador vivo.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_pipeline:pipeline_publish_help' pipeline_slug=pipeline.slug as fp_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=fp_help_url %}
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">← Hub</a>
+        {% if pub.can_edit %}
+        <button type="button" class="btn btn-primary{% if not pub.can_publish %} is-blocked{% endif %}" id="fp-publish-btn"
+            {% if pub.can_publish %}form="fp-publish-form"{% endif %}
+            {% if not pub.can_publish %}aria-disabled="true" data-blocked-reason="{{ pub.publish_blocked_reason }}"{% endif %}>
+            Publicar v{{ pub.next_version_number }}
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="version-strip">
+    Publicará <strong>v{{ pub.next_version_number }}</strong>
+    · Activa hoy: <strong>{{ pub.published_version_label }}</strong>
+</div>
+
+{% if not pub.can_publish %}
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <div class="fp-note-box">
+            <strong>No se puede publicar todavía.</strong>
+            {{ pub.publish_blocked_reason }}
+            {% for item in pub.checks %}{% if not item.ok %} · {{ item.code }}: {{ item.label }}{% endif %}{% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="panel"><div class="panel-body">
+    <h3 class="form-section-title">Checklist</h3>
+    <ul class="fp-checklist">
+        {% for item in pub.checks %}
+        <li>
+            {% if item.ok %}<span class="fp-tone-ok">{{ item.code }}</span>{% else %}<span class="fp-tone-fail">{{ item.code }}</span>{% endif %}
+            {{ item.label }}
+        </li>
+        {% endfor %}
+    </ul>
+</div></div>
+
+<div class="panel"><div class="panel-body">
+    <h3 class="form-section-title">Snapshot a congelar</h3>
+    {% if pub.steps %}
+    <ol class="fp-step-rail">
+        {% for step in pub.steps %}
+        <li class="fp-step-rail-item">
+            <span class="fp-step-node is-ok">{{ forloop.counter }}</span>
+            <div class="fp-step-card">
+                <h4><code>{{ step.kind }}</code> → <code>{{ step.project_slug }}</code></h4>
+            </div>
+        </li>
+        {% endfor %}
+    </ol>
+    {% else %}
+    <p class="hint">No hay pasos en el borrador. Complete Diseñar pasos.</p>
+    {% endif %}
+</div></div>
+
+{% if pub.history %}
+<div class="panel"><div class="panel-body">
+    <h3 class="form-section-title">Versiones publicadas</h3>
+    <ul class="fp-checklist">
+        {% for ver in pub.history %}
+        <li>v{{ ver.version_number }} · {{ ver.published_at|date:"d/m/Y H:i" }}{% if ver.published_by %} · {{ ver.published_by.username }}{% endif %}</li>
+        {% endfor %}
+    </ul>
+</div></div>
+{% endif %}
+
+<form id="fp-publish-form" method="post" action="{% url 'file_pipeline:pipeline_publish' pipeline_slug=pipeline.slug %}">
+    {% csrf_token %}
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var btn = document.getElementById("fp-publish-btn");
+  var form = document.getElementById("fp-publish-form");
+  if (!btn) return;
+  btn.addEventListener("click", function (e) {
+    var reason = (btn.getAttribute("data-blocked-reason") || "").trim();
+    if (reason) {
+      e.preventDefault();
+      window.alert(reason);
+      return;
+    }
+    if (form) form.requestSubmit();
+  });
+});
+</script>
+{% endblock %}

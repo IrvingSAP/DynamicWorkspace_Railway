@@ -1,0 +1,160 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{% if is_create %}Nuevo kind{% else %}Editar {{ row.kind }}{% endif %} — Step Catalog{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_pipeline.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_pipeline/includes/catalog_sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:catalog_list' %}">Step Catalog</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{% if is_create %}Nuevo{% else %}{{ row.kind }}{% endif %}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Ámbito</span>
+    <span class="cell-badge">Plataforma</span>
+    <span>Step Catalog (global)</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Pipeline · Catálogo · {% if is_create %}Crear{% else %}Editar{% endif %}</p>
+        <h2>{% if is_create %}Nuevo kind{% else %}Editar <code>{{ row.kind }}</code>{% endif %}</h2>
+        <p>{% if is_create %}Registra un paso opt-in. Recomendado: crear con <strong>pipeline_enabled = off</strong> hasta checklist y runner listos.{% else %}Actualice label, contrato y opt-in. El código <code>kind</code> no cambia.{% endif %}</p>
+    </div>
+    <div class="page-actions">
+        {% if is_create %}
+        {% url 'file_pipeline:catalog_create_help' as fp_help_url %}
+        {% else %}
+        {% url 'file_pipeline:catalog_edit_help' kind=row.kind as fp_help_url %}
+        {% endif %}
+        {% include "projects/includes/project_help_link.html" with help_url=fp_help_url %}
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:catalog_list' %}">← Catálogo</a>
+        {% if not is_create %}
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:catalog_disable' kind=row.kind %}">Deshabilitar…</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="form-section">
+                <h3 class="form-section-title">Identidad</h3>
+                <div class="form-grid">
+                    <div class="form-row two-cols">
+                        <div class="field{% if errors.kind %} has-error{% endif %}">
+                            <label for="kind">kind {% if is_create %}<span class="req">*</span>{% endif %}</label>
+                            <input type="text" id="kind" name="kind" class="mono" maxlength="64" value="{{ posted.kind }}" {% if is_create %}required{% else %}readonly{% endif %}>
+                            <p class="hint">{% if is_create %}Único · inmutable tras crear · alineado a PLATFORM_API{% else %}Inmutable{% endif %}</p>
+                            {% for msg in errors.kind %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                        </div>
+                        <div class="field{% if errors.label %} has-error{% endif %}">
+                            <label for="label">Label UI <span class="req">*</span></label>
+                            <input type="text" id="label" name="label" maxlength="120" value="{{ posted.label }}" required>
+                            {% for msg in errors.label %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="short_label">Label corto (rail)</label>
+                        <input type="text" id="short_label" name="short_label" maxlength="40" value="{{ posted.short_label }}">
+                    </div>
+                    <div class="field">
+                        <label for="description">Descripción</label>
+                        <textarea id="description" name="description" rows="2">{{ posted.description }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="form-section-title">Contrato de paso</h3>
+                <div class="form-grid">
+                    <div class="form-row two-cols">
+                        <div class="field{% if errors.project_kind %} has-error{% endif %}">
+                            <label for="project_kind">project_kind <span class="req">*</span></label>
+                            <input type="text" id="project_kind" name="project_kind" class="mono" value="{{ posted.project_kind }}" required>
+                            {% for msg in errors.project_kind %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                        </div>
+                        <div class="field{% if errors.runner %} has-error{% endif %}">
+                            <label for="runner">runner <span class="req">*</span></label>
+                            <input type="text" id="runner" name="runner" class="mono" value="{{ posted.runner }}" required>
+                            {% for msg in errors.runner %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="form-row two-cols">
+                        <div class="field{% if errors.input_arity %} has-error{% endif %}">
+                            <label for="input_arity">input_arity</label>
+                            <select id="input_arity" name="input_arity">
+                                {% for val, lab in posted_input_choices %}
+                                <option value="{{ val }}"{% if posted.input_arity == val %} selected{% endif %}>{{ lab }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="field{% if errors.output_arity %} has-error{% endif %}">
+                            <label for="output_arity">output_arity</label>
+                            <select id="output_arity" name="output_arity">
+                                {% for val, lab in posted_output_choices %}
+                                <option value="{{ val }}"{% if posted.output_arity == val %} selected{% endif %}>{{ lab }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label><input type="checkbox" name="produces_file" value="1"{% if posted.produces_file == '1' %} checked{% endif %}> produces_file (alimenta handoff al siguiente paso)</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="form-section-title">Opt-in y estado</h3>
+                <div class="form-grid">
+                    <div class="form-row two-cols">
+                        <div class="field{% if errors.mvp_phase %} has-error{% endif %}">
+                            <label for="mvp_phase">mvp_phase</label>
+                            <select id="mvp_phase" name="mvp_phase">
+                                <option value=""{% if not posted.mvp_phase %} selected{% endif %}>—</option>
+                                <option value="A"{% if posted.mvp_phase == 'A' %} selected{% endif %}>A</option>
+                                <option value="B"{% if posted.mvp_phase == 'B' %} selected{% endif %}>B</option>
+                                <option value="C"{% if posted.mvp_phase == 'C' %} selected{% endif %}>C</option>
+                            </select>
+                        </div>
+                        <div class="field{% if errors.status %} has-error{% endif %}">
+                            <label for="status">status</label>
+                            <select id="status" name="status">
+                                <option value="active"{% if posted.status == 'active' %} selected{% endif %}>active</option>
+                                <option value="deprecated"{% if posted.status == 'deprecated' %} selected{% endif %}>deprecated</option>
+                                <option value="disabled"{% if posted.status == 'disabled' %} selected{% endif %}>disabled</option>
+                            </select>
+                            {% for msg in errors.status %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="field{% if errors.pipeline_enabled %} has-error{% endif %}">
+                        <label><input type="radio" name="pipeline_enabled" value="0"{% if posted.pipeline_enabled != '1' %} checked{% endif %}> pipeline_enabled off</label>
+                    </div>
+                    <div class="field">
+                        <label><input type="radio" name="pipeline_enabled" value="1"{% if posted.pipeline_enabled == '1' %} checked{% endif %}> pipeline_enabled on (aparece en diseñador si paquete compañía OK)</label>
+                    </div>
+                    {% for msg in errors.pipeline_enabled %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    <p class="hint">No combinar enabled=on con status=disabled.</p>
+                </div>
+            </div>
+
+            <div class="form-actions form-actions--flush">
+                <button type="submit" class="btn btn-primary">{% if is_create %}Crear kind{% else %}Guardar cambios{% endif %}</button>
+                <a class="btn btn-secondary" href="{% if is_create %}{% url 'file_pipeline:catalog_list' %}{% else %}{% url 'file_pipeline:catalog_detail' kind=row.kind %}{% endif %}">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

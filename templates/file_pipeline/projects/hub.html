@@ -1,0 +1,133 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ pipeline.name }} — File Pipeline{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_pipeline.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_list' %}">File Pipeline</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ pipeline.slug }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">
+            <span class="cell-badge">{{ pipeline.slug }}</span>
+            {% if hub.visibility == 'company' %}
+            <span class="visibility-badge visibility-badge--public">{{ hub.visibility_label }}</span>
+            {% else %}
+            <span class="visibility-badge visibility-badge--private">{{ hub.visibility_label }}</span>
+            {% endif %}
+            <span class="cell-badge">{{ hub.status_label }}</span>
+            {% if hub.is_pa %}
+            <span class="perm-badge perm-badge--admin">{{ hub.role_label }}</span>
+            {% else %}
+            <span class="perm-badge">{{ hub.role_label }}</span>
+            {% endif %}
+        </p>
+        <h2>{{ pipeline.name }}</h2>
+        <p>{% if pipeline.description %}{{ pipeline.description }}{% else %}Orquesta pasos de otras apps. No parsea el archivo por sí mismo.{% endif %}</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_pipeline:pipeline_hub_help' pipeline_slug=pipeline.slug as fp_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=fp_help_url %}
+        {% if hub.can_manage_members and hub.has_published_version and hub.status != 'active' %}
+        <form method="post" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="activate">
+            <button type="submit" class="btn btn-primary">Marcar como Activo</button>
+        </form>
+        {% endif %}
+        {% if hub.can_manage_members %}
+        <a href="{% url 'file_pipeline:pipeline_members' pipeline_slug=pipeline.slug %}" class="btn btn-secondary">Miembros</a>
+        {% endif %}
+        <a href="{% url 'file_pipeline:pipeline_list' %}" class="btn btn-secondary">← Pipelines</a>
+    </div>
+</div>
+
+<div class="version-strip">
+    <strong>Pasos:</strong> {{ hub.step_chain.short }}{% if hub.step_chain.truncated %} <span class="fp-step-more">...</span>{% endif %}
+    · <strong>Versión:</strong> {{ hub.version_label }}
+    · <strong>Último run:</strong> {{ hub.last_run_label }}
+    · <strong>Miembros:</strong> {{ hub.member_count }}
+</div>
+
+<div class="lifecycle-stepper" aria-label="Ciclo del pipeline">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Definición</p>
+        <ol class="lifecycle-steps">
+            <li>
+                <a href="{% url 'file_pipeline:pipeline_designer' pipeline_slug=pipeline.slug %}" class="lifecycle-step {{ hub.design_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.design_complete %}✓{% else %}1{% endif %}</span> Diseñar pasos
+                </a>
+            </li>
+            <li>
+                {% if hub.design_complete %}
+                <a href="{% url 'file_pipeline:pipeline_publish' pipeline_slug=pipeline.slug %}" class="lifecycle-step {{ hub.publish_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.has_published_version %}✓{% else %}2{% endif %}</span> Publicar
+                </a>
+                {% else %}
+                <a href="{% url 'file_pipeline:pipeline_publish' pipeline_slug=pipeline.slug %}" class="lifecycle-step {{ hub.publish_step_class }}" id="fp-publish-link" data-blocked-reason="{{ hub.publish_blocked_message }}">
+                    <span class="lifecycle-step-num">2</span> Publicar
+                </a>
+                {% endif %}
+            </li>
+        </ol>
+    </div>
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Ejecución</p>
+        <ol class="lifecycle-steps">
+            <li>
+                {% if hub.has_published_version %}
+                <a href="{% url 'file_pipeline:pipeline_run' pipeline_slug=pipeline.slug %}" class="lifecycle-step {{ hub.run_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.run_complete %}✓{% else %}3{% endif %}</span> Ejecutar
+                </a>
+                {% else %}
+                <a href="{% url 'file_pipeline:pipeline_run' pipeline_slug=pipeline.slug %}" class="lifecycle-step {{ hub.run_step_class }}" id="fp-run-link" data-blocked-reason="{{ hub.run_blocked_message }}">
+                    <span class="lifecycle-step-num">3</span> Ejecutar
+                </a>
+                {% endif %}
+            </li>
+            <li>
+                <a href="{% url 'file_pipeline:pipeline_history' pipeline_slug=pipeline.slug %}" class="lifecycle-step {{ hub.history_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.run_complete %}✓{% else %}4{% endif %}</span> Historial
+                </a>
+            </li>
+        </ol>
+    </div>
+</div>
+
+<p class="hint">{{ hub.modules_pending_note }}</p>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  function bindAlert(id) {
+    var link = document.getElementById(id);
+    if (!link) return;
+    link.addEventListener("click", function (e) {
+      var reason = (link.getAttribute("data-blocked-reason") || "").trim();
+      if (!reason) return;
+      e.preventDefault();
+      window.alert(reason);
+    });
+  }
+  bindAlert("fp-publish-link");
+  bindAlert("fp-run-link");
+});
+</script>
+{% endblock %}

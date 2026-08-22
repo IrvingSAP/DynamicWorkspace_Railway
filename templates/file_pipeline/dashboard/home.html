@@ -1,0 +1,214 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Dashboard — File Pipeline{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_pipeline.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_list' %}">File Pipeline</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Dashboard</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip" aria-label="Alcance de compañía">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+    <span class="hint">· pipelines autorizados · dry-run fuera del pulso</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Pipeline · pulso operativo</p>
+        <h2>Dashboard de corridas</h2>
+        <p>Volumen, canales de disparo y fallos recientes. El historial de cada pipeline sigue siendo la auditoría detallada.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_pipeline:pipeline_dashboard_help' as fp_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=fp_help_url %}
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:pipeline_list' %}">Pipelines</a>
+    </div>
+</div>
+
+<div class="fp-dash-window">
+    <span class="fp-hist-stat-label">Ventana</span>
+    <a class="btn btn-secondary{% if dash.days == 7 %} is-pressed{% endif %}" href="?days=7">7 días</a>
+    <a class="btn btn-secondary{% if dash.days == 30 %} is-pressed{% endif %}" href="?days=30">30 días</a>
+</div>
+
+{% if not dash.has_pipelines %}
+<div class="fp-empty-history">
+    <h3>Sin pipelines en su alcance</h3>
+    <p>Cree un pipeline o pida membresía para ver el pulso de corridas.</p>
+    <a class="btn btn-primary" href="{% url 'file_pipeline:pipeline_create' %}">Nuevo pipeline</a>
+</div>
+{% else %}
+
+<div class="fp-hist-stats" aria-label="Pulso">
+    <div>
+        <span class="fp-hist-stat-label">Corridas</span>
+        <strong>{{ dash.total }}</strong>
+    </div>
+    <div>
+        <span class="fp-hist-stat-label">Completadas</span>
+        <strong class="fp-tone-ok">{{ dash.completed }}</strong>
+    </div>
+    <div>
+        <span class="fp-hist-stat-label">Fallidas</span>
+        <strong class="fp-tone-fail">{{ dash.failed }}</strong>
+    </div>
+    <div>
+        <span class="fp-hist-stat-label">Tasa de fallo</span>
+        <strong{% if dash.fail_rate %} class="fp-tone-fail"{% endif %}>{{ dash.fail_rate }}%</strong>
+    </div>
+    <div>
+        <span class="fp-hist-stat-label">Vistas previas</span>
+        <strong>{{ dash.dry_in_window }}</strong>
+    </div>
+</div>
+<p class="hint">
+    Pulso = corridas productivas (sin dry-run) ·
+    {{ dash.pipeline_count }} pipeline{{ dash.pipeline_count|pluralize }} ·
+    {{ dash.active_count }} activo{{ dash.active_count|pluralize }} ·
+    {{ dash.running }} en curso
+</p>
+
+{% if dash.dry_in_window and not dash.has_ops %}
+<div class="fp-info-box">
+    <strong>Hay {{ dash.dry_in_window }} vista{{ dash.dry_in_window|pluralize }} previa{{ dash.dry_in_window|pluralize }} (dry-run) en esta ventana.</strong>
+    El pulso (corridas, fallidas, tasa, canales) no las cuenta. Desmarque <em>Vista previa</em> al ejecutar para una corrida productiva. El fallo de la vista previa sí aparece abajo.
+</div>
+{% elif dash.dry_in_window %}
+<p class="hint">{{ dash.dry_in_window }} dry-run aparte del pulso.</p>
+{% endif %}
+
+<div class="fp-dash-layout">
+    <section class="panel">
+        <div class="panel-body">
+            <h3 class="form-section-title">Canales de disparo</h3>
+            {% if not dash.has_ops %}
+            <p class="hint">Aún no hay corridas productivas en esta ventana.{% if dash.dry_in_window %} Las vistas previas no alimentan este mix.{% endif %}</p>
+            {% else %}
+            <ul class="fp-channel-list">
+                {% for ch in dash.channels %}
+                <li>
+                    <div class="fp-channel-head">
+                        <span class="fp-trigger-pill">{{ ch.label }}</span>
+                        <span class="fp-channel-n">{{ ch.n }} · {{ ch.pct }}%</span>
+                    </div>
+                    <div class="fp-channel-track" aria-hidden="true">
+                        <span class="fp-channel-fill" style="width: {{ ch.pct }}%"></span>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="panel fp-dash-fail-panel">
+        <div class="panel-body">
+            <h3 class="form-section-title">Fallos recientes</h3>
+            {% if not dash.failures %}
+            <p class="hint">Ningún fallo productivo en los últimos {{ dash.days }} días.</p>
+            {% else %}
+            <ul class="fp-fail-list">
+                {% for row in dash.failures %}
+                <li>
+                    <a href="{% url 'file_pipeline:pipeline_run_audit' pipeline_slug=row.run.pipeline.slug run_id=row.run.id %}">
+                        <span class="fp-fail-when">{{ row.run.created_at|date:"d/m H:i" }}</span>
+                        <strong>{{ row.run.pipeline.slug }}</strong>
+                        <span class="fp-tone-fail">{{ row.run.get_status_display }}</span>
+                        {% if row.run.dry_run %}<span class="cell-badge">dry-run</span>{% endif %}
+                        <span class="fp-hist-hash">{{ row.run.error_message|default:row.run.input_filename }}</span>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<div class="panel">
+    <div class="panel-body" style="overflow-x:auto">
+        <h3 class="form-section-title">Pipelines en alcance</h3>
+        <table class="fp-hist-table">
+            <thead>
+                <tr>
+                    <th>Pipeline</th>
+                    <th>Estado</th>
+                    <th>v</th>
+                    <th>Corridas</th>
+                    <th>Fallos</th>
+                    <th>Último run</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in dash.pipeline_rows %}
+                <tr>
+                    <td>
+                        <a href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=row.pipeline.slug %}"><strong>{{ row.pipeline.slug }}</strong></a>
+                        <div class="fp-hist-hash">{{ row.pipeline.name }}</div>
+                    </td>
+                    <td>{{ row.status_label }}</td>
+                    <td>{{ row.version_label }}</td>
+                    <td>{{ row.ops_in_window }}</td>
+                    <td>{% if row.fails_in_window %}<span class="fp-tone-fail">{{ row.fails_in_window }}</span>{% else %}0{% endif %}</td>
+                    <td>
+                        {% if row.last %}
+                        {{ row.last.created_at|date:"d/m H:i" }}
+                        · {{ row.last.get_status_display }}{% if row.last.dry_run %} · dry-run{% endif %}
+                        {% else %}—{% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'file_pipeline:pipeline_history' pipeline_slug=row.pipeline.slug %}">Historial</a>
+                        {% if row.last %}
+                        · <a href="{% url 'file_pipeline:pipeline_run_audit' pipeline_slug=row.pipeline.slug run_id=row.last.id %}">Último</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if dash.recent %}
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Actividad reciente</h3>
+        <ul class="fp-fail-list fp-fail-list--quiet">
+            {% for row in dash.recent %}
+            <li>
+                <a href="{% url 'file_pipeline:pipeline_run_audit' pipeline_slug=row.run.pipeline.slug run_id=row.run.id %}">
+                    <span class="fp-fail-when">{{ row.run.created_at|date:"d/m H:i" }}</span>
+                    <strong>{{ row.run.pipeline.slug }}</strong>
+                    <span class="fp-trigger-pill">{{ row.run.get_trigger_source_display }}</span>
+                    {% if row.run.status == 'completed' %}<span class="fp-tone-ok">{{ row.run.get_status_display }}</span>
+                    {% elif row.run.status == 'failed' %}<span class="fp-tone-fail">{{ row.run.get_status_display }}</span>
+                    {% else %}{{ row.run.get_status_display }}{% endif %}
+                    {% if row.run.dry_run %}<span class="cell-badge">dry-run</span>{% endif %}
+                    <span class="fp-hist-hash">{{ row.actor }} · {{ row.duration }}</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

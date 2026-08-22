@@ -1,0 +1,63 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Ejecutar — File Pipeline{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_pipeline.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">{{ pipeline.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_run' pipeline_slug=pipeline.slug %}">Ejecutar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Pipeline · {{ pipeline.slug }}</p>
+        <h2>Ayuda — Ejecutar pipeline</h2>
+        <p>Dispara la <strong>versión publicada</strong> (no el borrador del diseñador). El botón <em>Ejecutar</em> solo corre si el pipeline está <strong>Activo</strong> y usted tiene permiso.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:pipeline_run' pipeline_slug=pipeline.slug %}">← Ejecutar</a>
+    </div>
+</div>
+
+<div class="panel"><div class="panel-body">
+    <h3 class="form-section-title">Por qué «Ejecutar vN» aparece deshabilitado</h3>
+    <p>Publicar y activar son dos cosas distintas:</p>
+    <ul>
+        <li><strong>Versión publicada</strong> (v1, v2…): snapshot inmutable del rail. Sin ella no hay qué ejecutar.</li>
+        <li><strong>Estado del pipeline</strong> (En proceso / Activo / Inactivo): interruptor de operación. Un pipeline recién creado queda <em>En proceso</em>. Publicar <strong>no</strong> lo pone en Activo.</li>
+    </ul>
+    <p>Si el recuadro dice <em>El pipeline debe estar Activo para ejecutar</em>, el PA debe pulsar <strong>Marcar como Activo</strong> (en esta pantalla o en el hub). ED/GE/CO no pueden cambiar ese estado: hay que pedírselo al administrador del pipeline.</p>
+    <p>Al pulsar el botón atenuado no se envía el archivo: aparece el mismo aviso para que revise el recuadro rojo.</p>
+</div></div>
+
+<div class="panel"><div class="panel-body">
+    <h3 class="form-section-title">Requisitos para disparar</h3>
+    <ol class="fp-checklist">
+        <li>Hay una versión publicada.</li>
+        <li>El pipeline está <strong>Activo</strong> (no En proceso ni Inactivo).</li>
+        <li>Usted es PA, ED o GE del pipeline (CO solo consulta).</li>
+        <li>Tiene permiso de ejecución en <strong>cada</strong> proyecto de paso (Clean, Gate, Pipe, …).</li>
+        <li>Hay un archivo de entrada (salvo que el bloqueo anterior impida llegar a validarlo).</li>
+    </ol>
+</div></div>
+
+<div class="panel"><div class="panel-body">
+    <h3 class="form-section-title">Qué hace la corrida</h3>
+    <p>File Pipeline <strong>no parsea</strong> el archivo. Llama al runner de cada app y pasa el artifact de salida al siguiente paso. Canal de disparo desde esta pantalla: <code>trigger_source=ui</code>.</p>
+    <p>Si un paso falla, el resto queda omitido (<code>on_error=stop</code>).</p>
+    <div class="fp-info-box">
+        Marque <em>Vista previa (dry-run)</em> para una corrida de prueba.
+        <strong>Importante:</strong> no entra en el pulso del dashboard (corridas, fallidas, tasa y canales). Sí queda en el historial, con etiqueta dry-run.
+    </div>
+    <p>Runners cableados: Clean, Gate, Split/Merge y FilePipe. Reverse, Match y Scout se rechazan hasta tener runner de orquestación.</p>
+    <p>El detalle fino (reglas, filas) sigue en el historial de cada app, enlazado por <code>app_job_id</code>. Tras el run puede abrir Resultado, Auditoría e Historial.</p>
+</div></div>
+{% endblock %}

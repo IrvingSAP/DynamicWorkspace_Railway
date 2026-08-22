@@ -27,8 +27,15 @@ urlpatterns = [
     path("app/structure-scout/", include("apps.structure_scout.urls")),
     path("app/file-clean/", include("apps.file_clean.urls")),
     path("app/file-split-merge/", include("apps.file_split_merge.urls")),
+    path("app/file-pipeline/", include("apps.file_pipeline.urls")),
     path("app/ayuda/", include(("apps.help.urls", "help"))),
 ]
 
 if settings.DEBUG:
+    from dynamicworkspace.prototype_serve import serve_prototype
+
+    urlpatterns += [
+        path("prototype/", serve_prototype),
+        path("prototype/<path:relpath>", serve_prototype),
+    ]
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -551,7 +551,7 @@ Antes de abrir rama `feature/<slug>`:
 | [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | **File Scheduler** — previsto; forma de trabajo TBD |
 | [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md) | **File Archive** — previsto; forma de trabajo TBD |
 | [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) | **Schema Registry** — previsto; forma de trabajo TBD |
-| [`FILE_PIPELINE.md`](FILE_PIPELINE.md) | **File Pipeline** — orquestación multi-app (**propuesta**); PLATFORM_API puede consumirlo |
+| [`FILE_PIPELINE.md`](FILE_PIPELINE.md) | **File Pipeline** — orquestación multi-app (**propuesta**); PLATFORM_API puede consumirlo · specs [`definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) |
 | [`PLATFORM_API.md`](PLATFORM_API.md) | API de ejecución remota (**después** de apps FILE_OPS; mode=job \| pipeline) |
 | [`FILE_GATE.md`](FILE_GATE.md) | Validador — hecho |
 | [`DataMappingStudio.md`](DataMappingStudio.md) / FilePipe | Motor ETL y reglas |

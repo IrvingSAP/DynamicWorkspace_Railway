@@ -7,7 +7,33 @@
 > **Cuándo priorizar:** tras estabilizar runners de apps (Clean, Split/Merge, Gate, …) y en paralelo o justo antes de Watch / Scheduler / PLATFORM_API  
 > Padres: [`APP_FACTORY.md`](APP_FACTORY.md) · [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §15 (Job encadenable)  
 > Hermano disparador/consumidor: [`PLATFORM_API.md`](PLATFORM_API.md) — **la API puede ejecutar un Pipeline completo**, no solo un `kind` suelto  
-> Alcance: **desarrollo global** que consume apps §2 + FILE_OPS + capas de plataforma (Watch, Scheduler, Archive, Registry)
+> Alcance: **desarrollo global** que consume apps §2 + FILE_OPS + capas de plataforma (Watch, Scheduler, Archive, Registry)  
+> Specs por módulo: [`definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/)
+
+### Rama de desarrollo
+
+| Ítem | Valor |
+|------|--------|
+| **Rama Git** | `Mejoras_FILE_PIPELINE_v2` |
+| **Base** | `main` |
+| **Despliegues Railway** | Solo desde `main` |
+
+---
+
+## Mapa de specs
+
+| Módulo | Spec | Prototipo |
+|--------|------|-----------|
+| 1 Ciclo de pipeline | [`definition_app_FILE_PIPELINE/project_lifecycle.md`](definition_app_FILE_PIPELINE/project_lifecycle.md) | listado / alta / hub |
+| 2 Diseñador | [`definition_app_FILE_PIPELINE/pipeline_designer.md`](definition_app_FILE_PIPELINE/pipeline_designer.md) | `pipeline_designer.html` |
+| 2b Step Catalog | [`definition_app_FILE_PIPELINE/pipeline_catalog.md`](definition_app_FILE_PIPELINE/pipeline_catalog.md) | `pipeline_catalog*.html` |
+| 3 Publicar | [`definition_app_FILE_PIPELINE/pipeline_publish.md`](definition_app_FILE_PIPELINE/pipeline_publish.md) | `pipeline_publish.html` |
+| 4 Ejecutar | [`definition_app_FILE_PIPELINE/pipeline_run.md`](definition_app_FILE_PIPELINE/pipeline_run.md) | run / result |
+| 5 Historial | [`definition_app_FILE_PIPELINE/pipeline_history.md`](definition_app_FILE_PIPELINE/pipeline_history.md) | history / detail |
+| D Dashboard | [`definition_app_FILE_PIPELINE/pipeline_dashboard.md`](definition_app_FILE_PIPELINE/pipeline_dashboard.md) | `pipeline_dashboard.html` |
+| Transversal | [`definition_app_FILE_PIPELINE/fp_integration.md`](definition_app_FILE_PIPELINE/fp_integration.md) | — |
+
+Índice: [`definition_app_FILE_PIPELINE/README.md`](definition_app_FILE_PIPELINE/README.md).
 
 ---
 
@@ -159,7 +185,7 @@ Detalle de auth, sync/async, webhooks: heredar de [`PLATFORM_API.md`](PLATFORM_A
 
 | Concepto | Definición |
 |----------|------------|
-| **Pipeline definition** | Plantilla versionable: nombre, pasos ordenados, políticas, disparadores permitidos |
+| **Pipeline definition** | Plantilla versionable: nombre, **estado operativo**, pasos ordenados, políticas, disparadores permitidos |
 | **Pipeline version** | Snapshot publicado (inmutable) usado en un run |
 | **Step** | Un eslabón: `kind` + `project_slug` (o id) + versión publicada (o “activa”) + opciones |
 | **Pipeline run** | Ejecución concreta de una versión + entrada(s) + estado global |
@@ -169,12 +195,38 @@ Detalle de auth, sync/async, webhooks: heredar de [`PLATFORM_API.md`](PLATFORM_A
 
 ### Modelo mental de estados
 
-| Nivel | Valores (MVP) |
-|-------|----------------|
-| Step | `pending` · `running` · `completed` · `failed` · `skipped` |
-| Pipeline run | `queued` · `running` · `completed` · `failed` · `cancelled` |
+Hay **tres niveles** que no se mezclan en UI ni en persistencia:
 
-**Regla MVP:** si un paso `failed` y política = `stop` → run `failed`; pasos siguientes `skipped`.
+| Nivel | Campo | Valores (MVP) | Qué describe |
+|-------|--------|----------------|--------------|
+| **Definición** | `PipelineDefinition.status` | `active` · `in_progress` · `inactive` | Ciclo de vida del pipeline como objeto de trabajo |
+| Step (run) | `status` | `pending` · `running` · `completed` · `failed` · `skipped` | Un eslabón de una corrida |
+| Pipeline run | `status` | `queued` · `running` · `completed` · `failed` · `cancelled` | Una corrida concreta |
+
+**Regla MVP (run):** si un paso `failed` y política = `stop` → run `failed`; pasos siguientes `skipped`.
+
+#### Estado de la definición (`status`)
+
+Campo **obligatorio** en cada pipeline. Independiente de si hay versión publicada y del resultado del último run.
+
+| Valor | UI | Significado |
+|-------|-----|-------------|
+| `active` | Activo | En operación. Puede dispararse (UI / Watch / Scheduler / API) si además hay **versión publicada activa**. |
+| `in_progress` | En proceso | Aún se diseña o no está listo para operación (borrador, sin publicar, o publicado pero no puesto en marcha). No acepta disparos automáticos. |
+| `inactive` | Inactivo | Pausado a propósito. No se dispara por ningún canal hasta reactivar. La definición y el historial se conservan. |
+
+Transiciones (PA del pipeline):
+
+```text
+Alta → in_progress
+in_progress → active     (requiere versión publicada; si no, se rechaza)
+active → inactive        (pausa)
+inactive → active        (reactivar; misma regla de versión publicada)
+inactive → in_progress   (vuelve a diseño)
+active → in_progress     (sacar de operación para redefinir; runs en curso no se cancelan solos)
+```
+
+El listado filtra por este campo (**Todos / Activo / En proceso / Inactivo**). La versión publicada se muestra en la tabla y se gestiona en el hub; no es filtro del listado.
 
 ---
 
@@ -649,9 +701,9 @@ Equivalente: `kind=file_pipeline` en el contrato unificado de PLATFORM_API.
 
 | Pantalla | Contenido |
 |----------|-----------|
-| Listado de pipelines | Código, versión activa, #pasos, último run |
+| Listado de pipelines | Código, **estado**, versión (columna), **pasos** (máx. 2 visibles + `...` verde si hay más), último run. Filtros: búsqueda y estado |
 | Diseñador | Canvas o lista ordenable de pasos; picker de proyecto por kind; validación handoff |
-| Publicar | Checklist (proyectos publicados, handoffs, on_error) |
+| Publicar | Checklist; si Diseñar no está completo, el botón no publica y avisa pasos pendientes |
 | Ejecutar | Upload entrada(s); dry-run opcional; progreso por paso |
 | Detalle de run | Tabla §7 + **auditoría de disparo** (§7.1) + enlaces a jobs de cada app + descargas |
 | Historial / auditoría | Filtros: trigger_source, usuario, API client, schedule, fechas, status |
@@ -665,7 +717,8 @@ Formularios HTML plano; servicios con `ok` / `error_code` / `user_message` ([`UI
 
 ```text
 Company
-  └── PipelineDefinition (slug, visibility, created_by, created_at, …)
+  └── PipelineDefinition (slug, status: active|in_progress|inactive,
+                            visibility, created_by, created_at, …)
         ├── PipelineVersion (draft | published, snapshot JSON,
         │                    published_by, published_at, version_number)
         ├── PipelineAuditEvent (definition-level: create/update/publish/…)  [opcional tabla o log]
@@ -697,6 +750,7 @@ Company
 
 | Check | Rechazo si… |
 |-------|-------------|
+| Diseñar incompleto (paso 1 del hub) | No hay rail guardado con ≥1 paso válido: **no publicar**. UI: alerta *No puede publicar. Pasos no completados: Diseñar pasos.* |
 | Paso sin proyecto | Proyecto inexistente o otra compañía |
 | Kind desconocido / no habilitado | `kind` no está en el Pipeline Step Catalog o `pipeline_enabled=false` |
 | Kind ≠ project_kind | Incoherencia |
@@ -704,6 +758,7 @@ Company
 | Handoff imposible | p. ej. Match sin dos entradas definidas |
 | Ciclo / orden | `order` duplicado o `input_from` a paso futuro |
 | Permisos | Usuario/máquina sin derecho a ejecutar alguno de los proyectos |
+| Definición no operativa | `status` distinto de `active`, o `active` sin versión publicada: rechazar disparo (UI/API/Watch/Scheduler) |
 
 ---
 
@@ -768,7 +823,7 @@ Company
 
 1. Mantener este archivo como **paraguas FILE_PIPELINE**.  
 2. Revisar con producto los ejemplos EJ-01…EJ-06 y la política Split→siguiente.  
-3. Cuando se priorice: `definition_app_FILE_PIPELINE/` (lifecycle, designer, run, history) + prototipos.  
+3. Specs por módulo: [`definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) (esqueleto + prototipos). Implementar Django solo con «Desarrolla el módulo».  
 4. Actualizar [`PLATFORM_API.md`](PLATFORM_API.md) § kinds / modos con `file_pipeline`.  
 5. Actualizar [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §15 como puntero a este doc (visión → producto).  
 6. Spike técnico: pasar `artifact_ref` entre runners; implementar **Pipeline Step Catalog** (config/código) con subset MVP.  
@@ -781,7 +836,7 @@ Company
 | Término | Definición |
 |---------|------------|
 | **FILE_PIPELINE** | Orquestador de flujos multi-app |
-| **Pipeline definition** | Plantilla versionable de pasos |
+| **definition status** | Ciclo de vida del pipeline: `active` (Activo) · `in_progress` (En proceso) · `inactive` (Inactivo) |
 | **Pipeline run** | Ejecución auditable de una versión + entradas + disparo (§7.1) |
 | **Step run** | Resultado de un eslabón (OK/ERROR + job de app + timing) |
 | **trigger_source** | Canal de activación: `ui` · `api` · `watch` · `scheduler` · `dependency` |
@@ -809,6 +864,7 @@ Company
 | [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) | Contratos compartidos (fase C) |
 | [`FILE_CLEAN.md`](FILE_CLEAN.md) · [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) · [`FILE_GATE.md`](FILE_GATE.md) · … | Pasos concretos |
 | [`FILE_REPAIR.md`](FILE_REPAIR.md) · [`DATA_PROFILER.md`](DATA_PROFILER.md) | Pasos futuros / bajo revisión |
+| [`definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) | Specs por módulo (este producto) |
 | [`definition_app/UI_MESSAGES.md`](definition_app/UI_MESSAGES.md) | Códigos de error |
 | [`DynamicWorkspace.md`](DynamicWorkspace.md) | Índice de producto |
 

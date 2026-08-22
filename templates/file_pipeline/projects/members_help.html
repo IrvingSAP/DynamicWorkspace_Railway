@@ -1,0 +1,124 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Miembros {{ pipeline.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_list' %}">File Pipeline</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">{{ pipeline.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_members' pipeline_slug=pipeline.slug %}">Miembros</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ pipeline.slug }}</span> · <span class="perm-badge perm-badge--admin">PA</span></p>
+        <h2>Ayuda — Miembros y permisos</h2>
+        <p>Quién puede ver y trabajar en este pipeline y qué hace cada rol.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_pipeline:pipeline_members' pipeline_slug=pipeline.slug %}" class="btn btn-secondary">← Volver a miembros</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Solo el <strong>administrador (PA)</strong> invita, cambia rol o revoca.
+            Se autorizan usuarios UF de la misma compañía. El buscador pide <strong>mínimo 2 caracteres</strong>
+            (no lista todo el padrón).
+        </p>
+        <p class="help-intro">
+            Ser PA del pipeline <strong>no</strong> abre por sí solo los proyectos Clean, Gate o FilePipe de cada paso:
+            ejecutar exige membresía con permiso de ejecución en <strong>cada</strong> proyecto del rail.
+        </p>
+
+        <h3 class="form-section-title">Agregar usuario</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Usuario UF</td>
+                    <td>Persona de su compañía aún no miembro activo de este pipeline.</td>
+                    <td>Búsqueda por nombre o usuario (mín. 2 caracteres).</td>
+                </tr>
+                <tr>
+                    <td>Rol</td>
+                    <td>Nivel de permiso en este pipeline.</td>
+                    <td class="mono">PA · ED · GE · CO</td>
+                </tr>
+                <tr>
+                    <td>Autorizar miembro</td>
+                    <td>Guarda la membresía con el rol elegido.</td>
+                    <td>—</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Código</th><th>Nombre</th><th>Permisos principales</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="mono">PA</td>
+                    <td>Admin de pipeline</td>
+                    <td>Miembros, estado Activo/Inactivo, diseñar, publicar, ejecutar, historial (borrar cualquier corrida).</td>
+                </tr>
+                <tr>
+                    <td class="mono">ED</td>
+                    <td>Editor</td>
+                    <td>Diseñar y publicar; ejecutar; historial (borrar las corridas que disparó).</td>
+                </tr>
+                <tr>
+                    <td class="mono">GE</td>
+                    <td>Ejecutor</td>
+                    <td>Ejecutar (sin editar el rail). Historial de las suyas. No gestiona miembros.</td>
+                </tr>
+                <tr>
+                    <td class="mono">CO</td>
+                    <td>Consulta</td>
+                    <td>Ver hub, historial y dashboard (metadatos). No ejecuta ni edita.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Tabla de miembros</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna / acción</th><th>Qué muestra o hace</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Usuario / Nombre</td><td>Cuenta y nombre.</td></tr>
+                <tr><td>Rol</td><td>Código de permiso actual.</td></tr>
+                <tr><td>Cambiar</td><td>Actualiza el rol (no aplica al owner).</td></tr>
+                <tr><td>Revocar</td><td>Desactiva el acceso (pide confirmación). El owner no se revoca.</td></tr>
+                <tr><td>Propietario</td><td>Quien creó el pipeline; no cambia de rol ni se revoca.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Visibilidad del pipeline</h3>
+        <p class="help-intro">
+            Si el pipeline es <strong>público</strong>, un UF de la compañía sin membresía lo ve como consulta (CO de compañía).
+            Si es <strong>privado</strong>, solo aparecen quienes estén en esta lista.
+        </p>
+    </div>
+</div>
+{% endblock %}

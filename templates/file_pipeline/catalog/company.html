@@ -1,0 +1,110 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Catálogo · flags compañía{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_pipeline.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_pipeline/includes/catalog_sidebar.html" %}{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    {% if company %}
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+    {% else %}
+    <span>No hay compañías activas</span>
+    {% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Pipeline · Catálogo · paquete compañía</p>
+        <h2>Kinds visibles{% if company %} para {{ company.name_short }}{% endif %}</h2>
+        <p>Intersección: catálogo global <code>pipeline_enabled</code> <strong>y</strong> paquete de la compañía. El diseñador solo lista lo que pasa ambos filtros.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_pipeline:catalog_company_help' as fp_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=fp_help_url %}
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:catalog_list' %}">← Catálogo global</a>
+    </div>
+</div>
+
+{% if companies and can_manage_catalog %}
+<form method="get" class="filter-bar" style="margin-bottom:16px;display:flex;gap:12px;align-items:end">
+    <div class="field" style="margin:0">
+        <label for="company">Compañía</label>
+        <select id="company" name="company" onchange="this.form.submit()">
+            {% for c in companies %}
+            <option value="{{ c.id }}"{% if company and c.id == company.id %} selected{% endif %}>{{ c.name_short }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</form>
+{% endif %}
+
+<div class="stats-strip">
+    <div class="stat-card is-accent">
+        <p class="stat-label">En picker</p>
+        <p class="stat-value">{{ stats.in_picker|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Bloqueados compañía</p>
+        <p class="stat-value">{{ stats.blocked|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Off en catálogo</p>
+        <p class="stat-value">{{ stats.off_cat|default:0 }}</p>
+    </div>
+</div>
+
+<div class="panel panel--table">
+    <div class="panel-body" style="padding:0">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th>kind</th>
+                    <th>Catálogo</th>
+                    <th>Paquete</th>
+                    <th>En diseñador</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in matrix %}
+                <tr>
+                    <td><code>{{ item.row.kind }}</code></td>
+                    <td>{% if item.catalog_on %}<span class="fp-opt-in-on">enabled</span>{% else %}<span class="fp-opt-in-off">disabled</span>{% endif %}</td>
+                    <td>{% if item.package_included %}<span class="fp-opt-in-on">incluido</span>{% else %}<span class="fp-opt-in-off">excluido</span>{% endif %}</td>
+                    <td>{% if item.in_designer %}<span class="fp-tone-ok">sí</span>{% else %}<span class="fp-tone-skip">no</span>{% endif %}</td>
+                    <td>
+                        {% if company and can_manage_catalog %}
+                        <form method="post" style="display:inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="company" value="{{ company.id }}">
+                            <input type="hidden" name="kind" value="{{ item.row.kind }}">
+                            {% if item.package_included %}
+                            <input type="hidden" name="included" value="0">
+                            <button type="submit" class="btn btn-secondary" style="padding:4px 8px">Excluir</button>
+                            {% else %}
+                            <input type="hidden" name="included" value="1">
+                            <button type="submit" class="btn btn-secondary" style="padding:4px 8px">Incluir</button>
+                            {% endif %}
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">Sin kinds en el catálogo.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

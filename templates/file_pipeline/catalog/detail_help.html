@@ -1,0 +1,18 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · {{ row.kind }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "file_pipeline/includes/catalog_sidebar.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Detalle de kind</h2>
+        <p>Consulta el registro. Editar cambia el contrato; deshabilitar lo quita de nuevos diseños.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:catalog_detail' kind=row.kind %}">← Detalle</a>
+    </div>
+</div>
+{% endblock %}
