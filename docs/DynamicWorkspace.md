@@ -39,6 +39,7 @@
 | [`docs/FILE_ARCHIVE.md`](FILE_ARCHIVE.md) | **File Archive** — custodia E2E (**previsto**) |
 | [`docs/SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) | **Schema Registry** — contratos compartidos (**previsto**) |
 | [`docs/FILE_PIPELINE.md`](FILE_PIPELINE.md) | **File Pipeline** — orquestación multi-app (**propuesta**); API puede consumirlo |
+| [`docs/definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) | Specs por módulo File Pipeline |
 | [`docs/PLATFORM_API.md`](PLATFORM_API.md) | **PLATFORM API** — ejecución remota de jobs/pipelines (**después** de apps FILE_OPS) |
 | [`docs/FILE_GATE.md`](FILE_GATE.md) | **FILE GATE** — Validador de archivos (prioridad #1 APP_FACTORY) |
 | [`docs/REVERSE_STUDIO.md`](REVERSE_STUDIO.md) | **Reverse Studio** — Emisor de layouts (CSV/Excel → posicional/JSON/XML) |

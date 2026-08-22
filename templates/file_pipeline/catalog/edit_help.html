@@ -1,0 +1,18 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Editar {{ row.kind }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "file_pipeline/includes/catalog_sidebar.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Editar kind</h2>
+        <p>El código <code>kind</code> no cambia. Use deshabilitar para baja lógica.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:catalog_edit' kind=row.kind %}">← Formulario</a>
+    </div>
+</div>
+{% endblock %}

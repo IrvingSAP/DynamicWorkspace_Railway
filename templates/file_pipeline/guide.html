@@ -1,0 +1,36 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda — File Pipeline{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_list' %}">File Pipeline</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Guía de trabajo · <span class="role-badge">UF</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>Cómo funciona File Pipeline</h2>
+        <p><strong>File Pipeline</strong> orquesta un archivo por varias apps (Clean, Gate, Pipe, …) y reporta OK/Error por paso.</p>
+        <p><strong>No</strong> es un limpiador, validador ni mapeador: <strong>invoca</strong> esas apps con su versión publicada.</p>
+    </div>
+    <aside class="guide-hero-aside">
+        <h3>Ruta rápida</h3>
+        <ol class="guide-quick-path">
+            <li>Cree un pipeline (queda PA, estado En proceso).</li>
+            <li>Invite miembros si es privado.</li>
+            <li>Diseñe el rail de pasos (módulo 2).</li>
+            <li>Publique una versión (módulo 3).</li>
+            <li>Ejecute, consulte el historial y el dashboard de corridas.</li>
+        </ol>
+        <p><a href="{% url 'file_pipeline:pipeline_list' %}" class="btn btn-primary">Ir a pipelines</a>
+        <a href="{% url 'file_pipeline:pipeline_dashboard' %}" class="btn btn-secondary">Dashboard</a></p>
+    </aside>
+</div>
+{% endblock %}

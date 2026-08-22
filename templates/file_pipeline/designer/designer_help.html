@@ -1,0 +1,163 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Diseñador {{ pipeline.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_list' %}">File Pipeline</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">{{ pipeline.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_designer' pipeline_slug=pipeline.slug %}">Diseñar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ pipeline.slug }}</span></p>
+        <h2>Ayuda — Diseñador de pasos</h2>
+        <p>Cómo armar el borrador del rail: tipo del catálogo, proyecto activo, orden y handoff.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_pipeline:pipeline_designer' pipeline_slug=pipeline.slug %}" class="btn btn-secondary">← Volver al diseñador</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Edita el <strong>borrador</strong> de la siguiente versión del pipeline <strong>{{ pipeline.name }}</strong>.
+            Cada paso es un <span class="mono">kind</span> habilitado en el catálogo más un proyecto
+            <strong>activo</strong> de esa app (misma compañía). File Pipeline no elige v2/v5 de cada app:
+            al ejecutar usará la <strong>versión publicada vigente</strong> de ese proyecto.
+        </p>
+        <p class="help-intro">
+            <strong>Quién:</strong> PA y ED editan y guardan. GE y CO (y consulta de compañía) solo ven el rail.
+            Guardar con al menos un paso válido marca «Diseñar pasos» completo en el hub; sin eso, publicar se rechaza.
+        </p>
+
+        <h3 class="form-section-title">Cabecera y acciones</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Elemento</th><th>Qué es</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ayuda (icono)</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>← Hub</td>
+                    <td>Vuelve al centro de control del pipeline.</td>
+                </tr>
+                <tr>
+                    <td>Guardar borrador</td>
+                    <td>Persiste el rail. Visible solo si puede editar (PA o ED). Un rail vacío se puede guardar, pero no completa el módulo 1 del hub.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Agregar paso</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo / acción</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Tipo (catálogo)</td>
+                    <td>Kind opt-in. Al cambiarlo, se recarga la lista de proyectos.</td>
+                    <td>Solo kinds con pipeline habilitado y no deshabilitados.</td>
+                </tr>
+                <tr>
+                    <td>Proyecto activo</td>
+                    <td>Destino que ejecutará ese paso.</td>
+                    <td>Activos del kind, públicos o a los que está autorizado, con versión publicada vigente. Si no hay: <em>Sin proyectos activos autorizados</em>.</td>
+                </tr>
+                <tr>
+                    <td>+ Añadir al rail</td>
+                    <td>Inserta el paso al final. No guarda en servidor hasta pulsar Guardar borrador.</td>
+                    <td>—</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Rail del borrador</h3>
+        <p class="help-intro">
+            Lista ordenada (nodos numerados), no un canvas. Cada tarjeta muestra kind, slug del proyecto,
+            origen de entrada y política de error.
+        </p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Dato / acción</th><th>Significado</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Número del nodo</td>
+                    <td>Orden de ejecución (1, 2, 3…).</td>
+                </tr>
+                <tr>
+                    <td><span class="mono">input: pipeline_input</span></td>
+                    <td>Solo el primer paso: toma el archivo (o lote) que el usuario entrega al ejecutar.</td>
+                </tr>
+                <tr>
+                    <td><span class="mono">input: previous</span></td>
+                    <td>Pasos siguientes: usan la salida del paso anterior.</td>
+                </tr>
+                <tr>
+                    <td><span class="mono">on_error: stop</span></td>
+                    <td>Si el runner falla, el pipeline se detiene (único valor en este MVP).</td>
+                </tr>
+                <tr>
+                    <td>Subir / Bajar</td>
+                    <td>Reordena. Al reordenar, el handoff se recalcula (el nuevo primero siempre es <span class="mono">pipeline_input</span>).</td>
+                </tr>
+                <tr>
+                    <td>Quitar</td>
+                    <td>Elimina el paso del rail en pantalla (confirme con Guardar borrador).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué valida y qué no</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Situación</th><th>Efecto</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Kind fuera de catálogo o deshabilitado</td>
+                    <td>No se ofrece en el picker; no se guarda.</td>
+                </tr>
+                <tr>
+                    <td>Proyecto inactivo, otra compañía o sin versión vigente</td>
+                    <td>No aparece en el picker; el guardado lo rechaza.</td>
+                </tr>
+                <tr>
+                    <td>0 pasos al guardar</td>
+                    <td>Permitido como incompleto; el hub no marca «Diseñar pasos».</td>
+                </tr>
+                <tr>
+                    <td>Handoff dudoso (p. ej. arity de Match)</td>
+                    <td>Aviso suave aquí; el bloqueo duro, si aplica, es al <strong>publicar</strong>.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Publicar congela un snapshot (vN). Seguir editando el diseñador prepara vN+1; el run sigue usando
+            la última versión publicada, no este borrador, hasta que publique de nuevo.
+        </p>
+    </div>
+</div>
+{% endblock %}

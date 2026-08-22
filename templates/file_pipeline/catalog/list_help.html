@@ -1,0 +1,30 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Step Catalog{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "file_pipeline/includes/catalog_sidebar.html" %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:catalog_list' %}">Step Catalog</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Step Catalog</h2>
+        <p>Registro de plataforma: qué apps pueden ser <strong>paso</strong> de un pipeline.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:catalog_list' %}">← Catálogo</a>
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+    <p>Crear una app en el producto <strong>no</strong> la agrega al diseñador. Hace falta registro + <code>pipeline_enabled</code> + paquete de compañía.</p>
+    <p>Al alta el default es opt-in off hasta checklist (runner, handoff, docs). El <code>kind</code> es inmutable; para retirar use Deshabilitar (baja lógica). No borra la app del menú.</p>
+    <p>UF no edita este catálogo. El diseñador de compañía solo lista enabled ∩ paquete.</p>
+</div></div>
+{% endblock %}

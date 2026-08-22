@@ -1,0 +1,109 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ejecutar — {{ pipeline.slug }}{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_pipeline.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_list' %}">File Pipeline</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">{{ pipeline.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ejecutar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Pipeline · Ejecutar{% if version %} · versión publicada v{{ version.version_number }}{% endif %}</p>
+        <h2>Ejecutar pipeline</h2>
+        <p>Suba la entrada. El orquestador pasa artifacts entre pasos sin re-upload. trigger_source = <strong>ui</strong>.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_pipeline:pipeline_run_help' pipeline_slug=pipeline.slug as fp_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=fp_help_url %}
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">← Hub</a>
+    </div>
+</div>
+
+<div class="version-strip">
+    Estado: <strong>{{ pipeline.get_status_display }}</strong>
+    {% if version %}· Publicará runs contra <strong>v{{ version.version_number }}</strong>{% else %}· Sin versión publicada{% endif %}
+</div>
+
+{% if not can_run %}
+<div class="panel" style="margin-top:16px">
+    <div class="panel-body">
+        <div class="fp-note-box">
+            <strong>No se puede ejecutar todavía.</strong>
+            {{ blocked }}
+        </div>
+        {% if pipeline.status != 'active' and version and can_activate %}
+        <form method="post" style="margin-top:12px">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="activate">
+            <button type="submit" class="btn btn-primary">Marcar como Activo</button>
+        </form>
+        {% elif pipeline.status != 'active' and version and not can_activate %}
+        <p class="hint">Solo el administrador del pipeline (PA) puede marcarlo Activo.</p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<div class="panel"><div class="panel-body">
+    <form method="post" enctype="multipart/form-data" id="fp-run-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="run">
+        <div class="field">
+            <label for="file">Archivo de entrada</label>
+            <input id="file" type="file" name="file"{% if can_run %} required{% endif %}>
+        </div>
+        <div class="field">
+            <label><input type="checkbox" name="dry_run" value="1"> Vista previa (dry-run)</label>
+            <span class="hint">Si lo marca, la corrida no entra en el pulso del dashboard (sí en el historial).</span>
+        </div>
+        <p class="hint">
+            Cadena publicada:
+            {% for step in steps %}{{ step.kind }}{% if not forloop.last %} → {% endif %}{% empty %}(sin versión){% endfor %}
+            · on_error=stop
+        </p>
+        <p style="margin-top:14px">
+            <button type="button" class="btn btn-primary{% if not can_run %} is-blocked{% endif %}" id="fp-run-btn"
+                {% if can_run %}form="fp-run-form"{% endif %}
+                {% if not can_run %}aria-disabled="true" data-blocked-reason="{{ blocked }}"{% endif %}>
+                {% if version %}Ejecutar v{{ version.version_number }}{% else %}Ejecutar{% endif %}
+            </button>
+        </p>
+    </form>
+</div></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var btn = document.getElementById("fp-run-btn");
+  var form = document.getElementById("fp-run-form");
+  if (!btn) return;
+  btn.addEventListener("click", function (e) {
+    var reason = (btn.getAttribute("data-blocked-reason") || "").trim();
+    if (reason) {
+      e.preventDefault();
+      window.alert(reason);
+      return;
+    }
+    if (form) form.requestSubmit();
+  });
+});
+</script>
+{% endblock %}

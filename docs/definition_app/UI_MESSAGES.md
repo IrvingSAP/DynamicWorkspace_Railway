@@ -42,6 +42,7 @@ flowchart LR
 | PROFILE_SEED (Importar estructura, …) | `UI_MESSAGES.md` §3.13 · [`../PROFILE_SEED.md`](../PROFILE_SEED.md) · [`../definition_app_PROFILE_SEED/`](../definition_app_PROFILE_SEED/) |
 | FILE CLEAN (ciclo proyecto, …) | `UI_MESSAGES.md` §3.14 · [`../FILE_CLEAN.md`](../FILE_CLEAN.md) · [`../definition_app_FILE_CLEAN/`](../definition_app_FILE_CLEAN/) |
 | FILE SPLIT/MERGE (ciclo proyecto, …) | `UI_MESSAGES.md` §3.15 · [`../FILE_SPLIT_MERGE.md`](../FILE_SPLIT_MERGE.md) · [`../definition_app_FILE_SPLIT_MERGE/`](../definition_app_FILE_SPLIT_MERGE/) |
+| FILE PIPELINE (ciclo, diseñar, publicar, run, historial) | Specs [`../definition_app_FILE_PIPELINE/`](../definition_app_FILE_PIPELINE/) · catálogo §3.16 |
 
 ---
 
@@ -1051,6 +1052,101 @@ Mensajes de usuario para File Split/Merge. Alineados a [`../FILE_SPLIT_MERGE.md`
 | Error al eliminar | `error` | No se pudo eliminar la corrida. Si el problema continúa, contacte al administrador. |
 
 > Motor M6: `sm_history_service` sobre `SplitMergeJob`. URLs: `/app/file-split-merge/proyectos/<slug>/historial/…`. Descargas vía M5 `run_download` (TTL + rol).
+
+### 3.16 Mensajes específicos — `apps.file_pipeline` (FILE PIPELINE)
+
+Alineados a [`../FILE_PIPELINE.md`](../FILE_PIPELINE.md) y [`../definition_app_FILE_PIPELINE/`](../definition_app_FILE_PIPELINE/).
+
+#### Ciclo de pipeline / miembros (Módulo 1)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin acceso | `error` | No tiene acceso a este pipeline. |
+| Solo UF crea | `error` | Solo usuarios UF pueden crear pipelines. |
+| Pipeline creado | `success` | Pipeline creado correctamente. |
+| Solo PA miembros | `error` | Solo el administrador del pipeline (PA) puede gestionar miembros. |
+| Validación formulario | `error` + inline | Revise los datos marcados; no se pudo guardar. |
+| Inesperado | `error` | Ocurrió un error al guardar. Si persiste, contacte al administrador. |
+| Miembro autorizado | `success` | Miembro «{username}» autorizado correctamente. |
+| Owner protegido | `error` | El owner no se revoca ni cambia de rol. |
+| Publicar sin diseñar | `warning` | No puede publicar. Pasos no completados: Diseñar pasos. |
+| Borrador de pasos guardado | `success` | Borrador de pasos guardado. |
+| Borrador sin pasos | `success` | Borrador guardado. Diseñar pasos sigue pendiente: añada al menos un paso válido. |
+| Sin permiso diseñador | `error` | No tiene permiso para editar el diseñador de este pipeline. |
+| Rail inválido | `error` | Revise los pasos del rail; no se pudo guardar. |
+
+#### Step Catalog (Módulo 2b)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Solo UA | `error` | Solo un operador de plataforma puede gestionar el catálogo de pasos. |
+| Kind creado | `success` | Kind registrado en el catálogo. |
+| Kind actualizado | `success` | Kind actualizado. |
+| Kind deshabilitado | `success` | Kind deshabilitado. Ya no se ofrece en nuevos diseños. |
+| Paquete compañía | `success` | Paquete de compañía actualizado. |
+| Kind no encontrado | `error` | No se encontró esa entrada del catálogo. |
+| Enabled + disabled | `error` + inline | No combine pipeline_enabled activo con status disabled. |
+
+#### Publicar versión (Módulo 3)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Publicar sin diseñar | `warning` | No puede publicar. Pasos no completados: Diseñar pasos. |
+| Sin permiso publicar | `error` | No tiene permiso para publicar este pipeline. |
+| Checklist fallido | `error` | No se puede publicar. Revise el checklist. |
+| Versión publicada | `success` | Versión v{n} publicada correctamente. El borrador queda abierto para v{n+1}. |
+
+#### Ejecutar (Módulo 4)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin versión | `error` | No hay versión publicada. Publique el pipeline antes de ejecutar. |
+| No activo | `warning` | El pipeline debe estar Activo para ejecutar. |
+| Sin archivo | `error` | Seleccione un archivo de entrada. |
+| Sin permiso run | `error` | No tiene permiso para ejecutar este pipeline. |
+| Sin permiso paso | `error` | No tiene permiso para ejecutar uno de los proyectos de paso. |
+| Kind sin runner | `error` | Este tipo de paso aún no tiene runner en el orquestador. |
+| Corrida OK | `success` | Corrida completada. |
+| Corrida fallida | `error` | La corrida falló. Revise el rail de pasos. |
+| Estado actualizado | `success` | Estado del pipeline actualizado. |
+| Pipeline activo | `success` | Pipeline marcado como Activo. |
+
+#### Historial (Módulo 5)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin permiso historial | `error` | No tiene permiso para ver el historial de este pipeline. |
+| Corrida no encontrada | `error` | No se encontró la corrida en este pipeline. |
+| Sin corridas | empty UI | Publique una versión y ejecute el pipeline para empezar la auditoría. |
+| Filtro sin resultados | empty UI | Ninguna corrida coincide con los filtros. |
+| Corrida eliminada | `success` | Corrida eliminada del historial. |
+| Varias propias | `success` | Se eliminaron {n} corridas propias del historial. |
+| Sin corridas propias | `error` | No tiene corridas propias para eliminar en este pipeline. |
+| Solo propias | `error` | Solo puede eliminar corridas que usted ejecutó. |
+| Job en ejecución | `error` | No se puede eliminar un job en ejecución. |
+| Error al eliminar | `error` | No se pudo eliminar la corrida. Si el problema continúa, contacte al administrador. |
+
+#### Dashboard (módulo D)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin pipelines | empty UI | Cree un pipeline o pida membresía para ver el pulso de corridas. |
+| Sin corridas en ventana | empty UI | Aún no hay corridas productivas en esta ventana. |
+| Sin fallos | empty UI | Ningún fallo productivo en los últimos {n} días. |
+
+> Motor D: `pipeline_dashboard_service`. URL: `/app/file-pipeline/tablero/`. Alcance: pipelines visibles. Dry-run excluido del pulso. Ventana 7/30 días.
+
+> Motor M5: `pipeline_history_service`. URLs: `/app/file-pipeline/pipelines/<slug>/historial/` · `…/runs/<id>/auditoria/` · `…/runs/<id>/eliminar/`. Filtros: `trigger_source`, estado del run, fechas. Paginación 25. CO: metadatos; PA/ED/GE: enlaces a `app_job_id`. Borrado: propias (PA cualquiera); no runs en curso.
+
+> Motor M4: `pipeline_run_service`. URLs: `/app/file-pipeline/pipelines/<slug>/ejecutar/` · `…/runs/<id>/`.
+
+> Motor M3: `pipeline_publish_service`. URLs: `/app/file-pipeline/pipelines/<slug>/publicar/`.
+
+
+> Motor M2b: `pipeline_catalog_service`. URLs: `/app/file-pipeline/catalogo/…` (UA).
+
+> Motor M1: `pipeline_project_service`. URLs: `/app/file-pipeline/pipelines/…`.
+
 
 ---
 

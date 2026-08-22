@@ -1,0 +1,131 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Auditoría run — {{ pipeline.slug }}{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_pipeline.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">{{ pipeline.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_history' pipeline_slug=pipeline.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Auditoría</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% with run=audit.run %}
+<div class="company-scope-strip">
+    <span class="label">Run</span>
+    <span class="cell-badge">{{ run.id }}</span>
+    <span class="fp-trigger-pill">{{ run.get_trigger_source_display }}</span>
+    {% if run.dry_run %}<span class="cell-badge">dry-run</span>{% endif %}
+    {% if run.status == 'completed' %}<span class="fp-tone-ok">{{ run.get_status_display }}</span>
+    {% elif run.status == 'failed' %}<span class="fp-tone-fail">{{ run.get_status_display }}</span>
+    {% else %}<span>{{ run.get_status_display }}</span>{% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Pipeline · definición v{{ run.version.version_number }}</p>
+        <h2>Auditoría de disparo</h2>
+        <p>Registro append-only de quién activó la corrida y cómo cerró cada paso.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_pipeline:pipeline_run_audit_help' pipeline_slug=pipeline.slug run_id=run.id as fp_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=fp_help_url %}
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:pipeline_history' pipeline_slug=pipeline.slug %}">← Historial</a>
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:pipeline_run_result' pipeline_slug=pipeline.slug run_id=run.id %}">Resultado</a>
+        {% if audit.can_delete %}
+        <form method="post" action="{% url 'file_pipeline:pipeline_run_delete' pipeline_slug=pipeline.slug run_id=run.id %}" class="js-fp-history-delete" data-confirm="¿Eliminar esta corrida del historial del pipeline?" style="display:inline;margin:0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">Eliminar corrida</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+{% if audit.is_co %}
+<p class="hint">Rol consulta: metadatos de orquestación. El detalle de celdas y descargas está en cada app, según su política.</p>
+{% endif %}
+
+<div class="panel"><div class="panel-body">
+    <h3 class="form-section-title">Disparo</h3>
+    <dl class="fp-registry-meta">
+        <div><dt>Canal</dt><dd>{{ run.get_trigger_source_display }}</dd></div>
+        <div><dt>Actor</dt><dd>{{ audit.actor }}</dd></div>
+        <div><dt>Cliente API</dt><dd>{{ run.api_client_label|default:"—" }}</dd></div>
+        <div><dt>Idempotency</dt><dd>{{ run.idempotency_key|default:"—" }}</dd></div>
+        <div><dt>Correlation</dt><dd>{{ run.correlation_id|default:"—" }}</dd></div>
+        <div><dt>IP</dt><dd>{{ run.client_ip|default:"—" }}</dd></div>
+        <div><dt>Triggered</dt><dd>{{ run.created_at|date:"d/m/Y H:i:s" }}</dd></div>
+        <div><dt>Started</dt><dd>{% if run.started_at %}{{ run.started_at|date:"d/m/Y H:i:s" }}{% else %}—{% endif %}</dd></div>
+        <div><dt>Finished</dt><dd>{% if run.finished_at %}{{ run.finished_at|date:"d/m/Y H:i:s" }}{% else %}—{% endif %}</dd></div>
+        <div><dt>Duración</dt><dd>{{ audit.duration }}</dd></div>
+        <div><dt>Archivo</dt><dd>{{ run.input_filename|default:"—" }}</dd></div>
+        <div><dt>sha256</dt><dd>{% if run.input_sha256 %}<code>{{ run.input_sha256 }}</code>{% else %}—{% endif %}</dd></div>
+        {% if run.failed_step_order %}<div><dt>Paso fallido</dt><dd>#{{ run.failed_step_order }}</dd></div>{% endif %}
+    </dl>
+    {% if run.error_message %}<p class="hint">{{ run.error_message }}</p>{% endif %}
+    {% if run.user_agent %}<p class="fp-hist-hash">UA {{ run.user_agent }}</p>{% endif %}
+</div></div>
+
+<div class="panel"><div class="panel-body">
+    <h3 class="form-section-title">Rail de pasos</h3>
+    <ol class="fp-step-rail">
+        {% for row in audit.step_rows %}
+        <li class="fp-step-rail-item">
+            <span class="fp-step-node {{ row.node_class }}">
+                {% if row.step.status == 'completed' %}✓{% elif row.step.status == 'failed' %}!{% elif row.step.status == 'skipped' %}–{% else %}{{ row.step.order }}{% endif %}
+            </span>
+            <div class="fp-step-card">
+                <h4>{{ row.step.order }} · {{ row.step.label }}
+                    {% if row.step.status == 'completed' %}<span class="fp-tone-ok">{{ row.step.status }}</span>
+                    {% elif row.step.status == 'failed' %}<span class="fp-tone-fail">{{ row.step.status }}</span>
+                    {% else %}<span class="fp-tone-skip">{{ row.step.status }}</span>{% endif %}
+                </h4>
+                <p class="fp-step-meta">
+                    {{ row.duration_label }}
+                    · <code>{{ row.step.kind }}</code> · <code>{{ row.step.project_slug }}</code>
+                    {% if row.step.app_job_id %}
+                    · app_job
+                    {% if row.job_url %}<a href="{{ row.job_url }}"><code>{{ row.step.app_job_id|slice:":8" }}…</code></a>
+                    {% else %}<code>{{ row.step.app_job_id|slice:":8" }}…</code>{% endif %}
+                    {% endif %}
+                    {% if row.step.skip_reason %} · reason={{ row.step.skip_reason }}{% endif %}
+                    {% if row.step.error_code %} · <code>{{ row.step.error_code }}</code>{% endif %}
+                </p>
+                {% if row.step.user_message %}<p class="fp-step-meta">{{ row.step.user_message }}</p>{% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ol>
+</div></div>
+{% endwith %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("form.js-fp-history-delete").forEach(function (form) {
+    form.addEventListener("submit", function (e) {
+      if (typeof dwConfirmWarning !== "function") return;
+      e.preventDefault();
+      var message = form.getAttribute("data-confirm") || "¿Eliminar?";
+      dwConfirmWarning(message, function () {
+        HTMLFormElement.prototype.submit.call(form);
+      });
+    });
+  });
+});
+</script>
+{% endblock %}

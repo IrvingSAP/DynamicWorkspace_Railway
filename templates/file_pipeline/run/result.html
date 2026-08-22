@@ -1,0 +1,90 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Resultado run — {{ pipeline.slug }}{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_pipeline.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">{{ pipeline.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_run' pipeline_slug=pipeline.slug %}">Ejecutar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Resultado</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Run</span>
+    <span class="cell-badge">{{ run.id }}</span>
+    <span>trigger <strong>{{ run.trigger_source }}</strong></span>
+    {% if run.dry_run %}<span class="cell-badge">dry-run</span>{% endif %}
+    {% if run.status == 'completed' %}
+    <span class="fp-tone-ok">{{ run.get_status_display }}</span>
+    {% elif run.status == 'failed' %}
+    <span class="fp-tone-fail">{{ run.get_status_display }}</span>
+    {% else %}
+    <span>{{ run.get_status_display }}</span>
+    {% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Pipeline · definición v{{ run.version.version_number }}</p>
+        <h2>Resultado de corrida</h2>
+        <p>
+            Entrada: {{ run.input_filename }}
+            {% if run.input_sha256 %} · sha256 {{ run.input_sha256|slice:":12" }}…{% endif %}
+            {% if run.duration_ms != None %} · {{ run.duration_ms|floatformat:0 }} ms{% endif %}
+        </p>
+        {% if run.error_message %}<p class="hint">{{ run.error_message }}</p>{% endif %}
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:pipeline_history' pipeline_slug=pipeline.slug %}">Historial</a>
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:pipeline_run_audit' pipeline_slug=pipeline.slug run_id=run.id %}">Auditoría</a>
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">← Hub</a>
+        <a class="btn btn-primary" href="{% url 'file_pipeline:pipeline_run' pipeline_slug=pipeline.slug %}">Nueva corrida</a>
+    </div>
+</div>
+
+<div class="panel"><div class="panel-body">
+    <h3 class="form-section-title">Rail de pasos</h3>
+    <ol class="fp-step-rail">
+        {% for row in step_rows %}
+        <li class="fp-step-rail-item">
+            <span class="fp-step-node {{ row.node_class }}">
+                {% if row.step.status == 'completed' %}✓{% elif row.step.status == 'failed' %}!{% elif row.step.status == 'skipped' %}–{% else %}{{ row.step.order }}{% endif %}
+            </span>
+            <div class="fp-step-card">
+                <h4>{{ row.step.order }} · {{ row.step.label }}
+                    {% if row.step.status == 'completed' %}<span class="fp-tone-ok">{{ row.step.status }}</span>
+                    {% elif row.step.status == 'failed' %}<span class="fp-tone-fail">{{ row.step.status }}</span>
+                    {% else %}<span class="fp-tone-skip">{{ row.step.status }}</span>{% endif %}
+                </h4>
+                <p class="fp-step-meta">
+                    {{ row.duration_label }}
+                    · <code>{{ row.step.kind }}</code> · <code>{{ row.step.project_slug }}</code>
+                    {% if row.step.app_job_id %}
+                    · app_job
+                    {% if row.job_url %}<a href="{{ row.job_url }}"><code>{{ row.step.app_job_id|slice:":8" }}…</code></a>
+                    {% else %}<code>{{ row.step.app_job_id|slice:":8" }}…</code>{% endif %}
+                    {% endif %}
+                    {% if row.step.skip_reason %} · reason={{ row.step.skip_reason }}{% endif %}
+                    {% if row.step.error_code %} · <code>{{ row.step.error_code }}</code>{% endif %}
+                </p>
+                {% if row.step.user_message %}<p class="fp-step-meta">{{ row.step.user_message }}</p>{% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ol>
+</div></div>
+{% endblock %}

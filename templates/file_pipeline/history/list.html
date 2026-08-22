@@ -1,0 +1,201 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Historial — {{ pipeline.slug }}{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_pipeline.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_list' %}">File Pipeline</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">{{ pipeline.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Historial</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Pipeline</span>
+    <span class="cell-badge">{{ pipeline.slug }}</span>
+    {% if membership %}
+    <span class="role-code{% if membership.role == 'PA' %} role-code--pa{% endif %}">{{ membership.role }}</span>
+    {% endif %}
+    {% if history.role == 'CO' %}
+    <span class="hint">· consulta: metadatos (sin enlace a jobs de app)</span>
+    {% endif %}
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Pipeline · auditoría de disparo</p>
+        <h2>Historial de corridas</h2>
+        <p>Quién o qué disparó, qué versión, timing y cierre de cada paso. El detalle fino sigue en cada app.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_pipeline:pipeline_history_help' pipeline_slug=pipeline.slug as fp_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=fp_help_url %}
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">← Hub</a>
+        {% if history.can_delete_own_any %}
+        <form method="post" action="{% url 'file_pipeline:pipeline_history_delete_own' pipeline_slug=pipeline.slug %}" class="js-fp-history-delete" data-confirm="¿Eliminar todas las corridas que usted disparó? No se pueden deshacer." style="display:inline;margin:0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">Eliminar mis corridas</button>
+        </form>
+        {% endif %}
+        <a class="btn btn-primary" href="{% url 'file_pipeline:pipeline_run' pipeline_slug=pipeline.slug %}">Ejecutar</a>
+    </div>
+</div>
+
+{% if not history.has_any and not history.has_active_filters %}
+<div class="fp-empty-history">
+    <h3>Sin corridas registradas</h3>
+    <p>Publique una versión y ejecute el pipeline para empezar la auditoría.</p>
+    {% if history.can_execute %}
+    <a class="btn btn-primary" href="{% url 'file_pipeline:pipeline_run' pipeline_slug=pipeline.slug %}">Ir a Ejecutar</a>
+    {% endif %}
+</div>
+{% else %}
+
+<div class="fp-hist-stats" aria-label="Resumen">
+    <div>
+        <span class="fp-hist-stat-label">Total</span>
+        <strong>{{ history.stats.total }}</strong>
+    </div>
+    <div>
+        <span class="fp-hist-stat-label">Completadas</span>
+        <strong class="fp-tone-ok">{{ history.stats.completed }}</strong>
+    </div>
+    <div>
+        <span class="fp-hist-stat-label">Fallidas</span>
+        <strong class="fp-tone-fail">{{ history.stats.failed }}</strong>
+    </div>
+    <div>
+        <span class="fp-hist-stat-label">Desde UI</span>
+        <strong>{{ history.stats.ui }}</strong>
+    </div>
+</div>
+
+<form method="get" class="fp-hist-filters" action="{% url 'file_pipeline:pipeline_history' pipeline_slug=pipeline.slug %}">
+    <div{% if history.errors.trigger %} class="has-error"{% endif %}>
+        <label for="fp-f-trigger">Disparo</label>
+        <select id="fp-f-trigger" name="trigger">
+            <option value="all"{% if history.filters.trigger == 'all' %} selected{% endif %}>Todos</option>
+            {% for opt in history.trigger_options %}
+            <option value="{{ opt.value }}"{% if history.filters.trigger == opt.value %} selected{% endif %}>{{ opt.label }}</option>
+            {% endfor %}
+        </select>
+        {% for err in history.errors.trigger %}<p class="field-error">{{ err }}</p>{% endfor %}
+    </div>
+    <div{% if history.errors.status %} class="has-error"{% endif %}>
+        <label for="fp-f-status">Estado del run</label>
+        <select id="fp-f-status" name="status">
+            <option value="all"{% if history.filters.status == 'all' %} selected{% endif %}>Todos</option>
+            {% for opt in history.status_options %}
+            <option value="{{ opt.value }}"{% if history.filters.status == opt.value %} selected{% endif %}>{{ opt.label }}</option>
+            {% endfor %}
+        </select>
+        {% for err in history.errors.status %}<p class="field-error">{{ err }}</p>{% endfor %}
+    </div>
+    <div{% if history.errors.date_from %} class="has-error"{% endif %}>
+        <label for="fp-f-from">Desde</label>
+        <input id="fp-f-from" type="date" name="date_from" value="{{ history.filters.date_from }}">
+        {% for err in history.errors.date_from %}<p class="field-error">{{ err }}</p>{% endfor %}
+    </div>
+    <div{% if history.errors.date_to %} class="has-error"{% endif %}>
+        <label for="fp-f-to">Hasta</label>
+        <input id="fp-f-to" type="date" name="date_to" value="{{ history.filters.date_to }}">
+        {% for err in history.errors.date_to %}<p class="field-error">{{ err }}</p>{% endfor %}
+    </div>
+    <div class="fp-hist-filter-actions">
+        <button type="submit" class="btn btn-secondary">Filtrar</button>
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:pipeline_history' pipeline_slug=pipeline.slug %}">Limpiar</a>
+    </div>
+</form>
+
+{% if not history.rows %}
+<p class="hint">Ninguna corrida coincide con los filtros.</p>
+{% else %}
+<div class="panel"><div class="panel-body" style="overflow-x:auto">
+<table class="fp-hist-table">
+    <thead>
+        <tr>
+            <th>Cuándo</th>
+            <th>Disparo</th>
+            <th>Actor</th>
+            <th>v</th>
+            <th>Estado</th>
+            <th>Entrada</th>
+            <th>Tiempo</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in history.rows %}
+        <tr>
+            <td>{{ row.run.created_at|date:"d/m/Y H:i" }}</td>
+            <td><span class="fp-trigger-pill">{{ row.run.get_trigger_source_display }}</span>{% if row.run.dry_run %} <span class="cell-badge">dry-run</span>{% endif %}</td>
+            <td>{{ row.actor }}</td>
+            <td>{{ row.version_label }}</td>
+            <td>
+                {% if row.run.status == 'completed' %}<span class="fp-tone-ok">{{ row.run.get_status_display }}</span>
+                {% elif row.run.status == 'failed' %}<span class="fp-tone-fail">{{ row.run.get_status_display }}</span>
+                {% else %}{{ row.run.get_status_display }}{% endif %}
+            </td>
+            <td>
+                {{ row.run.input_filename|default:"—" }}
+                <div class="fp-hist-hash">{{ row.hash_short }}</div>
+            </td>
+            <td>{{ row.duration }}</td>
+            <td>
+                <div class="fp-hist-row-actions">
+                    <a href="{% url 'file_pipeline:pipeline_run_audit' pipeline_slug=pipeline.slug run_id=row.run.id %}">Auditoría</a>
+                    {% if row.can_delete %}
+                    <form method="post" action="{% url 'file_pipeline:pipeline_run_delete' pipeline_slug=pipeline.slug run_id=row.run.id %}" class="js-fp-history-delete" data-confirm="¿Eliminar esta corrida del historial del pipeline?" style="display:inline;margin:0">
+                        {% csrf_token %}
+                        <button type="submit">Eliminar</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div></div>
+<div class="fp-hist-pager">
+    {% if history.page_obj.has_previous %}
+    <a href="?{% if history.qs_prev %}{{ history.qs_prev }}{% endif %}">← Anterior</a>
+    {% endif %}
+    <span>Página {{ history.page_obj.number }} de {{ history.page_obj.paginator.num_pages }}</span>
+    {% if history.page_obj.has_next %}
+    <a href="?{{ history.qs_next }}">Siguiente →</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("form.js-fp-history-delete").forEach(function (form) {
+    form.addEventListener("submit", function (e) {
+      if (typeof dwConfirmWarning !== "function") return;
+      e.preventDefault();
+      var message = form.getAttribute("data-confirm") || "¿Eliminar?";
+      dwConfirmWarning(message, function () {
+        HTMLFormElement.prototype.submit.call(form);
+      });
+    });
+  });
+});
+</script>
+{% endblock %}

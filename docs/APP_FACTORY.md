@@ -132,7 +132,7 @@ Capa HTTP alineada a **todas las apps ejecutables** y, previsto, a **pipelines**
 | 3d | **File Repair** (FILE_OPS) | **Pendiente revisión** — [`FILE_REPAIR.md`](FILE_REPAIR.md) (app / modo Gate / Clean) |
 | 3e | **Watch + Scheduler** (FILE_OPS) | **Previsto**; forma de trabajo TBD — [`FILE_WATCH.md`](FILE_WATCH.md) · [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) |
 | 3f | **Archive / Schema Registry** | **Previsto**; forma TBD — [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md) · [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) |
-| 3g | **File Pipeline** (plataforma) | **Propuesta** — orquestación multi-app — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) |
+| 3g | **File Pipeline** (plataforma) | **Propuesta** — orquestación multi-app — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) · [`definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) |
 | 4 | **Formularios de captura** | Abre el producto a usuarios que no manejan archivos |
 | 5 | **PLATFORM API** | Tras apps FILE_OPS; puede ejecutar Job o Pipeline — [`PLATFORM_API.md`](PLATFORM_API.md) |
 

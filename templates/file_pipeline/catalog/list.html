@@ -1,0 +1,144 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Pipeline Step Catalog{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_pipeline.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_pipeline/includes/catalog_sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>File Pipeline</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Step Catalog</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip" aria-label="Ámbito">
+    <span class="label">Plataforma</span>
+    <span class="cell-badge">Step Catalog</span>
+    <span>CRUD · operador de plataforma</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Pipeline · Catálogo{% if is_ua %} · <span class="role-badge">UA</span>{% else %} · consulta{% endif %}</p>
+        <h2>Pipeline Step Catalog</h2>
+        <p>Inventario opt-in de <code>kind</code> que el diseñador puede ofrecer. Una app en el menú <strong>no</strong> entra sola.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_pipeline:catalog_list_help' as fp_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=fp_help_url %}
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:pipeline_list' %}">← Pipelines</a>
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:catalog_company' %}">Compañía</a>
+        {% if can_manage_catalog %}
+        <a class="btn btn-primary" href="{% url 'file_pipeline:catalog_create' %}">+ Nuevo kind</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen">
+    <div class="stat-card is-accent">
+        <p class="stat-label">En catálogo</p>
+        <p class="stat-value">{{ stats.total }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">pipeline_enabled</p>
+        <p class="stat-value">{{ stats.enabled }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Off / revisión</p>
+        <p class="stat-value">{{ stats.off }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Fase A</p>
+        <p class="stat-value">{{ stats.phase_a }}</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Filtrar</h3>
+        <form method="get" class="filter-bar" style="display:flex;flex-wrap:wrap;gap:12px;align-items:end">
+            <div class="field" style="margin:0;flex:1 1 14rem">
+                <label for="q">Búsqueda</label>
+                <input id="q" type="search" name="q" value="{{ q }}" placeholder="kind, label, project_kind…" autocomplete="off">
+            </div>
+            <div class="field" style="margin:0;flex:0 1 11rem">
+                <label for="enabled">Opt-in</label>
+                <select id="enabled" name="enabled">
+                    <option value="all"{% if enabled_filter == 'all' %} selected{% endif %}>Todos</option>
+                    <option value="on"{% if enabled_filter == 'on' %} selected{% endif %}>Solo enabled</option>
+                    <option value="off"{% if enabled_filter == 'off' %} selected{% endif %}>Solo disabled</option>
+                </select>
+            </div>
+            <div class="field" style="margin:0;flex:0 1 9rem">
+                <label for="phase">Fase MVP</label>
+                <select id="phase" name="phase">
+                    <option value="all"{% if phase_filter == 'all' %} selected{% endif %}>Todas</option>
+                    <option value="A"{% if phase_filter == 'A' %} selected{% endif %}>A</option>
+                    <option value="B"{% if phase_filter == 'B' %} selected{% endif %}>B</option>
+                    <option value="C"{% if phase_filter == 'C' %} selected{% endif %}>C</option>
+                    <option value="-"{% if phase_filter == '-' %} selected{% endif %}>Sin fase</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-secondary">Filtrar</button>
+        </form>
+        <p class="hint" style="margin:10px 0 0">Mostrando {{ shown }} entradas. El diseñador solo consume filas enabled que el paquete de la compañía permita.</p>
+    </div>
+</div>
+
+<div class="panel panel--table">
+    <div class="panel-body" style="padding:0">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th>kind</th>
+                    <th>Label</th>
+                    <th>project_kind</th>
+                    <th>Opt-in</th>
+                    <th>Fase</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td><code>{{ row.kind }}</code></td>
+                    <td>{{ row.label }}</td>
+                    <td><code>{{ row.project_kind }}</code></td>
+                    <td>
+                        {% if row.pipeline_enabled and row.status != 'disabled' %}
+                        <span class="fp-opt-in-on">enabled</span>
+                        {% else %}
+                        <span class="fp-opt-in-off">disabled</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="fp-phase-pill">{% if row.mvp_phase %}{{ row.mvp_phase }}{% else %}—{% endif %}</span></td>
+                    <td>{{ row.status }}</td>
+                    <td>
+                        <a href="{% url 'file_pipeline:catalog_detail' kind=row.kind %}">Ver</a>
+                        {% if can_manage_catalog %}
+                        · <a href="{% url 'file_pipeline:catalog_edit' kind=row.kind %}">Editar</a>
+                        {% if row.status != 'disabled' %}
+                        · <a href="{% url 'file_pipeline:catalog_disable' kind=row.kind %}">Deshabilitar</a>
+                        {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7">Sin coincidencias. Pruebe otro filtro.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

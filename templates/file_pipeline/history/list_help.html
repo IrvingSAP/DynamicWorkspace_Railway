@@ -1,0 +1,136 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Historial {{ pipeline.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_list' %}">File Pipeline</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">{{ pipeline.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_history' pipeline_slug=pipeline.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ pipeline.slug }}</span></p>
+        <h2>Ayuda — Historial de corridas</h2>
+        <p>Auditoría de disparo: canal, versión publicada, entrada y cierre de cada run.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_pipeline:pipeline_history' pipeline_slug=pipeline.slug %}" class="btn btn-secondary">← Volver al historial</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Lista las corridas del pipeline <strong>{{ pipeline.name }}</strong>: quién o qué disparó,
+            contra qué versión publicada, timing y estado. File Pipeline no sustituye el historial de
+            Clean, Gate o FilePipe: lo enlaza con <span class="mono">app_job_id</span> en la ficha de auditoría.
+        </p>
+        <p class="help-intro">
+            <strong>Quién:</strong> miembros (y consulta de compañía si es público) ven el listado.
+            CO ve metadatos; los enlaces a jobs nativos de cada app están para PA, ED y GE.
+            El contenido descargable sigue la política de esa app.
+        </p>
+
+        <h3 class="form-section-title">Cabecera y acciones</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Elemento</th><th>Qué es</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Resumen (Total / Completadas / Fallidas / Desde UI)</td>
+                    <td>Conteos de las corridas visibles con los filtros actuales.</td>
+                </tr>
+                <tr>
+                    <td>Ayuda (icono)</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>← Hub</td>
+                    <td>Vuelve al centro de control.</td>
+                </tr>
+                <tr>
+                    <td>Eliminar mis corridas</td>
+                    <td>Borra de una vez las que usted disparó (confirmación). No toca las de otros ni los jobs de cada app.</td>
+                </tr>
+                <tr>
+                    <td>Ejecutar</td>
+                    <td>Abre el disparo UI (sigue exigiendo Activo y permisos).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Filtros</h3>
+        <p class="help-intro">
+            El estado de la <strong>definición</strong> (En proceso / Activo / Inactivo) se filtra en el listado de pipelines, no aquí.
+        </p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Qué filtra</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Disparo</td>
+                    <td>Canal: UI, API, Watch, Scheduler, dependencia. Hoy el disparo manual queda como UI; el resto se rellenará al conectar esos módulos.</td>
+                </tr>
+                <tr>
+                    <td>Estado del run</td>
+                    <td>Cola, en curso, completada, fallida, cancelada — no el estado del pipeline.</td>
+                </tr>
+                <tr>
+                    <td>Desde / Hasta</td>
+                    <td>Rango de fecha de creación de la corrida.</td>
+                </tr>
+                <tr>
+                    <td>Filtrar / Limpiar</td>
+                    <td>Aplica o quita los criterios. Si no hay filas: <em>Ninguna corrida coincide con los filtros.</em></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columnas de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Qué muestra</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Cuándo</td><td>Fecha y hora de registro.</td></tr>
+                <tr><td>Disparo</td><td>Canal. Si es prueba, aparece la etiqueta <span class="mono">dry-run</span> (sí historial, no pulso del dashboard).</td></tr>
+                <tr><td>Actor</td><td>Usuario o identificador del disparo.</td></tr>
+                <tr><td>v</td><td>Versión publicada que se ejecutó (snapshot, no el borrador actual).</td></tr>
+                <tr><td>Estado</td><td>Cierre de la corrida completa.</td></tr>
+                <tr><td>Entrada</td><td>Nombre de archivo y hash corto (sha256).</td></tr>
+                <tr><td>Tiempo</td><td>Duración, si ya terminó.</td></tr>
+                <tr>
+                    <td>Auditoría</td>
+                    <td>Ficha del disparo y rail de pasos.</td>
+                </tr>
+                <tr>
+                    <td>Eliminar</td>
+                    <td>Quita esta ficha del orquestador (y del dashboard). Quien disparó puede borrar las suyas; el PA, cualquiera. No aplica si el run sigue en cola o en curso. Confirmación antes del POST.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Sin corridas: el vacío indica publicar y ejecutar para empezar la auditoría. Borrar aquí no borra el job nativo de Clean, Gate u otras apps.
+        </p>
+    </div>
+</div>
+{% endblock %}

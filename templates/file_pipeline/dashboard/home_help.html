@@ -1,0 +1,24 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Dashboard — File Pipeline{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Dashboard de corridas</h2>
+        <p>Pulso de compañía sobre pipelines que usted puede ver. No mezcla otras compañías ni sustituye el historial de un pipeline.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:pipeline_dashboard' %}">← Dashboard</a>
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+    <p>El pulso (corridas, completadas, fallidas, tasa y canales) cuenta solo corridas <strong>productivas</strong>. Si marcó <em>Vista previa (dry-run)</em> al ejecutar, esa corrida <strong>no sube</strong> esos números: aparece en <strong>Vistas previas</strong>, en fallos recientes y en actividad, con la etiqueta dry-run.</p>
+    <p>Para que el pulso se mueva: Ejecutar <strong>sin</strong> vista previa.</p>
+    <p>Canales: UI, API, Watch, Scheduler y dependencia. Watch/API aparecerán cuando esos disparadores escriban <code>trigger_source</code>.</p>
+    <p>Desde cada fila puede ir al hub, al historial o a la auditoría del último run.</p>
+</div></div>
+{% endblock %}
