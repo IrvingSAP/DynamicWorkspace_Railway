@@ -1147,6 +1147,88 @@ Alineados a [`../FILE_PIPELINE.md`](../FILE_PIPELINE.md) y [`../definition_app_F
 
 > Motor M1: `pipeline_project_service`. URLs: `/app/file-pipeline/pipelines/…`.
 
+### 3.17 Mensajes específicos — `apps.platform_api` (PLATFORM API · M1)
+
+Alineados a [`../definition_app_PLATFORM_API/pa_auth.md`](../definition_app_PLATFORM_API/pa_auth.md).
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Cliente creado | `success` | Cliente de máquina creado. Copie la key ahora; no se volverá a mostrar. |
+| Cliente actualizado | `success` | Cliente actualizado. La key no cambió. |
+| Key rotada | `success` | Key rotada. Copie la nueva key ahora; la anterior deja de autenticar. |
+| Cliente revocado | `success` | Cliente revocado. Ya no puede autenticar llamadas. |
+| Solo US | `error` | Solo el administrador de compañía (US) puede gestionar clientes de API. |
+| Compañía inactiva | `error` | La compañía no está activa. |
+| No encontrado | `error` | No se encontró el cliente de API. |
+| Validación | `error` + inline | Revise los datos marcados; no se pudo guardar. |
+| Descripción vacía | inline `description` | Indique para qué se usa esta API (sistema, proceso y responsable). |
+| Descripción larga | inline `description` | Máximo 2000 caracteres. |
+| Código duplicado | inline `code` | Ya existe un cliente con este código en la compañía. |
+| Ya revocado | `error` | Este cliente ya está revocado. |
+| Reveal expirado | `warning` | La key ya no está disponible en pantalla. Si la perdió, rote la credencial. |
+| Inesperado | `error` | Ocurrió un error al guardar. Si persiste, contacte al administrador. |
+| Bearer inválido (API) | JSON `user_message` | Credencial ausente o inválida. |
+| Scope insuficiente (API) | JSON `user_message` | No tiene permiso para esta operación. |
+| Evento de auditoría no encontrado | `error` | No se encontró el evento de auditoría. |
+| Política de proceso guardada | `success` | Política de proceso API actualizada. |
+| Rate limit (API) | JSON `user_message` | Demasiadas solicitudes. Espere un minuto e intente de nuevo. |
+| Archivo demasiado grande (API) | JSON / inline `file` | El archivo supera el tamaño máximo permitido para esta compañía. |
+| Tipo de archivo no permitido (API) | JSON / inline `file` | Tipo de archivo no permitido. Use los mismos tipos que en la carga de la app. |
+| Callback no permitido (API) | JSON / inline `callback_url` | La URL de callback no está permitida. |
+| Versión no publicada (API) | JSON `user_message` | Solo se puede ejecutar una versión publicada. |
+| Recurso opaco (API) | JSON `user_message` | No se encontró el recurso. |
+| Artifact expirado (API) | JSON `user_message` | El enlace del artifact no es válido o ya expiró. |
+| Kind desconocido (API) | JSON / inline `kind` | Kind no reconocido. |
+| wait inválido (API) | JSON / inline `wait` | wait debe ser sync o async. |
+| Falta project_slug (API) | JSON / inline `project_slug` | Indique project_slug para un job suelto. |
+| Falta pipeline_id (API) | JSON / inline `pipeline_id` | Indique pipeline_id para un pipeline. |
+| Destino mezclado (API) | JSON inline | No mezcle project_slug de job suelto con pipeline_id. |
+| Archivo requerido (API) | JSON / inline archivo | Falta el archivo requerido para este kind. |
+| Contrato validado (API) | JSON `user_message` | Metadatos del contrato válidos. Este endpoint no ejecuta el job. |
+| Kind fuera de MVP (API) | JSON / inline `kind` | En esta fase se puede ejecutar file_gate, dms, reverse, file_match, structure_scout, file_clean, file_split, file_merge o file_pipeline. |
+| Conflicto de idempotencia (API) | JSON `user_message` | Idempotency-Key ya usada con otra entrada. Use una key nueva. |
+| Job encolado (API) | JSON `user_message` | Job encolado. Consulte el detalle del job para el estado. |
+| Dry-run finalizado (API) | JSON `user_message` | Dry-run finalizado. No se generó salida de producción. |
+| Job cancelado (API) | JSON `user_message` | Job cancelado. |
+| Cancel no aplicable (API) | JSON `user_message` | Este job ya no se puede cancelar. |
+| retry_of_job_id inválido (API) | JSON / inline `retry_of_job_id` | Indique un job_id válido para el reintento. |
+| Kind vs proyecto (API) | JSON / inline `kind` | El kind no coincide con el tipo de proyecto. |
+| Job Gate ejecutado (API) | JSON `user_message` | Validación Gate finalizada. |
+| Job Pipe ejecutado (API) | JSON `user_message` | Transformación FilePipe finalizada. |
+| Job Reverse ejecutado (API) | JSON `user_message` | Generación Reverse Studio finalizada. |
+| Job Match ejecutado (API) | JSON `user_message` | Conciliación File Match finalizada. |
+| Match wait async (API) | JSON / inline `wait` | file_match solo admite wait=sync en esta fase. |
+| Job Scout ejecutado (API) | JSON `user_message` | Exploración Structure Scout finalizada. |
+| Scout wait async (API) | JSON / inline `wait` | structure_scout solo admite wait=sync en esta fase. |
+| Job Scout ejecutado (API) | JSON `user_message` | Exploración Structure Scout finalizada. |
+| Scout wait async (API) | JSON / inline `wait` | structure_scout solo admite wait=sync en esta fase. |
+| Job Clean ejecutado (API) | JSON `user_message` | Limpieza File Clean finalizada. |
+| Clean wait async (API) | JSON / inline `wait` | file_clean solo admite wait=sync en esta fase. |
+| Job Split ejecutado (API) | JSON `user_message` | Partición File Split finalizada. |
+| Job Merge ejecutado (API) | JSON `user_message` | Consolidación File Merge finalizada. |
+| Split/Merge wait async (API) | JSON / inline `wait` | file_split y file_merge solo admiten wait=sync en esta fase. |
+| Conflicto de idempotencia (API) | JSON `user_message` | Idempotency-Key ya usada con otra entrada. Use una key nueva. |
+| Job encolado (API) | JSON `user_message` | Job encolado. Consulte el detalle del job para el estado. |
+| Dry-run finalizado (API) | JSON `user_message` | Dry-run finalizado. No se generó salida de producción. |
+| Job cancelado (API) | JSON `user_message` | Job cancelado. |
+| Cancel no aplicable (API) | JSON `user_message` | Este job ya no se puede cancelar. |
+| retry_of_job_id inválido (API) | JSON / inline `retry_of_job_id` | Indique un job_id válido para el reintento. |
+| Kind vs proyecto (API) | JSON / inline `kind` | El kind no coincide con el tipo de proyecto. |
+| Job Gate ejecutado (API) | JSON `user_message` | Validación Gate finalizada. |
+| Job Pipe ejecutado (API) | JSON `user_message` | Transformación FilePipe finalizada. |
+| Pipeline ejecutado (API) | JSON `user_message` | Corrida de pipeline finalizada. |
+| Pipeline inactivo (API) | JSON `user_message` | El pipeline no está activo o no tiene versión publicada. |
+| Permiso de paso (API) | JSON `user_message` | No tiene permiso para ejecutar uno de los proyectos de paso. |
+| Job encontrado (API) | JSON `user_message` | Job encontrado. |
+| Listado de jobs (API) | JSON `user_message` | Listado de jobs. |
+| Artifact no disponible (API) | JSON `user_message` | El artifact no está disponible. |
+| Catálogo de paths (API) | JSON `user_message` | Catálogo de paths canónicos. |
+| Catálogo de integración (API) | JSON `user_message` | Catálogo de integración: runners por kind. |
+| Webhook guardado | `success` | Webhook del cliente actualizado. |
+| Webhook desactivado | `success` | Webhook desactivado. |
+| URL de webhook inválida | inline `webhook_url` | La URL de callback no está permitida. |
+| Eventos de webhook vacíos | inline `webhook_events` | Seleccione al menos un evento. |
+
 
 ---
 

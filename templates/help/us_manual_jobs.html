@@ -1,0 +1,289 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Manual — Jobs sueltos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_us.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>Manuales</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Jobs sueltos</span>
+</nav>
+
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Manual de usuario · <span class="role-badge">US</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>Jobs sueltos por HTTP</h2>
+        <p>
+            Para quien <strong>nunca ha disparado</strong> DynamicWorkspace por API.
+            Las pantallas de Gate, Pipe o Split <strong>diseñan</strong> el trabajo; aquí se
+            <strong>identifica la máquina</strong> y se <strong>dispara</strong> el mismo job publicado.
+        </p>
+        <p>
+            Un paso cada vez. Los recuadros de comando son <strong>la misma petición</strong> en desarrollo y en producción:
+            cambia el <strong>host</strong>, la <strong>key</strong> y, en Windows, el binario <span class="mono">curl.exe</span>.
+            No pegue keys en chats. El circuito de cadenas publicadas está en <strong>Pipelines</strong>.
+        </p>
+    </div>
+    <aside class="guide-hero-aside" aria-label="Mapa">
+        <h3>Mapa</h3>
+        <ol class="guide-quick-path">
+            <li>Entrar como US y abrir API</li>
+            <li>Crear cliente y copiar la key</li>
+            <li>Contrato, Paths, Integración</li>
+            <li>Política de seguridad</li>
+            <li>Proyecto publicado (slug)</li>
+            <li>whoami y validate</li>
+            <li>POST /jobs/run</li>
+            <li>Detalle, report, output, listado</li>
+            <li>Auditoría e historial UF</li>
+            <li>Rotar, cancelar, revocar</li>
+        </ol>
+    </aside>
+</div>
+
+<div class="guide-role-strip" aria-label="Quién">
+    <span class="label">Quién</span>
+    <span class="guide-role-item"><span class="role-code role-code--pa">US</span><span>Consola: clientes, política, esta guía</span></span>
+    <span class="guide-role-item"><span class="role-code">Máquina</span><span>Bearer · form-data · no cookie de sesión</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--ed">UF</span><span>Publica el proyecto que el run apuntará</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--co">Postman</span><span>Misma petición que curl; Token = key sola</span></span>
+</div>
+
+<div class="guide-layout">
+    <nav class="guide-spine" aria-label="Índice">
+        <h3>Secciones</h3>
+        <nav>
+            <a href="#antes">Antes de HTTP</a>
+            <a href="#entorno">Desarrollo y producción</a>
+            <a href="#postman">Postman</a>
+            <a href="#paso-1">1 · Entrar</a>
+            <a href="#paso-2">2 · Cliente</a>
+            <a href="#paso-3">3 · Contrato</a>
+            <a href="#paso-4">4 · Seguridad</a>
+            <a href="#paso-5">5 · Slug</a>
+            <a href="#paso-6">6 · whoami</a>
+            <a href="#paso-7">7 · Run</a>
+            <a href="#paso-8">8 · Consultar</a>
+            <a href="#paso-9">9 · Auditoría</a>
+            <a href="#paso-10">10 · Rotar</a>
+            <a href="#fallos">Si algo falla</a>
+        </nav>
+    </nav>
+
+    <div class="guide-flows">
+        <article class="flow-card" id="antes">
+            <div class="flow-card-marker" aria-hidden="true"><span class="flow-card-step">0</span><span class="flow-card-line"></span></div>
+            <div class="flow-card-body">
+                <header class="flow-card-header"><h3>Antes de la primera llamada</h3></header>
+                <p class="flow-card-purpose">
+                    Compañía activa, usuario US (no UF), 2FA si aplica, y un proyecto <strong>publicado</strong>
+                    (cualquier kind cableado: Gate, Split, Clean…). El slug es el de UF, no un UUID de API.
+                </p>
+                <p class="hint"><a href="{% url 'platform_api:client_list' %}">Abrir Clientes de máquina →</a></p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="entorno">
+            <div class="flow-card-marker" aria-hidden="true"><span class="flow-card-step">E</span><span class="flow-card-line"></span></div>
+            <div class="flow-card-body">
+                <header class="flow-card-header"><h3>Desarrollo vs producción</h3></header>
+                <p class="flow-card-purpose">
+                    Los <strong>paths</strong> no cambian: siempre <span class="mono">/api/v1/…</span> (whoami, validate, run, jobs/{job_id}, report, output, cancel).
+                    Lo que cambia es <strong>dónde</strong> vive el servidor y <strong>qué cliente</strong> usa (sandbox o producción). No mezcle una key <span class="mono">dw_test_</span> contra el host de prod, ni al revés.
+                </p>
+                <p class="manual-shell-note">
+                    Base de <em>esta</em> instancia (la que está leyendo ahora):
+                    <span class="mono">{{ request.scheme }}://{{ request.get_host }}</span>
+                </p>
+                <div class="manual-env">
+                    <div class="manual-env-pane">
+                        <h4>Desarrollo (local)</h4>
+                        <ul>
+                            <li>URL base: <span class="mono">http://127.0.0.1:8000</span> (o el puerto de <span class="mono">runserver</span>).</li>
+                            <li>Cliente: entorno <strong>Sandbox</strong>. Key <span class="mono">dw_test_…</span>.</li>
+                            <li>Windows PowerShell: <span class="mono">curl.exe</span> (no el alias <span class="mono">curl</span>).</li>
+                            <li>Linux/macOS o Git Bash: <span class="mono">curl</span> (mismos flags).</li>
+                            <li>Postman: <span class="mono">{% verbatim %}{{base}}{% endverbatim %}</span> = esa URL local, sin barra final.</li>
+                        </ul>
+                    </div>
+                    <div class="manual-env-pane">
+                        <h4>Producción (desplegado)</h4>
+                        <ul>
+                            <li>URL base: <span class="mono">https://</span> + el dominio del servidor (nunca <span class="mono">127.0.0.1</span> salvo túnel).</li>
+                            <li>Cliente: entorno <strong>Producción</strong> (otro cliente). Key <span class="mono">dw_live_…</span>.</li>
+                            <li>Desde un PC Windows hacia prod: sigue valiendo <span class="mono">curl.exe</span> con esa base HTTPS.</li>
+                            <li>Desde Linux, CI o el ERP: <span class="mono">curl</span> o el cliente HTTP del lenguaje; mismos headers y <span class="mono">-F</span>.</li>
+                            <li>Postman: otro environment (o cambie <span class="mono">base</span> y <span class="mono">key</span>).</li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="manual-shell-note">
+                    En los recuadros siguientes, <span class="mono">{% verbatim %}{{base}}{% endverbatim %}</span> es esa URL (sin <span class="mono">/api</span>).
+                    Sustituya <span class="mono">dw_test_…</span> por la key del cliente de ese entorno. El <span class="mono">project_slug</span> es el publicado en <em>esa</em> compañía.
+                </p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="postman">
+            <div class="flow-card-marker" aria-hidden="true"><span class="flow-card-step">P</span><span class="flow-card-line"></span></div>
+            <div class="flow-card-body">
+                <header class="flow-card-header"><h3>Postman = la misma API que curl</h3></header>
+                <p class="flow-card-purpose">
+                    El navegador no manda Bearer al pegar una URL. En el environment, <span class="mono">base</span> es el host
+                    (local o HTTPS de prod, sin barra final) y <span class="mono">key</span> es el secret <strong>sin</strong> la palabra Bearer.
+                    Authorization → Bearer Token → <span class="mono">{% verbatim %}{{key}}{% endverbatim %}</span>.
+                    Dos environments (dev / prod) evitan pegar la key sandbox contra el dominio real.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>GET (whoami, contract, job)</h4>
+                        <p>Body <strong>none</strong>. No cree el header Authorization a mano si ya usa la pestaña Auth.</p>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>POST run / validate</h4>
+                        <p>Body <strong>form-data</strong>. El archivo va como tipo File, no raw JSON. Run: header <span class="mono">Idempotency-Key</span>.</p>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="paso-1">
+            <div class="flow-card-marker" aria-hidden="true"><span class="flow-card-step">1</span><span class="flow-card-line"></span></div>
+            <div class="flow-card-body">
+                <header class="flow-card-header"><h3>Entrar como US y abrir API</h3></header>
+                <p class="flow-card-purpose">PLATFORM API no está en el menú de archivos UF. Usted entra a la consola; el ERP usará el Bearer después.</p>
+                <ol class="manual-do">
+                    <li>Inicie sesión US (correo / TOTP si aplica).</li>
+                    <li>Menú <strong>API</strong> → Clientes de máquina.</li>
+                    <li>Debe ver <span class="mono">/app/platform-api/clientes/</span>.</li>
+                </ol>
+                <p>Si no aparece API: no es perfil US. No haga curl todavía: no hay key.</p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="paso-2">
+            <div class="flow-card-marker" aria-hidden="true"><span class="flow-card-step">2</span><span class="flow-card-line"></span></div>
+            <div class="flow-card-body">
+                <header class="flow-card-header"><h3>Crear el cliente y copiar la key</h3></header>
+                <p class="flow-card-purpose">Un cliente = una identidad estable. La key se muestra <strong>una vez</strong> (alta o rotar). Copie al cofre; no recargue Key emitida.</p>
+                <ol class="manual-do">
+                    <li>+ Nuevo cliente: código, sandbox o producción, scopes.</li>
+                    <li>Scopes mínimos de prueba: <span class="mono">jobs:run</span>, <span class="mono">jobs:read</span>, <span class="mono">artifacts:download</span>. Cancel y pipeline si los va a usar.</li>
+                    <li>Sandbox: prefijo <span class="mono">dw_test_</span>. Producción: otro cliente.</li>
+                </ol>
+            </div>
+        </article>
+
+        <article class="flow-card" id="paso-3">
+            <div class="flow-card-marker" aria-hidden="true"><span class="flow-card-step">3</span><span class="flow-card-line"></span></div>
+            <div class="flow-card-body">
+                <header class="flow-card-header"><h3>Contrato, Paths e Integración</h3></header>
+                <p class="flow-card-purpose">Lea las tres pantallas (y sus <span class="mono">?</span>). No ejecutan jobs. Confirme que su kind está <em>cableado</em> y el path de run es uno solo.</p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="paso-4">
+            <div class="flow-card-marker" aria-hidden="true"><span class="flow-card-step">4</span><span class="flow-card-line"></span></div>
+            <div class="flow-card-body">
+                <header class="flow-card-header"><h3>Política de seguridad</h3></header>
+                <p class="flow-card-purpose">Tamaño, rate, TTL, extensiones. whoami devolverá esos números. Guardar política no es Rotar key.</p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="paso-5">
+            <div class="flow-card-marker" aria-hidden="true"><span class="flow-card-step">5</span><span class="flow-card-line"></span></div>
+            <div class="flow-card-body">
+                <header class="flow-card-header"><h3>Proyecto publicado</h3></header>
+                <p class="flow-card-purpose">En UF, anote el <span class="mono">project_slug</span>. Sin versión publicada el run responde 409. Un Split de varias partes no tendrá un solo <span class="mono">output_url</span>.</p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="paso-6">
+            <div class="flow-card-marker" aria-hidden="true"><span class="flow-card-step">6</span><span class="flow-card-line"></span></div>
+            <div class="flow-card-body">
+                <header class="flow-card-header"><h3>whoami, validate y contract</h3></header>
+                <p class="flow-card-purpose">Primera prueba de Bearer. Validate no ejecuta el motor. Contract lista kinds.</p>
+                <p class="manual-shell-note">Plantilla para ambos entornos. En desarrollo, <span class="mono">{% verbatim %}{{base}}{% endverbatim %}</span> = <span class="mono">http://127.0.0.1:8000</span> y key <span class="mono">dw_test_</span>. En producción, <span class="mono">https://su-dominio</span> y key <span class="mono">dw_live_</span>. Windows PowerShell: <span class="mono">curl.exe</span>. Linux/CI: el mismo comando con <span class="mono">curl</span>.</p>
+                <pre class="manual-shell">curl.exe -sS -H "Authorization: Bearer dw_test_…" "{% verbatim %}{{base}}{% endverbatim %}/api/v1/whoami"</pre>
+                <pre class="manual-shell">curl.exe -sS -H "Authorization: Bearer dw_test_…" -F "kind=file_split" -F "project_slug=su-slug" -F "wait=sync" "{% verbatim %}{{base}}{% endverbatim %}/api/v1/jobs/validate"</pre>
+                <pre class="manual-shell">curl.exe -sS -H "Authorization: Bearer dw_test_…" "{% verbatim %}{{base}}{% endverbatim %}/api/v1/contract"</pre>
+                <p>200 + <span class="mono">ok: true</span>. 401: key mal pegada o Bearer duplicado en Postman. URL sin <span class="mono">/j/</span> extra.</p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="paso-7">
+            <div class="flow-card-marker" aria-hidden="true"><span class="flow-card-step">7</span><span class="flow-card-line"></span></div>
+            <div class="flow-card-body">
+                <header class="flow-card-header"><h3>Ejecutar (POST /jobs/run)</h3></header>
+                <p class="flow-card-purpose">Sí corre el runner. Misma Idempotency-Key + mismo archivo = <strong>replay</strong> (mismo job_id). Key nueva = otro job.</p>
+                <pre class="manual-shell">curl.exe -sS -H "Authorization: Bearer dw_test_…" -H "Idempotency-Key: su-clave-unica" -F "kind=file_split" -F "project_slug=su-slug" -F "wait=sync" -F "file=@archivo.txt" "{% verbatim %}{{base}}{% endverbatim %}/api/v1/jobs/run"</pre>
+                <p>Anote el <span class="mono">job_id</span>. No escriba la palabra GET/POST en PowerShell.</p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="paso-8">
+            <div class="flow-card-marker" aria-hidden="true"><span class="flow-card-step">8</span><span class="flow-card-line"></span></div>
+            <div class="flow-card-body">
+                <header class="flow-card-header"><h3>Detalle, informe, salida, listado</h3></header>
+                <p class="flow-card-purpose">A = envelope. B = manifiesto (no tiene ok/job_id). C = un archivo de negocio; Split de N partes → 404 JSON «El artifact no está disponible.» D = listado de compañía.</p>
+                <pre class="manual-shell">curl.exe -sS -H "Authorization: Bearer dw_test_…" "{% verbatim %}{{base}}{% endverbatim %}/api/v1/jobs/{job_id}"</pre>
+                <pre class="manual-shell">curl.exe -sS -L -H "Authorization: Bearer dw_test_…" --output informe.bin "{% verbatim %}{{base}}{% endverbatim %}/api/v1/jobs/{job_id}/report"</pre>
+                <pre class="manual-shell">curl.exe -sS -L -H "Authorization: Bearer dw_test_…" --output salida.bin "{% verbatim %}{{base}}{% endverbatim %}/api/v1/jobs/{job_id}/output"</pre>
+                <p>URL entre <strong>comillas</strong> y <span class="mono">--output</span> (no <span class="mono">-o</span>) para que PowerShell no recorte <span class="mono">/output</span>. Listado: Params <span class="mono">kind</span> y <span class="mono">limit</span>, path sin UUID.</p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="paso-9">
+            <div class="flow-card-marker" aria-hidden="true"><span class="flow-card-step">9</span><span class="flow-card-line"></span></div>
+            <div class="flow-card-body">
+                <header class="flow-card-header"><h3>Auditoría US vs historial UF</h3></header>
+                <p class="flow-card-purpose">Menú Auditoría = ciclo de vida de la <strong>key</strong>. El JSON del job trae <span class="mono">audit</span> del disparo HTTP. Las partes de un Split se ven en el historial de File Split/Merge, no en /output.</p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="paso-10">
+            <div class="flow-card-marker" aria-hidden="true"><span class="flow-card-step">10</span></div>
+            <div class="flow-card-body">
+                <header class="flow-card-header"><h3>Rotar, cancelar, revocar</h3></header>
+                <ol class="manual-do">
+                    <li><strong>Rotar</strong> (no es Guardar configuración) → Key emitida → whoami con la vieja = 401 <span class="mono">invalid_token</span>; con la nueva = 200, mismo client_code.</li>
+                    <li><strong>Cancelar</strong> un Split ya <span class="mono">completed</span> = 409 <span class="mono">cancel_not_allowed</span>. El historial no se borra. Marque <span class="mono">jobs:cancel</span> si falta.</li>
+                    <li><strong>Revocar</strong> cierra el sandbox. whoami = 401. No hay des-revocar: otro cliente. Los jobs corridos permanecen.</li>
+                </ol>
+                <pre class="manual-shell">curl.exe -sS -X POST -H "Authorization: Bearer dw_test_…" "{% verbatim %}{{base}}{% endverbatim %}/api/v1/jobs/{job_id}/cancel"</pre>
+            </div>
+        </article>
+
+        <article class="flow-card" id="fallos">
+            <div class="flow-card-marker" aria-hidden="true"><span class="flow-card-step">!</span></div>
+            <div class="flow-card-body">
+                <header class="flow-card-header"><h3>Si algo falla</h3></header>
+                <table class="help-table">
+                    <thead><tr><th>Síntoma</th><th>Qué es</th></tr></thead>
+                    <tbody>
+                        <tr><td><span class="mono">GET</span> no es un cmdlet</td><td>Pegó el método HTTP en PowerShell. Use curl.exe.</td></tr>
+                        <tr><td>401</td><td>Key recortada, Bearer duplicado, o ya rotó/revocó.</td></tr>
+                        <tr><td>HTML 404 en <span class="mono">/j/api/v1/…</span></td><td>Typo: quite la <span class="mono">j</span>.</td></tr>
+                        <tr><td>404 JSON en /output</td><td>El job existe; no hay un solo archivo (p. ej. Split).</td></tr>
+                        <tr><td>Archivo <span class="mono">utputFormat</span></td><td>PowerShell partió la URL. Comillas + --output.</td></tr>
+                        <tr><td>403 artifacts</td><td>Falta scope <span class="mono">artifacts:download</span>.</td></tr>
+                        <tr><td>401 con key que «parece» correcta</td><td>Cliente sandbox contra URL de prod (o al revés). Use el par host + key de la sección Entorno.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}

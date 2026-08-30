@@ -331,11 +331,13 @@ def _write_reports(project: Project, job: DmsExecutionJob, gate: dict) -> str:
 
 
 @transaction.atomic
-def validate_and_run(user, project: Project, uploaded_file) -> OperationResult:
+def validate_and_run(
+    user, project: Project, uploaded_file, *, require_membership: bool = True
+) -> OperationResult:
     """Sube el archivo, ejecuta la validación síncrona y persiste el job."""
     if project.project_kind != Project.KIND_FILE_GATE:
         return OperationResult.failure("forbidden", "Este proyecto no es de tipo FILE GATE.")
-    if not user_can_execute(user, project):
+    if require_membership and not user_can_execute(user, project):
         return OperationResult.failure(
             "forbidden",
             "No tiene permiso para validar archivos en este proyecto.",

@@ -1,0 +1,150 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Integración API{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_us.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:integration_guide' %}">Integración API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">US</span></p>
+        <h2>Ayuda — Integración transversal</h2>
+        <p>Qué runner usa cada <code>kind</code> y qué está cableado hoy. No ejecuta jobs ni define el envelope JSON.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'platform_api:openapi_guide' %}" class="btn btn-secondary">Paths</a>
+        <a href="{% url 'platform_api:integration_guide' %}" class="btn btn-secondary">← Volver a Integración</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve esta página</h3>
+        <p class="help-intro">
+            PLATFORM API (<code>{{ catalog.identity.product_code }}</code>) no es una app de archivos:
+            no tiene <code>project_kind</code> ni ítem en el menú UF.
+            Invoca el <strong>mismo runner</strong> que la UI de cada producto.
+            El inventario vive en código; la máquina lo lee en
+            <code>GET {{ catalog.paths.integration|default:"/api/v1/integration" }}</code>.
+        </p>
+        <p class="help-intro">
+            Un solo disparo HTTP: <code>POST {{ catalog.single_run_path }}</code>.
+            El atajo <code>POST {{ catalog.pipeline_alias }}</code> es el mismo run con
+            <code>kind=file_pipeline</code>.
+        </p>
+
+        <h3 class="form-section-title">Quién</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Quién</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>US</td>
+                    <td>Consulta este mapa para el integrador: qué kind está vivo y cuál todavía no.</td>
+                </tr>
+                <tr>
+                    <td>Máquina</td>
+                    <td>Bearer + <code>kind</code> en el body. No elige un path por app.</td>
+                </tr>
+                <tr>
+                    <td>UF</td>
+                    <td>Sigue ejecutando en Gate, Pipe, Match, Clean, etc. El <code>job_id</code> es el del historial de esa app; <code>GET /jobs/{id}</code> usa el mismo id (otra tabla según el kind, mismo path).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Cómo leer “Cableado”</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Valor</th><th>Significado</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="tone-ok">Sí</span></td>
+                    <td>
+                        <code>POST /jobs/run</code> ya llama al runner.
+                        Hoy: {% for k in catalog.wired_kinds %}<code>{{ k }}</code>{% if not forloop.last %}, {% endif %}{% endfor %}.
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="tone-fail">No</span></td>
+                    <td>El kind está en el contrato y el servicio objetivo está anotado; el despacho HTTP aún no lo enruta.</td>
+                </tr>
+                <tr>
+                    <td><span class="tone-fail">sin app</span></td>
+                    <td>El kind está reservado (p. ej. repair, profiler) pero la app no está instalada.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Fase A = Gate y Pipe. Fase B = Reverse, Match, Scout y Pipeline (cableados).
+            Fase C = Clean, Split y Merge (cableados). Repair y Profiler siguen en el catálogo sin app instalada.
+        </p>
+
+        <h3 class="form-section-title">Qué reusa y qué no</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Reusa</th><th>No reusa</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        {% for item in catalog.reuses %}{{ item }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+                    </td>
+                    <td>
+                        {% for item in catalog.does_not_reuse %}{{ item }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">UI ↔ API</h3>
+        <p class="help-intro">
+            Ejecutar en la app y ejecutar por API deben dejar el <strong>mismo</strong> <code>job_id</code>
+            (o <code>pipeline_run_id</code>) en el historial de esa app. La API no inventa un id paralelo:
+            consulta y artifacts van a <code>/jobs/{id}</code> con ese id. El tablero cuenta
+            <code>trigger_source=api</code> aparte de UI, Watch y Scheduler.
+        </p>
+        <table class="help-table">
+            <thead>
+                <tr><th>En la app</th><th>En la API</th></tr>
+            </thead>
+            <tbody>
+                {% for row in catalog.ui_api_map %}
+                <tr>
+                    <td>{{ row.ui }}</td>
+                    <td class="mono">{{ row.api }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="help-intro">{{ catalog.watch_scheduler }}</p>
+        <p class="help-intro">{{ catalog.archive }}</p>
+
+        <h3 class="form-section-title">Fuera de esta API</h3>
+        <ul>
+            <li><code>workspace</code> (Worksheets): no es API de archivos.</li>
+            <li>Diseñadores de esquema, mapeo o pasos de pipeline: viven en cada app.</li>
+            <li>Keys y scopes: <a href="{% url 'platform_api:client_list' %}">Clientes</a>.</li>
+            <li>Forma JSON y <code>wait</code>: <a href="{% url 'platform_api:contract_guide' %}">Contrato</a>.</li>
+            <li>Lista de URLs: <a href="{% url 'platform_api:openapi_guide' %}">Paths</a>.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Jobs sueltos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_us.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>Manuales</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Jobs sueltos</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Manuales · <span class="role-badge">US</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>Cómo leer Jobs sueltos</h2>
+        <p>
+            El procedimiento completo (diez pasos, curl, Postman, errores) está en el ítem
+            <strong>Jobs sueltos</strong> de este menú, no en esta página.
+            Aquí solo se ubica el recorte: no sustituye Clientes, Contrato ni las ayudas <span class="mono">?</span> de cada pantalla API.
+        </p>
+    </div>
+</div>
+<p class="hint"><a href="{% url 'help:us_manual_jobs' %}">Abrir el manual de Jobs sueltos →</a></p>
+{% endblock %}

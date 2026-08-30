@@ -406,3 +406,87 @@
         padding: 14px 16px 16px;
     }
 }
+
+/* Manual de usuario (Jobs sueltos) — procedimiento, no diario de QA */
+.manual-shell {
+    margin: 12px 0 0;
+    padding: 12px 14px;
+    background: var(--surface-inset, rgba(28, 25, 23, 0.04));
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--ink);
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+
+.manual-do {
+    margin: 0;
+    padding-left: 1.15rem;
+}
+
+.manual-do li {
+    margin: 4px 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.flow-card-body .hint a {
+    font-weight: 500;
+}
+
+.manual-env {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.manual-env-pane {
+    padding: 12px 14px;
+    background: var(--surface-inset, rgba(28, 25, 23, 0.04));
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-sm);
+}
+
+.manual-env-pane h4 {
+    margin: 0 0 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+}
+
+.manual-env-pane p,
+.manual-env-pane li {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink);
+}
+
+.manual-env-pane ul {
+    margin: 8px 0 0;
+    padding-left: 1.1rem;
+}
+
+.manual-env-pane .mono {
+    font-size: 12px;
+}
+
+.manual-shell-note {
+    margin: 8px 0 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--ink-tertiary);
+}
+
+@media (max-width: 720px) {
+    .manual-env {
+        grid-template-columns: 1fr;
+    }
+}
+

@@ -1,0 +1,289 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — {{ client.code }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_us.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:client_list' %}">API</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'platform_api:client_detail' client.pk %}">{{ client.code }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ client.code }}</span></p>
+        <h2>Ayuda — Detalle del cliente de máquina</h2>
+        <p>Qué hace cada bloque de la ficha: identidad, configuración, scopes, webhook y entregas. La key en claro no se muestra aquí.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'platform_api:client_detail' client.pk %}" class="btn btn-secondary">← Volver al detalle</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve esta página</h3>
+        <p class="help-intro">
+            Ficha del cliente <strong>{{ client.code }}</strong> ({{ client.get_environment_display }}).
+            Es el lugar para <strong>ajustar</strong> qué puede hacer la máquina y, si hace falta,
+            avisarle a un sistema externo cuando un job termina.
+            No es la pantalla de alta: el Bearer ya se emitió (o se emitirá al rotar).
+            Aquí solo verá una <strong>pista</strong> (<span class="mono">…{{ client.key_hint }}</span>), no el secreto.
+        </p>
+        <p class="help-intro">
+            Hay <strong>dos formularios independientes</strong> si el cliente está activo:
+            <em>Guardar configuración</em> (código, nombre, descripción, scopes) y
+            <em>Guardar webhook</em> (callback HTTPS). Guardar uno no envía el otro.
+        </p>
+        <p class="help-intro">
+            <strong>Quién:</strong> US de esta compañía. Un cliente <strong>revocado</strong> es de solo lectura: no hay formularios ni rotar.
+        </p>
+
+        <h3 class="form-section-title">Cabecera (identidad)</h3>
+        <p class="help-intro">El subtítulo bajo el código resume el estado de la máquina. No se edita ahí; es informativo.</p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Qué ve</th><th>Función</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Título (código)</td>
+                    <td>Identificador estable del cliente. Se puede cambiar en el formulario; debe seguir único en la compañía.</td>
+                </tr>
+                <tr>
+                    <td>Entorno (Sandbox / Producción)</td>
+                    <td>Se eligió al crear el cliente. Prefija la key (<span class="mono">dw_test_</span> o <span class="mono">dw_live_</span>). <strong>No se cambia</strong> en esta ficha: para otro entorno cree otro cliente.</td>
+                </tr>
+                <tr>
+                    <td>Activo / Revocado</td>
+                    <td><strong>Activo:</strong> el Bearer actual puede autenticar. <strong>Revocado:</strong> ninguna key de este cliente sirve; la ficha queda de consulta.</td>
+                </tr>
+                <tr>
+                    <td>Último uso</td>
+                    <td>Fecha/hora de la última petición HTTP autenticada con esta key. Vacío = aún no ha llamado a la API (o no se ha registrado uso).</td>
+                </tr>
+                <tr>
+                    <td>Pista <span class="mono">…{{ client.key_hint }}</span></td>
+                    <td>Últimos caracteres del secreto, para reconocer qué key está en el cofre del integrador <em>sin</em> volver a mostrarla.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Botones de la cabecera</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Función</th><th>Cuándo usarla</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ayuda</td>
+                    <td>Abre esta página.</td>
+                    <td>Siempre.</td>
+                </tr>
+                <tr>
+                    <td>← Listado</td>
+                    <td>Vuelve a todos los clientes de la compañía.</td>
+                    <td>Terminar de editar o cambiar de cliente.</td>
+                </tr>
+                <tr>
+                    <td>Auditoría</td>
+                    <td>Línea de tiempo de <em>este</em> cliente (alta, cambios de scopes, rotación, revocación, etc.). No es el listado global de Auditoría API.</td>
+                    <td>Investigar un corte: «¿quién rotó?» o «¿cuándo se quitó un scope?».</td>
+                </tr>
+                <tr>
+                    <td>Rotar key</td>
+                    <td>Emite un Bearer <strong>nuevo</strong> y abre la pantalla de un solo uso. El anterior deja de autenticar de inmediato. No reejecuta jobs ni cambia scopes.</td>
+                    <td>Key filtrada, persona que la tenía sale del equipo, o rotación periódica. Solo si el cliente está activo.</td>
+                </tr>
+                <tr>
+                    <td>Revocar</td>
+                    <td>Baja definitiva de este cliente: ninguna key suya autentica. Pide confirmación. No se «des-revoca» en esta ficha; si hace falta una key, cree <strong>otro</strong> cliente.</td>
+                    <td>El integrador ya no debe entrar (contrato terminado, compromiso de seguridad). Solo si está activo.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Configuración (la key no cambia)</h3>
+        <p class="help-intro">
+            Primer panel, botón <strong>Guardar configuración</strong>. Sirve para documentación y permisos.
+            Guardar aquí <strong>no</strong> rota el Bearer ni toca el webhook.
+        </p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Obligatorio</th><th>Función</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Código</td>
+                    <td>Sí</td>
+                    <td>Identificador técnico en listados y auditoría. Minúsculas, números y guiones; único por compañía. Cambiarlo no invalida la key.</td>
+                </tr>
+                <tr>
+                    <td>Uso / nombre</td>
+                    <td>No</td>
+                    <td>Etiqueta corta para humanos (quién consume: ERP, RPA…). No autoriza nada.</td>
+                </tr>
+                <tr>
+                    <td>Descripción</td>
+                    <td>Sí</td>
+                    <td>Para qué existe esta API: sistema, proceso, horario, responsable. Máx. 2000 caracteres. Tampoco autoriza: eso son los scopes.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Scopes (permisos de la máquina)</h3>
+        <p class="help-intro">
+            Cada casilla es un permiso HTTP. Se aplican en la <strong>siguiente</strong> llamada; no hay que emitir key nueva.
+            Marque solo lo que el integrador necesita. No es un token de administrador de compañía.
+        </p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Scope</th><th>Qué permite</th><th>Si no está marcado</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>jobs:run</code></td>
+                    <td>Disparar un job suelto (<code>POST /api/v1/jobs/run</code>) con un <code>kind</code> (Gate, Pipe, Match, etc.).</td>
+                    <td>No puede ejecutar jobs sueltos (sí podría ejecutar pipeline si tiene <code>pipeline:run</code>).</td>
+                </tr>
+                <tr>
+                    <td><code>jobs:read</code></td>
+                    <td>Consultar listado y detalle (<code>GET /api/v1/jobs</code>, <code>GET /api/v1/jobs/{id}</code>). Es el polling: saber si el job terminó.</td>
+                    <td>No puede preguntar el estado del job por HTTP.</td>
+                </tr>
+                <tr>
+                    <td><code>jobs:cancel</code></td>
+                    <td>Cancelar un job aún cancelable (<code>POST /api/v1/jobs/{id}/cancel</code>). En la práctica aplica a jobs DMS en cola y a pipeline no terminal.</td>
+                    <td>Cancel devuelve error de permiso o no aplicable.</td>
+                </tr>
+                <tr>
+                    <td><code>pipeline:run</code></td>
+                    <td>Disparar un pipeline publicado (<code>kind=file_pipeline</code> o atajo <code>POST /api/v1/pipelines/{id}/runs</code>).</td>
+                    <td>No puede orquestar cadenas; sí jobs sueltos si tiene <code>jobs:run</code>.</td>
+                </tr>
+                <tr>
+                    <td><code>artifacts:download</code></td>
+                    <td>Bajar informe o archivo de salida (<code>GET …/report</code>, <code>GET …/output</code>) con Bearer. Sin este scope aún puede leer metadatos si tiene <code>jobs:read</code>; los bytes piden este scope o un token firmado en la URL.</td>
+                    <td>Metadatos sí (con read); descarga 403/404 según el caso.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Webhook (aviso al terminar el job)</h3>
+        <p class="help-intro">
+            Segundo panel, botón <strong>Guardar webhook</strong>. Optional.
+            DynamicWorkspace hace <strong>POST HTTPS</strong> a su sistema cuando el job llega a un estado que usted suscribió.
+            El cuerpo <strong>no lleva el archivo</strong>: lleva ids, estado y enlaces; el integrador descarga con GET autenticado.
+            <strong>No es obligatorio:</strong> sin webhook el cliente sigue haciendo polling a <code>GET /api/v1/jobs/{id}</code>.
+        </p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Función</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cofre HMAC (una vez)</td>
+                    <td>Si acaba de generar o rotar el secreto, aparece el valor en claro <strong>una sola vez</strong>. Cópielo al integrador. Después solo verá una pista <span class="mono">…xxxx</span>.</td>
+                </tr>
+                <tr>
+                    <td>Pista del secreto</td>
+                    <td>Últimos caracteres del HMAC, para reconocer el secreto en el cofre sin revelarlo.</td>
+                </tr>
+                <tr>
+                    <td>URL de callback (HTTPS)</td>
+                    <td>Dónde recibe el POST. Debe ser HTTPS. El <strong>host</strong> tiene que estar en la lista blanca de <a href="{% url 'platform_api:security_policy' %}">Seguridad API</a>. Si no está permitido, el guardado falla (no se envía a un dominio arbitrario: evita SSRF).</td>
+                </tr>
+                <tr>
+                    <td>Webhook activo</td>
+                    <td>Enciende o apaga el envío. Puede dejar URL y eventos guardados y desactivar el disparo sin borrar la configuración.</td>
+                </tr>
+                <tr>
+                    <td><code>job.completed</code></td>
+                    <td>Avisar cuando el job termina bien (o con el criterio de «completado» del kind).</td>
+                </tr>
+                <tr>
+                    <td><code>job.failed</code></td>
+                    <td>Avisar cuando el job falla.</td>
+                </tr>
+                <tr>
+                    <td><code>job.cancelled</code></td>
+                    <td>Avisar cuando el job se cancela.</td>
+                </tr>
+                <tr>
+                    <td>Secreto HMAC</td>
+                    <td>Si lo deja <strong>vacío</strong> al guardar, el sistema genera uno (y lo muestra una vez si es nuevo). Si pega un valor, usa ese. El integrador valida la firma del POST con este secreto (no es el Bearer de la API).</td>
+                </tr>
+                <tr>
+                    <td>Rotar secreto HMAC ahora</td>
+                    <td>Marque y guarde webhook para invalidar el HMAC anterior y emitir uno nuevo (pantalla de un solo uso). Las peticiones API con Bearer <strong>no</strong> cambian.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Firma: el receptor debe comprobar HMAC en el header de la petición. Sin secreto válido, un tercero podría fingir callbacks.
+            Reintentos: si su URL no responde 2xx, la plataforma reintenta (vea intentos en la tabla de entregas).
+        </p>
+
+        <h3 class="form-section-title">Entregas recientes</h3>
+        <p class="help-intro">
+            Solo aparece si ya hubo intentos de callback. Es el log de <em>este</em> cliente hacia su URL, no el historial del job en Gate/Pipe.
+        </p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Qué indica</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cuándo</td>
+                    <td>Momento del intento (creación de la entrega).</td>
+                </tr>
+                <tr>
+                    <td>Evento</td>
+                    <td><code>job.completed</code>, <code>job.failed</code> o <code>job.cancelled</code>.</td>
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    <td><strong>Pendiente</strong> (aún reintentando), <strong>Entregado</strong> (el destino respondió bien), <strong>Agotado</strong> (falló tras los intentos máximos).</td>
+                </tr>
+                <tr>
+                    <td>Intentos</td>
+                    <td>Cuántas veces se ha POSTeado / tope configurado.</td>
+                </tr>
+                <tr>
+                    <td>HTTP</td>
+                    <td>Código de respuesta de su servidor (200, 500, …) o — si aún no hay respuesta.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Si el cliente está revocado</h3>
+        <p class="help-intro">
+            No hay formularios ni rotar. Verá la descripción (si existía) y la fecha de revocación.
+            Para una key nueva: <strong>Nuevo cliente</strong> en el listado, o use otro cliente que siga activo y rótelo allí.
+        </p>
+
+        <h3 class="form-section-title">Comprobar que la key del cofre sigue viva</h3>
+        <p class="help-intro">
+            Con el Bearer (no con el HMAC del webhook):
+        </p>
+        <p class="help-intro mono">GET /api/v1/whoami<br>Authorization: Bearer dw_test_… (o dw_live_…)</p>
+        <p class="help-intro">
+            Debe devolver el código de este cliente y la compañía. Solo exige un Bearer válido (cualquier scope).
+            Ejecutar un archivo es <code>POST /api/v1/jobs/run</code> (otro paso: proyecto publicado + kind).
+        </p>
+    </div>
+</div>
+{% endblock %}

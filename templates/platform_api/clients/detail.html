@@ -1,0 +1,166 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ client.code }} — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_us.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:client_list' %}">API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ client.code }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">PLATFORM API · M1</p>
+        <h2>{{ client.code }}</h2>
+        <p>{{ client.get_environment_display }} · {% if client.status == "active" %}<span class="tone-ok">activo</span>{% else %}<span class="tone-fail">revocado</span>{% endif %}
+            {% if client.last_used_at %} · último uso {{ client.last_used_at|date:"d/m/Y H:i" }}{% endif %}
+            · pista …{{ client.key_hint }}
+        </p>
+    </div>
+    <div class="page-actions">
+        {% url 'platform_api:client_detail_help' client.pk as pa_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=pa_help_url %}
+        <a href="{% url 'platform_api:client_list' %}" class="btn btn-secondary">← Listado</a>
+        <a href="{% url 'platform_api:client_audit' client.pk %}" class="btn btn-secondary">Auditoría</a>
+        {% if client.status == "active" %}
+        <form method="post" action="{% url 'platform_api:client_rotate' client.pk %}">{% csrf_token %}
+            <button class="btn btn-secondary" type="submit">Rotar key</button>
+        </form>
+        <form method="post" action="{% url 'platform_api:client_revoke' client.pk %}" data-dw-confirm="¿Revocar «{{ client.code }}»? Las keys actuales dejarán de autenticar.">{% csrf_token %}
+            <button class="btn btn-danger" type="submit" data-dw-delete data-dw-delete-message="¿Revocar «{{ client.code }}»? Las keys actuales dejarán de autenticar.">Revocar</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+{% if client.status == "active" %}
+<form method="post" novalidate>
+    {% csrf_token %}
+    <div class="panel">
+        <div class="panel-body">
+            <h3 class="form-section-title">Configuración (la key no cambia)</h3>
+            <div class="field{% if errors.code %} has-error{% endif %}">
+                <label for="code">Código</label>
+                <input id="code" name="code" class="mono" value="{{ posted.code }}">
+                {% for msg in errors.code %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            <div class="field">
+                <label for="name">Uso / nombre</label>
+                <input id="name" name="name" value="{{ posted.name }}" maxlength="150">
+            </div>
+            <div class="field{% if errors.description %} has-error{% endif %}">
+                <label for="description">Descripción <span class="req">*</span></label>
+                <textarea id="description" name="description" rows="4" maxlength="2000" required>{{ posted.description }}</textarea>
+                <p class="hint">Para qué existe esta API. No cambia la key.</p>
+                {% for msg in errors.description %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            <div class="scope-grid">
+                {% for scope, label in scope_choices %}
+                <label class="scope-item">
+                    <input type="checkbox" name="scopes" value="{{ scope }}" {% if scope in posted.scopes %}checked{% endif %}>
+                    <span><code>{{ scope }}</code> — {{ label }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            {% for msg in errors.scopes %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            <button class="btn btn-primary" type="submit" style="margin-top:12px">Guardar configuración</button>
+        </div>
+    </div>
+</form>
+{% else %}
+<div class="panel"><div class="panel-body">
+    {% if client.description %}<p>{{ client.description }}</p>{% endif %}
+    <p>Revocado{% if client.revoked_at %} el {{ client.revoked_at|date:"d/m/Y H:i" }}{% endif %}. Cree otro cliente o rote uno activo si necesita una key nueva.</p>
+</div></div>
+{% endif %}
+
+{% if client.status == "active" %}
+<form method="post" action="{% url 'platform_api:client_webhook' client.pk %}" novalidate>
+    {% csrf_token %}
+    <div class="panel">
+        <div class="panel-body">
+            <h3 class="form-section-title">Webhook (módulo 8)</h3>
+            <p class="hint">POST HTTPS al terminar el job. Firma HMAC; la URL debe estar en la lista blanca de Seguridad API. El polling GET sigue siendo válido sin webhook.</p>
+            {% if plaintext_webhook_secret %}
+            <div class="key-vault">
+                <p>Copie el secreto HMAC ahora; no se volverá a mostrar.</p>
+                <code>{{ plaintext_webhook_secret }}</code>
+            </div>
+            {% elif client.webhook_secret_hint %}
+            <p class="hint">Pista del secreto: …{{ client.webhook_secret_hint }}</p>
+            {% endif %}
+            <div class="field{% if webhook_errors.webhook_url %} has-error{% endif %}">
+                <label for="webhook_url">URL de callback (HTTPS)</label>
+                <input id="webhook_url" name="webhook_url" class="mono" value="{{ webhook_posted.webhook_url }}">
+                <p class="hint">Host permitido en política de proceso. No se envía el archivo en el cuerpo.</p>
+                {% for msg in webhook_errors.webhook_url %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            <label class="scope-item">
+                <input type="checkbox" name="webhook_enabled" value="1" {% if webhook_posted.webhook_enabled %}checked{% endif %}>
+                <span>Webhook activo</span>
+            </label>
+            <p class="hint" style="margin-top:8px">Eventos</p>
+            <div class="scope-grid">
+                {% for event, label in webhook_event_choices %}
+                <label class="scope-item">
+                    <input type="checkbox" name="webhook_events" value="{{ event }}" {% if event in webhook_posted.webhook_events %}checked{% endif %}>
+                    <span><code>{{ event }}</code> — {{ label }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            {% for msg in webhook_errors.webhook_events %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            <div class="field">
+                <label for="webhook_secret">Secreto HMAC (dejar vacío para generar uno)</label>
+                <input id="webhook_secret" name="webhook_secret" class="mono" autocomplete="off">
+            </div>
+            <label class="scope-item">
+                <input type="checkbox" name="rotate_secret" value="1">
+                <span>Rotar secreto HMAC ahora</span>
+            </label>
+            <button class="btn btn-primary" type="submit" style="margin-top:12px">Guardar webhook</button>
+        </div>
+    </div>
+</form>
+{% endif %}
+
+{% if webhook_deliveries %}
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Entregas recientes</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Cuándo</th><th>Evento</th><th>Estado</th><th>Intentos</th><th>HTTP</th></tr>
+            </thead>
+            <tbody>
+                {% for row in webhook_deliveries %}
+                <tr>
+                    <td>{{ row.created_at|date:"d/m/Y H:i" }}</td>
+                    <td><code>{{ row.event }}</code></td>
+                    <td>{{ row.get_status_display }}</td>
+                    <td>{{ row.attempt_count }}/{{ row.max_attempts }}</td>
+                    <td>{% if row.response_status %}{{ row.response_status }}{% else %}—{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/datatables-platform-api.js' %}"></script>
+{% endblock %}

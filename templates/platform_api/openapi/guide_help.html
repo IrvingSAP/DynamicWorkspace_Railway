@@ -1,0 +1,188 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Paths API{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_us.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:openapi_guide' %}">Paths API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">US</span></p>
+        <h2>Ayuda — Paths canónicos</h2>
+        <p>Mapa de rutas HTTP de la API de jobs. No es el contrato (kinds, wait, envelope) ni dispara runners.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'platform_api:contract_guide' %}" class="btn btn-secondary">Contrato</a>
+        <a href="{% url 'platform_api:openapi_guide' %}" class="btn btn-secondary">← Volver a Paths</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve esta página</h3>
+        <p class="help-intro">
+            Congela <strong>prefijo, método y path</strong> para que integradores y módulos no inventen URLs distintas.
+            Prefijo: <code>{{ catalog.prefix }}</code>. Versión: <code>{{ catalog.api_version }}</code>.
+            La fuente viva para la máquina es <code>GET {{ catalog.path_map.openapi }}</code> (Bearer).
+        </p>
+        <p class="help-intro">
+            Hay <strong>un solo POST de ejecución</strong>:
+            <code>POST {{ catalog.path_map.run }}</code>.
+            No existe <code>/file-gate/run</code>, <code>/dms/run</code>, etc.
+            El kind va en el cuerpo, no en la URL.
+        </p>
+
+        <h3 class="form-section-title">Quién</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Quién</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>US</td>
+                    <td>Usa esta guía para decirle al integrador qué URL pegar. No se editan paths aquí.</td>
+                </tr>
+                <tr>
+                    <td>Máquina</td>
+                    <td>
+                        Auth <code>{{ catalog.auth }}</code>.
+                        En run, si reintenta, manda también <code>{{ catalog.idempotency_header }}</code>.
+                    </td>
+                </tr>
+                <tr>
+                    <td>UF</td>
+                    <td>No llama estas URLs. Ejecuta en la app; el <code>job_id</code> de esa app es el de <code>GET …/jobs/{job_id}</code> (una tabla u otra según el kind, mismo path).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Cómo leer la tabla de la guía</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Significado</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Método / Path</td>
+                    <td>Lo que va en HTTP. Los <code>{job_id}</code> y <code>{pipeline_id}</code> son del tenant de la key.</td>
+                </tr>
+                <tr>
+                    <td>Módulo</td>
+                    <td>Qué spec dueña la semántica (contrato, run, query, pipeline…).</td>
+                </tr>
+                <tr>
+                    <td>Fase</td>
+                    <td>A = MVP de jobs sueltos. B = listado, cancel, pipeline. C = extras.</td>
+                </tr>
+                <tr>
+                    <td>En código</td>
+                    <td>
+                        <span class="tone-ok">Sí</span> = ya responde Django.
+                        <span class="tone-fail">No (MVP)</span> = documentado, no implementado.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Rutas que más usa el integrador</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Uso</th><th>Llamada</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>¿La key sirve?</td>
+                    <td class="mono">GET {{ catalog.path_map.whoami }}</td>
+                </tr>
+                <tr>
+                    <td>Kinds, wait, envelope</td>
+                    <td class="mono">GET {{ catalog.path_map.contract }}</td>
+                </tr>
+                <tr>
+                    <td>Probar metadatos sin correr</td>
+                    <td class="mono">POST {{ catalog.path_map.validate }}</td>
+                </tr>
+                <tr>
+                    <td>Ejecutar (único run)</td>
+                    <td class="mono">POST {{ catalog.path_map.run }}</td>
+                </tr>
+                <tr>
+                    <td>Atajo pipeline</td>
+                    <td class="mono">POST {{ catalog.path_map.pipeline_runs }}</td>
+                </tr>
+                <tr>
+                    <td>Estado / artifacts</td>
+                    <td class="mono">GET {{ catalog.path_map.job }} · /report · /output</td>
+                </tr>
+                <tr>
+                    <td>Cancelar async</td>
+                    <td class="mono">POST {{ catalog.path_map.cancel }}</td>
+                </tr>
+                <tr>
+                    <td>Runners por kind</td>
+                    <td class="mono">GET {{ catalog.path_map.integration }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            El atajo de pipeline <strong>no es otro producto</strong>: es el mismo run con
+            <code>kind=file_pipeline</code>. Use uno u otro, no ambos en paralelo con distinta semántica.
+        </p>
+
+        <h3 class="form-section-title">Qué no está (a propósito)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Ítem</th><th>Por qué</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="mono">GET {{ catalog.path_map.ops_summary }}</td>
+                    <td>Fuera del MVP. El pulso de corridas está en el tablero de File Pipeline.</td>
+                </tr>
+                <tr>
+                    <td>YAML OpenAPI 3</td>
+                    <td>
+                        Aplazado (<code>yaml_deferred={{ catalog.yaml_deferred }}</code>).
+                        Tampoco hay componentes reutilizables <code>{{ catalog.reusable_components_deferred|join:", " }}</code>.
+                        Este índice JSON es la fuente de rutas.
+                    </td>
+                </tr>
+                <tr>
+                    <td>SDK / CRUD de proyectos</td>
+                    <td>No van en esta API. Proyectos y billing tienen UI humana.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Errores y artifacts</h3>
+        <ul>
+            <li>Ítems de error: mismos que el <a href="{% url 'platform_api:contract_guide' %}">contrato</a> (<code>row</code>, <code>field</code>, <code>code</code>, <code>message</code>).</li>
+            <li>Informe y salida: URL firmada de <code>/report</code> y <code>/output</code>. No arme rutas de disco ni de <code>media/</code>.</li>
+            <li>Un <code>job_id</code> de otra compañía se responde como no encontrado (opaco).</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no es esta pantalla</h3>
+        <ul>
+            <li>No explica kinds ni <code>wait</code> — eso es <a href="{% url 'platform_api:contract_guide' %}">Contrato</a>.</li>
+            <li>No lista runners por app — eso es <a href="{% url 'platform_api:integration_guide' %}">Integración</a>.</li>
+            <li>No crea keys — eso es <a href="{% url 'platform_api:client_list' %}">Clientes</a>.</li>
+            <li>No se “publica” un OpenAPI editando esta página; el índice sale del código.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

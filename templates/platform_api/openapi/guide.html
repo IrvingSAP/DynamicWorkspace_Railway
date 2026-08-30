@@ -1,0 +1,80 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Paths API — DynamicWorkspace{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_us.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:client_list' %}">API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Paths</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">PLATFORM API · M9 · <span class="role-badge">US</span></p>
+        <h2>Paths canónicos</h2>
+        <p>Un prefijo <code>{{ catalog.prefix }}</code>, un POST de ejecución, Bearer y <code>{{ catalog.idempotency_header }}</code>. El YAML OpenAPI 3 está aplazado; este índice es la fuente de rutas.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'platform_api:openapi_guide_help' as pa_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=pa_help_url %}
+        <a href="{% url 'platform_api:contract_guide' %}" class="btn btn-secondary">Contrato</a>
+        <a href="{% url 'platform_api:client_list' %}" class="btn btn-secondary">← Clientes</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Reglas</h3>
+        <ul>
+            <li>Auth: <code>{{ catalog.auth }}</code></li>
+            <li>Idempotencia en run: header <code>{{ catalog.idempotency_header }}</code></li>
+            <li>Errores: mismos ítems que el contrato (<code>{{ catalog.error_contract }}</code>)</li>
+            <li>YAML / componentes <code>JobStatus</code> y <code>ErrorItem</code>: aplazados (<code>yaml_deferred={{ catalog.yaml_deferred }}</code>)</li>
+            <li>Atajo de pipeline = el mismo run, no un segundo producto</li>
+        </ul>
+        <p class="hint">Catálogo máquina: <code>GET /api/v1/openapi</code></p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Superficie HTTP</h3>
+        <div class="table-dt-host">
+            <table class="dw-datatable contract-table">
+                <thead>
+                    <tr>
+                        <th>Método</th>
+                        <th>Path</th>
+                        <th>Módulo</th>
+                        <th>Fase</th>
+                        <th>En código</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in catalog.paths %}
+                    <tr>
+                        <td><code>{{ row.method }}</code></td>
+                        <td><code>{{ row.path }}</code></td>
+                        <td>{{ row.module }}</td>
+                        <td>{{ row.phase }}</td>
+                        <td>{% if row.implemented %}<span class="tone-ok">Sí</span>{% else %}<span class="tone-fail">No (MVP)</span>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,252 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Seguridad API{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_us.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:security_policy' %}">Seguridad API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Guía de trabajo · <span class="role-badge">US</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>Cómo funciona la política de proceso</h2>
+        <p>
+            <strong>Seguridad</strong> (en este menú) no es el 2FA de personas.
+            Es la <strong>política HTTP de la compañía</strong>: tamaño de archivo, solicitudes por minuto,
+            TTL de informe/salida, extensiones y hosts de webhook.
+            La key dice <em>quién</em> entra; esta pantalla dice <em>qué se acepta al procesar</em>.
+        </p>
+        <p>
+            El runner de Gate o Split no puede saltarse estas reglas.
+            El <span class="mono">?</span> de la pantalla Seguridad es la ayuda de cada campo del formulario.
+        </p>
+    </div>
+    <aside class="guide-hero-aside" aria-label="Ruta rápida">
+        <h3>Ruta rápida</h3>
+        <ol class="guide-quick-path">
+            <li>Ajuste MB, rate, TTL y extensiones; Guardar política.</li>
+            <li>Si usará webhooks, liste hosts HTTPS (sin esquema).</li>
+            <li>HMAC y eventos: ficha del cliente, no este formulario.</li>
+        </ol>
+    </aside>
+</div>
+
+<div class="guide-role-strip" aria-label="Quién actúa">
+    <span class="label">Quién</span>
+    <span class="guide-role-item"><span class="role-code role-code--pa">US</span><span>Único que edita la política (una por compañía)</span></span>
+    <span class="guide-role-item"><span class="role-code">Máquina</span><span>La sufre: 400 tamaño, 429 rate, 404 TTL</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--ed">UF</span><span>No ve este formulario</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--co">Fijo</span><span>Solo publicado; dry-run fuera del tablero</span></span>
+</div>
+
+<div class="guide-layout">
+    <nav class="guide-spine" aria-label="Índice de la guía">
+        <h3>Secciones</h3>
+        <nav>
+            <a href="#que-es">Qué es</a>
+            <a href="#funcion">Función</a>
+            <a href="#no-es">Qué no es</a>
+            <a href="#cuotas">Qué se ajusta</a>
+            <a href="#flujo">Flujo de trabajo</a>
+            <a href="#fijo">Qué no se relaja</a>
+            <a href="#casos">Casos típicos</a>
+        </nav>
+    </nav>
+
+    <div class="guide-flows">
+        <article class="flow-card" id="que-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">1</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué es la política de proceso</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    Un registro por compañía (<span class="mono">ApiProcessPolicy</span>) que la API aplica
+                    alrededor del job: upload, rate en whoami/run, tokens de artifact, allowlist anti-SSRF.
+                    No se configura por cliente (salvo webhook URL/HMAC en la ficha).
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>En una frase</h4>
+                        <p>
+                            Los <strong>límites de integridad</strong> de la ejecución remota.
+                            Auth (Clientes) es otra capa.
+                        </p>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Defaults habituales</h4>
+                        <ul>
+                            <li>50 MB, 60 req/min, TTL 24 h.</li>
+                            <li>Extensiones tipo intake (.txt .csv .xlsx…).</li>
+                            <li>Allowlist de hosts vacía = ningún callback de URL pasa.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="funcion">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">2</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Cuál es la función</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>Función principal:</strong> que un ERP no suba de más, no dispare a destajo,
+                    no descargue artifacts eternos ni apunte webhooks a localhost o IPs privadas.
+                    Los logs no guardan cuerpos ni tokens (PII).
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Problema que resuelve</h4>
+                        <ul>
+                            <li>Intake de la app vs API con reglas distintas.</li>
+                            <li>Enlaces de informe que nunca caducan.</li>
+                            <li>SSRF si el callback apunta a la red interna.</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Qué ganas</h4>
+                        <ul>
+                            <li>whoami muestra la política vigente.</li>
+                            <li>IDs ajenos: 404 opaco, no “existe en otra compañía”.</li>
+                            <li>Artifacts con token firmado + TTL.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="no-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">3</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué no es (y qué sí usar)</h3>
+                </header>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Esta pantalla no…</h4>
+                        <ul>
+                            <li>No rota ni revoca keys (<strong>Clientes</strong>).</li>
+                            <li>No es el login 2FA de US/UF.</li>
+                            <li>No configura el secreto HMAC (ficha del cliente / webhooks).</li>
+                            <li>No autoriza proyectos: sigue el tenancy y GE del destino.</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Usa otra pantalla si…</h4>
+                        <ul>
+                            <li><strong>Clientes</strong> — identidad y scopes.</li>
+                            <li><strong>Auditoría</strong> — quién rotó o revocó.</li>
+                            <li>Ficha del cliente — URL de webhook y eventos.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="cuotas">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">4</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué se ajusta</h3>
+                </header>
+                <table class="help-table">
+                    <thead><tr><th>Campo</th><th>Si se viola</th></tr></thead>
+                    <tbody>
+                        <tr><td>Tamaño (MB)</td><td>400 — archivo demasiado grande</td></tr>
+                        <tr><td>Rate / minuto</td><td>429 — demasiadas solicitudes</td></tr>
+                        <tr><td>TTL artifacts</td><td>404 — enlace inválido o expirado</td></tr>
+                        <tr><td>Extensiones</td><td>400 — tipo no permitido</td></tr>
+                        <tr><td>Hosts callback</td><td>URL de webhook no permitida</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="flow-card" id="flujo">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">5</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Flujo de trabajo</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>Definir límites → guardar → probar whoami / run</strong> (no es el botón Rotar key).
+                </p>
+                <ol>
+                    <li>US abre Seguridad y revisa cuotas alineadas al intake de las apps.</li>
+                    <li>Si el banco enviará callbacks, añada el host (p. ej. <span class="mono">hooks.banco.example</span>).</li>
+                    <li>Guardar política. whoami refleja max_upload, rate y TTL.</li>
+                    <li>En la ficha del cliente: URL HTTPS de ese host, eventos y secreto HMAC.</li>
+                </ol>
+                <p class="hint" style="margin-top:12px">
+                    <a href="{% url 'platform_api:security_policy' %}">Ir a la política →</a>
+                </p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="fijo">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">6</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué no se relaja aquí</h3>
+                </header>
+                <ul>
+                    <li><strong>Solo versión publicada</strong> — run sin publicar: 409.</li>
+                    <li><strong>Dry-run</strong> no suma al pulso del tablero; no hay checkbox.</li>
+                    <li>Job o pipeline de otra compañía: 404 opaco.</li>
+                </ul>
+            </div>
+        </article>
+
+        <article class="flow-card" id="casos">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">7</span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Casos típicos</h3>
+                </header>
+                <ul>
+                    <li>QA con archivos chicos: 50 MB sobra; baje el rate si un script dispara whoami en bucle.</li>
+                    <li>Informe 404 al día siguiente: TTL de 24 h cumplido; no es un Bearer malo.</li>
+                    <li>Webhook http://… o host no listado: la política bloquea; no es un fallo del HMAC.</li>
+                </ul>
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}

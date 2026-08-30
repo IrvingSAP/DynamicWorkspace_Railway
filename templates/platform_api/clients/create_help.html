@@ -1,0 +1,121 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Nuevo cliente API{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_us.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:client_list' %}">API</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'platform_api:client_create' %}">Nuevo</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">US</span></p>
+        <h2>Ayuda — Nuevo cliente de máquina</h2>
+        <p>Qué significa cada campo del alta y qué ocurre con la key al guardar.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'platform_api:client_create' %}" class="btn btn-secondary">← Volver al formulario</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Crea una <strong>identidad de máquina</strong> ligada a su compañía. Al guardar se emite una key
+            que debe copiar al cofre del integrador. DynamicWorkspace <strong>no vuelve a mostrar</strong> el valor en claro
+            (solo guarda un hash). Esa misma key se usa en todas las llamadas hasta rotarla o revocar el cliente.
+        </p>
+        <ul class="help-list">
+            <li>Solo <strong>US</strong> de la compañía puede crear clientes.</li>
+            <li>Sandbox y producción son clientes <strong>distintos</strong> (cada uno con su key).</li>
+            <li>No es un token de administrador global: elija solo los scopes necesarios.</li>
+        </ul>
+
+        <h3 class="form-section-title">Campos del formulario</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Obligatorio</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Código</td>
+                    <td>Sí</td>
+                    <td>Identificador estable del cliente en la compañía.</td>
+                    <td class="mono">Minúsculas, números y guiones. Único por compañía. Ej. client-erp-01</td>
+                </tr>
+                <tr>
+                    <td>Uso / nombre</td>
+                    <td>No</td>
+                    <td>Etiqueta corta en listados (quién consume la API).</td>
+                    <td>Texto libre. Ej. ERP nómina banco</td>
+                </tr>
+                <tr>
+                    <td>Descripción</td>
+                    <td>Sí</td>
+                    <td>Define con detalle el propósito de este cliente: sistema origen, proceso, horario y responsable. No autoriza nada por sí sola (eso son los scopes).</td>
+                    <td>Hasta 2000 caracteres. Ej. Integración ERP nómina: envío diario 06:00 al banco. Dueño: Tesorería.</td>
+                </tr>
+                <tr>
+                    <td>Entorno</td>
+                    <td>Sí</td>
+                    <td>Prefijo de la key y aislamiento de pruebas vs productivo.</td>
+                    <td><strong>Sandbox</strong> (<span class="mono">dw_test_</span>) · <strong>Producción</strong> (<span class="mono">dw_live_</span>)</td>
+                </tr>
+                <tr>
+                    <td>Scopes</td>
+                    <td>Sí (al menos uno)</td>
+                    <td>Qué puede hacer la máquina. Se pueden cambiar después sin emitir key nueva.</td>
+                    <td>Ver tabla de scopes abajo</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Scopes</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Scope</th><th>Permite</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">jobs:run</td><td>POST de job suelto (Gate, Pipe, …) cuando exista el módulo de ejecución.</td></tr>
+                <tr><td class="mono">jobs:read</td><td>Consultar estado e historial del job.</td></tr>
+                <tr><td class="mono">jobs:cancel</td><td>Cancelar un job en curso.</td></tr>
+                <tr><td class="mono">pipeline:run</td><td>Disparar un pipeline publicado (cadena).</td></tr>
+                <tr><td class="mono">artifacts:download</td><td>Descargar informe o archivo de salida.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Crear y mostrar key</td>
+                    <td>Guarda el cliente y abre la bóveda de un solo uso. Copie el Bearer de inmediato.</td>
+                </tr>
+                <tr>
+                    <td>← Listado</td>
+                    <td>Cancela el alta y vuelve a la lista.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

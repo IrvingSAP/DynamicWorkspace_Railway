@@ -66,12 +66,14 @@ def _project_can_execute(user, project) -> bool:
     return ProjectMembership.role_can_execute(membership.role)
 
 
-def run_gate_reason(pipeline: PipelineDefinition, user) -> str:
+def run_gate_reason(
+    pipeline: PipelineDefinition, user, *, require_membership: bool = True
+) -> str:
     if pipeline.current_version_id is None:
         return MSG_NO_VERSION
     if pipeline.status != PipelineDefinition.STATUS_ACTIVE:
         return MSG_NOT_ACTIVE
-    if not user_can_execute_pipeline(user, pipeline):
+    if require_membership and not user_can_execute_pipeline(user, pipeline):
         return MSG_NO_RUN
     return ""
 
@@ -289,8 +291,16 @@ def start_run(
     *,
     dry_run: bool,
     request=None,
+    require_membership: bool = True,
+    trigger_source: str | None = None,
+    correlation_id: str = "",
+    idempotency_key: str = "",
+    api_client_label: str = "",
+    api_client_id: str = "",
+    client_ip: str = "",
+    user_agent: str = "",
 ) -> OperationResult:
-    blocked = run_gate_reason(pipeline, user)
+    blocked = run_gate_reason(pipeline, user, require_membership=require_membership)
     if blocked:
         code = "forbidden" if blocked == MSG_NO_RUN else "validation_form"
         return OperationResult.failure(code, blocked)
@@ -325,22 +335,27 @@ def start_run(
 
     digest = _sha256_upload(uploaded_file)
     now = timezone.now()
-    ip = ""
-    ua = ""
+    ip = client_ip[:45] if client_ip else ""
+    ua = user_agent[:300] if user_agent else ""
     if request is not None:
-        ip = str(request.META.get("REMOTE_ADDR") or "")[:45]
-        ua = str(request.META.get("HTTP_USER_AGENT") or "")[:300]
+        forwarded = str(request.META.get("HTTP_X_FORWARDED_FOR") or "").split(",")[0].strip()
+        ip = ip or forwarded or str(request.META.get("REMOTE_ADDR") or "")
+        ip = ip[:45]
+        ua = ua or str(request.META.get("HTTP_USER_AGENT") or "")[:300]
     run = PipelineRun.objects.create(
         pipeline=pipeline,
         version=version,
-        trigger_source=PipelineRun.TRIGGER_UI,
+        trigger_source=trigger_source or PipelineRun.TRIGGER_UI,
         status=PipelineRun.STATUS_RUNNING,
         dry_run=bool(dry_run),
         input_filename=name[:255],
         input_sha256=digest,
         triggered_by=user,
         started_at=now,
-        correlation_id=uuid.uuid4().hex,
+        correlation_id=(correlation_id or uuid.uuid4().hex)[:64],
+        idempotency_key=(idempotency_key or "")[:120],
+        api_client_label=(api_client_label or "")[:120],
+        api_client_id=(api_client_id or "")[:36],
         client_ip=ip,
         user_agent=ua,
     )
