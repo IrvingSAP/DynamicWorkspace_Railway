@@ -214,8 +214,10 @@ def get_published_version(project: Project) -> DmsMappingVersion | None:
 
 
 @transaction.atomic
-def upload_production(user, project: Project, uploaded_file) -> OperationResult:
-    if not user_can_upload_production(user, project):
+def upload_production(
+    user, project: Project, uploaded_file, *, require_membership: bool = True
+) -> OperationResult:
+    if require_membership and not user_can_upload_production(user, project):
         return OperationResult.failure(
             "forbidden",
             "No tiene permiso para subir archivos de producción.",

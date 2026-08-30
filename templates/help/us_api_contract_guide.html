@@ -1,0 +1,274 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Contrato API{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_us.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:contract_guide' %}">Contrato API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Guía de trabajo · <span class="role-badge">US</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>Cómo funciona el contrato HTTP</h2>
+        <p>
+            El <strong>contrato</strong> es el patrón común de todas las llamadas de jobs:
+            <span class="mono">kind</span>, proyecto o pipeline, <span class="mono">wait</span>, estados de máquina
+            y el JSON de respuesta (<span class="mono">ok</span>, <span class="mono">job_id</span>, <span class="mono">errors[]</span>, artifacts).
+            Gate, Pipe o Split cambian el archivo y el <span class="mono">summary</span>; el envelope no.
+        </p>
+        <p>
+            Esta página describe el <strong>flujo de lectura</strong> para alinear al integrador.
+            La pantalla Contrato muestra el catálogo vivo; el <span class="mono">?</span> de esa vista es la ayuda contextual.
+            <strong>No ejecuta jobs.</strong>
+        </p>
+    </div>
+    <aside class="guide-hero-aside" aria-label="Ruta rápida">
+        <h3>Ruta rápida</h3>
+        <ol class="guide-quick-path">
+            <li>Separe <em>qué</em> (kind + slug o pipeline) de <em>espera</em> (sync / async).</li>
+            <li>Valide metadatos con <span class="mono">POST /jobs/validate</span> (sin archivo si no hace falta).</li>
+            <li>El catálogo máquina: <span class="mono">GET /api/v1/contract</span> con Bearer.</li>
+        </ol>
+    </aside>
+</div>
+
+<div class="guide-role-strip" aria-label="Quién actúa">
+    <span class="label">Quién</span>
+    <span class="guide-role-item"><span class="role-code role-code--pa">US</span><span>Lee el contrato y alinea al ERP / Postman</span></span>
+    <span class="guide-role-item"><span class="role-code">Máquina</span><span>GET /contract y POST /jobs/validate con Bearer</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--ed">UF</span><span>Publica el proyecto; no usa esta pantalla</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--co">Paths</span><span>Índice de URLs; no sustituye este envelope</span></span>
+</div>
+
+<div class="guide-layout">
+    <nav class="guide-spine" aria-label="Índice de la guía">
+        <h3>Secciones</h3>
+        <nav>
+            <a href="#que-es">Qué es</a>
+            <a href="#funcion">Función</a>
+            <a href="#no-es">Qué no es</a>
+            <a href="#ejes">Dos ejes</a>
+            <a href="#flujo">Flujo de trabajo</a>
+            <a href="#http">HTTP de forma</a>
+            <a href="#casos">Casos típicos</a>
+        </nav>
+    </nav>
+
+    <div class="guide-flows">
+        <article class="flow-card" id="que-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">1</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué es el contrato</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    Es la <strong>forma HTTP</strong> de PLATFORM API: un solo patrón para todos los
+                    <span class="mono">kind</span> ejecutables. El integrador no inventa un endpoint por app.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>En una frase</h4>
+                        <p>
+                            La <strong>gramática</strong> del request y de la respuesta. Ejecutar el runner es
+                            <span class="mono">POST /api/v1/jobs/run</span> (otra pantalla / otro paso).
+                        </p>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Qué ve US en pantalla</h4>
+                        <ul>
+                            <li>Tabla de kinds (app, archivos, scope, wait por defecto, si está cableado).</li>
+                            <li>Estados de job, veredicto Gate y pasos de pipeline.</li>
+                            <li>Paths de validate, contract, run y openapi.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="funcion">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">2</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Cuál es la función de Contrato</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>Función principal:</strong> congelar cómo se nombra el trabajo y cómo se lee el JSON,
+                    para que Postman, curl y el ERP no divergjan del código.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Problema que resuelve</h4>
+                        <ul>
+                            <li>Un path distinto “de producto” por cada app.</li>
+                            <li>Confundir <span class="mono">wait</span> (sync/async) con job vs pipeline.</li>
+                            <li>Tratar un rechazo Gate como error HTTP 4xx cuando es 200 + <span class="mono">ok: false</span>.</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Qué ganas</h4>
+                        <ul>
+                            <li>Validate sin disparar el motor (comprueba kind, slug, wait).</li>
+                            <li>Catálogo vivo con Bearer: mismos kinds que la UI.</li>
+                            <li>Repair / Profiler en catálogo pero no ejecutables todavía.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="no-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">3</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué no es (y qué sí usar en su lugar)</h3>
+                </header>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Contrato no…</h4>
+                        <ul>
+                            <li>No crea clientes ni emite keys (eso es <strong>Clientes</strong>).</li>
+                            <li>No lista cada URL con ejemplos de curl (eso es <strong>Paths</strong>).</li>
+                            <li>No mapea runner Django por kind (eso es <strong>Integración</strong>).</li>
+                            <li>No sube el archivo de negocio ni parte un TXT.</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Usa otra pantalla si…</h4>
+                        <ul>
+                            <li><strong>Clientes</strong> — identidad y Bearer.</li>
+                            <li><strong>Paths</strong> — índice canónico de métodos.</li>
+                            <li><strong>Seguridad</strong> — tamaño, tasa, TTL.</li>
+                            <li>Apps UF — publicar el <span class="mono">project_slug</span> que irá en el run.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="ejes">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">4</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Dos ejes (no mezclar)</h3>
+                </header>
+                <table class="help-table">
+                    <thead><tr><th>Eje</th><th>Campos</th><th>Significado</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td>Qué</td>
+                            <td class="mono">kind + project_slug</td>
+                            <td>Job suelto de un proyecto publicado.</td>
+                        </tr>
+                        <tr>
+                            <td>Qué (cadena)</td>
+                            <td class="mono">kind=file_pipeline + pipeline_id</td>
+                            <td>Cadena publicada. No mezcle slug de job suelto con pipeline_id.</td>
+                        </tr>
+                        <tr>
+                            <td>Espera</td>
+                            <td class="mono">wait=sync | async</td>
+                            <td>200 al terminar vs 202 y luego GET del job. Distinto de “es un pipeline”.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="hint" style="margin-top:12px">
+                    Atajo: <span class="mono">mode=pipeline</span> equivale a <span class="mono">kind=file_pipeline</span>.
+                    El default de pipeline en contrato es async.
+                </p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="flujo">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">5</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Flujo de trabajo</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    Camino de alineación: <strong>leer UI → validate → contract HTTP → recién entonces run</strong>.
+                </p>
+                <ol>
+                    <li>US abre Contrato y cruza kinds con el proyecto que UF publicó (slug real).</li>
+                    <li>La máquina hace <span class="mono">GET /api/v1/whoami</span> y luego <span class="mono">GET /api/v1/contract</span>.</li>
+                    <li><span class="mono">POST /api/v1/jobs/validate</span> con kind, slug y wait (form-data; sin file si solo prueba metadatos).</li>
+                    <li>Si validate es 200, el run lleva archivo e <span class="mono">Idempotency-Key</span>.</li>
+                </ol>
+                <p class="hint" style="margin-top:12px">
+                    <a href="{% url 'platform_api:contract_guide' %}">Ir a la pantalla Contrato →</a>
+                </p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="http">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">6</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>HTTP de forma (sin ejecutar)</h3>
+                </header>
+                <table class="help-table">
+                    <thead><tr><th>Llamada</th><th>Para qué</th></tr></thead>
+                    <tbody>
+                        <tr><td class="mono">GET /api/v1/contract</td><td>Catálogo (kinds, wait, estados, paths)</td></tr>
+                        <tr><td class="mono">POST /api/v1/jobs/validate</td><td>Metadatos; no corre Gate ni Split</td></tr>
+                        <tr><td class="mono">GET /api/v1/openapi</td><td>Índice de paths (menú Paths)</td></tr>
+                        <tr><td class="mono">POST /api/v1/jobs/run</td><td>Ejecuta; no es esta guía</td></tr>
+                    </tbody>
+                </table>
+                <p class="flow-card-purpose" style="margin-top:12px">
+                    Rechazo de negocio (p. ej. Gate): HTTP <strong>200</strong> + <span class="mono">ok: false</span> + job <span class="mono">completed</span>.
+                    Request inválido: <strong>400</strong> + <span class="mono">errors[]</span>. Sin versión publicada: <strong>409</strong> en el run.
+                </p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="casos">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">7</span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Casos típicos</h3>
+                </header>
+                <ul>
+                    <li>Validate 400 «Kind no reconocido» — el body no es form-data o el kind está mal escrito.</li>
+                    <li>HTML 404 en <span class="mono">/j/api/v1/…</span> — sobra una letra en la URL; el contrato vive bajo <span class="mono">/api/v1/…</span>.</li>
+                    <li>Split: validate y contract listan <span class="mono">file_split</span>; el output único puede no existir (varias partes).</li>
+                </ul>
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}

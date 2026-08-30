@@ -1,0 +1,83 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Auditoría {{ client.code }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_us.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:client_audit' client.pk %}">Auditoría {{ client.code }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">US</span></p>
+        <h2>Ayuda — Trazabilidad de {{ client.code }}</h2>
+        <p>Línea de tiempo de <strong>esta</strong> identidad de máquina. Úsela cuando el integrador diga que «dejó de funcionar».</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'platform_api:client_detail' client.pk %}" class="btn btn-secondary">Ficha</a>
+        <a href="{% url 'platform_api:client_audit' client.pk %}" class="btn btn-secondary">← Volver a la línea</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Mire la fecha del incidente y busque <strong>rotación</strong>, <strong>revocación</strong> o
+            <strong>cambio de scopes / webhook</strong>. Esa fila explica un 401, un 403 o un callback que ya no llega.
+            {% if events %}
+            <a href="{% url 'platform_api:audit_event' events.0.pk %}">Ver</a> abre el antes/después del hecho más reciente.
+            {% endif %}
+        </p>
+        <p class="help-intro">
+            {% if events %}Esta ficha tiene {{ events|length }} evento{{ events|length|pluralize:"s" }}.{% else %}Aún no hay eventos para este cliente.{% endif %}
+            El listado de <a href="{% url 'platform_api:audit_list' %}">toda la compañía</a> es el mismo tipo de registro, sin filtrar por cliente.
+        </p>
+
+        <h3 class="form-section-title">Cómo leer la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Uso</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Fecha</td>
+                    <td>Ordene mentalmente de más reciente a más antiguo frente al ticket del integrador.</td>
+                </tr>
+                <tr>
+                    <td>Acción</td>
+                    <td>Alta, cambio, rotación, key mostrada o revocación.</td>
+                </tr>
+                <tr>
+                    <td>Actor</td>
+                    <td>US responsable. Contraste con quien afirma «nadie tocó la key».</td>
+                </tr>
+                <tr>
+                    <td>Resumen / Ver</td>
+                    <td>Frase del sistema y detalle inmutable (pista de key, scopes, webhook).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no cubre esta línea</h3>
+        <ul>
+            <li>Cada llamada Bearer del ERP (eso es <code>last_used_at</code> en la ficha, no una fila aquí).</li>
+            <li>Jobs Gate/Pipe/Pipeline: el <code>job_id</code> está en el historial de la app, con <code>trigger_source=api</code> si aplica.</li>
+            <li>Editar o borrar hechos: vuelva a la <a href="{% url 'platform_api:client_detail' client.pk %}">ficha</a> para rotar o revocar (genera un evento nuevo).</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

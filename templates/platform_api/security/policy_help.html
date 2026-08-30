@@ -1,0 +1,129 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Seguridad API{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_us.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:security_policy' %}">Seguridad API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">US</span></p>
+        <h2>Ayuda — Política de proceso</h2>
+        <p>Límites HTTP de <strong>esta compañía</strong>. Complementan las keys: la key dice quién entra; esto dice qué se acepta al procesar.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'platform_api:client_list' %}" class="btn btn-secondary">Clientes</a>
+        <a href="{% url 'platform_api:security_policy' %}" class="btn btn-secondary">← Volver a la política</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve esta pantalla</h3>
+        <p class="help-intro">
+            La capa API aplica estas reglas <strong>antes y alrededor</strong> del runner de Gate, Pipe o Pipeline.
+            Un runner correcto no puede saltarse tamaño, tipo, rate, publicación, TTL de artifacts ni hosts de callback.
+        </p>
+        <p class="help-intro">
+            Solo US guarda. UA/UF no ven este formulario. La política es una por compañía (no por cliente).
+        </p>
+
+        <h3 class="form-section-title">Campos que puede ajustar</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Efecto en la API</th><th>Alta por defecto</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Tamaño máximo (MB)</td>
+                    <td>Si el archivo lo supera: 400 — «El archivo supera el tamaño máximo permitido para esta compañía.»</td>
+                    <td class="mono">{{ default_max_mb }} MB</td>
+                </tr>
+                <tr>
+                    <td>Solicitudes por minuto</td>
+                    <td>Por key. Al exceder: 429 — «Demasiadas solicitudes. Espere un minuto e intente de nuevo.» (p. ej. en <code>whoami</code> y run).</td>
+                    <td class="mono">{{ default_rate }} / min</td>
+                </tr>
+                <tr>
+                    <td>TTL de artifacts (horas)</td>
+                    <td>Caducidad de enlaces firmados de informe/salida. Vencido: 404 opaco — «El enlace del artifact no es válido o ya expiró.»</td>
+                    <td class="mono">{{ default_ttl }} h</td>
+                </tr>
+                <tr>
+                    <td>Extensiones</td>
+                    <td>Mismos tipos que el intake de las apps. Tipo ajeno: «Tipo de archivo no permitido. Use los mismos tipos que en la carga de la app.»</td>
+                    <td class="mono">{{ default_extensions }}</td>
+                </tr>
+                <tr>
+                    <td>Hosts de callback</td>
+                    <td>
+                        Lista blanca anti-SSRF: un host por línea, sin <code>https://</code>.
+                        Solo HTTPS; se rechazan localhost, IPs privadas y userinfo.
+                        URL fuera de lista: «La URL de callback no está permitida.»
+                    </td>
+                    <td>Vacío = ningún callback de run/webhook pasa la URL</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            El secreto HMAC y los eventos se configuran en el <strong>detalle del cliente</strong> (webhooks), no aquí.
+            Aquí solo se decide <em>a qué hosts</em> puede pegar la compañía.
+        </p>
+
+        <h3 class="form-section-title">Qué no se relaja desde este formulario</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Regla</th><th>Comportamiento</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Solo versión publicada</td>
+                    <td>Run de proyecto o pipeline no publicado: 409 — «Solo se puede ejecutar una versión publicada.»</td>
+                </tr>
+                <tr>
+                    <td>Dry-run y tablero</td>
+                    <td>Un dry-run no suma al pulso de Pipeline. No hay checkbox para activarlo.</td>
+                </tr>
+                <tr>
+                    <td>IDs ajenos</td>
+                    <td>Job o artifact de otro tenant: 404 — «No se encontró el recurso.» (no se admite que existe).</td>
+                </tr>
+                <tr>
+                    <td>Logs</td>
+                    <td>Metadatos y hashes. No cuerpos, celdas, Bearer ni key en claro.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Cómo probarlo</h3>
+        <ul>
+            <li>Suba un archivo más grande que el MB guardado → debe fallar validación de archivo.</li>
+            <li>Dispare <code>GET /api/v1/whoami</code> en bucle por encima del rate → 429.</li>
+            <li>Callback <code>http://127.0.0.1/…</code> o host que no esté en la lista → rechazo de URL.</li>
+            <li>Abra un enlace de artifact después del TTL → 404.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no es esta pantalla</h3>
+        <ul>
+            <li>No crea ni rota keys — <a href="{% url 'platform_api:client_list' %}">Clientes</a>.</li>
+            <li>No define kinds ni <code>wait</code> — <a href="{% url 'platform_api:contract_guide' %}">Contrato</a>.</li>
+            <li>No lista runners — <a href="{% url 'platform_api:integration_guide' %}">Integración</a>.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

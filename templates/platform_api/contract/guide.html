@@ -1,0 +1,98 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Contrato API — DynamicWorkspace{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_us.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:client_list' %}">API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Contrato</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">PLATFORM API · contrato HTTP · <span class="role-badge">US</span></p>
+        <h2>Contrato común</h2>
+        <p>Un solo patrón para todos los kinds: metadatos, wait, estados de máquina y envelope JSON. Ejecutar jobs es el módulo 3; aquí se valida la forma.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'platform_api:contract_guide_help' as pa_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=pa_help_url %}
+        <a href="{% url 'platform_api:client_list' %}" class="btn btn-secondary">← Clientes</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Ejes (no mezclar)</h3>
+        <p><strong>Qué:</strong> <code>kind</code> + <code>project_slug</code>, o <code>kind=file_pipeline</code> + <code>pipeline_id</code>.</p>
+        <p><strong>Espera:</strong> <code>wait=sync</code> (HTTP 200 al terminar) o <code>wait=async</code> (HTTP 202 + consulta).</p>
+        <p class="hint">Atajo documentado: <code>mode=pipeline</code> equivale a <code>kind=file_pipeline</code>. El default de pipeline es async.</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Kinds</h3>
+        <div class="table-dt-host">
+            <table class="dw-datatable contract-table">
+                <thead>
+                    <tr>
+                        <th>kind</th>
+                        <th>App</th>
+                        <th>Archivos</th>
+                        <th>Scope</th>
+                        <th>wait default</th>
+                        <th>Ejecutable</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in catalog.kinds %}
+                    <tr>
+                        <td><code>{{ item.kind }}</code></td>
+                        <td>{{ item.label }}</td>
+                        <td><code>{{ item.files|join:", " }}</code>{% if item.multi_file %} (N){% endif %}</td>
+                        <td><code>{{ item.scope }}</code></td>
+                        <td><code>{{ item.default_wait }}</code></td>
+                        <td>{% if item.mvp_phase_a %}Sí{% else %}Más adelante{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Estados</h3>
+        <p>Máquina del job: {% for s in catalog.job_status %}<code>{{ s }}</code>{% if not forloop.last %} · {% endif %}{% endfor %}</p>
+        <p>Veredicto Gate (dentro de un job <code>completed</code>): {% for s in catalog.gate_verdict %}<code>{{ s }}</code>{% if not forloop.last %} · {% endif %}{% endfor %}. HTTP 200 y <code>ok</code> true/false.</p>
+        <p>Paso de pipeline: {% for s in catalog.step_status %}<code>{{ s }}</code>{% if not forloop.last %} · {% endif %}{% endfor %}. No usar <code>accepted</code> como status del run.</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">HTTP de máquina</h3>
+        <ul>
+            <li>Validar metadatos (sin ejecutar): <code>POST {{ catalog.paths.validate }}</code></li>
+            <li>Catálogo: <code>GET {{ catalog.paths.contract }}</code></li>
+            <li>Ejecutar (módulo 3): <code>POST {{ catalog.paths.run }}</code></li>
+            <li>Índice de paths (módulo 9): <code>GET {{ catalog.paths.openapi }}</code></li>
+        </ul>
+        <p class="hint">{{ catalog.business_http }}</p>
+    </div>
+</div>
+{% endblock %}

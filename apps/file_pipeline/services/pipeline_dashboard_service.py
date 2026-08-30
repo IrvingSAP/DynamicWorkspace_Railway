@@ -69,14 +69,14 @@ def dashboard_context(user, params) -> dict:
         channels.append({"code": code, "label": label, "n": n, "pct": pct})
 
     fail_qs = (
-        window_runs.filter(status=PipelineRun.STATUS_FAILED)
+        ops.filter(status=PipelineRun.STATUS_FAILED)
         .select_related("pipeline", "version", "triggered_by")
         .order_by("-created_at")[:FAIL_LIMIT]
     )
     failures = [_run_row(run) for run in fail_qs]
 
     recent_qs = (
-        window_runs.select_related("pipeline", "version", "triggered_by")
+        ops.select_related("pipeline", "version", "triggered_by")
         .order_by("-created_at")[:RECENT_LIMIT]
     )
     recent = [_run_row(run) for run in recent_qs]
@@ -140,7 +140,7 @@ def _latest_by_pipeline(pipeline_ids: list) -> dict:
         return {}
     found: dict = {}
     qs = (
-        PipelineRun.objects.filter(pipeline_id__in=pipeline_ids)
+        PipelineRun.objects.filter(pipeline_id__in=pipeline_ids, dry_run=False)
         .select_related("pipeline", "version")
         .order_by("-created_at")
     )

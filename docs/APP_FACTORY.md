@@ -112,7 +112,7 @@ Capacidad de plataforma para **componer** pasos (Clean → Merge → Gate → �
 
 Detalle: [`PLATFORM_API.md`](PLATFORM_API.md).
 
-Capa HTTP alineada a **todas las apps ejecutables** y, previsto, a **pipelines** (`mode=job` \| `mode=pipeline`). Misma semántica que la UI: proyecto/pipeline publicado + archivo(s) → run + informe/salida. Disparador hermano de Watch/Scheduler.
+Capa HTTP alineada a las apps **cableadas** y a **pipelines** (`kind=file_pipeline` o atajo `/pipelines/{id}/runs`). Misma semántica que la UI: proyecto/pipeline publicado + archivo(s) → run + informe/salida. Disparador hermano de Watch/Scheduler. Código: `apps.platform_api`.
 
 ---
 
@@ -134,7 +134,7 @@ Capa HTTP alineada a **todas las apps ejecutables** y, previsto, a **pipelines**
 | 3f | **Archive / Schema Registry** | **Previsto**; forma TBD — [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md) · [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) |
 | 3g | **File Pipeline** (plataforma) | **Propuesta** — orquestación multi-app — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) · [`definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) |
 | 4 | **Formularios de captura** | Abre el producto a usuarios que no manejan archivos |
-| 5 | **PLATFORM API** | Tras apps FILE_OPS; puede ejecutar Job o Pipeline — [`PLATFORM_API.md`](PLATFORM_API.md) |
+| 5 | **PLATFORM API** | **Hecho** (M1–M9) — Job o Pipeline — [`PLATFORM_API.md`](PLATFORM_API.md) · [`definition_app_PLATFORM_API/`](definition_app_PLATFORM_API/) |
 
 > Detalle §2: [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §1 / §13.  
 > Detalle ops: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §16.
@@ -179,7 +179,7 @@ Si la respuesta es “sí” a 1–4, conviene un doc hermano al estilo `DataMap
 | File Watch / Scheduler | **Previsto**; forma de trabajo TBD — [`FILE_WATCH.md`](FILE_WATCH.md), [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) |
 | File Archive / Schema Registry | **Previsto**; forma TBD — [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md), [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) |
 | **File Pipeline** (orquestación multi-app) | **Propuesta** — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) |
-| **PLATFORM API** (ejecución remota) | **Propuesta — diferida**; Job suelto o Pipeline — [`PLATFORM_API.md`](PLATFORM_API.md) |
+| **PLATFORM API** (ejecución remota) | **Hecho** (`apps.platform_api`, M1–M9) — Job suelto o Pipeline — [`PLATFORM_API.md`](PLATFORM_API.md) |
 | File Convert (app) | **Descartado** como app — modo simple en FilePipe |
 | Formularios de captura | Propuesta |
 | Checklists / inspecciones | Propuesta |
@@ -187,7 +187,7 @@ Si la respuesta es “sí” a 1–4, conviene un doc hermano al estilo `DataMap
 | Inventario / activos | Propuesta |
 | Tickets internos | Propuesta |
 | Scheduling DMS | Roadmap DMS Fase 3 · ver también FILE_OPS Scheduler |
-| API / Webhooks | **Diferida** tras apps FILE_OPS — [`PLATFORM_API.md`](PLATFORM_API.md) |
+| API / Webhooks | **Hecho** (webhooks M8; YAML OpenAPI aplazado) — [`PLATFORM_API.md`](PLATFORM_API.md) |
 | Report builder | Propuesta |
 | Bandeja / carpeta vigilada | Propuesta — ver File Watch en [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) |
 

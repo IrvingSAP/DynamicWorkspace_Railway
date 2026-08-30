@@ -354,6 +354,7 @@ class PipelineRun(models.Model):
     correlation_id = models.CharField(max_length=64, blank=True, default="")
     idempotency_key = models.CharField(max_length=120, blank=True, default="")
     api_client_label = models.CharField(max_length=120, blank=True, default="")
+    api_client_id = models.CharField(max_length=36, blank=True, default="")
     client_ip = models.CharField(max_length=45, blank=True, default="")
     user_agent = models.CharField(max_length=300, blank=True, default="")
     started_at = models.DateTimeField(null=True, blank=True)

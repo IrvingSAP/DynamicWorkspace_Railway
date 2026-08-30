@@ -1,0 +1,79 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Seguridad API — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_us.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:client_list' %}">API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Seguridad</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">PLATFORM API · integridad de proceso · <span class="role-badge">US</span></p>
+        <h2>Política de proceso</h2>
+        <p>Límites HTTP de esta compañía: tamaño de archivo, rate, TTL de artifacts y hosts de callback. Publicado y dry-run del tablero no se relajan desde aquí.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'platform_api:security_policy_help' as pa_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=pa_help_url %}
+        <a href="{% url 'platform_api:client_list' %}" class="btn btn-secondary">← Clientes</a>
+    </div>
+</div>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <div class="panel">
+        <div class="panel-body">
+            <h3 class="form-section-title">Cuotas</h3>
+            <div class="field{% if errors.max_upload_mb %} has-error{% endif %}">
+                <label for="max_upload_mb">Tamaño máximo de archivo (MB) <span class="req">*</span></label>
+                <input id="max_upload_mb" name="max_upload_mb" type="number" min="1" max="500" required value="{{ posted.max_upload_mb }}">
+                <p class="hint">Por defecto 50 MB, alineado al intake de Gate.</p>
+                {% for msg in errors.max_upload_mb %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            <div class="field{% if errors.rate_per_minute %} has-error{% endif %}">
+                <label for="rate_per_minute">Solicitudes por minuto (por key) <span class="req">*</span></label>
+                <input id="rate_per_minute" name="rate_per_minute" type="number" min="1" max="600" required value="{{ posted.rate_per_minute }}">
+                {% for msg in errors.rate_per_minute %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            <div class="field{% if errors.artifact_ttl_hours %} has-error{% endif %}">
+                <label for="artifact_ttl_hours">TTL de artifacts (horas) <span class="req">*</span></label>
+                <input id="artifact_ttl_hours" name="artifact_ttl_hours" type="number" min="1" max="168" required value="{{ posted.artifact_ttl_hours }}">
+                <p class="hint">Las URLs firmadas dejan de valer al cumplir este plazo.</p>
+                {% for msg in errors.artifact_ttl_hours %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            <div class="field{% if errors.allowed_extensions %} has-error{% endif %}">
+                <label for="allowed_extensions">Extensiones permitidas <span class="req">*</span></label>
+                <input id="allowed_extensions" name="allowed_extensions" value="{{ posted.allowed_extensions }}">
+                <p class="hint">Separadas por espacio. Ejemplo: .txt .csv .xlsx</p>
+                {% for msg in errors.allowed_extensions %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-body">
+            <h3 class="form-section-title">Callbacks (anti-SSRF)</h3>
+            <div class="field{% if errors.webhook_host_allowlist %} has-error{% endif %}">
+                <label for="webhook_host_allowlist">Hosts HTTPS permitidos</label>
+                <textarea id="webhook_host_allowlist" name="webhook_host_allowlist" rows="5" placeholder="hooks.banco.example">{{ posted.webhook_host_allowlist }}</textarea>
+                <p class="hint">Un host por línea, sin esquema. Solo HTTPS; se rechazan IPs privadas y localhost. El HMAC se configura en el detalle del cliente (módulo 8).</p>
+                {% for msg in errors.webhook_host_allowlist %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            <p class="hint">Solo versión publicada. Dry-run no cuenta en el tablero. IDs ajenos responden 404 opaco.</p>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Guardar política</button>
+</form>
+{% endblock %}

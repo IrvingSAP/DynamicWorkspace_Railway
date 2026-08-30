@@ -1,0 +1,195 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Contrato API{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_us.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:contract_guide' %}">Contrato API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">US</span></p>
+        <h2>Ayuda — Contrato común</h2>
+        <p>Qué congela esta pantalla y cómo un integrador comprueba la forma HTTP sin ejecutar un job.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'platform_api:openapi_guide' %}" class="btn btn-secondary">Paths</a>
+        <a href="{% url 'platform_api:contract_guide' %}" class="btn btn-secondary">← Volver al contrato</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve esta página</h3>
+        <p class="help-intro">
+            Es la <strong>referencia de forma</strong> para todas las llamadas de jobs: qué campos van en el request,
+            cómo se espera (<code>wait</code>), qué estados de máquina existen y cómo se lee el JSON de respuesta.
+            Gate, Pipe y el resto de kinds cambian el archivo y el <code>summary</code>; el envelope no.
+        </p>
+        <p class="help-intro">
+            <strong>No ejecuta nada.</strong> Disparar un runner es
+            <code>POST {{ catalog.paths.run|default:"/api/v1/jobs/run" }}</code> (módulo 3).
+            Aquí solo se documenta y se valida la forma.
+        </p>
+
+        <h3 class="form-section-title">Quién</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Quién</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>US</td>
+                    <td>Lee esta guía para alinear al integrador (ERP, RPA, middleware) con el mismo contrato que el código.</td>
+                </tr>
+                <tr>
+                    <td>Máquina</td>
+                    <td>Llama con Bearer. El catálogo vivo está en <code>GET {{ catalog.paths.contract|default:"/api/v1/contract" }}</code>.</td>
+                </tr>
+                <tr>
+                    <td>UF</td>
+                    <td>No usa esta pantalla. Ejecuta en las apps de archivo; el <code>job_id</code> es el mismo si el disparo fue por API.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Dos ejes (no mezclar)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Eje</th><th>Campos</th><th>Significado</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Qué</td>
+                    <td class="mono">kind + project_slug</td>
+                    <td>Job suelto de un proyecto publicado (Gate, Pipe, …).</td>
+                </tr>
+                <tr>
+                    <td>Qué (cadena)</td>
+                    <td class="mono">kind=file_pipeline + pipeline_id</td>
+                    <td>Corrida de pipeline publicado. No ponga también <code>project_slug</code>.</td>
+                </tr>
+                <tr>
+                    <td>Espera</td>
+                    <td class="mono">wait=sync | async</td>
+                    <td>
+                        <code>sync</code>: HTTP 200 cuando termina.
+                        <code>async</code>: HTTP 202 y luego consulta el job.
+                        Default de pipeline: async.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Atajo: <code>mode=pipeline</code> equivale a <code>kind=file_pipeline</code>.</p>
+
+        <h3 class="form-section-title">Cómo probarlo (sin ejecutar)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Llamada</th><th>Para qué</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="mono">GET {{ catalog.paths.contract|default:"/api/v1/contract" }}</td>
+                    <td>Lista kinds, waits, estados y campos del envelope. Requiere Bearer.</td>
+                </tr>
+                <tr>
+                    <td class="mono">POST {{ catalog.paths.validate|default:"/api/v1/jobs/validate" }}</td>
+                    <td>
+                        Revisa metadatos (kind, destino, wait, archivos si los manda).
+                        Respuesta de éxito: «Metadatos del contrato válidos. Este endpoint no ejecuta el job.»
+                    </td>
+                </tr>
+                <tr>
+                    <td class="mono">POST {{ catalog.paths.run|default:"/api/v1/jobs/run" }}</td>
+                    <td>Ahí sí corre el runner. No lo use para “probar el contrato”.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">HTTP de protocolo vs negocio</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Situación</th><th>HTTP</th><th>Qué verá el integrador</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Request mal formado (kind, wait, destino mezclado, archivo faltante)</td>
+                    <td class="mono">400</td>
+                    <td><code>ok: false</code> y <code>errors[]</code> con <code>row</code>, <code>field</code>, <code>code</code>, <code>message</code>.</td>
+                </tr>
+                <tr>
+                    <td>Sin versión publicada / pipeline inactivo (en el run)</td>
+                    <td class="mono">409</td>
+                    <td>No se crea job. Corrija publicación en la app, no el JSON.</td>
+                </tr>
+                <tr>
+                    <td>Gate rechaza el archivo (negocio)</td>
+                    <td class="mono">200</td>
+                    <td>
+                        <code>ok: false</code>, <code>status: completed</code>, veredicto
+                        {% for s in catalog.gate_verdict %}<code>{{ s }}</code>{% if not forloop.last %} / {% endif %}{% endfor %}.
+                        No es un error de protocolo.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Pipe termina con filas rechazadas</td>
+                    <td class="mono">200</td>
+                    <td>Igual: máquina <code>completed</code>; el detalle va en <code>summary</code> y <code>errors[]</code>.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">{{ catalog.business_http }}</p>
+        <p class="help-intro">
+            <code>accepted</code> es solo veredicto Gate. No lo use como <code>status</code> de un run de pipeline.
+            Estados de máquina:
+            {% for s in catalog.job_status %}<code>{{ s }}</code>{% if not forloop.last %} · {% endif %}{% endfor %}.
+        </p>
+
+        <h3 class="form-section-title">Qué hay en la tabla de kinds</h3>
+        <ul>
+            <li><strong>Ejecutable:</strong> hoy en <code>POST /jobs/run</code> —
+                {% for item in catalog.kinds %}{% if item.mvp_phase_a %}<code>{{ item.kind }}</code>{% if not forloop.last %} {% endif %}{% endif %}{% endfor %}
+                (Gate/Pipe Fase A; Reverse, Match, Scout, Clean, Split, Merge y pipeline ya cableados).
+            </li>
+            <li>El resto aparece en el catálogo para no cambiar el contrato después; el run responderá que aún no están en esta fase.</li>
+            <li><code>workspace</code> (Worksheets) no entra en esta API de archivos.</li>
+        </ul>
+
+        <h3 class="form-section-title">Errores frecuentes al validar</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Mensaje que verá</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">kind</td><td>Kind no reconocido.</td></tr>
+                <tr><td class="mono">wait</td><td>wait debe ser sync o async.</td></tr>
+                <tr><td class="mono">project_slug</td><td>Indique project_slug para un job suelto.</td></tr>
+                <tr><td class="mono">pipeline_id</td><td>Indique pipeline_id para un pipeline.</td></tr>
+                <tr><td colspan="2">No mezcle project_slug de job suelto con pipeline_id.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no es esta pantalla</h3>
+        <ul>
+            <li>No crea clientes ni keys — eso es <a href="{% url 'platform_api:client_list' %}">Clientes</a>.</li>
+            <li>No lista rutas HTTP — eso es <a href="{% url 'platform_api:openapi_guide' %}">Paths</a>.</li>
+            <li>No muestra el inventario de runners por app — eso es Integración.</li>
+            <li>No sustituye el historial de Gate, Pipe o Pipeline: el <code>job_id</code> es el mismo objeto.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

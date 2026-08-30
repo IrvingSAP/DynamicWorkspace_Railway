@@ -1,0 +1,97 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Key emitida{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_us.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:client_list' %}">API</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'platform_api:client_detail' client.pk %}">{{ client.code }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda key</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ client.code }}</span></p>
+        <h2>Ayuda — Key emitida (un solo uso)</h2>
+        <p>Qué es el Bearer, por qué se muestra una sola vez y cómo usarlo en las peticiones.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'platform_api:client_detail' client.pk %}" class="btn btn-secondary">← Ir al detalle</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Es la <strong>bóveda</strong>: la única vez que DynamicWorkspace muestra la key en claro
+            (alta o rotación del cliente <strong>{{ client.code }}</strong>).
+            Copie el valor al gestor de secretos del banco/ERP y cierre. El servidor solo guarda un hash.
+        </p>
+        <p class="help-intro">
+            <strong>Importante:</strong> si sale de la pantalla de key (incluida esta ayuda) y vuelve,
+            el valor en claro ya no estará. Eso no invalida la key: el integrador sigue usándola.
+            Si no la copió, use <strong>Rotar key</strong> en el detalle.
+        </p>
+
+        <h3 class="form-section-title">Elementos</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Elemento</th><th>Qué es</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cliente / entorno</td>
+                    <td>Código del cliente y sandbox o producción. La key de prod empieza por <span class="mono">dw_live_</span>; sandbox por <span class="mono">dw_test_</span>.</td>
+                </tr>
+                <tr>
+                    <td>Bearer</td>
+                    <td>Secreto completo. Header HTTP fijo: <span class="mono">Authorization: Bearer</span> + un espacio + la key. Los puntos («Bearer …») no se escriben. Al rotar cambia la key, no el nombre del header ni la palabra Bearer.</td>
+                </tr>
+                <tr>
+                    <td>Copiar</td>
+                    <td>Pasa el valor al portapapeles. Péguelo en el cofre, no en un ticket o chat.</td>
+                </tr>
+                <tr>
+                    <td>Ir al detalle</td>
+                    <td>Configuración del cliente. Allí ya no verá la key, solo una pista (últimos caracteres).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Uso diario</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Situación</th><th>¿Nueva key?</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cada POST / GET del ERP (lunes, martes, 06:00…)</td>
+                    <td><strong>No.</strong> Mismo Bearer.</td>
+                </tr>
+                <tr>
+                    <td>Cambiar scopes o nombre</td>
+                    <td><strong>No.</strong> Se edita el cliente; el secreto sigue válido.</td>
+                </tr>
+                <tr>
+                    <td>Key perdida o comprometida</td>
+                    <td><strong>Sí.</strong> Rotar: se emite otra y la anterior deja de autenticar.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

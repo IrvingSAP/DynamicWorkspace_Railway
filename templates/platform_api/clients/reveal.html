@@ -1,0 +1,59 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Key emitida — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_us.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:client_list' %}">API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Key</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">PLATFORM API · bóveda de un solo uso</p>
+        <h2>Key emitida</h2>
+        <p>Cliente <code>{{ client.code }}</code> · {{ client.get_environment_display }} · {{ client.company.name_short }}. Guárdela en el cofre del integrador. Esta pantalla no se puede repetir.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'platform_api:client_reveal_help' client.pk as pa_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=pa_help_url %}
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <div class="key-vault">
+            <span class="form-section-title">Bearer</span>
+            <code id="the-key">{{ plaintext_key }}</code>
+            <button class="btn btn-primary" type="button" id="copy-key">Copiar</button>
+            <p class="hint">Header: <code>Authorization: Bearer …</code>. En servidor solo queda el hash. Las peticiones diarias reutilizan esta misma key.</p>
+        </div>
+    </div>
+</div>
+<a class="btn btn-secondary" href="{% url 'platform_api:client_detail' client.pk %}">Ir al detalle</a>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById("copy-key")?.addEventListener("click", function () {
+    var t = document.getElementById("the-key");
+    if (t && navigator.clipboard) {
+        navigator.clipboard.writeText(t.textContent.trim());
+        this.textContent = "Copiado";
+    }
+});
+</script>
+{% endblock %}

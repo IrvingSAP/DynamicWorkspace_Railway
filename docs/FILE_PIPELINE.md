@@ -824,7 +824,7 @@ Company
 1. Mantener este archivo como **paraguas FILE_PIPELINE**.  
 2. Revisar con producto los ejemplos EJ-01…EJ-06 y la política Split→siguiente.  
 3. Specs por módulo: [`definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) (esqueleto + prototipos). Implementar Django solo con «Desarrolla el módulo».  
-4. Actualizar [`PLATFORM_API.md`](PLATFORM_API.md) § kinds / modos con `file_pipeline`.  
+4. [`PLATFORM_API.md`](PLATFORM_API.md) ya cubre `kind=file_pipeline`, `wait`, auditoría HTTP §10.2 y dashboard §10.3; no duplicar §7.1 allí.  
 5. Actualizar [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §15 como puntero a este doc (visión → producto).  
 6. Spike técnico: pasar `artifact_ref` entre runners; implementar **Pipeline Step Catalog** (config/código) con subset MVP.  
 7. Al nacer cada app nueva: checklist §5.1 antes de marcar `pipeline_enabled=true`.

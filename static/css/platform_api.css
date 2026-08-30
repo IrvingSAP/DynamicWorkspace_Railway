@@ -1,0 +1,36 @@
+/* PLATFORM API — clientes de máquina (familia workbench) */
+.scope-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 8px;
+}
+.scope-item {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    padding: 8px 10px;
+    border: 1px solid var(--line, rgba(28, 25, 23, 0.1));
+    border-radius: 6px;
+    font-size: 13px;
+}
+.key-vault code {
+    display: block;
+    margin: 8px 0 12px;
+    padding: 12px;
+    background: var(--ink, #1c1917);
+    color: #fde68a;
+    border-radius: 6px;
+    font-size: 13px;
+    word-break: break-all;
+}
+.tone-ok { color: #15803d; font-weight: 650; }
+.tone-fail { color: #b91c1c; font-weight: 650; }
+.mono { font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+.field textarea {
+    width: 100%;
+    min-height: 6.5rem;
+    resize: vertical;
+}
+.contract-table code {
+    font-size: 12px;
+}

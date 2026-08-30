@@ -1,0 +1,257 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Paths API{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_us.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:openapi_guide' %}">Paths API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Guía de trabajo · <span class="role-badge">US</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>Cómo funcionan los paths canónicos</h2>
+        <p>
+            <strong>Paths</strong> es el mapa de <strong>método + URL</strong> de PLATFORM API.
+            Prefijo único <span class="mono">/api/v1</span>, un solo <span class="mono">POST</span> de ejecución,
+            Bearer y, en el run, <span class="mono">Idempotency-Key</span>.
+            El YAML OpenAPI 3 está aplazado: este índice (pantalla + <span class="mono">GET /api/v1/openapi</span>) es la fuente de rutas.
+        </p>
+        <p>
+            Esta página describe el <strong>flujo de lectura</strong> para el integrador.
+            El <span class="mono">?</span> de la pantalla Paths es la ayuda contextual de esa tabla.
+        </p>
+    </div>
+    <aside class="guide-hero-aside" aria-label="Ruta rápida">
+        <h3>Ruta rápida</h3>
+        <ol class="guide-quick-path">
+            <li>Pegue host + path de la tabla (sin <span class="mono">/j/</span> de más).</li>
+            <li>Auth: Bearer; en run, header de idempotencia.</li>
+            <li>El kind va en el cuerpo, no en la URL.</li>
+        </ol>
+    </aside>
+</div>
+
+<div class="guide-role-strip" aria-label="Quién actúa">
+    <span class="label">Quién</span>
+    <span class="guide-role-item"><span class="role-code role-code--pa">US</span><span>Enseña al integrador qué URL pegar; no edita rutas</span></span>
+    <span class="guide-role-item"><span class="role-code">Máquina</span><span>GET /openapi y llama cada path con Bearer</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--ed">UF</span><span>No usa estas URLs; el job_id es el de su app</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--co">Contrato</span><span>Envelope y kinds; Paths no los redefine</span></span>
+</div>
+
+<div class="guide-layout">
+    <nav class="guide-spine" aria-label="Índice de la guía">
+        <h3>Secciones</h3>
+        <nav>
+            <a href="#que-es">Qué es</a>
+            <a href="#funcion">Función</a>
+            <a href="#no-es">Qué no es</a>
+            <a href="#reglas">Reglas</a>
+            <a href="#flujo">Flujo de trabajo</a>
+            <a href="#superficie">Superficie</a>
+            <a href="#casos">Casos típicos</a>
+        </nav>
+    </nav>
+
+    <div class="guide-flows">
+        <article class="flow-card" id="que-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">1</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué es Paths</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    El <strong>índice canónico</strong> de superficie HTTP: whoami, contract, validate, run,
+                    detalle, report, output, listado, cancel, atajo de pipeline.
+                    No hay <span class="mono">/file-gate/run</span> ni un path de run por app.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>En una frase</h4>
+                        <p>
+                            El <strong>mapa de direcciones</strong>. El contrato dice cómo va el JSON;
+                            Paths dice <strong>a qué URL</strong> pegarlo.
+                        </p>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Qué ve US en pantalla</h4>
+                        <ul>
+                            <li>Reglas: Bearer, Idempotency-Key, errores como el contrato.</li>
+                            <li>Tabla método / path / módulo / fase / si está en código.</li>
+                            <li>YAML diferido; <span class="mono">GET /ops/summary</span> documentado y no implementado.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="funcion">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">2</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Cuál es la función de Paths</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>Función principal:</strong> que integradores y módulos no inventen URLs distintas
+                    y que el <span class="mono">job_id</span> sea el de la app que ejecutó (un path, no un id paralelo de PLATFORM API).
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Problema que resuelve</h4>
+                        <ul>
+                            <li>Un endpoint “de producto” por silo.</li>
+                            <li>Confundir el atajo de pipeline con un segundo producto.</li>
+                            <li>Esperar un fichero OpenAPI 3 como única fuente.</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Qué ganas</h4>
+                        <ul>
+                            <li>Misma tabla en UI y en <span class="mono">GET /api/v1/openapi</span>.</li>
+                            <li>Atajo <span class="mono">POST /pipelines/{id}/runs</span> ≡ run con <span class="mono">kind=file_pipeline</span>.</li>
+                            <li>Report/output: no adivinar rutas de disco.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="no-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">3</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué no es (y qué sí usar en su lugar)</h3>
+                </header>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Paths no…</h4>
+                        <ul>
+                            <li>No explica kinds, wait ni envelope (eso es <strong>Contrato</strong>).</li>
+                            <li>No emite keys (<strong>Clientes</strong>).</li>
+                            <li>No lista runners Django (<strong>Integración</strong>).</li>
+                            <li>No es un SDK ni un YAML descargable (aún).</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Usa otra pantalla si…</h4>
+                        <ul>
+                            <li><strong>Contrato</strong> — forma del JSON y tabla de kinds.</li>
+                            <li><strong>Integración</strong> — qué app atiende cada kind.</li>
+                            <li><strong>Seguridad</strong> — TTL de artifacts y tasa.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="reglas">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">4</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Reglas al pegar una URL</h3>
+                </header>
+                <ul>
+                    <li>Prefijo <span class="mono">http://…/api/v1/…</span> (local: <span class="mono">http</span>, no https).</li>
+                    <li>Auth: <span class="mono">Authorization: Bearer</span> + la key. La cookie US no autentica.</li>
+                    <li>Run: form-data + archivo; header <span class="mono">Idempotency-Key</span>.</li>
+                    <li><span class="mono">{job_id}</span> y <span class="mono">{pipeline_id}</span> son del tenant de esa key, sin llaves en la URL real.</li>
+                </ul>
+            </div>
+        </article>
+
+        <article class="flow-card" id="flujo">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">5</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Flujo de trabajo</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>whoami → (contract) → run → GET job → report/output</strong>, siempre con paths de esta tabla.
+                </p>
+                <ol>
+                    <li>US abre Paths y apunta el método que el ERP debe usar.</li>
+                    <li>La máquina confirma el índice: <span class="mono">GET /api/v1/openapi</span>.</li>
+                    <li>Arme Postman/curl con el path exacto (detalle sin <span class="mono">/report</span>; informe con él).</li>
+                    <li>Si hace falta listar: <span class="mono">GET /api/v1/jobs</span> con query, no el UUID en el path.</li>
+                </ol>
+                <p class="hint" style="margin-top:12px">
+                    <a href="{% url 'platform_api:openapi_guide' %}">Ir a la pantalla Paths →</a>
+                </p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="superficie">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">6</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Superficie (lectura)</h3>
+                </header>
+                <table class="help-table">
+                    <thead><tr><th>Método</th><th>Path</th><th>Uso</th></tr></thead>
+                    <tbody>
+                        <tr><td class="mono">GET</td><td class="mono">/api/v1/whoami</td><td>Identidad de la key</td></tr>
+                        <tr><td class="mono">GET</td><td class="mono">/api/v1/contract</td><td>Catálogo de forma</td></tr>
+                        <tr><td class="mono">POST</td><td class="mono">/api/v1/jobs/validate</td><td>Metadatos sin runner</td></tr>
+                        <tr><td class="mono">POST</td><td class="mono">/api/v1/jobs/run</td><td>Único run (todos los kind)</td></tr>
+                        <tr><td class="mono">GET</td><td class="mono">/api/v1/jobs/{job_id}</td><td>Detalle</td></tr>
+                        <tr><td class="mono">GET</td><td class="mono">…/report · …/output</td><td>Artifacts</td></tr>
+                        <tr><td class="mono">GET</td><td class="mono">/api/v1/jobs</td><td>Listado</td></tr>
+                        <tr><td class="mono">POST</td><td class="mono">…/cancel</td><td>Cancelar si aplica</td></tr>
+                        <tr><td class="mono">POST</td><td class="mono">/api/v1/pipelines/{id}/runs</td><td>Atajo de pipeline</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="flow-card" id="casos">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">7</span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Casos típicos</h3>
+                </header>
+                <ul>
+                    <li>HTML 404 en <span class="mono">/j/api/v1/…</span> — typo; el path canónico no lleva esa <span class="mono">j</span>.</li>
+                    <li>PowerShell parte <span class="mono">/output</span> si la URL va sin comillas.</li>
+                    <li>404 JSON en output con Split de varias partes: el path es correcto; no hay un solo archivo.</li>
+                    <li><span class="mono">GET /ops/summary</span> en la tabla con “No (MVP)”: use el tablero de Pipeline, no esa URL.</li>
+                </ul>
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}

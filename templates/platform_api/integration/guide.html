@@ -1,0 +1,107 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Integración API — DynamicWorkspace{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_us.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:client_list' %}">API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Integración</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">PLATFORM API · transversal · <span class="role-badge">US</span></p>
+        <h2>Runners y mapeo UI↔API</h2>
+        <p>Un producto de máquina (<code>{{ catalog.identity.product_code }}</code>), un POST de run, los mismos jobs que la UI. Worksheets queda fuera.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'platform_api:integration_guide_help' as pa_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=pa_help_url %}
+        <a href="{% url 'platform_api:openapi_guide' %}" class="btn btn-secondary">Paths</a>
+        <a href="{% url 'platform_api:client_list' %}" class="btn btn-secondary">← Clientes</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Identidad</h3>
+        <ul>
+            <li>App Django: <code>{{ catalog.identity.django_app }}</code> (no es <code>project_kind</code>)</li>
+            <li>Prefijo: <code>{{ catalog.identity.http_prefix }}</code></li>
+            <li>Sidebar UF: no{% if catalog.identity.uf_sidebar %} sí{% endif %}</li>
+            <li>Keys US: <code>{{ catalog.identity.ui_clients }}</code></li>
+            <li>Run único: <code>{{ catalog.single_run_path }}</code></li>
+            <li>Atajo pipeline: <code>{{ catalog.pipeline_alias }}</code></li>
+        </ul>
+        <p class="hint">Catálogo máquina: <code>GET /api/v1/integration</code></p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Kinds → runners</h3>
+        <div class="table-dt-host">
+            <table class="dw-datatable contract-table">
+                <thead>
+                    <tr>
+                        <th>kind</th>
+                        <th>App</th>
+                        <th>Runner</th>
+                        <th>Fase</th>
+                        <th>Cableado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in catalog.runners %}
+                    <tr>
+                        <td><code>{{ row.kind }}</code></td>
+                        <td>{{ row.label }}{% if not row.app_installed %} <span class="tone-fail">sin app</span>{% endif %}</td>
+                        <td class="mono">{{ row.runner|default:"—" }}</td>
+                        <td>{{ row.phase }}</td>
+                        <td>{% if row.wired %}<span class="tone-ok">Sí</span>{% else %}<span class="tone-fail">No</span>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">UI ↔ API</h3>
+        <div class="table-dt-host">
+            <table class="dw-datatable contract-table">
+                <thead>
+                    <tr>
+                        <th>UI</th>
+                        <th>API</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in catalog.ui_api_map %}
+                    <tr>
+                        <td>{{ row.ui }}</td>
+                        <td class="mono">{{ row.api }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="hint">{{ catalog.watch_scheduler }}</p>
+        <p class="hint">{{ catalog.archive }}</p>
+    </div>
+</div>
+{% endblock %}

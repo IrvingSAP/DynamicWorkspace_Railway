@@ -378,12 +378,14 @@ def validate_pattern(data: dict) -> dict[str, list[str]]:
 
 
 @transaction.atomic
-def rerun_detection(user, project: Project) -> OperationResult:
+def rerun_detection(
+    user, project: Project, *, require_membership: bool = True
+) -> OperationResult:
     if project.project_kind != Project.KIND_STRUCTURE_SCOUT:
         return OperationResult.failure(
             "forbidden", "Este proyecto no es de tipo Explorador de estructura."
         )
-    if not user_can_rerun(user, project):
+    if require_membership and not user_can_rerun(user, project):
         return OperationResult.failure("forbidden", MSG_NO_EDIT)
 
     sample = sample_upload_service.latest_sample(project)

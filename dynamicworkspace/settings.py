@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     "apps.file_split_merge",
     "apps.file_pipeline",
     "apps.profile_seed",
+    "apps.platform_api",
 ]
 
 MIDDLEWARE = [

@@ -135,13 +135,15 @@ def _validate_upload_file(uploaded_file) -> OperationResult | None:
 
 
 @transaction.atomic
-def upload_sample(user, project: Project, uploaded_file) -> OperationResult:
+def upload_sample(
+    user, project: Project, uploaded_file, *, require_membership: bool = True
+) -> OperationResult:
     if project.project_kind != Project.KIND_STRUCTURE_SCOUT:
         return OperationResult.failure(
             "forbidden",
             "Este proyecto no es de tipo Explorador de estructura.",
         )
-    if not user_can_upload_sample(user, project):
+    if require_membership and not user_can_upload_sample(user, project):
         return OperationResult.failure("forbidden", MSG_NO_UPLOAD_PERM)
 
     invalid = _validate_upload_file(uploaded_file)

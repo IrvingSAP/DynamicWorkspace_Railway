@@ -547,13 +547,15 @@ def _parse_side(
 
 
 @transaction.atomic
-def match_and_run(user, project: Project, file_a, file_b) -> OperationResult:
+def match_and_run(
+    user, project: Project, file_a, file_b, *, require_membership: bool = True
+) -> OperationResult:
     if project.project_kind != Project.KIND_FILE_MATCH:
         return OperationResult.failure(
             "forbidden",
             "Este proyecto no es de tipo FILE MATCH.",
         )
-    if not user_can_execute(user, project):
+    if require_membership and not user_can_execute(user, project):
         return OperationResult.failure(
             "forbidden",
             "No tiene permiso para ejecutar conciliaciones en este proyecto.",

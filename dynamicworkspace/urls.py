@@ -3,6 +3,8 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from apps.platform_api.urls import api_urlpatterns
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("apps.public.urls")),
@@ -28,6 +30,8 @@ urlpatterns = [
     path("app/file-clean/", include("apps.file_clean.urls")),
     path("app/file-split-merge/", include("apps.file_split_merge.urls")),
     path("app/file-pipeline/", include("apps.file_pipeline.urls")),
+    path("app/platform-api/", include("apps.platform_api.urls")),
+    path("api/", include((api_urlpatterns, "platform_api_http"))),
     path("app/ayuda/", include(("apps.help.urls", "help"))),
 ]
 

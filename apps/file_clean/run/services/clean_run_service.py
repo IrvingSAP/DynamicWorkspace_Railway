@@ -382,6 +382,7 @@ def run_clean_job(
     *,
     dry_run: bool = False,
     idempotency_key: str | None = None,
+    require_membership: bool = True,
 ) -> OperationResult:
     """
     Runner API-ready (sin request).
@@ -389,7 +390,7 @@ def run_clean_job(
     """
     if project.project_kind != Project.KIND_FILE_CLEAN:
         return OperationResult.failure("forbidden", MSG_KIND)
-    if not user_can_execute(user, project):
+    if require_membership and not user_can_execute(user, project):
         return OperationResult.failure("forbidden", MSG_FORBIDDEN)
 
     existing = _idempotent_existing(project, idempotency_key)

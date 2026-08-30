@@ -1,0 +1,66 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ event.get_action_display }} — Auditoría API{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_us.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:client_list' %}">API</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'platform_api:audit_list' %}">Auditoría</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Evento</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">PLATFORM API · evidencia</p>
+        <h2>{{ event.get_action_display }}</h2>
+        <p>{{ event.created_at|date:"d/m/Y H:i:s" }} · cliente <code>{{ event.client.code }}</code>
+            · {% if event.actor %}{{ event.actor.get_username }}{% else %}sistema{% endif %}</p>
+    </div>
+    <div class="page-actions">
+        {% url 'platform_api:audit_event_help' event.pk as pa_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=pa_help_url %}
+        <a href="{% url 'platform_api:audit_list' %}" class="btn btn-secondary">← Auditoría</a>
+        <a href="{% url 'platform_api:client_audit' event.client_id %}" class="btn btn-secondary">Cliente</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <p>{{ event.summary }}</p>
+        <p class="hint">IP {{ event.ip_address|default:"—" }} · {{ event.user_agent|default:"—" }}</p>
+        <h3 class="form-section-title">Antes</h3>
+        {% if event.before %}
+        <table class="help-table">
+            {% for key, value in event.before.items %}
+            <tr><th class="mono">{{ key }}</th><td class="mono">{{ value }}</td></tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="hint">Sin estado previo (alta o revelado).</p>
+        {% endif %}
+        <h3 class="form-section-title">Después</h3>
+        {% if event.after %}
+        <table class="help-table">
+            {% for key, value in event.after.items %}
+            <tr><th class="mono">{{ key }}</th><td class="mono">{{ value }}</td></tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="hint">Sin snapshot posterior.</p>
+        {% endif %}
+        <p class="hint">No incluye el secreto en claro ni el hash. La pista de key sí, para reconocer rotaciones.</p>
+    </div>
+</div>
+{% endblock %}

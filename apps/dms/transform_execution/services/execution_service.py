@@ -103,8 +103,15 @@ def _merge_parse_and_map(parse_result, mappings, target, *, project_id: str | No
     return ok_items, errors, rows_read, messages
 
 
-def dry_run_job(user, project: Project, job_id, *, limit: int = PREVIEW_ROW_LIMIT) -> OperationResult:
-    if not user_can_execute(user, project):
+def dry_run_job(
+    user,
+    project: Project,
+    job_id,
+    *,
+    limit: int = PREVIEW_ROW_LIMIT,
+    require_membership: bool = True,
+) -> OperationResult:
+    if require_membership and not user_can_execute(user, project):
         return OperationResult.failure(
             "forbidden",
             "No tiene permiso para ejecutar transformaciones de este proyecto.",
@@ -179,8 +186,9 @@ def run_full_job(
     *,
     download_url_namespace: str = "dms",
     download_url_names: dict[str, str] | None = None,
+    require_membership: bool = True,
 ) -> OperationResult:
-    if not user_can_execute(user, project):
+    if require_membership and not user_can_execute(user, project):
         return OperationResult.failure(
             "forbidden",
             "No tiene permiso para ejecutar transformaciones de este proyecto.",
