@@ -3,8 +3,8 @@
 > **Nombre mnemotécnico:** `FILE_PIPELINE`  
 > Alias: *Pipeline* · *Orquestador de archivos* · *Flujo encadenado* · *Job compuesto*  
 > Archivo: [`docs/FILE_PIPELINE.md`](FILE_PIPELINE.md)  
-> Estado: **propuesta de producto / diseño** (sin implementación)  
-> **Cuándo priorizar:** tras estabilizar runners de apps (Clean, Split/Merge, Gate, …) y en paralelo o justo antes de Watch / Scheduler / PLATFORM_API  
+> Estado: **MVP hecho** (M1–M5 + tablero) · `apps.file_pipeline` · `main`  
+> Disparadores: UI, Watch, Scheduler, PLATFORM API (`kind=file_pipeline`)  
 > Padres: [`APP_FACTORY.md`](APP_FACTORY.md) · [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §15 (Job encadenable)  
 > Hermano disparador/consumidor: [`PLATFORM_API.md`](PLATFORM_API.md) — **la API puede ejecutar un Pipeline completo**, no solo un `kind` suelto  
 > Alcance: **desarrollo global** que consume apps §2 + FILE_OPS + capas de plataforma (Watch, Scheduler, Archive, Registry)  
@@ -14,9 +14,9 @@
 
 | Ítem | Valor |
 |------|--------|
-| **Rama Git** | `Mejoras_FILE_PIPELINE_v2` |
+| **Rama Git** | `main` (MVP mergeado; origen histórico `Mejoras_FILE_PIPELINE` / `_v2`) |
 | **Base** | `main` |
-| **Despliegues Railway** | Solo desde `main` |
+| **Despliegues Railway** | Desde **`main`** |
 
 ---
 
@@ -764,7 +764,7 @@ Company
 
 ## 13. Fases de implementación sugeridas
 
-### Fase A — MVP (diseño + run lineal)
+### Fase A — MVP (diseño + run lineal) — **hecho**
 
 - CRUD pipeline + publicar.  
 - Pasos: Clean, Gate, Split **o** Merge, Pipe (los que tengan runner estable).  
@@ -772,7 +772,7 @@ Company
 - UI ejecutar + detalle de run.  
 - Encadenamiento **sin** re-upload manual (artifact refs).
 
-### Fase B — Disparadores
+### Fase B — Disparadores — **hecho**
 
 - Watch → `pipeline_id`.  
 - Scheduler → `pipeline_id`.  
@@ -787,7 +787,7 @@ Company
 - Integración Archive (expediente = pipeline_run).  
 - Schema Registry en resolución de contratos.
 
-> **Orden de programa:** no bloquear apps FILE_OPS pendientes; el Pipeline **consume** runners ya hechos. Puede empezar Fase A cuando Clean + Gate + (Split/Merge|Pipe) estén estables — ya lo están en gran parte.
+> **Orden de programa:** Fase A+B cerradas en `main`. Fase C no bloquea el MVP. Archive / Registry siguen previstos.
 
 ---
 
@@ -798,12 +798,12 @@ Company
 | ¿Hace trabajo real? | **Sí** — orquesta motores reales de cada app |
 | ¿Reemplaza las apps? | **No** — las compone |
 | ¿Útil sin Watch/API? | **Sí** — ya con UI (adiós upload entre apps) |
-| ¿PLATFORM_API lo consume? | **Sí, previsto** — disparador preferente para integraciones |
+| ¿PLATFORM_API lo consume? | **Sí** — `kind=file_pipeline` / atajo de runs |
 | ¿Sustituye Archive? | **No** — Archive custodia; Pipeline ejecuta |
 
 ---
 
-## 15. Criterio de aceptación (antes de implementar)
+## 15. Criterio de aceptación (MVP cerrado)
 
 1. ¿Cada paso reutiliza el runner de la app sin fork?  
 2. ¿Solo versiones publicadas en run productivo?  

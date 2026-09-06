@@ -106,7 +106,7 @@ Detalle y prioridad: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md).
 
 Detalle: [`FILE_PIPELINE.md`](FILE_PIPELINE.md).
 
-Capacidad de plataforma para **componer** pasos (Clean → Merge → Gate → …) con informe OK/Error por etapa. Consumida por UI, Watch, Scheduler y **PLATFORM API**.
+Capacidad de plataforma para **componer** pasos (Clean → Merge → Gate → …) con informe OK/Error por etapa. **Hecho** (M1–M5 + tablero). Consumida por UI, Watch, Scheduler y **PLATFORM API**.
 
 ### 4.3 PLATFORM API — ejecución remota
 
@@ -132,7 +132,7 @@ Capa HTTP alineada a las apps **cableadas** y a **pipelines** (`kind=file_pipeli
 | 3d | **File Repair** (FILE_OPS) | **Pendiente revisión** — [`FILE_REPAIR.md`](FILE_REPAIR.md) (app / modo Gate / Clean) |
 | 3e | **Watch + Scheduler** (FILE_OPS) | **Hecho** (M1–M10) — [`FILE_WATCH.md`](FILE_WATCH.md) · [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) · `apps.file_watch` / `apps.file_scheduler` |
 | 3f | **Archive / Schema Registry** | **Previsto**; forma TBD — [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md) · [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) |
-| 3g | **File Pipeline** (plataforma) | **Propuesta** — orquestación multi-app — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) · [`definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) |
+| 3g | **File Pipeline** (plataforma) | **Hecho** (M1–M5 + tablero) — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) · `apps.file_pipeline` |
 | 4 | **Formularios de captura** | Abre el producto a usuarios que no manejan archivos |
 | 5 | **PLATFORM API** | **Hecho** (M1–M9) — Job o Pipeline — [`PLATFORM_API.md`](PLATFORM_API.md) · [`definition_app_PLATFORM_API/`](definition_app_PLATFORM_API/) |
 
@@ -178,7 +178,7 @@ Si la respuesta es “sí” a 1–4, conviene un doc hermano al estilo `DataMap
 | File Clean / Profiler / Split·Merge / Repair | Clean + Split/Merge: **hecho**; Profiler + Repair: **pendiente revisión** — [`DATA_PROFILER.md`](DATA_PROFILER.md), [`FILE_REPAIR.md`](FILE_REPAIR.md); Diff **retirado** |
 | File Watch / Scheduler | **Hecho (MVP M1–M10)** — [`FILE_WATCH.md`](FILE_WATCH.md) · [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) · `apps.file_watch` / `apps.file_scheduler` · `main` |
 | File Archive / Schema Registry | **Previsto**; forma TBD — [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md), [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) |
-| **File Pipeline** (orquestación multi-app) | **Propuesta** — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) |
+| **File Pipeline** (orquestación multi-app) | **Hecho (MVP M1–M5 + tablero)** — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) · `apps.file_pipeline` · `main` |
 | **PLATFORM API** (ejecución remota) | **Hecho** (`apps.platform_api`, M1–M9) — Job suelto o Pipeline — [`PLATFORM_API.md`](PLATFORM_API.md) |
 | File Convert (app) | **Descartado** como app — modo simple en FilePipe |
 | Formularios de captura | Propuesta |

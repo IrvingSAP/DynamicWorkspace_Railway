@@ -459,7 +459,9 @@ No bloquear verticales ya hechos; abordar tras estabilizar §2 + Clean/Seed y te
 
 ## 15. Job común / FILE PIPELINE (visión → producto)
 
-La visión de orquestación vive como producto en **[`FILE_PIPELINE.md`](FILE_PIPELINE.md)** (diseñar cadena Clean → Merge → Gate → …, informe OK/Error por paso, disparadores UI/Watch/Scheduler/**PLATFORM_API**).
+**Estado:** **hecho** (M1–M5 + tablero) · `apps.file_pipeline`.
+
+La orquestación vive en **[`FILE_PIPELINE.md`](FILE_PIPELINE.md)** (diseñar cadena Clean → Merge → Gate → …, informe OK/Error por paso, disparadores UI/Watch/Scheduler/**PLATFORM_API**).
 
 ```text
 Archivo
@@ -476,7 +478,7 @@ Archivo
 
 Cada paso = app/módulo independiente; el usuario arma **pipelines** sin programar ([`FILE_PIPELINE.md`](FILE_PIPELINE.md)). El mismo flujo puede dispararse desde UI, Watch, Scheduler o **[`PLATFORM_API.md`](PLATFORM_API.md)** (`mode=pipeline`).
 
-Hoy el encadenamiento en apps es **manual** (descarga → re-subida); el Pipeline lo sustituye con handoff por referencia.
+Hoy el encadenamiento **manual** (descarga → re-subida) queda sustituido por handoff por referencia en File Pipeline.
 
 ---
 
@@ -500,10 +502,10 @@ Hoy el encadenamiento en apps es **manual** (descarga → re-subida); el Pipelin
 1. **File Clean** — **hecho**  
 2. **Split/Merge** — **hecho**  
 3. **Watch + Scheduler** — **hecho** (M1–M10; `apps.file_watch` / `apps.file_scheduler`)  
-4. **Data Profiler** / **File Repair** — **pendiente revisión** (¿aportar valor? ¿forma?) — docs producto ya creados  
-5. **Archive / Schema Registry** — **se desarrollarán**; definir forma de trabajo  
-6. **FILE PIPELINE** — orquestación multi-app — [`FILE_PIPELINE.md`](FILE_PIPELINE.md)  
-7. **PLATFORM API** — **hecho** (M1–M9); puede consumir Pipeline — [`PLATFORM_API.md`](PLATFORM_API.md)
+4. **FILE PIPELINE** — **hecho** (M1–M5 + tablero) — [`FILE_PIPELINE.md`](FILE_PIPELINE.md)  
+5. **PLATFORM API** — **hecho** (M1–M9); puede consumir Pipeline — [`PLATFORM_API.md`](PLATFORM_API.md)  
+6. **Data Profiler** / **File Repair** — **pendiente revisión** (¿aportar valor? ¿forma?) — docs producto ya creados  
+7. **Archive / Schema Registry** — **se desarrollarán**; definir forma de trabajo
 
 ---
 
@@ -527,7 +529,7 @@ Antes de abrir rama `feature/<slug>`:
 3. **Profiler / Repair:** docs de producto creados; **revisión de aporte** antes de `definition_app_*` / rama — [`DATA_PROFILER.md`](DATA_PROFILER.md), [`FILE_REPAIR.md`](FILE_REPAIR.md).  
 4. **Watch / Scheduler:** **hecho** (M1–M10) — [`FILE_WATCH.md`](FILE_WATCH.md), [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md).  
 5. **Archive / Schema Registry:** docs creados; **definir forma de trabajo** luego implementar — [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md), [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md).  
-6. **FILE PIPELINE:** orquestación — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) (API puede consumirlo).  
+6. **FILE PIPELINE:** **hecho** (M1–M5 + tablero) — [`FILE_PIPELINE.md`](FILE_PIPELINE.md).  
 7. **PLATFORM API:** **hecho** (M1–M9) — [`PLATFORM_API.md`](PLATFORM_API.md).  
 8. **File Diff:** retirado (§8).
 
@@ -566,8 +568,8 @@ Antes de abrir rama `feature/<slug>`:
 | [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | **File Scheduler** — **hecho** (M1–M10) · [`definition_app_FILE_SCHEDULER/`](definition_app_FILE_SCHEDULER/) |
 | [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md) | **File Archive** — previsto; forma de trabajo TBD |
 | [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) | **Schema Registry** — previsto; forma de trabajo TBD |
-| [`FILE_PIPELINE.md`](FILE_PIPELINE.md) | **File Pipeline** — orquestación multi-app (**propuesta**); PLATFORM_API puede consumirlo · specs [`definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) |
-| [`PLATFORM_API.md`](PLATFORM_API.md) | API de ejecución remota (**después** de apps FILE_OPS; mode=job \| pipeline) |
+| [`FILE_PIPELINE.md`](FILE_PIPELINE.md) | **File Pipeline** — orquestación multi-app (**hecho** M1–M5 + tablero) · [`definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) |
+| [`PLATFORM_API.md`](PLATFORM_API.md) | API de ejecución remota (**hecho**; mode=job \| pipeline) |
 | [`FILE_GATE.md`](FILE_GATE.md) | Validador — hecho |
 | [`DataMappingStudio.md`](DataMappingStudio.md) / FilePipe | Motor ETL y reglas |
 | [`FILE_MATCH.md`](FILE_MATCH.md) | Conciliador — hecho |

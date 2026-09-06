@@ -2,7 +2,7 @@
 
 > **Archivo:** `fp_integration.md`  
 > **Producto:** [`../FILE_PIPELINE.md`](../FILE_PIPELINE.md)  
-> **Estado:** M1–M2b cableados (`apps.file_pipeline`, URLs, sidebar UF + Step Catalog UA)
+> **Estado:** M1–M5 + tablero cableados (`apps.file_pipeline`; UI, Watch, Scheduler, PLATFORM API)
 
 ---
 
@@ -52,8 +52,8 @@ Misma autorización que UI: definición `active` + versión publicada + scopes d
 
 ## 5. Settings / INSTALLED_APPS
 
-Pendiente PLATFORM_API / Watch. Dashboard: `/tablero/`. M5: `/pipelines/<slug>/historial/` y `/runs/<id>/auditoria/`. M4: `PipelineRun` + `/pipelines/<slug>/ejecutar/` y `/runs/<id>/`.
+`apps.file_pipeline` en `INSTALLED_APPS`. Dashboard: `/app/file-pipeline/tablero/`. Historial M5: `/pipelines/<slug>/historial/` y `/runs/<id>/auditoria/`. Run M4: `PipelineRun` + `/pipelines/<slug>/ejecutar/` y `/runs/<id>/`. Watch/Scheduler/API disparan `pipeline_id` con `trigger_source` correspondiente.
 
 ---
 
-*Actualizar este archivo al cablear models, urls y sidebar.*
+*As-built M1–M5 + tablero. Ampliar si entra un kind nuevo al Step Catalog.*

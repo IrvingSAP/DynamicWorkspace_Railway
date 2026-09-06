@@ -40,8 +40,8 @@
 | [`docs/definition_app_FILE_WATCH/`](definition_app_FILE_WATCH/) | Specs por módulo File Watch (M1–M10) |
 | [`docs/FILE_ARCHIVE.md`](FILE_ARCHIVE.md) | **File Archive** — custodia E2E (**previsto**) |
 | [`docs/SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) | **Schema Registry** — contratos compartidos (**previsto**) |
-| [`docs/FILE_PIPELINE.md`](FILE_PIPELINE.md) | **File Pipeline** — orquestación multi-app (**propuesta**); API puede consumirlo |
-| [`docs/definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) | Specs por módulo File Pipeline |
+| [`docs/FILE_PIPELINE.md`](FILE_PIPELINE.md) | **File Pipeline** — orquestación multi-app (**hecho**) |
+| [`docs/definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) | Specs por módulo File Pipeline (M1–M5 + tablero) |
 | [`docs/PLATFORM_API.md`](PLATFORM_API.md) | **PLATFORM API** — ejecución remota de jobs/pipelines (**después** de apps FILE_OPS) |
 | [`docs/FILE_GATE.md`](FILE_GATE.md) | **FILE GATE** — Validador de archivos (prioridad #1 APP_FACTORY) |
 | [`docs/REVERSE_STUDIO.md`](REVERSE_STUDIO.md) | **Reverse Studio** — Emisor de layouts (CSV/Excel → posicional/JSON/XML) |
@@ -311,7 +311,8 @@ apps/
 ├── structure_scout/   # Structure Scout — Explorador — ver STRUCTURE_SCOUT.md
 ├── profile_seed/      # Profile Seed — Sembrador (hecho) — ver PROFILE_SEED.md
 ├── file_scheduler/    # File Scheduler — cron / dependencias (hecho) — ver FILE_SCHEDULER.md
-└── file_watch/        # File Watch — bandeja vigilada (hecho) — ver FILE_WATCH.md
+├── file_watch/        # File Watch — bandeja vigilada (hecho) — ver FILE_WATCH.md
+└── file_pipeline/     # File Pipeline — orquestador (hecho) — ver FILE_PIPELINE.md
 ```
 
 **Modelo tenant:** `Company` → usuarios (`UserProfile`) → proyectos → registros **o** mapeos DMS (`project_kind`). Ver [`definition_app/DynamicWorkspace_Model.md`](definition_app/DynamicWorkspace_Model.md).
