@@ -1,27 +1,36 @@
-# APP FACTORY — Propuestas de nuevos desarrollos
+# APP FACTORY — Índice de verticales y backlog
 
 > **Nombre mnemotécnico:** `APP_FACTORY`  
-> Alias: *Propuestas de nuevos desarrollos*  
+> Alias: *Fábrica de aplicativos* · *Índice de verticales*  
 > Archivo: [`docs/APP_FACTORY.md`](APP_FACTORY.md)
 
-Documento de visión para no perder ideas de aplicativos que se pueden construir **reutilizando el chasis** de DynamicWorkspace + Data Mapping Studio (FilePipe/DMS).
+Paraguas del **chasis** DynamicWorkspace + FilePipe (DMS): qué ya está en `main`, qué sigue abierto y cómo aceptar un vertical nuevo.
 
-**Fuentes:**
-
-| Documento | Rol |
-|-----------|-----|
-| [`ESTRUCTURA_PROYECTO.md`](ESTRUCTURA_PROYECTO.md) | Árbol de carpetas, convenciones, checklist |
-| [`DynamicWorkspace.md`](DynamicWorkspace.md) | Motor de esquema dinámico (hojas/tablas configurables) |
-| [`DataMappingStudio.md`](DataMappingStudio.md) | Motor de transformación de archivos (ETL no-code) |
-| [`definition_app_DMS/`](definition_app_DMS/) | Especificación detallada DMS ya implementada en gran parte |
+**No** es un listado de “ideas por construir”. Lo entregado vive en su doc de producto y en `apps.*`. Este archivo **apunta**; no duplica specs.
 
 ---
 
-## 1. Idea central
+## 0. Relación entre documentos
 
-La plataforma no es “una sola app”: es un **chasis multi-tenant reutilizable**.
+| Documento | Rol |
+|-----------|-----|
+| [`DynamicWorkspace.md`](DynamicWorkspace.md) | Chasis: tenant, workspace, mapa de apps Django |
+| [`DataMappingStudio.md`](DataMappingStudio.md) · [`definition_app_DMS/`](definition_app_DMS/) | Motor FilePipe / ETL |
+| [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) | Familia archivo §2 (Gate · Reverse · Match · Scout · Seed · **Catalog**) |
+| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Ops: inventario hecho §2 · backlog Profiler · Repair · Archive · Registry §4 |
+| [`ESTRUCTURA_PROYECTO.md`](ESTRUCTURA_PROYECTO.md) | Carpetas y convenciones al abrir un vertical |
 
-La pieza clave es `Project` con discriminador `project_kind` (`workspace` | `dms` | *futuros*). Todo lo demás ya es transversal:
+```text
+APP_FACTORY.md          ← este índice (hecho vs backlog)
+        ├── HIGH_REUSE  ← núcleo archivo (Catalog = único §2 abierto)
+        └── FILE_OPS    ← ops: hecho §2 · backlog §4
+```
+
+---
+
+## 1. Idea central (sigue vigente)
+
+La plataforma es un **chasis multi-tenant**, no una sola app. Discriminador: `Project.project_kind`.
 
 | Capacidad compartida | Dónde vive |
 |----------------------|------------|
@@ -29,168 +38,115 @@ La pieza clave es `Project` con discriminador `project_kind` (`workspace` | `dms
 | Usuarios y perfiles | `UserProfile` |
 | Billing / suscripción | `billing` |
 | Seguridad (login, correo, 2FA, Resend) | `security` + `core` |
-| Roles por proyecto | `PA` / `ED` / `CO` / `GE` |
-| Membresías y auditoría | `projects` + historial |
+| Roles por proyecto | `PA` / `ED` / `CO` / `GE` (+ `CG` donde aplique) |
+| Membresías y auditoría | `projects` + historial de cada vertical |
 | Deploy | Railway + PostgreSQL + Resend |
 
-Dos motores de producto:
+Dos motores:
 
-1. **Motor de esquema dinámico** — `FieldDefinition` + `Record` + `FieldValue` (híbrido) → modelar “hojas” sin código (`project_kind=workspace`).
-2. **Motor de transformación** — parse → mapear → reglas → serializar + dry run + versionado → ETL de archivos (`project_kind=dms`).
-
-**Patrón:**
+1. **Esquema dinámico** — `FieldDefinition` + `Record` + `FieldValue` → `workspace`.
+2. **Transformación de archivos** — parse → mapear → reglas → serializar → `dms` y skins (`file_gate`, `reverse`, …).
 
 ```
-Company + Seguridad + Billing + Roles + Auditoría     ← chasis compartido
+Company + Seguridad + Billing + Roles + Auditoría
         │
-   Project (project_kind)                             ← discriminador
-   ├── workspace  → FieldDefinition / Record / FieldValue
-   ├── dms        → Source / Target / Mapping / Rules / Engine
-   └── <nuevo>    → próximo vertical (reutiliza chasis ± motores)
+   Project (project_kind)
+   ├── workspace     → hojas / registros
+   ├── dms           → FilePipe
+   └── <kind>        → vertical (reusa chasis ± motores)
 ```
 
-Cada aplicativo nuevo ≈ un nuevo `project_kind` (o un módulo sobre un kind existente), no un sistema desde cero.
+Capas **sin** `project_kind` de archivo: Watch, Scheduler, PLATFORM API (y Pipeline como contenedor de orquestación).
 
 ---
 
-## 2. Reutilización alta (mismo motor, poca obra nueva)
+## 2. Entregado (no es propuesta)
 
-> **Propuesta detallada:** [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) (Reverse · Match · Profile Seed · Structure Scout · Catalog · referencia FILE GATE).  
-> **Oleada ops / alrededor del archivo:** [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) (Clean · Profiler · Split/Merge · Watch · …; Diff **no app** → Match).
+Inventario compacto. Detalle y Fase 2 de cada uno: doc hijo.
 
-| Aplicativo | Qué reutiliza | Valor |
-|------------|---------------|-------|
-| **Reverse Studio** (CSV/Excel → posicional / JSON / XML) | DMS “invertido”: mismos perfiles, mapeo y serializadores | Camino inverso ya casi cubierto por el motor actual — ver [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) |
-| **Validador de archivos** (sin transformar) | `SourceProfile` + reglas + reporte de rechazos | Subir → validar esquema → informe OK/errores (bancos, gobierno, intercambio) — ver [`FILE_GATE.md`](FILE_GATE.md) |
-| **Conciliador de archivos** | 2 `SourceProfile` + comparación por clave | Cruzar banco vs ERP (u orígenes similares) y reportar diferencias — ver [`FILE_MATCH.md`](FILE_MATCH.md) |
-| **Sembrador de perfiles** | Snapshots de SourceProfile / contrato entre apps | Importar estructura ya definida (GATE→Match, etc.) sin re-wizard — ver [`PROFILE_SEED.md`](PROFILE_SEED.md) |
-| **Explorador de estructura** | Sample intake + `detection_service` + inferencia de campos/tipos | Proponer patrón/estructura del archivo y sembrar wizards GATE/Reverse/Match — [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) · [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §6 |
-| **Catálogos / maestros gestionados** | DynamicWorkspace + `replace_map` / `lookup` | Tablas de referencia que alimentan reglas DMS |
+### 2.1 Workspace y FilePipe
 
----
+| Producto | Código | Doc |
+|----------|--------|-----|
+| Chasis / workspace | `apps.company` · `accounts` · `projects` · `fields` · `records` · … | [`DynamicWorkspace.md`](DynamicWorkspace.md) |
+| FilePipe (DMS) | `apps.dms` | [`DataMappingStudio.md`](DataMappingStudio.md) · [`definition_app_DMS/`](definition_app_DMS/) |
 
-## 3. Reutilización media (nuevo `project_kind`, UI propia, misma base)
+### 2.2 Familia archivo (reutilización alta)
 
-| Aplicativo | Qué es nuevo | Qué reutiliza |
-|------------|--------------|---------------|
-| **Formularios / captura no-code** | Vista pública de captura por token | `FieldDefinition` (formulario), `Record` (respuestas), roles, auditoría |
-| **Checklists / inspecciones** | Estados + campos tipo foto/adjunto | Esquema dinámico + adjuntos (Fase 3) + historial |
-| **CRM / seguimiento ligero** | Vista Kanban por campo “estado” | Records + filtros + membresías |
-| **Gestor de activos / inventario** | Campo código + flujos de alta/baja | Import/export Excel + campos dinámicos |
-| **Tickets / solicitudes internas** | Workflow de estados | Records + auditoría “quién cambió qué” |
+Paraguas: [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md).
 
----
+| Producto | App | Doc · specs |
+|----------|-----|-------------|
+| **FILE GATE** | `apps.file_gate` | [`FILE_GATE.md`](FILE_GATE.md) · [`definition_app_FILE_GATE/`](definition_app_FILE_GATE/) |
+| **Reverse Studio** | `apps.reverse_studio` | [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) |
+| **File Match** | `apps.file_match` | [`FILE_MATCH.md`](FILE_MATCH.md) |
+| **Structure Scout** | `apps.structure_scout` | [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) · [`definition_app_STRUCTURE_SCOUT/`](definition_app_STRUCTURE_SCOUT/) |
+| **Profile Seed** | `apps.profile_seed` | [`PROFILE_SEED.md`](PROFILE_SEED.md) · [`definition_app_PROFILE_SEED/`](definition_app_PROFILE_SEED/) |
 
-## 4. Reutilización de plataforma (mismo tenant; motor o capa nueva)
+### 2.3 FILE_OPS y plataforma
 
-| Aplicativo | Aprovecha |
-|------------|-----------|
-| **Programador de transformaciones (scheduling)** | **Hecho** — File Scheduler (`apps.file_scheduler`) — [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) |
-| **API / Webhooks de integración** | Ejecución remota de jobs (todas las apps ejecutables) — **[`PLATFORM_API.md`](PLATFORM_API.md)** |
-| **Report builder / exportador** | Vistas sobre Records + serializadores DMS (Excel/CSV) |
-| **Bandeja de intercambio (carpeta vigilada)** | **Hecho** — File Watch (`apps.file_watch`) — [`FILE_WATCH.md`](FILE_WATCH.md) |
+Paraguas: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md).
 
-### 4.1 Operaciones de archivo (FILE_OPS) — nueva oleada
+| Producto | App / capa | Doc · specs |
+|----------|------------|-------------|
+| **File Clean** | `apps.file_clean` | [`FILE_CLEAN.md`](FILE_CLEAN.md) · [`definition_app_FILE_CLEAN/`](definition_app_FILE_CLEAN/) |
+| **File Split/Merge** | `apps.file_split_merge` | [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) · [`definition_app_FILE_SPLIT_MERGE/`](definition_app_FILE_SPLIT_MERGE/) |
+| **File Pipeline** | `apps.file_pipeline` | [`FILE_PIPELINE.md`](FILE_PIPELINE.md) · [`definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) |
+| **File Watch** | `apps.file_watch` | [`FILE_WATCH.md`](FILE_WATCH.md) · [`definition_app_FILE_WATCH/`](definition_app_FILE_WATCH/) |
+| **File Scheduler** | `apps.file_scheduler` | [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) · [`definition_app_FILE_SCHEDULER/`](definition_app_FILE_SCHEDULER/) |
+| **PLATFORM API** | `apps.platform_api` | [`PLATFORM_API.md`](PLATFORM_API.md) · [`definition_app_PLATFORM_API/`](definition_app_PLATFORM_API/) |
 
-Detalle y prioridad: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md).
+**Cubierto / no abrir app:**
 
-| Prioridad | Idea | Nota |
-|-----------|------|------|
-| ⭐⭐⭐⭐⭐ | File Clean | Limpieza pre-Gate; reuso de reglas DMS · **hecho** |
-| ⭐⭐⭐⭐⭐ | File Watch | Ingestión automática · **hecho** (M1–M10) |
-| ⭐⭐⭐⭐ | Data Profiler / Repair (**pendiente revisión**) · Split/Merge (**hecho**) · Watch / Scheduler (**hecho**) | Ver [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) |
-| — | File Convert | **No** como app; modo simple en FilePipe |
-| — | File Diff | **No** como app; cubierto por File Match |
-
-### 4.2 FILE PIPELINE — orquestación multi-app
-
-Detalle: [`FILE_PIPELINE.md`](FILE_PIPELINE.md).
-
-Capacidad de plataforma para **componer** pasos (Clean → Merge → Gate → …) con informe OK/Error por etapa. **Hecho** (M1–M5 + tablero). Consumida por UI, Watch, Scheduler y **PLATFORM API**.
-
-### 4.3 PLATFORM API — ejecución remota
-
-Detalle: [`PLATFORM_API.md`](PLATFORM_API.md).
-
-Capa HTTP alineada a las apps **cableadas** y a **pipelines** (`kind=file_pipeline` o atajo `/pipelines/{id}/runs`). Misma semántica que la UI: proyecto/pipeline publicado + archivo(s) → run + informe/salida. Disparador hermano de Watch/Scheduler. Código: `apps.platform_api`.
+| Idea retirada | Dónde vive |
+|---------------|------------|
+| File Convert | Modo simple en FilePipe |
+| File Diff | [`FILE_MATCH.md`](FILE_MATCH.md) |
+| Scheduling DMS / bandeja vigilada | File Scheduler · File Watch |
 
 ---
 
-## 5. Prioridad sugerida (esfuerzo / valor)
+## 3. Backlog (sí es propuesta o revisión)
 
-| Orden | Aplicativo | Estado / nota |
-|-------|------------|---------------|
-| — | **Validador de archivos** | **Hecho** — [`FILE_GATE.md`](FILE_GATE.md) |
-| — | **Reverse Studio** | **Hecho** — [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) |
-| — | **Conciliador de archivos** | **Hecho** — [`FILE_MATCH.md`](FILE_MATCH.md) |
-| — | **Explorador de estructura** | **Hecho** — [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) |
-| — | **Sembrador de perfiles** | **Hecho** (MVP P0 M1–M4) — [`PROFILE_SEED.md`](PROFILE_SEED.md) · [`ps_integration.md`](definition_app_PROFILE_SEED/ps_integration.md) |
-| **1** | **Catálogos / maestros** | Propuesta — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §5 |
-| 3 | **File Clean** (FILE_OPS) | **Hecho** — [`FILE_CLEAN.md`](FILE_CLEAN.md) · [`definition_app_FILE_CLEAN/`](definition_app_FILE_CLEAN/) |
-| 3b | **File Split/Merge** (FILE_OPS) | **Hecho** — [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) · [`definition_app_FILE_SPLIT_MERGE/`](definition_app_FILE_SPLIT_MERGE/) · `main` / Railway (PR #13) |
-| 3c | **Data Profiler** (FILE_OPS) | **Pendiente revisión de aporte** — [`DATA_PROFILER.md`](DATA_PROFILER.md) |
-| 3d | **File Repair** (FILE_OPS) | **Pendiente revisión** — [`FILE_REPAIR.md`](FILE_REPAIR.md) (app / modo Gate / Clean) |
-| 3e | **Watch + Scheduler** (FILE_OPS) | **Hecho** (M1–M10) — [`FILE_WATCH.md`](FILE_WATCH.md) · [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) · `apps.file_watch` / `apps.file_scheduler` |
-| 3f | **Archive / Schema Registry** | **Previsto**; forma TBD — [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md) · [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) |
-| 3g | **File Pipeline** (plataforma) | **Hecho** (M1–M5 + tablero) — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) · `apps.file_pipeline` |
-| 4 | **Formularios de captura** | Abre el producto a usuarios que no manejan archivos |
-| 5 | **PLATFORM API** | **Hecho** (M1–M9) — Job o Pipeline — [`PLATFORM_API.md`](PLATFORM_API.md) · [`definition_app_PLATFORM_API/`](definition_app_PLATFORM_API/) |
+Orden sugerido. Nada de esta lista está entregado como vertical cerrado.
 
-> Detalle §2: [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §1 / §13.  
-> Detalle ops: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §16.
+| Orden | Ítem | Tipo | Doc |
+|-------|------|------|-----|
+| **1** | **Master Catalog** (maestros / lookups) | Vertical §2 | [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §5 — extraer `MASTER_CATALOG.md` al priorizar |
+| **2** | **Data Profiler** | Revisión de aporte (¿app?) | [`DATA_PROFILER.md`](DATA_PROFILER.md) · FILE_OPS §4.1 |
+| **3** | **File Repair** | Revisión (app / modo Gate / Clean) | [`FILE_REPAIR.md`](FILE_REPAIR.md) · FILE_OPS §4.2 |
+| **4** | **File Archive** | Plataforma; forma TBD | [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md) · FILE_OPS §4.3 |
+| **5** | **Schema Registry** | Plataforma; forma TBD | [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) · FILE_OPS §4.4 |
+| **6** | **Formularios / captura no-code** | Reutilización media (workspace) | — (sin `definition_app_*`) |
+| — | Checklists / inspecciones | Idea | — |
+| — | CRM ligero | Idea | — |
+| — | Inventario / activos | Idea | — |
+| — | Tickets internos | Idea | — |
+| — | Report builder | Idea | — |
+
+Workspace Fase 2 (import/export Excel de registros, plantillas, API REST de records): [`DynamicWorkspace.md`](DynamicWorkspace.md) §12–§15 — no son apps de menú nuevas.
 
 ---
 
-## 6. Criterio para aceptar un vertical nuevo
+## 4. Criterio para aceptar un vertical nuevo
 
-Antes de documentar un vertical en `definition_app_*`, verificar:
+Antes de `definition_app_*` / rama:
 
-1. ¿Reutiliza `Company` + seguridad + billing sin inventar otro tenant?
-2. ¿Se modela como `project_kind` (o extensión clara de uno existente)?
-3. ¿Usa al menos uno de: esquema dinámico, motor ETL, o ambos?
-4. ¿Tiene un MVP acotado (formatos, pantallas, roles) en &lt; 1 fase?
-5. ¿No duplica FilePipe ni el workspace de registros sin diferenciador claro?
+1. ¿Reutiliza `Company` + seguridad + billing?
+2. ¿`project_kind` (o capa de plataforma) claro, sin solapar FilePipe / Gate / Match / Pipeline sin diferenciador?
+3. ¿Usa esquema dinámico, motor ETL, o es disparador/orquestación?
+4. ¿MVP acotado en &lt; 1 fase?
+5. ¿No está ya cubierto en §2 de este archivo?
 
-Si la respuesta es “sí” a 1–4, conviene un doc hermano al estilo `DataMappingStudio.md`.
+Si 1–4 son sí: doc hijo (estilo [`FILE_GATE.md`](FILE_GATE.md)) → prototipo → implementación.
 
----
+**Al elegir un ítem del backlog:**
 
-## 7. Próximo paso cuando se elija un vertical
-
-1. Crear `docs/definition_app_<slug>/` o un `.md` de producto (como `DataMappingStudio.md`).
-2. Definir módulos, modelo conceptual, casos de uso y fases MVP.
-3. Decidir `project_kind` y permisos (mapa a `PA/ED/CO/GE/CG` o paquetes).
-4. Prototipar UI en `prototype/` antes de apps Django.
-5. Actualizar este archivo marcando el vertical como **en definición** / **en curso** / **hecho**.
+1. Spec en `docs/definition_app_<slug>/` o `.md` de producto.
+2. `project_kind` o decisión explícita de capa (Watch/Scheduler/API).
+3. Prototipo en `prototype/`.
+4. Actualizar **este** índice: mover de §3 a §2 al merge a `main`.
 
 ---
 
-## 8. Estado de ideas
-
-| Idea | Estado |
-|------|--------|
-| Validador de archivos | **Hecho (MVP M1–M6)** — [`FILE_GATE.md`](FILE_GATE.md) · `apps/file_gate/` · `main` |
-| Reverse Studio | **Hecho (MVP M1–M7 + bridge)** — [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) · `apps/reverse_studio/` · `main` |
-| Conciliador de archivos | **Hecho (MVP M1–M8 + bridge)** — [`FILE_MATCH.md`](FILE_MATCH.md) · `apps/file_match/` · `main` |
-| Explorador de estructura | **Hecho (MVP M1–M7)** — [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) · `apps/structure_scout/` · `main` |
-| Sembrador de perfiles | **Hecho (MVP P0 M1–M4)** — [`PROFILE_SEED.md`](PROFILE_SEED.md) · `apps/profile_seed/` · `main` |
-| Catálogos / maestros | **Propuesta detallada** — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §5 (`MASTER_CATALOG`) |
-| File Clean / Profiler / Split·Merge / Repair | Clean + Split/Merge: **hecho**; Profiler + Repair: **pendiente revisión** — [`DATA_PROFILER.md`](DATA_PROFILER.md), [`FILE_REPAIR.md`](FILE_REPAIR.md); Diff **retirado** |
-| File Watch / Scheduler | **Hecho (MVP M1–M10)** — [`FILE_WATCH.md`](FILE_WATCH.md) · [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) · `apps.file_watch` / `apps.file_scheduler` · `main` |
-| File Archive / Schema Registry | **Previsto**; forma TBD — [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md), [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) |
-| **File Pipeline** (orquestación multi-app) | **Hecho (MVP M1–M5 + tablero)** — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) · `apps.file_pipeline` · `main` |
-| **PLATFORM API** (ejecución remota) | **Hecho** (`apps.platform_api`, M1–M9) — Job suelto o Pipeline — [`PLATFORM_API.md`](PLATFORM_API.md) |
-| File Convert (app) | **Descartado** como app — modo simple en FilePipe |
-| Formularios de captura | Propuesta |
-| Checklists / inspecciones | Propuesta |
-| CRM ligero | Propuesta |
-| Inventario / activos | Propuesta |
-| Tickets internos | Propuesta |
-| Scheduling DMS | **Cubierto** por File Scheduler (FILE_OPS) — [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) |
-| API / Webhooks | **Hecho** (webhooks M8; YAML OpenAPI aplazado) — [`PLATFORM_API.md`](PLATFORM_API.md) |
-| Report builder | Propuesta |
-| Bandeja / carpeta vigilada | **Hecho** — File Watch — [`FILE_WATCH.md`](FILE_WATCH.md) |
-
----
-
-*Documento vivo. Actualizar la tabla §8 cuando una idea pase a definición o implementación.*
+*Documento vivo. Lo hecho no se re-propone; el backlog §3 es lo único “por construir o decidir”.*

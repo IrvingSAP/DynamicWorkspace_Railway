@@ -3,7 +3,7 @@
 Carpeta de documentación de análisis y definición para **FILE SPLIT / MERGE** (partición y consolidación de archivos), vertical de la oleada FILE_OPS.
 
 > **Producto:** [`../FILE_SPLIT_MERGE.md`](../FILE_SPLIT_MERGE.md)  
-> **Familia:** [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) §5–§6  
+> **Familia:** [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) §2  
 > **Rama Git:** `feature/file-split-merge` (no desplegar a producción hasta merge a `main`)  
 > **Chasis:** `Company`, `UserProfile`, `Project`, `ProjectMembership`, seguridad y billing  
 > **Reuso técnico DMS:** parsers, serializers, intake — [`../definition_app_DMS/`](../definition_app_DMS/)  

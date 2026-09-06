@@ -4,7 +4,7 @@
 > Alias: *Bandeja vigilada* · *Ingestión por llegada*  
 > Archivo: [`docs/FILE_WATCH.md`](FILE_WATCH.md)  
 > Estado: **implementado M1–M10** (MVP en `apps.file_watch`) · bridge tick ↔ lote vía `claim_pending_batch`  
-> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §10 · prioridad ⭐⭐⭐⭐⭐ (plataforma)  
+> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §2 (entregado)  
 > Tipo: **capa de plataforma** (no app de menú con wizard de campos)  
 > Pareja: [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) · disparador hermano: [`PLATFORM_API.md`](PLATFORM_API.md)  
 > **Contexto 2026-09:** App Django M1–M10 operativa. El plan con `input_origin=watch` hace claim del lote pending; sin lote → `schedule_missing_input`. Worker: `process_watch_intake`.
@@ -131,7 +131,7 @@ Alto en **ops y seguridad**: credenciales, cuotas, duplicados (mismo archivo dos
 | Documento | Relación |
 |-----------|----------|
 | [`definition_app_FILE_WATCH/`](definition_app_FILE_WATCH/) | Specs por módulo (análisis y diseño); índice [`README.md`](definition_app_FILE_WATCH/README.md) |
-| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Paraguas §10 |
+| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Índice ops; Watch en §2 |
 | [`FILE_PIPELINE.md`](FILE_PIPELINE.md) | Orquestación; Watch dispara `pipeline_id` |
 | [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | Disparo por tiempo / dependencia; §4 frontera Watch; §10 entrada |
 | [`definition_app_FILE_SCHEDULER/`](definition_app_FILE_SCHEDULER/) | Specs del plan: destino Watch/Artifact, tick, errores |

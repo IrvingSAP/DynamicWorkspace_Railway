@@ -3,7 +3,7 @@
 Carpeta de documentación de análisis y definición para **FILE CLEAN** (Limpieza y normalización de archivos), vertical de la oleada FILE_OPS.
 
 > **Producto:** [`../FILE_CLEAN.md`](../FILE_CLEAN.md)  
-> **Familia:** [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) §4  
+> **Familia:** [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) §2  
 > **Rama Git sugerida:** `feature/file-clean` (no desplegar a producción hasta merge a `main`)  
 > **Chasis:** `Company`, `UserProfile`, `Project`, `ProjectMembership`, seguridad y billing  
 > **Reuso técnico DMS:** parsers, intake, motor de reglas — [`../definition_app_DMS/`](../definition_app_DMS/)  

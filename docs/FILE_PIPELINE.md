@@ -5,7 +5,7 @@
 > Archivo: [`docs/FILE_PIPELINE.md`](FILE_PIPELINE.md)  
 > Estado: **MVP hecho** (M1–M5 + tablero) · `apps.file_pipeline` · `main`  
 > Disparadores: UI, Watch, Scheduler, PLATFORM API (`kind=file_pipeline`)  
-> Padres: [`APP_FACTORY.md`](APP_FACTORY.md) · [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §15 (Job encadenable)  
+> Padres: [`APP_FACTORY.md`](APP_FACTORY.md) · [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §2  
 > Hermano disparador/consumidor: [`PLATFORM_API.md`](PLATFORM_API.md) — **la API puede ejecutar un Pipeline completo**, no solo un `kind` suelto  
 > Alcance: **desarrollo global** que consume apps §2 + FILE_OPS + capas de plataforma (Watch, Scheduler, Archive, Registry)  
 > Specs por módulo: [`definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/)
@@ -825,7 +825,7 @@ Company
 2. Revisar con producto los ejemplos EJ-01…EJ-06 y la política Split→siguiente.  
 3. Specs por módulo: [`definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) (esqueleto + prototipos). Implementar Django solo con «Desarrolla el módulo».  
 4. [`PLATFORM_API.md`](PLATFORM_API.md) ya cubre `kind=file_pipeline`, `wait`, auditoría HTTP §10.2 y dashboard §10.3; no duplicar §7.1 allí.  
-5. Actualizar [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §15 como puntero a este doc (visión → producto).  
+5. El índice FILE_OPS lista Pipeline en §2 (entregado).  
 6. Spike técnico: pasar `artifact_ref` entre runners; implementar **Pipeline Step Catalog** (config/código) con subset MVP.  
    **Alcance de la mejora (todas las apps ejecutables):** el runner acepta referencia (`artifact_ref`, hash, objeto en storage), no solo upload de `<input type="file">`. La UI Ejecutar **se conserva**. IFS/SFTP/cloud **no** se configuran en File Gate ni en cada vertical — [`FILE_WATCH.md`](FILE_WATCH.md) y [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md).  
 7. Al nacer cada app nueva: checklist §5.1 antes de marcar `pipeline_enabled=true`.
@@ -856,7 +856,7 @@ Company
 | Documento | Relación |
 |-----------|----------|
 | [`APP_FACTORY.md`](APP_FACTORY.md) | Visión fábrica; prioridad plataforma |
-| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | §15 Job encadenable → **este doc** |
+| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Pipeline en §2 |
 | [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) | Apps §2 como pasos |
 | [`PLATFORM_API.md`](PLATFORM_API.md) | Disparador HTTP; **puede consumir Pipeline** |
 | [`FILE_WATCH.md`](FILE_WATCH.md) | Disparo por llegada → pipeline_id |

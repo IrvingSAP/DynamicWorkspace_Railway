@@ -4,7 +4,7 @@
 > Alias: *Profiler* · *Perfil de calidad de datos*  
 > Archivo: [`docs/DATA_PROFILER.md`](DATA_PROFILER.md)  
 > Estado: **pendiente de revisión** — validar si aporta valor diferencial al sistema antes de abrir `definition_app_*` / rama  
-> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §13 · prioridad ⭐⭐⭐⭐ (propuesta)  
+> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §4.1 (backlog)  
 > Specs por módulo: *aún no* (`definition_app_DATA_PROFILER/` cuando se apruebe)  
 > Hermano conceptual: [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) (estructura ≠ contenido)
 
@@ -98,7 +98,7 @@ Si la revisión **no** valida aporte → archivar o fusionar alcance en Scout (d
 
 | Documento | Relación |
 |-----------|----------|
-| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Paraguas · inventario |
+| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Backlog §4.1 |
 | [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) | Frontera estructura vs contenido |
 | [`FILE_CLEAN.md`](FILE_CLEAN.md) | Normalización post-perfil |
 | [`FILE_GATE.md`](FILE_GATE.md) | Validación contra contrato |

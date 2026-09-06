@@ -3,7 +3,7 @@
 Carpeta de documentación de análisis y definición para **FILE SCHEDULER** (ejecución programada y dependencias).
 
 > **Producto:** [`../FILE_SCHEDULER.md`](../FILE_SCHEDULER.md)  
-> **Familia:** [`../APP_FACTORY.md`](../APP_FACTORY.md) · [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) §11  
+> **Familia:** [`../APP_FACTORY.md`](../APP_FACTORY.md) · [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) §2  
 > **Rama Git:** `diseno_desarrollo_FILE_SCHEDULER` (despliegue Railway solo desde `main`)  
 > **Estado:** **M1–M10 implementados** (`apps.file_scheduler`; mapa de integración + filtro de tablero Pipeline)  
 > **No es un vertical de menú UF:** no hay `project_kind` por formato. Orquesta runners existentes y puede disparar [`../FILE_PIPELINE.md`](../FILE_PIPELINE.md) (`pipeline_id`)  
@@ -168,6 +168,6 @@ Alineado a [`../FILE_SCHEDULER.md`](../FILE_SCHEDULER.md) §6. Forma de trabajo 
 | [`../PLATFORM_API.md`](../PLATFORM_API.md) | Disparador hermano; §9 · §10.2 · §11 |
 | [`../definition_app_PLATFORM_API/`](../definition_app_PLATFORM_API/) | Patrón de carpeta (API) |
 | [`../FILE_WATCH.md`](../FILE_WATCH.md) | Disparo por llegada |
-| [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) | §11 |
+| [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) | Índice ops §2 |
 | [`../security/SEGURIDAD_Y_ACCESOS.md`](../security/SEGURIDAD_Y_ACCESOS.md) | Auth humana; tick como sistema |
 | [`../definition_app/UI_MESSAGES.md`](../definition_app/UI_MESSAGES.md) | Códigos y mensajes |

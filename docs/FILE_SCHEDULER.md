@@ -4,7 +4,7 @@
 > Alias: *Programador de jobs* · *Cron de archivos*  
 > Archivo: [`docs/FILE_SCHEDULER.md`](FILE_SCHEDULER.md)  
 > Estado: **MVP hecho** (M1–M10 en `apps.file_scheduler`) · worker `process_schedule_ticks` · forma MVP = UI + worker cron (Job o `pipeline_id`)  
-> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §11 · prioridad ⭐⭐⭐ (plataforma; con Watch)  
+> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §2 (entregado)  
 > Tipo: **capa de plataforma**  
 > Pareja: [`FILE_WATCH.md`](FILE_WATCH.md) · hermano: [`PLATFORM_API.md`](PLATFORM_API.md) · roadmap DMS Fase 3  
 > **Auditoría / errores:** hereda contrato de [`FILE_PIPELINE.md`](FILE_PIPELINE.md) **§6 · §7 · §7.1** y [`PLATFORM_API.md`](PLATFORM_API.md) **§9 · §10.2 · §11** — este doc añade lo **propio del schedule** (CRUD + tick); no duplica pasos ni filas de app.  
@@ -251,7 +251,7 @@ Runs con `trigger_source=scheduler` **alimentan** el tablero de Pipeline (parida
 
 | Documento | Relación |
 |-----------|----------|
-| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Paraguas §11 |
+| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Índice ops; Scheduler en §2 |
 | [`definition_app_FILE_SCHEDULER/`](definition_app_FILE_SCHEDULER/) | Specs por módulo (fase de diseño) |
 | [`FILE_PIPELINE.md`](FILE_PIPELINE.md) | Orquestación; dispara `pipeline_id`; **§6 · §7 · §7.1** (heredar; no duplicar pasos) |
 | [`FILE_WATCH.md`](FILE_WATCH.md) | Disparo por llegada |

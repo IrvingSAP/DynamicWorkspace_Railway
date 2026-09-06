@@ -3,7 +3,7 @@
 > **Nombre mnemotécnico:** `REUSE_HIGH`  
 > Alias: *Mismo motor, poca obra nueva*  
 > Archivo: [`docs/APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md)  
-> Origen: [`APP_FACTORY.md`](APP_FACTORY.md) §2  
+> Origen: familia archivo en [`APP_FACTORY.md`](APP_FACTORY.md) §2.2  
 > Estilo: hermano de [`FILE_GATE.md`](FILE_GATE.md) / [`DataMappingStudio.md`](DataMappingStudio.md)
 
 ---
@@ -1059,7 +1059,7 @@ apps/
 | — | **Profile Seed** | **Hecho** (`main`) | GATE→Match A · historial · [`ps_integration.md`](definition_app_PROFILE_SEED/ps_integration.md) |
 | **1** | **Master Catalog** | Propuesta | Lookups / gobernanza de códigos |
 
-Alineado a [`APP_FACTORY.md`](APP_FACTORY.md) §5 / §8.
+Alineado a [`APP_FACTORY.md`](APP_FACTORY.md) §2 (hecho) / §3 (backlog).
 
 > Profile Seed y Structure Scout pueden **compartir** capa de “Aplicar a destino” (`save_source`); diferencian el origen (definición vs muestra).
 
@@ -1110,8 +1110,8 @@ Antes de abrir rama de implementación para cualquiera de estos verticales:
 
 | Documento | Relación |
 |-----------|----------|
-| [`APP_FACTORY.md`](APP_FACTORY.md) | Visión y prioridad; §2 origen de este doc |
-| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Oleada ops: Clean · Split/Merge · Profiler · Watch · … (Diff → Match) |
+| [`APP_FACTORY.md`](APP_FACTORY.md) | Índice de verticales; §2.2 esta familia |
+| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Ops: hecho §2 · backlog §4 (Profiler · Repair · Archive · Registry) |
 | [`PLATFORM_API.md`](PLATFORM_API.md) | API de ejecución remota de jobs (todas las apps ejecutables) |
 | [`FILE_GATE.md`](FILE_GATE.md) | Primer vertical §2 — **hecho** |
 | [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) | Emisor — **hecho** |

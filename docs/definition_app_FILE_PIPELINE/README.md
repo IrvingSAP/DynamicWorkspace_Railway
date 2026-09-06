@@ -3,7 +3,7 @@
 Carpeta de documentación de análisis y definición para **FILE PIPELINE** (orquestador de flujos multi-app).
 
 > **Producto:** [`../FILE_PIPELINE.md`](../FILE_PIPELINE.md)  
-> **Familia:** [`../APP_FACTORY.md`](../APP_FACTORY.md) · [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) §15  
+> **Familia:** [`../APP_FACTORY.md`](../APP_FACTORY.md) · [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) §2  
 > **Rama Git:** `main` (MVP mergeado; origen `Mejoras_FILE_PIPELINE_v2`)  
 > **Estado:** **Implementado M1–M5 + tablero** (`apps.file_pipeline`)  
 > **Chasis:** `Company`, `UserProfile`, membresía PA/ED/GE/CO, visibilidad, billing  

@@ -512,7 +512,7 @@ Ampliar [`definition_app/UI_MESSAGES.md`](definition_app/UI_MESSAGES.md) § PROF
 
 | Documento | Relación |
 |-----------|----------|
-| [`APP_FACTORY.md`](APP_FACTORY.md) | Visión / prioridad §5–§8 |
+| [`APP_FACTORY.md`](APP_FACTORY.md) | Índice; Seed en §2.2 |
 | [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §7 | Resumen en la familia |
 | [`definition_app_PROFILE_SEED/`](definition_app_PROFILE_SEED/) | Specs por módulo |
 | [`FILE_GATE.md`](FILE_GATE.md) | Origen P0 |
