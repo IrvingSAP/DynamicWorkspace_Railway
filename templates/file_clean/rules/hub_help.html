@@ -1,23 +1,141 @@
 {% extends "app_base.html" %}
 {% load static %}
-{% block title %}Ayuda · Reglas — File Clean{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+
+{% block title %}Ayuda · Reglas — {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">FILE CLEAN</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:rules_hub' project_slug=project.slug %}">Reglas</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div>
+        <p class="page-eyebrow">FILE CLEAN · paso 2 · <span class="cell-badge">{{ project.slug }}</span></p>
         <h2>Ayuda — Reglas de limpieza</h2>
-        <p>Catálogo ordenado y explícito. Nada se limpia si no hay regla.</p>
+        <p>Catálogo ordenado y explícito. Nada se limpia si no hay regla. El orden forma parte del contrato.</p>
     </div>
-    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'file_clean:rules_hub' project_slug=project.slug %}">← Volver</a></div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_clean:rules_hub' project_slug=project.slug %}">← Volver a reglas</a>
+        <a class="btn btn-secondary" href="{% url 'file_clean:project_hub' project_slug=project.slug %}">Hub</a>
+    </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li><code>replace_map</code> — match <strong>exacto</strong> del valor completo.</li>
-    <li><code>replace</code> — find/replace <strong>dentro</strong> del string (<code>find</code> obligatorio).</li>
-    <li><code>compose</code> — plantilla con <code>{value}</code>, <code>{field:nombre}</code>, <code>{seq}</code>.</li>
-    <li>El orden (↑↓) es el orden de aplicación en el job.</li>
-    <li>Al publicar (M4) se revalidan todas las reglas habilitadas (P5).</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Define <em>qué se reescribe</em> sobre el perfil de lectura: trim, mayúsculas, mapas de códigos,
+            find/replace, plantillas, etc. Se edita en <strong>borrador</strong>; al <strong>publicar</strong>
+            se congela junto con el perfil. Ejecutar usa solo esa versión publicada.
+        </p>
+        <p class="help-intro">
+            Reutiliza operadores de FilePipe, pero solo el subset de <strong>normalización</strong>.
+            No mapea a un esquema de destino ni valida un contrato FILE GATE.
+        </p>
+
+        <h3 class="form-section-title">Prerrequisito</h3>
+        <p class="help-intro">
+            Hace falta al menos un <strong>campo en el perfil</strong> para reglas por campo.
+            Si falta, verá el aviso y un atajo a Perfil. El stepper marca Reglas cuando hay
+            al menos una regla <strong>habilitada</strong>.
+        </p>
+
+        <h3 class="form-section-title">Qué ve en esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Elemento</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Stepper</td>
+                    <td>Enlaces al ciclo (Perfil, Reglas, Publicar, Ejecutar, Historial).</td>
+                </tr>
+                <tr>
+                    <td>Reglas / Habilitadas / Campos</td>
+                    <td>Conteo del pipeline, cuántas están ON y cuántos campos tiene el perfil.</td>
+                </tr>
+                <tr>
+                    <td>Pipeline</td>
+                    <td>Lista en orden de aplicación. Código, campo, resumen de params, ámbito y ON/OFF.</td>
+                </tr>
+                <tr>
+                    <td>↑ / ↓</td>
+                    <td>Sube o baja la regla. El orden de la lista es el orden del job.</td>
+                </tr>
+                <tr>
+                    <td>Editar / Activar / Eliminar</td>
+                    <td>PA y ED. Eliminar pide confirmación. Desactivar deja la regla en el contrato pero no se aplica.</td>
+                </tr>
+                <tr>
+                    <td>Aviso huérfanas</td>
+                    <td>La regla apunta a un campo borrado o renombrado. Corrija o elimine antes de publicar.</td>
+                </tr>
+                <tr>
+                    <td>+ Añadir regla</td>
+                    <td>Alta desde el catálogo permitido (no se inventa un código libre).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Catálogo (subset Clean)</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Código</th><th>Qué hace</th><th>Ámbito</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">trim</td><td>Quita espacios en los extremos.</td><td>Campo</td></tr>
+                <tr><td class="mono">strip_invisible</td><td>Caracteres no imprimibles / zero-width.</td><td>Campo</td></tr>
+                <tr><td class="mono">case_upper / case_lower</td><td>Mayúsculas o minúsculas.</td><td>Campo</td></tr>
+                <tr><td class="mono">null_tokens</td><td>Mapea <code class="mono">""</code>, N/A, null → vacío.</td><td>Campo / global</td></tr>
+                <tr><td class="mono">date_normalize</td><td>Parsea fechas a formato canónico.</td><td>Campo</td></tr>
+                <tr><td class="mono">number_normalize</td><td>Separadores decimales / miles.</td><td>Campo</td></tr>
+                <tr><td class="mono">replace_map</td><td>Sustituye el <strong>valor completo</strong> si coincide exactamente con una clave.</td><td>Campo</td></tr>
+                <tr><td class="mono">replace</td><td>Find/replace <strong>dentro</strong> del string (<code class="mono">find</code> obligatorio).</td><td>Campo</td></tr>
+                <tr><td class="mono">compose</td><td>Plantilla: literal + <code class="mono">{value}</code>, <code class="mono">{field:nombre}</code>, <code class="mono">{seq}</code>.</td><td>Campo</td></tr>
+                <tr><td class="mono">dedupe_rows</td><td>Elimina filas duplicadas (clave configurable).</td><td>Global</td></tr>
+                <tr><td class="mono">encoding_normalize</td><td>Fuerza encoding / quita BOM.</td><td>Archivo</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">replace_map vs replace vs compose</h3>
+        <ul class="help-list">
+            <li><code class="mono">replace_map</code> — match exacto del valor entero (p. ej. <code class="mono">M</code> → Masculino). <code class="mono">Mas</code> no coincide con <code class="mono">M</code>. Case-sensitive salvo que active lo contrario. Prefiera <code class="mono">null_tokens</code> para vacíos, no un mapa con clave vacía.</li>
+            <li><code class="mono">replace</code> — fragmento dentro del texto (p. ej. quitar guiones de un RUT). <code class="mono">find</code> no puede ir vacío. Sin regex en MVP.</li>
+            <li><code class="mono">compose</code> — reescribe con plantilla. <code class="mono">{seq}</code> es un contador <strong>por job</strong> (se reinicia en cada ejecución). El valor de <code class="mono">{field:X}</code> es el de X <em>después</em> de las reglas anteriores de esa fila. No es concat de FilePipe hacia otro esquema.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles</h3>
+        <ul class="help-list">
+            <li><strong>PA / ED</strong> añaden, editan, reordenan, activan y eliminan.</li>
+            <li><strong>GE / CG / CO</strong> consultan el pipeline; no lo modifican.</li>
+        </ul>
+
+        <h3 class="form-section-title">Qué no hace este módulo</h3>
+        <ul class="help-list">
+            <li>No publica la versión (eso es <strong>Publicar</strong>; allí se revalidan las reglas habilitadas).</li>
+            <li>No sube ni limpia un archivo de producción (eso es <strong>Ejecutar</strong>; allí ve el preview del efecto).</li>
+            <li>No valida umbrales GATE ni mapea a destino FilePipe.</li>
+            <li>No aplica limpiezas “mágicas”: si no hay regla ON, el valor no cambia.</li>
+        </ul>
+
+        <h3 class="form-section-title">Orden sugerido</h3>
+        <ol class="help-list">
+            <li>Perfil con nombres de campo estables.</li>
+            <li>Añada reglas y deje el orden como debe correr el job.</li>
+            <li><strong>Publicar</strong> → <strong>Ejecutar</strong> (preview y job) → Historial.</li>
+        </ol>
+    </div>
+</div>
 {% endblock %}

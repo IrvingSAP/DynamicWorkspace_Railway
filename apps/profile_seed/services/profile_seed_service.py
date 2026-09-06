@@ -34,6 +34,10 @@ MSG_NO_SOURCES_CLEAN = (
     "No hay orígenes FILE CLEAN publicados visibles. "
     "Publique un perfil en FILE CLEAN o pida acceso a un proyecto Clean."
 )
+MSG_NO_SOURCES_CLEAN_OTHER = (
+    "No hay otros proyectos FILE CLEAN publicados visibles. "
+    "Publique un perfil en otro proyecto FILE CLEAN o pida acceso."
+)
 MSG_NO_SOURCES_DMS = (
     "No hay orígenes FilePipe publicados visibles. "
     "Publique una definición de origen en FilePipe o pida acceso."
@@ -142,6 +146,16 @@ SOURCE_KIND_CHOICES_GATE = (
     (SOURCE_KIND_SPLIT_MERGE, "FILE SPLIT/MERGE — Perfil de lectura"),
     (SOURCE_KIND_SCOUT, "STRUCTURE SCOUT — Borrador"),
 )
+SOURCE_KIND_CHOICES_CLEAN = (
+    (SOURCE_KIND_FILE_CLEAN, "FILE CLEAN — Otro perfil"),
+    (SOURCE_KIND_FILE_GATE, "FILE GATE — Esquema"),
+    (SOURCE_KIND_DMS, "FilePipe — Origen"),
+    (SOURCE_KIND_FILE_MATCH, "FILE MATCH — Perfil A"),
+    (SOURCE_KIND_FILE_MATCH_B, "FILE MATCH — Perfil B"),
+    (SOURCE_KIND_REVERSE, "Reverse Studio — Entrada"),
+    (SOURCE_KIND_SPLIT_MERGE, "FILE SPLIT/MERGE — Perfil de lectura"),
+    (SOURCE_KIND_SCOUT, "STRUCTURE SCOUT — Borrador"),
+)
 SOURCE_KIND_CHOICES_REVERSE = (
     (SOURCE_KIND_REVERSE, "Reverse Studio — Otra entrada"),
     (SOURCE_KIND_FILE_GATE, "FILE GATE — Esquema"),
@@ -161,6 +175,7 @@ SUPPORTED_TARGET_KINDS = frozenset(
         Project.KIND_FILE_SPLIT_MERGE,
         Project.KIND_DMS,
         Project.KIND_FILE_GATE,
+        Project.KIND_FILE_CLEAN,
         Project.KIND_REVERSE,
     }
 )
@@ -205,6 +220,13 @@ def _target_slot_meta(
             TARGET_SLOT_READ_PROFILE,
             TARGET_SLOT_LABEL_READ_PROFILE,
             "Solo borrador del perfil de lectura — publicar Split/Merge es un módulo posterior",
+        )
+    if target_project.project_kind == Project.KIND_FILE_CLEAN:
+        return (
+            "FILE CLEAN",
+            TARGET_SLOT_READ_PROFILE,
+            TARGET_SLOT_LABEL_READ_PROFILE,
+            "Solo borrador del perfil de lectura — no clona reglas de limpieza; publicar File Clean es el módulo 4",
         )
     if target_project.project_kind == Project.KIND_FILE_GATE:
         return (
@@ -463,6 +485,27 @@ def get_seed_host(
             "nav_open_flag": "reverse_studio_nav_open",
             **slug_kw,
         }
+    if target_project.project_kind == Project.KIND_FILE_CLEAN:
+        return {
+            "app_label": "FILE CLEAN",
+            "app_list_url_name": "file_clean:project_list",
+            "project_hub_url_name": "file_clean:project_hub",
+            "profile_hub_url_name": "file_clean:profile_hub",
+            "profile_hub_label": "Perfil",
+            "scope_include": "file_clean/profile/_project_scope.html",
+            "seed_hub_url_name": "file_clean:profile_seed_hub",
+            "seed_hub_help_url_name": "file_clean:profile_seed_hub_help",
+            "seed_picker_url_name": "file_clean:profile_seed_picker",
+            "seed_picker_help_url_name": "file_clean:profile_seed_picker_help",
+            "seed_apply_url_name": "file_clean:profile_seed_apply",
+            "seed_apply_help_url_name": "file_clean:profile_seed_apply_help",
+            "seed_history_url_name": "file_clean:profile_seed_history",
+            "seed_history_help_url_name": "file_clean:profile_seed_history_help",
+            "seed_history_detail_url_name": "file_clean:profile_seed_history_detail",
+            "nav_active": "file_clean",
+            "nav_open_flag": "file_clean_nav_open",
+            **slug_kw,
+        }
     if target_project.project_kind == Project.KIND_FILE_SPLIT_MERGE:
         return {
             "app_label": "File Split/Merge",
@@ -593,6 +636,8 @@ def _source_kind_choices_for(target_project: Project) -> tuple:
         return SOURCE_KIND_CHOICES_REVERSE
     if target_project.project_kind == Project.KIND_FILE_SPLIT_MERGE:
         return SOURCE_KIND_CHOICES_SPLIT_MERGE
+    if target_project.project_kind == Project.KIND_FILE_CLEAN:
+        return SOURCE_KIND_CHOICES_CLEAN
     return SOURCE_KIND_CHOICES_MATCH
 
 
@@ -808,9 +853,11 @@ def list_eligible_sources(
         return rows
 
     if source_kind == SOURCE_KIND_FILE_CLEAN:
+        qs = clean_project_service.visible_projects_qs(user)
+        if target_project.project_kind == Project.KIND_FILE_CLEAN:
+            qs = qs.exclude(pk=target_project.pk)
         qs = (
-            clean_project_service.visible_projects_qs(user)
-            .filter(**published_filter)
+            qs.filter(**published_filter)
             .select_related(*select_related)
             .order_by("slug")
         )
@@ -1006,6 +1053,15 @@ def get_source_picker_context(
             "Misma compañía · visibles para usted. "
             "No se lista este mismo proyecto FILE GATE. No clona políticas de gate."
         )
+    elif target_project.project_kind == Project.KIND_FILE_CLEAN:
+        picker_hint = (
+            "Otro FILE CLEAN (no este proyecto; no clona reglas de limpieza), FILE GATE (esquema publicado; "
+            "no clona políticas), FilePipe (origen publicado; no destino ni mapeo), "
+            "FILE MATCH Perfil A o B (no reglas de cruce), Reverse Studio (entrada publicada), "
+            "FILE SPLIT/MERGE (perfil de lectura) o STRUCTURE SCOUT (borrador actual). "
+            "Misma compañía · visibles para usted. "
+            "No se lista este mismo proyecto FILE CLEAN."
+        )
     elif target_project.project_kind == Project.KIND_REVERSE:
         picker_hint = (
             "Otra entrada Reverse Studio (no este proyecto), FILE GATE (esquema publicado; no clona políticas), "
@@ -1045,6 +1101,9 @@ def get_source_picker_context(
             MSG_NO_SOURCES_GATE_OTHER
             if kind == SOURCE_KIND_FILE_GATE
             and target_project.project_kind == Project.KIND_FILE_GATE
+            else MSG_NO_SOURCES_CLEAN_OTHER
+            if kind == SOURCE_KIND_FILE_CLEAN
+            and target_project.project_kind == Project.KIND_FILE_CLEAN
             else MSG_NO_SOURCES_REVERSE_OTHER
             if kind == SOURCE_KIND_REVERSE
             and target_project.project_kind == Project.KIND_REVERSE

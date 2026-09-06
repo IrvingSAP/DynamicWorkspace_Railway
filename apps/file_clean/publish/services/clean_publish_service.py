@@ -29,6 +29,11 @@ MSG_NO_FIELDS = "Complete el perfil de lectura con al menos un campo antes de pu
 MSG_NO_RULES = "Habilite al menos una regla de limpieza antes de publicar."
 MSG_RULES = "Corrija las reglas habilitadas antes de publicar."
 MSG_UNEXPECTED = "Ocurrió un error al publicar. Si persiste, contacte al administrador."
+MSG_STEPS_INCOMPLETE = (
+    "Complete los pasos anteriores (Perfil y Reglas) antes de publicar."
+)
+MSG_STEP_PROFILE = "Complete el paso Perfil antes de publicar."
+MSG_STEP_RULES = "Complete el paso Reglas antes de publicar."
 
 
 @dataclass
@@ -49,6 +54,7 @@ class PublishHubContext:
     can_publish: bool
     checklist: list[ChecklistItem] = field(default_factory=list)
     blocking_reasons: list[str] = field(default_factory=list)
+    publish_blocked_reason: str = ""
     summary: dict = field(default_factory=dict)
     rule_issues: list[dict] = field(default_factory=list)
     version_history: list[dict] = field(default_factory=list)
@@ -238,6 +244,21 @@ def get_checklist(project: Project, membership=None) -> list[ChecklistItem]:
     ]
 
 
+def _publish_blocked_reason(checklist: list[ChecklistItem]) -> str:
+    missing = {item.code for item in checklist if not item.ready}
+    if not missing:
+        return ""
+    needs_profile = "profile" in missing
+    needs_rules = "rules" in missing
+    if needs_profile and needs_rules:
+        return MSG_STEPS_INCOMPLETE
+    if needs_profile:
+        return MSG_STEP_PROFILE
+    if needs_rules:
+        return MSG_STEP_RULES
+    return MSG_STEPS_INCOMPLETE
+
+
 def get_hub_context(user, project: Project, membership=None) -> PublishHubContext:
     publish = get_publish_context(project)
     checklist = get_checklist(project, membership)
@@ -247,7 +268,13 @@ def get_hub_context(user, project: Project, membership=None) -> PublishHubContex
     rules_ctx = rules_svc.get_hub_context(project)
     wizard = profile_wizard_service.get_wizard_context(project, membership)
     issues = _collect_enabled_rule_issues(source)
-    can_publish = can_edit and not blocking and validate_for_publish(project) is None
+    publish_fail = validate_for_publish(project)
+    can_publish = can_edit and not blocking and publish_fail is None
+    blocked_reason = _publish_blocked_reason(checklist)
+    if not can_publish and not blocked_reason:
+        blocked_reason = (
+            publish_fail.user_message if publish_fail is not None else MSG_STEPS_INCOMPLETE
+        )
 
     encoding = source.get("encoding_code") or "—"
     file_type = wizard.file_type_label
@@ -270,6 +297,7 @@ def get_hub_context(user, project: Project, membership=None) -> PublishHubContex
         can_publish=can_publish,
         checklist=checklist,
         blocking_reasons=blocking,
+        publish_blocked_reason=blocked_reason,
         summary=summary,
         rule_issues=issues,
         version_history=list_version_history(project),

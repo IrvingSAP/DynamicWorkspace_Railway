@@ -1,22 +1,129 @@
 {% extends "app_base.html" %}
 {% load static %}
-{% block title %}Ayuda · Listado — File Clean{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+
+{% block title %}Ayuda · Listado — FILE CLEAN{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+{% endblock %}
+
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">FILE CLEAN</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Limpieza</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div>
-        <h2>Ayuda — Proyectos File Clean</h2>
-        <p>Proyectos para limpiar y normalizar archivos con reglas explícitas.</p>
+        <p class="page-eyebrow">Referencia · FILE CLEAN · Limpieza</p>
+        <h2>Ayuda — Listado de proyectos</h2>
+        <p>Proyectos de normalización de su compañía: qué ve, qué significan las columnas y cómo empezar.</p>
     </div>
-    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'file_clean:project_list' %}">← Volver</a></div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_clean:project_list' %}">← Volver al listado</a>
+        <a class="btn btn-primary" href="{% url 'file_clean:project_create' %}">+ Nuevo proyecto</a>
+    </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li>Cada proyecto es de tipo File Clean (aislado de FilePipe, Gate, Match y Scout).</li>
-    <li>Flujo: crear → (miembros) → perfil → reglas → publicar → ejecutar → historial.</li>
-    <li>No valida contrato de producción (eso es File Gate) ni mapea a destino de negocio (FilePipe).</li>
-    <li>Guía completa: File Clean → <strong>Ayuda</strong> en el menú lateral.</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Qué es este listado</h3>
+        <p class="help-intro">
+            Es la puerta de entrada a <strong>FILE CLEAN</strong> (Limpieza). Cada fila es un proyecto
+            con un <strong>perfil de lectura y reglas explícitas</strong> (trim, mapas, reemplazos…):
+            entrega un archivo limpio y un log de cambios.
+            <strong>No valida</strong> un contrato de producción (FILE GATE) ni <strong>mapea</strong>
+            a un destino de negocio (FilePipe).
+        </p>
+        <ul>
+            <li>Solo se listan proyectos de <strong>su compañía</strong> (alcance UF).</li>
+            <li>Aparecen los proyectos donde usted es <strong>miembro</strong> y los <strong>públicos</strong> de la compañía (aunque no sea miembro).</li>
+            <li>Desde aquí crea un proyecto nuevo o abre el <strong>hub</strong> de uno existente.</li>
+        </ul>
+
+        <h3 class="form-section-title">Tarjetas de resumen</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Indicador</th><th>Significado</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Total</td><td>Proyectos FILE CLEAN visibles para usted en esta compañía.</td></tr>
+                <tr><td>Activos</td><td>No archivados (disponibles para trabajo).</td></tr>
+                <tr><td>Como admin (PA)</td><td>Proyectos donde su rol es administrador.</td></tr>
+                <tr><td>Públicos compañía</td><td>Visibilidad pública: cualquier UF de la compañía puede verlos.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columnas de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Qué muestra</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Código</td><td>Slug único del proyecto en la compañía; enlace al hub.</td></tr>
+                <tr><td>Nombre</td><td>Nombre visible del proyecto de limpieza.</td></tr>
+                <tr><td>Visibilidad</td><td><strong>Privado</strong> (solo miembros) o <strong>Público</strong> (la compañía puede verlo).</td></tr>
+                <tr><td>Mi permiso</td><td>Su rol en el proyecto (PA / ED / GE / CO) o consulta si solo lo ve por ser público.</td></tr>
+                <tr><td>Versión</td><td>Estado de la definición: borrador y/o versión publicada activa.</td></tr>
+                <tr><td>Última ejecución</td><td>Fecha y hora de la última limpieza <strong>completa</strong> (no un preview dry run). «—» si aún no hay corrida.</td></tr>
+                <tr><td>Acciones</td><td>Abrir el hub del proyecto.</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            El filtro de <strong>Visibilidad</strong> en la barra de la tabla permite restringir a públicos o privados.
+            La tabla admite búsqueda y paginación.
+        </p>
+
+        <h3 class="form-section-title">Visibilidad y acceso</h3>
+        <ul>
+            <li><strong>Privado:</strong> solo la membresía activa puede ver y trabajar según el rol.</li>
+            <li><strong>Público:</strong> UF de la misma compañía pueden <strong>ver</strong> el proyecto sin ser miembros (consulta). Editar, publicar o ejecutar siguen exigiendo el rol adecuado.</li>
+            <li>El creador queda siempre como <strong>PA</strong>, independientemente de la visibilidad.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles (resumen)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Permisos principales</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">PA</td><td>Admin: miembros, perfil, reglas, publicar y ejecutar.</td></tr>
+                <tr><td class="mono">ED</td><td>Editar perfil y reglas; publicar; ejecutar.</td></tr>
+                <tr><td class="mono">GE</td><td>Ejecutar y descargar artefactos (sin editar la definición).</td></tr>
+                <tr><td class="mono">CO</td><td>Consulta: ver hub e historial; sin descargas de filas de negocio.</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Los miembros se gestionan dentro de cada proyecto (hub → <strong>Miembros</strong>, solo PA).
+        </p>
+
+        <h3 class="form-section-title">Cómo empezar</h3>
+        <ol>
+            <li>Pulse <strong>+ Nuevo proyecto</strong> (nombre, código/slug y visibilidad).</li>
+            <li>En el hub, complete el <strong>perfil de lectura</strong> y las <strong>reglas</strong>.</li>
+            <li>Opcional: <strong>Importar estructura</strong> (PROFILE_SEED) al perfil; no clona el catálogo de reglas.</li>
+            <li><strong>Publique</strong> una versión. Ejecutar usa solo la versión publicada.</li>
+            <li><strong>Ejecute</strong> un archivo; revise salida, log de cambios e historial.</li>
+        </ol>
+        <p class="help-intro">
+            Regla de producto: no se limpia producción contra un borrador. Guía completa: menú FILE CLEAN → <strong>Ayuda</strong>.
+        </p>
+
+        <h3 class="form-section-title">Qué no es este listado</h3>
+        <ul>
+            <li>No muestra proyectos de FILE GATE, FilePipe, FILE MATCH ni STRUCTURE SCOUT.</li>
+            <li>No edita el perfil ni las reglas (eso ocurre en el hub de cada proyecto).</li>
+            <li>No ejecuta limpiezas ni sube archivos de producción.</li>
+            <li>No valida contratos ni emite layouts: solo limpia y normaliza.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

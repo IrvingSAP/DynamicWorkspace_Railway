@@ -1,7 +1,9 @@
 import logging
 
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Max, Q
+from django.db.models.functions import Coalesce
+from django.utils import timezone as dj_timezone
 
 from apps.accounts.models import UserProfile
 from apps.core.services.operation_result import OperationResult
@@ -93,6 +95,37 @@ def _role_for_row(user, project: Project) -> tuple[str | None, str]:
     return None, ROLE_LABELS["company_viewer"]
 
 
+def _version_label(project: Project) -> str:
+    from apps.dms.source_profile.models import DmsMappingVersion
+
+    draft = (
+        DmsMappingVersion.objects.filter(
+            project=project,
+            status=DmsMappingVersion.STATUS_DRAFT,
+        )
+        .order_by("-version_number")
+        .first()
+    )
+    if draft:
+        return f"borrador v{draft.version_number}"
+
+    config = getattr(project, "dms_config", None)
+    if config and config.current_version_id:
+        published = config.current_version
+        if published:
+            return f"v{published.version_number} publicada"
+    return "Sin versión publicada"
+
+
+def _format_last_execution(value) -> str:
+    if value is None:
+        return "—"
+    when = value
+    if dj_timezone.is_aware(when):
+        when = dj_timezone.localtime(when)
+    return when.strftime("%Y-%m-%d %H:%M")
+
+
 def _definition_label(project: Project) -> str:
     """Draft / published summary for list and hub."""
     from apps.file_clean.profile.services import profile_wizard_service
@@ -116,7 +149,10 @@ def list_with_stats(user):
     project_ids = [project.id for project in projects]
 
     member_counts: dict = {}
+    last_executions: dict = {}
     if project_ids:
+        from apps.file_clean.models import CleanJob
+
         for row in (
             ProjectMembership.objects.filter(
                 project_id__in=project_ids,
@@ -126,6 +162,17 @@ def list_with_stats(user):
             .annotate(count=Count("id"))
         ):
             member_counts[row["project_id"]] = row["count"]
+
+        for row in (
+            CleanJob.objects.filter(
+                project_id__in=project_ids,
+                dry_run=False,
+            )
+            .exclude(status__in=[CleanJob.STATUS_QUEUED, CleanJob.STATUS_RUNNING])
+            .values("project_id")
+            .annotate(last_at=Max(Coalesce("finished_at", "created_at")))
+        ):
+            last_executions[row["project_id"]] = row["last_at"]
 
     rows = []
     for project in projects:
@@ -141,6 +188,10 @@ def list_with_stats(user):
                 "role_label": role_label,
                 "visibility": visibility,
                 "visibility_label": VISIBILITY_LABELS.get(visibility, visibility),
+                "version_label": _version_label(project),
+                "last_execution": _format_last_execution(
+                    last_executions.get(project.id)
+                ),
                 "definition_label": _definition_label(project),
                 "member_count": member_counts.get(project.id, 0),
                 "is_pa": role_code == ProjectMembership.ROLE_PA,

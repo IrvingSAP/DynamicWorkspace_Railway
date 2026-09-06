@@ -1,0 +1,73 @@
+{% comment %}
+  Stepper FILE CLEAN (hub + módulos).
+  current_step: profile | rules | publish | run | history
+  — el paso actual es indicador (sin enlace); el resto navega.
+  Requiere `hub` de clean_project_service.get_hub_context.
+{% endcomment %}
+<div class="lifecycle-stepper" aria-label="Ciclo del proyecto">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Definición · pasos 1–3</p>
+        <ol class="lifecycle-steps">
+            <li>
+                {% if current_step == "profile" %}
+                <span class="lifecycle-step {{ hub.profile_step_class }}" aria-current="page">
+                    <span class="lifecycle-step-num">{% if hub.profile_step_class == 'is-done' %}✓{% else %}1{% endif %}</span> Perfil
+                </span>
+                {% else %}
+                <a href="{% url 'file_clean:profile_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.profile_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.profile_step_class == 'is-done' %}✓{% else %}1{% endif %}</span> Perfil
+                </a>
+                {% endif %}
+            </li>
+            <li>
+                {% if current_step == "rules" %}
+                <span class="lifecycle-step {{ hub.rules_step_class }}" aria-current="page">
+                    <span class="lifecycle-step-num">{% if hub.rules_step_class == 'is-done' %}✓{% else %}2{% endif %}</span> Reglas
+                </span>
+                {% else %}
+                <a href="{% url 'file_clean:rules_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.rules_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.rules_step_class == 'is-done' %}✓{% else %}2{% endif %}</span> Reglas
+                </a>
+                {% endif %}
+            </li>
+            <li>
+                {% if current_step == "publish" %}
+                <span class="lifecycle-step {{ hub.publish_step_class }}" aria-current="page">
+                    <span class="lifecycle-step-num">{% if hub.publish_step_class == 'is-done' %}✓{% else %}3{% endif %}</span> Publicar
+                </span>
+                {% else %}
+                <a href="{% url 'file_clean:publish_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.publish_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.publish_step_class == 'is-done' %}✓{% else %}3{% endif %}</span> Publicar
+                </a>
+                {% endif %}
+            </li>
+        </ol>
+    </div>
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Ejecución · pasos 4–5</p>
+        <ol class="lifecycle-steps">
+            <li>
+                {% if current_step == "run" %}
+                <span class="lifecycle-step {{ hub.run_step_class }}" aria-current="page">
+                    <span class="lifecycle-step-num">{% if hub.run_step_class == 'is-done' %}✓{% else %}4{% endif %}</span> Ejecutar
+                </span>
+                {% else %}
+                <a href="{% url 'file_clean:run_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.run_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.run_step_class == 'is-done' %}✓{% else %}4{% endif %}</span> Ejecutar
+                </a>
+                {% endif %}
+            </li>
+            <li>
+                {% if current_step == "history" %}
+                <span class="lifecycle-step {{ hub.history_step_class }}" aria-current="page">
+                    <span class="lifecycle-step-num">{% if hub.history_step_class == 'is-done' %}✓{% else %}5{% endif %}</span> Historial
+                </span>
+                {% else %}
+                <a href="{% url 'file_clean:history_hub' project_slug=project.slug %}" class="lifecycle-step {{ hub.history_step_class }}">
+                    <span class="lifecycle-step-num">{% if hub.history_step_class == 'is-done' %}✓{% else %}5{% endif %}</span> Historial
+                </a>
+                {% endif %}
+            </li>
+        </ol>
+    </div>
+</div>

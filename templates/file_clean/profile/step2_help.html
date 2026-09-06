@@ -30,12 +30,13 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">File Clean · Módulo 2 · paso 2 · ayuda</p>
-        <h2>Inicio de captura</h2>
-        <p>Indica desde qué punto del archivo empiezan los datos a limpiar. Todo lo anterior (títulos, banners, metadatos) se ignora.</p>
+        <p class="page-eyebrow">File Clean · Módulo 2 · paso 2 · <span class="role-badge">capture_start</span></p>
+        <h2>Ayuda — Inicio de captura</h2>
+        <p>Define desde qué punto empiezan las filas a limpiar. Todo lo anterior se omite: no entra a reglas ni al archivo de salida.</p>
     </div>
     <div class="page-actions">
         <a href="{% url 'file_clean:profile_step2' project_slug=project.slug %}" class="btn btn-secondary">← Volver al paso 2</a>
+        <a href="{% url 'file_clean:profile_hub' project_slug=project.slug %}" class="btn btn-secondary">Resumen</a>
     </div>
 </div>
 
@@ -43,32 +44,94 @@
     <div class="panel-body">
         <h3 class="form-section-title">Para qué sirve</h3>
         <p class="help-intro">
-            Muchos archivos traen cabeceras o líneas de control antes del detalle.
-            Si el inicio está mal, Clean leerá basura como si fueran registros (o saltará filas de datos reales).
+            Un archivo de proveedor casi nunca es “solo datos”. Suele traer título, membrete o líneas de control
+            <strong>antes</strong> del detalle. Si el inicio está mal, File Clean trata esa basura como registros:
+            las reglas reescriben basura y el archivo limpio (y las métricas) salen distorsionados.
         </p>
-        <table class="help-table">
-            <thead><tr><th>Elemento</th><th>Uso típico</th></tr></thead>
+        <p class="help-intro">
+            Este paso guarda <code class="mono">capture_start</code> en el <strong>borrador</strong>.
+            Ejecutar usa la versión <strong>publicada</strong>. La unidad es <strong>líneas</strong> (1 = primera línea);
+            en Excel, el análogo son filas de hoja.
+        </p>
+
+        <h3 class="form-section-title">Qué entra y qué se ignora</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Zona del archivo</th><th>Efecto en la limpieza</th></tr></thead>
             <tbody>
                 <tr>
-                    <td>Modo de inicio</td>
-                    <td>Primera línea, número de línea, tras un patrón / bloque de encabezado, etc.</td>
+                    <td>Antes del inicio</td>
+                    <td>Se omite. No se limpia ni se escribe en la salida.</td>
                 </tr>
                 <tr>
-                    <td>Parámetros</td>
-                    <td>Valor del modo: número de línea, texto del patrón, líneas a saltar…</td>
+                    <td>Desde el inicio hasta el fin (paso 3)</td>
+                    <td>Cada registro se parsea, se aplican las reglas y se escribe (salvo vista previa).</td>
+                </tr>
+                <tr>
+                    <td>Después del fin</td>
+                    <td>Lo define el paso 3. Aquí solo fija el arranque.</td>
                 </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Casos frecuentes</h3>
-        <ul>
-            <li><strong>Archivo solo de datos (sin encabezado):</strong> use <em>primera línea</em> o línea <code>1</code>. Si pone línea <code>2</code>, perderá el primer registro.</li>
-            <li><strong>CSV con encabezado:</strong> el inicio de captura suele ser la primera fila de datos; el encabezado se configura también en el paso 4 (has_header / fila de header).</li>
-            <li><strong>TXT fijo con título:</strong> número de línea posterior al título, o patrón que marca el inicio del detalle.</li>
-        </ul>
+        <h3 class="form-section-title">Modos de inicio</h3>
+        <p class="help-intro">Elija el modo del archivo real. Los parámetros aparecen según el modo.</p>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Modo</th><th>Cuándo usarlo</th><th>Cómo arranca</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Primera línea<br><code class="mono">first</code></td>
+                    <td>Puro detalle: nada que saltar.</td>
+                    <td>Línea 1 inclusive.</td>
+                </tr>
+                <tr>
+                    <td>Línea específica<br><code class="mono">line_number</code></td>
+                    <td>Cabecera con siempre las mismas líneas.</td>
+                    <td>La línea indicada (1-based) inclusive.</td>
+                </tr>
+                <tr>
+                    <td>Tras N líneas iniciales<br><code class="mono">after_header_block</code></td>
+                    <td>Quiere “saltar N”, no “empezar en la N”.</td>
+                    <td>Con <code class="mono">skip_lines = 3</code> la primera fila leída es la 4.</td>
+                </tr>
+                <tr>
+                    <td>Marcador de inicio<br><code class="mono">marker_start</code></td>
+                    <td>Texto fijo que anuncia el detalle.</td>
+                    <td>La línea <strong>siguiente</strong> a la primera que contiene el texto. El marcador no se limpia.</td>
+                </tr>
+                <tr>
+                    <td>Tras patrón regex<br><code class="mono">after_pattern</code></td>
+                    <td>El anuncio varía pero encaja en una expresión.</td>
+                    <td>La línea siguiente a la primera coincidencia.</td>
+                </tr>
+                <tr>
+                    <td>Tras líneas en blanco<br><code class="mono">after_blank_run</code></td>
+                    <td>El detalle empieza después de un hueco vacío.</td>
+                    <td>Tras N líneas consecutivas vacías; arranca en la inmediata siguiente.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">CSV / Excel y encabezado</h3>
+        <p class="help-intro">
+            En CSV o Excel con fila de nombres, el <strong>has_header</strong> / fila de header se configura en el
+            <strong>paso 4</strong>. El paso 2 decide desde qué línea o fila empiezan los datos; no sustituye esa opción.
+            Si el archivo es solo datos y pone línea 2, perderá el primer registro.
+        </p>
 
         <h3 class="form-section-title">Coherencia con el paso 3</h3>
-        <p>La unidad es <strong>líneas</strong>. El fin de captura no puede quedar “antes” del inicio. Con Excel, la lógica análoga usa filas de hoja.</p>
+        <p class="help-intro">
+            El fin debe quedar <strong>después</strong> de este inicio, en la misma unidad. Con EOF se lee desde aquí hasta el final.
+        </p>
+
+        <h3 class="form-section-title">Si el archivo no encaja</h3>
+        <ul class="help-list">
+            <li>Línea de inicio más allá del archivo → no hay filas; Ejecutar avisa que no se obtuvo ninguna fila válida.</li>
+            <li>No aparece el marcador ni el patrón → no avanza el inicio: se mezcla el encabezado con el detalle.</li>
+            <li>Mida el archivo real del proveedor, no un ejemplo de laboratorio.</li>
+        </ul>
+
+        <h3 class="form-section-title">Roles</h3>
+        <p class="help-intro">Solo <strong>PA</strong> y <strong>ED</strong> guardan. El resto ve el paso en solo lectura.</p>
     </div>
 </div>
 {% endblock %}

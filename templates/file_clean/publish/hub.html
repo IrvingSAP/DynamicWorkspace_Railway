@@ -46,15 +46,15 @@
     <div class="page-actions">
         {% url 'file_clean:publish_hub_help' project_slug=project.slug as pub_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=pub_help_url %}
-        <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub Proyecto</a>
         {% if can_edit_definition %}
         <button type="button"
-                class="btn btn-primary"
+                class="btn btn-primary{% if not publish_hub.can_publish %} is-blocked{% endif %}"
                 data-action="publish-version"
                 data-draft-label="borrador v{{ publish_hub.draft_version_number }}"
                 data-next="{% url 'file_clean:publish_hub' project_slug=project.slug %}"
                 data-status-target="hub-publish-status"
-                {% if not publish_hub.can_publish %}disabled title="Complete el perfil y las reglas antes de publicar"{% endif %}>
+                {% if not publish_hub.can_publish %}aria-disabled="true" data-blocked-reason="{{ publish_hub.publish_blocked_reason }}"{% endif %}>
             Publicar v{{ publish_hub.draft_version_number }}
         </button>
         {% endif %}

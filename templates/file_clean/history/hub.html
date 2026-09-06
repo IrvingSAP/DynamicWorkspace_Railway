@@ -8,6 +8,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 <style>
 .history-filters{
   display:grid; grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));
@@ -85,10 +86,12 @@
     <div class="page-actions">
         {% url 'file_clean:history_hub_help' project_slug=project.slug as history_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=history_help_url %}
-        <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub Proyecto</a>
         <a href="{% url 'file_clean:run_hub' project_slug=project.slug %}" class="btn btn-primary">Ejecutar</a>
     </div>
 </div>
+
+{% include "file_clean/projects/_lifecycle_stepper.html" with hub=lifecycle current_step="history" %}
 
 {% if not history.has_any_job and not history.has_active_filters %}
 <div class="empty-history">

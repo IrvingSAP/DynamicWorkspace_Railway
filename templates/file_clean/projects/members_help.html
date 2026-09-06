@@ -1,20 +1,125 @@
 {% extends "app_base.html" %}
 {% load static %}
-{% block title %}Ayuda · Miembros — File Clean{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/projects.css' %}">{% endblock %}
+
+{% block title %}Ayuda — Miembros {{ project.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_clean:project_list' %}">FILE CLEAN</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}">{{ project.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_clean:project_members' project_slug=project.slug %}">Miembros</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div>
-        <h2>Ayuda — Miembros</h2>
-        <p>Solo el administrador del proyecto (PA) invita, cambia roles o revoca acceso.</p>
+        <p class="page-eyebrow">FILE CLEAN · Acceso · <span class="cell-badge">{{ project.slug }}</span> · <span class="perm-badge perm-badge--admin">PA</span></p>
+        <h2>Ayuda — Miembros y permisos</h2>
+        <p>Quién puede ver y trabajar en este proyecto de limpieza y qué hace cada rol. Solo el administrador (PA) abre esta pantalla.</p>
     </div>
-    <div class="page-actions"><a class="btn btn-secondary" href="{% url 'file_clean:project_members' project_slug=project.slug %}">← Volver</a></div>
+    <div class="page-actions">
+        <a href="{% url 'file_clean:project_members' project_slug=project.slug %}" class="btn btn-secondary">← Volver a miembros</a>
+        <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}" class="btn btn-secondary">Hub</a>
+    </div>
 </div>
-<div class="panel"><div class="panel-body">
-<ul>
-    <li>Roles: PA, ED, CO, GE, CG (mismo paquete de permisos de la plataforma).</li>
-    <li>El propietario del proyecto no se revoca desde esta pantalla.</li>
-</ul>
-</div></div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve</h3>
+        <p class="help-intro">
+            Invite usuarios <strong>UF de {{ company.name_short }}</strong>. La membresía es la misma ficha
+            (<code class="mono">ProjectMembership</code>) que Worksheets / FilePipe / FILE GATE; el <strong>rol</strong>
+            decide qué pueden hacer en FILE CLEAN.
+        </p>
+        <p class="help-intro">
+            Un proyecto <strong>público</strong> se ve en el listado de la compañía sin ser miembro (consulta).
+            Editar perfil, publicar o ejecutar siguen exigiendo membresía activa y el rol adecuado.
+        </p>
+
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="help-list">
+            <li>En privado, invite al menos un ED (diseño de reglas) y un GE (corridas operativas) antes de operar.</li>
+            <li>Elija usuario y rol → <strong>Autorizar miembro</strong>.</li>
+            <li>Si alguien ya estuvo y está inactivo, use <strong>Reactivar</strong> (no vuelve al desplegable de alta).</li>
+            <li>El rol no sustituye <strong>publicar</strong>: ejecutar usa la versión activa, no el borrador.</li>
+        </ol>
+
+        <h3 class="form-section-title">Roles en FILE CLEAN</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Código</th><th>Nombre</th><th>Permisos principales</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">PA</td><td>Admin</td><td>Miembros, editar perfil y reglas, publicar, ejecutar, historial.</td></tr>
+                <tr><td class="mono">ED</td><td>Editor</td><td>Editar perfil y reglas; publicar; ejecutar. No gestiona miembros.</td></tr>
+                <tr><td class="mono">GE</td><td>Ejecutar</td><td>Ejecutar limpieza y descargar salida / log. No edita la definición ni publica.</td></tr>
+                <tr><td class="mono">CG</td><td>Consulta-Generar</td><td>Consulta + ejecutar (CO + GE).</td></tr>
+                <tr><td class="mono">CO</td><td>Consulta</td><td>Hub e historial (metadatos); sin descarga de filas de negocio.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Controles de esta pantalla</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Control</th><th>Qué hace</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Stepper Datos / Visibilidad / Miembros</td>
+                    <td>Recordatorio del alta. La visibilidad se eligió al crear; aquí solo se gestionan personas.</td>
+                </tr>
+                <tr>
+                    <td>Usuario UF</td>
+                    <td>Candidatos de la compañía que aún no son miembros activos.</td>
+                </tr>
+                <tr>
+                    <td>Rol en el proyecto</td>
+                    <td>PA, ED, GE, CG o CO.</td>
+                </tr>
+                <tr>
+                    <td>Autorizar miembro</td>
+                    <td>Crea o reactiva la membresía con el rol elegido.</td>
+                </tr>
+                <tr>
+                    <td>Filtro estado</td>
+                    <td>Todos / Activo / Inactivo sobre la tabla.</td>
+                </tr>
+                <tr>
+                    <td>Cambiar</td>
+                    <td>Actualiza el rol. No aplica al propietario.</td>
+                </tr>
+                <tr>
+                    <td>Revocar</td>
+                    <td>Desactiva el acceso (pide confirmación). El usuario deja de editar/ejecutar.</td>
+                </tr>
+                <tr>
+                    <td>Reactivar</td>
+                    <td>Vuelve a activar un miembro inactivo.</td>
+                </tr>
+                <tr>
+                    <td>Propietario</td>
+                    <td>El dueño no se revoca ni pierde PA desde esta pantalla.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no hace esta pantalla</h3>
+        <ul class="help-list">
+            <li>No cambia la visibilidad público/privado del proyecto.</li>
+            <li>No publica la definición ni ejecuta limpiezas.</li>
+            <li>No invita usuarios de otra compañía ni cuentas que no sean UF.</li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

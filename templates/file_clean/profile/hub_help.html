@@ -4,9 +4,9 @@
 {% block title %}Ayuda · Perfil de lectura — {{ project.name }}{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
-<link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
 {% endblock %}
 
 {% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
@@ -28,55 +28,105 @@
     <div>
         <p class="page-eyebrow">File Clean · Módulo 2 · <span class="role-badge">CleanProfile</span></p>
         <h2>Ayuda — Perfil de lectura</h2>
-        <p>Define cómo se parsea el archivo a limpiar. Reutiliza el motor SourceProfile (mismo parser que Pipe/Gate), con foco en lectura, no en validación.</p>
+        <p>Hub del asistente: indicadores, importar estructura y los 4 pasos para parsear el archivo a limpiar.</p>
     </div>
     <div class="page-actions">
         <a class="btn btn-secondary" href="{% url 'file_clean:profile_hub' project_slug=project.slug %}">← Volver al perfil</a>
+        <a class="btn btn-secondary" href="{% url 'file_clean:project_hub' project_slug=project.slug %}">Hub proyecto</a>
     </div>
 </div>
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué es</h3>
+        <h3 class="form-section-title">Para qué sirve</h3>
         <p class="help-intro">
-            El perfil de lectura describe <strong>tipo, encoding, captura y campos</strong> del archivo de entrada.
-            Se edita en <strong>borrador</strong>; al publicar (módulo 4) se congela junto con las reglas.
+            El perfil describe <strong>cómo se lee</strong> el archivo: tipo, encoding, captura y campos.
+            Reutiliza el mismo motor SourceProfile que FilePipe y FILE GATE, pero aquí el foco es la lectura para
+            <strong>limpiar</strong>, no un contrato de validación ni un mapeo a destino de negocio.
         </p>
-        <ul>
-            <li>Los nombres internos de campo son los que usan las <strong>reglas</strong> (<code>field_name</code>, tokens <code>{field:X}</code>).</li>
-            <li>No incluye políticas de umbral ni informe Gate: Clean lee y limpia; Gate valida después.</li>
-            <li>Al ejecutar, File Clean <strong>no rechaza filas por content_type</strong>; el layout sí debe coincidir.</li>
+        <p class="help-intro">
+            Se edita siempre el <strong>borrador</strong>. Ejecutar usa solo la versión <strong>publicada</strong>
+            (módulo 4), congelada junto con las reglas. Al ejecutar, File Clean <strong>no rechaza filas por
+            <code class="mono">content_type</code></strong>; el layout (tipo, captura, campos) sí debe coincidir.
+        </p>
+        <ul class="help-list">
+            <li>Los nombres internos de campo alimentan las <strong>reglas</strong> (<code class="mono">field_name</code>, tokens <code class="mono">{field:X}</code>).</li>
+            <li>Si renombra o borra un campo, revise las reglas huérfanas antes de publicar.</li>
         </ul>
 
-        <h3 class="form-section-title">Wizard (4 pasos)</h3>
-        <table class="help-table">
-            <thead>
-                <tr><th>#</th><th>Paso</th><th>Qué define</th></tr>
-            </thead>
+        <h3 class="form-section-title">Indicadores</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Indicador</th><th>Qué muestra</th></tr></thead>
             <tbody>
-                <tr><td class="mono">1</td><td>Tipo</td><td>Formato, encoding y fin de línea.</td></tr>
-                <tr><td class="mono">2</td><td>Inicio</td><td>Desde qué línea / patrón empiezan los datos útiles.</td></tr>
-                <tr><td class="mono">3</td><td>Fin</td><td>Dónde deja de leer (EOF, línea, patrón…).</td></tr>
-                <tr><td class="mono">4</td><td>Campos</td><td>Estructura: posiciones, columnas, hoja, rutas JSON/XML.</td></tr>
+                <tr><td>Pasos completos</td><td>Cuántos de los 4 pasos tienen lo mínimo (verde cuando están los cuatro).</td></tr>
+                <tr><td>Tipo archivo</td><td>Formato del paso 1.</td></tr>
+                <tr><td>Campos definidos</td><td>Cantidad del paso 4. Para publicar hace falta al menos uno.</td></tr>
+                <tr><td>Versión</td><td>Etiqueta del borrador que está editando.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones del hub</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Importar estructura</td>
+                    <td>PA/ED: abre PROFILE SEED. Clona tipo, captura y campos al <strong>borrador</strong>. No publica File Clean ni copia reglas de limpieza.</td>
+                </tr>
+                <tr>
+                    <td>¿Qué es esto?</td>
+                    <td>Ayuda del sembrador.</td>
+                </tr>
+                <tr>
+                    <td>Historial de importaciones</td>
+                    <td>Auditoría de siembras a este perfil. Visible también en consulta.</td>
+                </tr>
+                <tr>
+                    <td>Continuar edición</td>
+                    <td>Abre el siguiente paso incompleto del asistente.</td>
+                </tr>
+                <tr>
+                    <td>Tarjetas Completo / En edición / Pendiente</td>
+                    <td>Entran al paso. Completo = lo mínimo guardado; no implica que el layout sea el del proveedor real.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Asistente (4 pasos)</h3>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Paso</th><th>Qué configura</th></tr></thead>
+            <tbody>
+                <tr><td>1 · Tipo</td><td>Formato, encoding y fin de línea. Condiciona el paso 4 y las extensiones al Ejecutar.</td></tr>
+                <tr><td>2 · Inicio</td><td>Desde dónde empiezan los datos útiles (salta títulos y cabeceras).</td></tr>
+                <tr><td>3 · Fin</td><td>Dónde deja de leer (EOF, línea, patrón, tope de filas…).</td></tr>
+                <tr><td>4 · Campos</td><td>Estructura: posiciones, columnas, hoja, rutas JSON/XML. También tiene CTA de importar.</td></tr>
             </tbody>
         </table>
 
         <h3 class="form-section-title">Orden recomendado</h3>
-        <ol>
-            <li>Complete los 4 pasos del perfil.</li>
-            <li>Defina reglas (módulo 3) usando los nombres de campo.</li>
-            <li>Publique (módulo 4) antes de Ejecutar.</li>
+        <ol class="help-list">
+            <li>Opcional: <strong>Importar estructura</strong> desde otra app (misma compañía, origen publicado o borrador Scout).</li>
+            <li>Complete o revise los 4 pasos y guarde en cada uno.</li>
+            <li>Defina <strong>Reglas</strong> con los nombres de campo del perfil.</li>
+            <li><strong>Publicar</strong> antes de Ejecutar. Un clic en Publicar con Perfil o Reglas incompletos avisa y no congela.</li>
         </ol>
-        <p class="help-intro">Si renombra o borra un campo, revise las reglas que lo referencian antes de publicar.</p>
 
         <h3 class="form-section-title">Roles</h3>
-        <p><code>PA</code> y <code>ED</code> editan el borrador. <code>GE</code> / <code>CO</code> pueden consultar según membresía, sin guardar.</p>
+        <table class="help-table help-table--compact">
+            <thead><tr><th>Rol</th><th>En este hub</th></tr></thead>
+            <tbody>
+                <tr><td>PA / ED</td><td>Editan el borrador e importan estructura.</td></tr>
+                <tr><td>GE / CO</td><td>Consultan el hub y el historial de importaciones. No guardan el perfil.</td></tr>
+            </tbody>
+        </table>
 
         <h3 class="form-section-title">Qué no hace este hub</h3>
-        <ul>
+        <ul class="help-list">
             <li>No publica la versión (eso es <strong>Publicar</strong>).</li>
-            <li>No sube archivos de producción (eso es <strong>Ejecutar</strong>).</li>
             <li>No define reglas de limpieza (módulo <strong>Reglas</strong>).</li>
+            <li>No sube ni limpia un archivo (eso es <strong>Ejecutar</strong>).</li>
+            <li>No valida umbrales FILE GATE ni mapea a FilePipe.</li>
+            <li>Importar no publica ni copia reglas.</li>
         </ul>
     </div>
 </div>

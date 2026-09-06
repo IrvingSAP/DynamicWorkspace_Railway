@@ -8,6 +8,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/source_profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
 <link rel="stylesheet" href="{% static 'css/file_clean_rules.css' %}">
 {% endblock %}
 
@@ -35,7 +36,7 @@
     <div class="page-actions">
         {% url 'file_clean:rules_hub_help' project_slug=project.slug as fc_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=fc_help_url %}
-        <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url 'file_clean:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub Proyecto</a>
         {% if can_edit %}
         <a href="{% url 'file_clean:rules_add' project_slug=project.slug %}" class="btn btn-primary">+ Añadir regla</a>
         {% endif %}

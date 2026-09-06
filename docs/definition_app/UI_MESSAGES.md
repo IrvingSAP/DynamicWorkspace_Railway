@@ -894,6 +894,7 @@ Mensajes de usuario para File Clean. Alineados a [`../FILE_CLEAN.md`](../FILE_CL
 | Publicada OK | `success` / JSON | Versión v{N} publicada correctamente. Nuevo borrador v{N+1} listo para edición. |
 | Sin campos (P1) | `error` / JSON | Complete el perfil de lectura con al menos un campo antes de publicar. |
 | Sin reglas ON (P2) | `error` / JSON | Habilite al menos una regla de limpieza antes de publicar. |
+| Perfil o reglas incompletos (clic Publicar) | `warning` (modal) | Complete los pasos anteriores (Perfil y Reglas) antes de publicar. / Complete el paso Perfil… / Complete el paso Reglas… |
 | Reglas inválidas (P5) | `error` + detalle | Corrija las reglas habilitadas antes de publicar. |
 | Perfil inválido | `error` | Complete y corrija el perfil de lectura antes de publicar. |
 | Sin permiso | `error` | No tiene permiso para publicar la versión de este proyecto. |

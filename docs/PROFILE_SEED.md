@@ -133,6 +133,7 @@ Escenarios típicos:
 | GATE / CLEAN / otro FilePipe / Match A+B / Reverse / Split-Merge / Scout → FilePipe origen | **Implementado** (host DMS `/origen/importar/`) |
 | GATE / CLEAN / otro FilePipe / Match A+B / Reverse / Split-Merge / Scout → FilePipe destino | **Implementado** (host DMS `/destino/importar/`) |
 | GATE / CLEAN / FilePipe / Match A+B / Reverse / Split-Merge / Scout → FILE GATE | **Implementado** (host GATE `/esquema/importar/`; no clona políticas) |
+| GATE / otro CLEAN / FilePipe / Match A+B / Reverse / Split-Merge / Scout → FILE CLEAN | **Implementado** (host CLEAN `/perfil/importar/`; no clona reglas de limpieza) |
 | GATE / CLEAN / FilePipe / Match A+B / otro Reverse / Split-Merge / Scout → Reverse entrada | **Implementado** (host Reverse `/entrada/importar/`; no clona salida ni mapeo) |
 | GATE → Match Perfil B | P1 |
 | Match A ↔ Match B / otro Match | P3 — **parcial:** A→B mismo proyecto en hub Perfil B |
@@ -161,7 +162,7 @@ Escenarios típicos:
 | Vertical | Relación |
 |----------|----------|
 | **FILE GATE** | Destino: contrato (esquema). Combo igual que FilePipe. No clona políticas. También origen típico. |
-| **FILE CLEAN** | Origen: perfil de lectura **publicado** (tipo + campos). No clona `clean_rules`. Destino FILE GATE / FilePipe / Split-Merge. |
+| **FILE CLEAN** | Origen: perfil de lectura **publicado** (tipo + campos). Destino: mismo combo que GATE (publicado o borrador Scout) en `/perfil/importar/`. No clona `clean_rules`. |
 | **FILE MATCH** | Destino Perfil A: mismo combo que GATE/FilePipe (publicado o borrador Scout). Origen hacia otras apps: Perfil A (`file_match`) o Perfil B (`file_match_b`) **publicado**. No clona reglas de cruce. |
 | **FILE SPLIT/MERGE** | Origen: perfil de lectura **publicado**. No clona `sm_rules`. Destino SM: mismo combo que GATE/FilePipe (publicado o borrador Scout). |
 | **Reverse Studio** | Origen hacia GATE: contrato de **entrada publicada**. No clona layout de salida ni reglas de generación. |
