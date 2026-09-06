@@ -1,0 +1,171 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Destino — {{ schedule.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_scheduler.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Destino</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Scheduler · M3 · <span class="perm-badge{% if hub.is_pa %} perm-badge--admin{% endif %}">{{ hub.role_label }}</span></p>
+        <h2>Destino del plan</h2>
+        <p>Define <strong>qué</strong> se encolará. No configura IFS ni dispara. Guardar no cambia el estado del plan.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_scheduler:schedule_target_help' schedule_slug=schedule.slug as sch_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=sch_help_url %}
+        <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+
+<form id="target-form" method="post" novalidate data-projects-url="{{ projects_url }}" data-can-edit="{% if can_edit %}1{% else %}0{% endif %}">
+    {% csrf_token %}
+    <fieldset {% if not can_edit %}disabled{% endif %} style="border:0;padding:0;margin:0;min-inline-size:0">
+        <div class="panel">
+            <div class="panel-body">
+                <h3 class="form-section-title">Modo</h3>
+                <div class="radio-cards radio-cards--freq{% if errors.target_mode %} has-error{% endif %}">
+                    <label class="radio-card">
+                        <input type="radio" name="target_mode" value="job"{% if posted.target_mode != 'pipeline' %} checked{% endif %}>
+                        <strong>Job de app</strong>
+                        <span>Un proyecto con versión publicada.</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="target_mode" value="pipeline"{% if posted.target_mode == 'pipeline' %} checked{% endif %}>
+                        <strong>Pipeline</strong>
+                        <span>Cadena activa con versión publicada.</span>
+                    </label>
+                </div>
+                {% for msg in errors.target_mode %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+        </div>
+
+        <div class="panel" id="panel-job">
+            <div class="panel-body">
+                <h3 class="form-section-title">Job</h3>
+                <div class="form-row two-cols">
+                    <div class="field{% if errors.kind %} has-error{% endif %}">
+                        <label for="kind">App <span class="req">*</span></label>
+                        <select id="kind" name="kind">
+                            {% for row in job_kinds %}
+                            <option value="{{ row.kind }}"{% if posted.kind == row.kind %} selected{% endif %}>{{ row.label }}</option>
+                            {% endfor %}
+                        </select>
+                        {% for msg in errors.kind %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                    <div class="field{% if errors.project_id %} has-error{% endif %}">
+                        <label for="project_id">Proyecto <span class="req">*</span></label>
+                        <select id="project_id" name="project_id">
+                            <option value="">— Elija un proyecto —</option>
+                            {% for row in projects %}
+                            <option value="{{ row.id }}"{% if posted.project_id == row.id %} selected{% endif %}{% if not row.published %} disabled{% endif %}>{{ row.label }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="hint">Solo proyectos de esta compañía con versión publicada.</p>
+                        {% for msg in errors.project_id %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel{% if posted.target_mode != 'pipeline' %} is-hidden{% endif %}" id="panel-pipeline">
+            <div class="panel-body">
+                <h3 class="form-section-title">Pipeline</h3>
+                <div class="field{% if errors.pipeline_id %} has-error{% endif %}">
+                    <label for="pipeline_id">Pipeline <span class="req">*</span></label>
+                    <select id="pipeline_id" name="pipeline_id">
+                        <option value="">— Elija un pipeline —</option>
+                        {% for row in pipelines %}
+                        <option value="{{ row.id }}"{% if posted.pipeline_id == row.id %} selected{% endif %}{% if not row.eligible %} disabled{% endif %}>{{ row.label }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="hint">Debe estar Activo y tener versión publicada.</p>
+                    {% for msg in errors.pipeline_id %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-body">
+                <h3 class="form-section-title">Entrada de archivo</h3>
+                <div class="radio-cards{% if errors.input_origin %} has-error{% endif %}">
+                    <label class="radio-card">
+                        <input type="radio" name="input_origin" value="watch"{% if posted.input_origin != 'artifact' and posted.input_origin != 'none' %} checked{% endif %}>
+                        <strong>File Watch</strong>
+                        <span>Bandeja vigilada: el tick toma el lote pendiente (hash nuevo por llegada).</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="input_origin" value="artifact"{% if posted.input_origin == 'artifact' %} checked{% endif %}>
+                        <strong>Artifact</strong>
+                        <span>Reproceso: un hash SHA-256 fijo ya en storage.</span>
+                    </label>
+                    <label class="radio-card" id="origin-none-card">
+                        <input type="radio" name="input_origin" value="none"{% if posted.input_origin == 'none' %} checked{% endif %}>
+                        <strong>Sin archivo</strong>
+                        <span>Solo pipeline con entradas resueltas. Prohibido en Job de archivo.</span>
+                    </label>
+                </div>
+                {% for msg in errors.input_origin %}<p class="field-error">{{ msg }}</p>{% endfor %}
+
+                <div class="field{% if errors.watch_id %} has-error{% endif %}" id="field-watch" style="margin-top:12px">
+                    <label for="watch_id">Código de la bandeja <span class="req">*</span></label>
+                    <input type="text" id="watch_id" name="watch_id" maxlength="220" value="{{ posted.watch_id }}" autocomplete="off" placeholder="ej. extracto-sftp">
+                    <p class="hint">Slug de File Watch en esta compañía (mismo «Código» del listado de bandejas). <strong>No</strong> es el hash SHA-256 del archivo: cada llegada genera su propio hash en el lote.</p>
+                    {% for msg in errors.watch_id %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+                <div class="field{% if errors.artifact_ref %} has-error{% endif %} is-hidden" id="field-artifact" style="margin-top:12px">
+                    <label for="artifact_ref">Hash del artifact (SHA-256) <span class="req">*</span></label>
+                    <input type="text" id="artifact_ref" name="artifact_ref" maxlength="128" class="mono" value="{{ posted.artifact_ref }}" autocomplete="off" placeholder="64 caracteres hex">
+                    <p class="hint">Hash fijo del archivo ya procesado (historial del Job → hash de entrada). Para archivos nuevos cada día use <strong>File Watch</strong>, no Artifact.</p>
+                    {% for msg in errors.artifact_ref %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+                <div class="field{% if errors.pipeline_inputs_resolved %} has-error{% endif %} is-hidden" id="field-none-confirm" style="margin-top:12px">
+                    <p class="form-section-title" style="margin:0 0 8px;font-size:13px">Sin archivo de entrada</p>
+                    <label>
+                        <input type="checkbox" name="pipeline_inputs_resolved" value="1"{% if posted.pipeline_inputs_resolved %} checked{% endif %}>
+                        Confirmo que el pipeline no exige upload en el tick
+                    </label>
+                    <p class="hint">No se pide código de bandeja ni hash. Solo válido con modo Pipeline.</p>
+                    {% for msg in errors.pipeline_inputs_resolved %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {% if can_edit %}
+        <div class="form-actions form-actions--flush">
+            <button type="submit" class="btn btn-primary">Guardar destino</button>
+            <a class="btn btn-secondary" href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">Cancelar</a>
+        </div>
+        <p class="sch-audit-note">Guardar = schedule.updated (destino / entrada). El plan no cambia de estado. Activar / Reanudar exige también Programación (M2).</p>
+        {% else %}
+        <p class="hint">Solo PA y ED pueden guardar. Esta vista es de consulta.</p>
+        {% endif %}
+    </fieldset>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/file_scheduler-target.js' %}"></script>
+{% endblock %}

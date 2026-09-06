@@ -1,0 +1,114 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Avisos {{ schedule.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_notify' schedule_slug=schedule.slug %}">Avisos</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · M9</p>
+        <h2>Ayuda — Avisos del plan</h2>
+        <p>Quién recibe correo o webhook cuando un tick falla, un run termina en error o un slot se omite.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_scheduler:schedule_notify' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Formulario</a>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">Configura las <strong>notificaciones automáticas</strong> del plan. Por defecto los avisos están <strong>apagados</strong>. Activar el plan <strong>no exige</strong> esta pantalla; es opcional. Guardar <strong>no cambia el estado</strong> del plan. Solo <strong>PA</strong> y <strong>ED</strong> pueden guardar.</p>
+
+        <h3 class="form-section-title">Eventos que generan aviso</h3>
+        <p class="help-intro">Cada evento envía <strong>un solo aviso</strong> por ocurrencia. No se reenvía el mismo fallo.</p>
+        <table class="help-table">
+            <thead><tr><th>Evento</th><th>Cuándo ocurre</th><th>Qué incluye el aviso</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Tick fallido</strong></td>
+                    <td>El worker no pudo encolar el tick: falta entrada, sin versión publicada, error de cola, etc.</td>
+                    <td>Slug del plan, slot programado, código de error (<span class="mono">schedule_missing_input</span>, <span class="mono">schedule_no_published_target</span>, etc.).</td>
+                </tr>
+                <tr>
+                    <td><strong>Run fallido</strong></td>
+                    <td>El Job o pipeline ya encolado terminó en estado <span class="mono">failed</span>.</td>
+                    <td>Slug del plan, ID del Job/pipeline, motivo del fallo. El detalle completo está en el historial del run.</td>
+                </tr>
+                <tr>
+                    <td><strong>Omitido por solape</strong></td>
+                    <td>La política de Solape (M5) es «Omitir» y el run anterior aún estaba vivo.</td>
+                    <td>Slug del plan, slot omitido, ID del run que bloqueó. <strong>Solo avisa si se marca la casilla correspondiente.</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Canales de notificación</h3>
+        <table class="help-table">
+            <thead><tr><th>Canal</th><th>Detalle</th><th>Limitaciones</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Correo</strong></td>
+                    <td>Se envía al email del miembro del plan marcado como destinatario.</td>
+                    <td>No incluye filas del archivo ni adjuntos. Solo texto con el resumen del evento.</td>
+                </tr>
+                <tr>
+                    <td><strong>Webhook</strong></td>
+                    <td>POST HTTPS a la URL configurada con payload JSON del evento.</td>
+                    <td>Debe ser HTTPS. No es una persona; es un sistema receptor (Slack, Teams, endpoint propio, etc.).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Destinatarios</h3>
+        <table class="help-table">
+            <thead><tr><th>Regla</th><th>Detalle</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Solo miembros del plan</td>
+                    <td>Los destinatarios se seleccionan de la lista de miembros. Para agregar nuevos, vaya primero a <strong>Miembros</strong>.</td>
+                </tr>
+                <tr>
+                    <td>Selección individual</td>
+                    <td>Se tildan aquí los miembros que deben recibir avisos. No todos los miembros reciben por defecto.</td>
+                </tr>
+                <tr>
+                    <td>Webhook independiente</td>
+                    <td>El webhook se configura aparte de los miembros. Un plan puede tener correo, webhook o ambos.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Errores frecuentes</h3>
+        <table class="help-table">
+            <thead><tr><th>Mensaje</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>No hay miembros para notificar</td><td>Agregue miembros al plan en la sección Miembros antes de activar avisos por correo.</td></tr>
+                <tr><td>URL de webhook inválida</td><td>Debe ser una URL HTTPS válida. No se aceptan HTTP ni URLs locales.</td></tr>
+                <tr><td>No recibí el aviso</td><td>Verifique que su usuario esté tildado como destinatario y que el evento corresponda a uno de los tipos configurados.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Permisos y al guardar</h3>
+        <p class="help-intro">Solo <strong>PA</strong> (propietario) y <strong>ED</strong> (editor) del plan pueden guardar. US de la compañía puede ver la configuración pero no modificarla.</p>
+        <p class="help-intro">Guardar registra <span class="mono">schedule.updated</span>. Si el plan ya está Activo, los avisos aplican desde el siguiente evento; no se envían retroactivamente para ticks o runs anteriores.</p>
+    </div>
+</div>
+{% endblock %}

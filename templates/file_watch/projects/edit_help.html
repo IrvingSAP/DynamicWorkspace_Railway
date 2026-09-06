@@ -1,0 +1,124 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Editar {{ watch.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_edit' watch_slug=watch.slug %}">Editar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ watch.slug }}</span> · PA / ED</p>
+        <h2>Ayuda — Editar bandeja</h2>
+        <p>Qué se puede cambiar en los metadatos y qué no toca este formulario.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_watch:watch_edit' watch_slug=watch.slug %}" class="btn btn-secondary">← Volver al formulario</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Ajusta el <strong>nombre</strong>, la <strong>descripción</strong> y la <strong>visibilidad</strong> de la bandeja
+            <span class="mono">{{ watch.slug }}</span>.
+            El código es <strong>inmutable</strong>: File Scheduler y otros sistemas ya pueden referenciarlo como <span class="mono">watch_id</span>.
+        </p>
+        <ul class="help-list">
+            <li>Guardar <strong>no</strong> cambia el estado (En proceso / Activo / Inactivo). Pausar, reanudar y archivar son acciones distintas, en el listado o el hub.</li>
+            <li>Si la bandeja está Activa, editar metadatos <strong>no</strong> cancela un Job ya encolado por una llegada previa.</li>
+            <li>El cambio queda en auditoría como <span class="mono">watch.updated</span> (campos cambiados).</li>
+        </ul>
+
+        <h3 class="form-section-title">Quién puede usarla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Qué puede hacer</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PA / ED de la bandeja</td>
+                    <td>Editar nombre, descripción y visibilidad.</td>
+                </tr>
+                <tr>
+                    <td>GE / CO / consulta de compañía</td>
+                    <td>No editan. El listado no muestra «Editar».</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Campos del formulario</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Obligatorio</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Nombre corto (código)</td>
+                    <td>—</td>
+                    <td>Identificador de la bandeja. Solo lectura.</td>
+                    <td class="mono">{{ watch.slug }} · inmutable (= watch_id)</td>
+                </tr>
+                <tr>
+                    <td>Nombre visible</td>
+                    <td>Sí</td>
+                    <td>Título en listados y hub.</td>
+                    <td>Texto hasta 200 caracteres.</td>
+                </tr>
+                <tr>
+                    <td>Descripción</td>
+                    <td>No</td>
+                    <td>Texto que aparece bajo el título del hub.</td>
+                    <td>Texto libre.</td>
+                </tr>
+                <tr>
+                    <td>Visibilidad</td>
+                    <td>Sí</td>
+                    <td>Quién ve la bandeja en el listado File Watch.</td>
+                    <td><strong>Privado</strong> (solo miembros) · <strong>Público</strong> (UF de la compañía, consulta)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones de la pantalla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ayuda</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>Guardar</td>
+                    <td>Persiste metadatos. Mensaje: <em>Bandeja actualizada.</em> No cambia estado ni cancela un Job en curso.</td>
+                </tr>
+                <tr>
+                    <td>Cancelar / ← Hub</td>
+                    <td>Vuelve al hub sin guardar.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

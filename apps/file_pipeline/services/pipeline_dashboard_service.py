@@ -15,6 +15,7 @@ from apps.file_pipeline.services.pipeline_project_service import visible_qs
 WINDOW_CHOICES = (7, 30)
 FAIL_LIMIT = 12
 RECENT_LIMIT = 8
+TRIGGER_ALL = "all"
 
 
 def parse_window(params) -> int:
@@ -25,8 +26,19 @@ def parse_window(params) -> int:
     return days if days in WINDOW_CHOICES else 7
 
 
+def parse_trigger(params) -> str:
+    raw = (params.get("trigger") or TRIGGER_ALL).strip()
+    allowed = {code for code, _label in PipelineRun.TRIGGER_CHOICES}
+    if raw in {"", TRIGGER_ALL}:
+        return TRIGGER_ALL
+    if raw in allowed:
+        return raw
+    return TRIGGER_ALL
+
+
 def dashboard_context(user, params) -> dict:
     days = parse_window(params)
+    trigger = parse_trigger(params)
     since = timezone.now() - timedelta(days=days)
     pipeline_ids = list(visible_qs(user).values_list("id", flat=True))
 
@@ -41,6 +53,8 @@ def dashboard_context(user, params) -> dict:
         created_at__gte=since,
     )
     ops = window_runs.filter(dry_run=False)
+    if trigger != TRIGGER_ALL:
+        ops = ops.filter(trigger_source=trigger)
     dry_in_window = window_runs.filter(dry_run=True).count()
 
     ops_by: dict = defaultdict(int)
@@ -105,6 +119,14 @@ def dashboard_context(user, params) -> dict:
 
     return {
         "days": days,
+        "trigger": trigger,
+        "trigger_options": [
+            {"value": TRIGGER_ALL, "label": "Todos"},
+            *[
+                {"value": code, "label": label}
+                for code, label in PipelineRun.TRIGGER_CHOICES
+            ],
+        ],
         "since": since,
         "pipeline_count": len(pipelines),
         "active_count": sum(
@@ -127,11 +149,13 @@ def dashboard_context(user, params) -> dict:
 
 
 def _run_row(run: PipelineRun) -> dict:
+    sid = (run.schedule_id or "").strip()
     return {
         "run": run,
         "actor": actor_label(run),
         "duration": duration_label(run),
         "version_label": f"v{run.version.version_number}",
+        "schedule_short": sid[:8] if sid else "",
     }
 
 

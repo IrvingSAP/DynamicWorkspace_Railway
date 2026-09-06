@@ -36,6 +36,7 @@
 | [`docs/FILE_REPAIR.md`](FILE_REPAIR.md) | **File Repair** — corrección post-Gate (**pendiente revisión**) |
 | [`docs/FILE_WATCH.md`](FILE_WATCH.md) | **File Watch** — ingestión por llegada (**previsto**) |
 | [`docs/FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | **File Scheduler** — cron / dependencias (**previsto**) |
+| [`docs/definition_app_FILE_SCHEDULER/`](definition_app_FILE_SCHEDULER/) | Specs por módulo File Scheduler (fase de diseño) |
 | [`docs/FILE_ARCHIVE.md`](FILE_ARCHIVE.md) | **File Archive** — custodia E2E (**previsto**) |
 | [`docs/SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) | **Schema Registry** — contratos compartidos (**previsto**) |
 | [`docs/FILE_PIPELINE.md`](FILE_PIPELINE.md) | **File Pipeline** — orquestación multi-app (**propuesta**); API puede consumirlo |

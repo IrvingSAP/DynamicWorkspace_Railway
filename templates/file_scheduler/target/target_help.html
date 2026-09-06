@@ -1,0 +1,106 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Destino {{ schedule.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_target' schedule_slug=schedule.slug %}">Destino</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · M3</p>
+        <h2>Ayuda — Destino del plan</h2>
+        <p>Qué se ejecutará, de dónde sale el archivo y cómo completar Artifact o Watch.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_scheduler:schedule_target' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Formulario</a>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">Define <strong>qué</strong> Job o pipeline encolará el tick y <strong>de dónde sale el archivo</strong>. No define el reloj (Programación) ni las rutas IFS (eso es File Watch). Guardar <strong>no cambia el estado</strong> del plan. Solo <strong>PA</strong> y <strong>ED</strong> pueden guardar.</p>
+
+        <h3 class="form-section-title">Qué origen elegir</h3>
+        <p class="help-intro">El error «Indique la referencia del artifact» aparece cuando eligió <strong>Artifact</strong> y el campo quedó vacío. Si no tiene un hash de un Job anterior, no use Artifact: use <strong>File Watch</strong>.</p>
+        <table class="help-table">
+            <thead><tr><th>Origen</th><th>Úselo si…</th><th>Qué debe rellenar</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>File Watch</td>
+                    <td>El archivo llega (o ya está) en una bandeja vigilada. Caso típico de cierre nocturno o extracto diario.</td>
+                    <td>Código de la <strong>bandeja</strong> (slug, ej. <span class="mono">extracto-sftp</span>). No el hash del archivo.</td>
+                </tr>
+                <tr>
+                    <td>Artifact</td>
+                    <td>Va a reprocesar un archivo <strong>que ya corrió</strong> en Gate, Pipe, Clean, etc. y del que conoce el hash.</td>
+                    <td><strong>Hash SHA-256</strong> fijo (ver abajo). No es el código de una bandeja.</td>
+                </tr>
+                <tr>
+                    <td>Sin archivo</td>
+                    <td>Solo <strong>Pipeline</strong> cuya cadena no pide upload en el tick (entradas ya resueltas en los pasos).</td>
+                    <td>Casilla de confirmación. Sin bandeja ni hash. <strong>Prohibido</strong> si el modo es Job de app.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Hash del artifact — qué pegar</h3>
+        <p class="help-intro">Es el identificador del contenido ya guardado en storage del tenant, no un «adjuntar archivo».</p>
+        <table class="help-table">
+            <thead><tr><th>Aceptado</th><th>No ponga esto</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Hash SHA-256 en hexadecimal (64 caracteres), como el <strong>hash de entrada</strong> de un Job en el historial de Gate/Pipe/Clean/Match.</td>
+                    <td>Nombre de archivo (<span class="mono">extracto.csv</span>), ruta Windows, URL http, carpeta IFS o código de Watch.</td>
+                </tr>
+                <tr>
+                    <td>Opcional: prefijo <span class="mono">sha256:</span> + el mismo hex. Máximo 128 caracteres.</td>
+                    <td>Un archivo vacío o un texto de prueba. El tick no inventa un fichero.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Dónde copiarlo: abra el historial de la app destino → detalle del Job → hash de entrada / <span class="mono">content_hash</span>. Pegue ese valor en <strong>Hash del artifact</strong>.</p>
+        <p class="help-intro">Si aún no hay Jobs con hash, cambie el origen a <strong>File Watch</strong> y ponga el <strong>código de la bandeja</strong>. Artifact queda para reprocesos, no para el alta del plan.</p>
+
+        <h3 class="form-section-title">Modo Job o Pipeline</h3>
+        <table class="help-table">
+            <thead><tr><th>Modo</th><th>Qué se encola</th><th>Requisito</th></tr></thead>
+            <tbody>
+                <tr><td>Job de app</td><td>Un proyecto de Gate, Pipe, Clean, Match, Reverse, Scout, Split o Merge.</td><td>Versión <strong>publicada</strong> en esa app. Historial en esa app, no en el tablero de pipelines.</td></tr>
+                <tr><td>Pipeline</td><td>La cadena ya diseñada.</td><td>Pipeline <strong>Activo</strong> con versión publicada. El tick no rediseña pasos.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Errores frecuentes</h3>
+        <table class="help-table">
+            <thead><tr><th>Mensaje</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>Indique el hash SHA-256 del artifact</td><td>Eligió Artifact y el campo está vacío. Pegue el hash o cambie a File Watch.</td></tr>
+                <tr><td>Indique el código de la bandeja</td><td>Eligió File Watch sin slug. Ponga el código de la bandeja (no un hash).</td></tr>
+                <tr><td>Sin archivo + Job</td><td>Un Job de archivo no puede ir sin entrada. Use Watch o Artifact, o cambie a Pipeline con confirmación.</td></tr>
+                <tr><td>Sin versión publicada</td><td>Publique el contrato/pipeline en su app antes de apuntarlo aquí.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Permisos y al guardar</h3>
+        <p class="help-intro">Debe poder <strong>ejecutar</strong> el proyecto (o todos los pasos del pipeline). US de la compañía puede apuntar destinos de su compañía. UF PA/ED del plan necesita rol ejecutor en cada proyecto destino.</p>
+        <p class="help-intro">Guardar registra <span class="mono">schedule.updated</span>. Si el plan ya está Activo, el próximo tick usa la nueva definición; no cancela un Job ya encolado. Activar / Reanudar sigue exigiendo también Programación (M2) o Dependencia (M6).</p>
+    </div>
+</div>
+{% endblock %}

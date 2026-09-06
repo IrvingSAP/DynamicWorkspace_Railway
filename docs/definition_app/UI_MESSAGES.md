@@ -43,6 +43,8 @@ flowchart LR
 | FILE CLEAN (ciclo proyecto, …) | `UI_MESSAGES.md` §3.14 · [`../FILE_CLEAN.md`](../FILE_CLEAN.md) · [`../definition_app_FILE_CLEAN/`](../definition_app_FILE_CLEAN/) |
 | FILE SPLIT/MERGE (ciclo proyecto, …) | `UI_MESSAGES.md` §3.15 · [`../FILE_SPLIT_MERGE.md`](../FILE_SPLIT_MERGE.md) · [`../definition_app_FILE_SPLIT_MERGE/`](../definition_app_FILE_SPLIT_MERGE/) |
 | FILE PIPELINE (ciclo, diseñar, publicar, run, historial) | Specs [`../definition_app_FILE_PIPELINE/`](../definition_app_FILE_PIPELINE/) · catálogo §3.16 |
+| FILE SCHEDULER (plan, cron, tick) | Specs [`../definition_app_FILE_SCHEDULER/`](../definition_app_FILE_SCHEDULER/) · catálogo §3.18 · [`sch_errors.md`](../definition_app_FILE_SCHEDULER/sch_errors.md) |
+| FILE WATCH (bandeja, intake, fire) | Specs [`../definition_app_FILE_WATCH/`](../definition_app_FILE_WATCH/) · catálogo §3.19 · [`wach_errors.md`](../definition_app_FILE_WATCH/wach_errors.md) |
 
 ---
 
@@ -1229,6 +1231,94 @@ Alineados a [`../definition_app_PLATFORM_API/pa_auth.md`](../definition_app_PLAT
 | URL de webhook inválida | inline `webhook_url` | La URL de callback no está permitida. |
 | Eventos de webhook vacíos | inline `webhook_events` | Seleccione al menos un evento. |
 
+### 3.18 Mensajes específicos — `apps.file_scheduler` (FILE SCHEDULER · M1–M10)
+
+Fuente de códigos `schedule_*`: [`../definition_app_FILE_SCHEDULER/sch_errors.md`](../definition_app_FILE_SCHEDULER/sch_errors.md) · mapa Python `apps.file_scheduler.services.schedule_errors`. El `error_code` no se muestra al usuario. Capa 1 (otra compañía / plan inexistente) = **404 opaco**. Capa 4 = enlace a Job/pipeline, sin `schedule_gate_*`.
+
+| Situación | `error_code` / canal | Texto al usuario |
+|-----------|----------------------|------------------|
+| Campos obligatorios vacíos | `validation_required` · inline | Complete los campos obligatorios. |
+| Código duplicado | `schedule_slug_taken` · inline `slug` | Ese código ya existe en la compañía. |
+| Sin permiso de cambio | `schedule_forbidden` · modal | No tiene permiso para cambiar este plan. |
+| Crear no autorizado | `schedule_forbidden` · modal | Solo usuarios US con rol PA o ED de esta compañía pueden crear planes. |
+| Programación inválida | `schedule_cron_invalid` · inline `cron_expr` + alerta | La programación no es válida. Consulte la Ayuda. |
+| Zona inválida | `schedule_timezone_invalid` · inline `timezone` | La zona horaria no es válida. |
+| Destino sin publicada | `schedule_no_published_target` · inline / Actividad | El destino no tiene una versión publicada operativa. |
+| Sin entrada de archivo | `schedule_missing_input` · inline / Actividad | Falta el archivo de entrada. No se puede disparar sin Watch o una referencia. |
+| Ciclo padre=destino | `schedule_dependency_cycle` · inline + alerta | El padre no puede ser el mismo destino del plan. |
+| Activar/reanudar incompleto | `schedule_incomplete` · modal | Complete el destino y el disparador (horario o dependencia) para activar. |
+| Plan no activo (tick) | `schedule_paused` · Actividad | El plan no está activo. |
+| Solape omitido | `schedule_overlap_skip` · Actividad | Se omitió este horario porque el run anterior sigue en curso. |
+| Misfire | `schedule_misfire` · Actividad | No se ejecutó a tiempo (el programador no estaba disponible). Se sigue con la próxima ventana. |
+| Encolar falló | `schedule_enqueue_failed` · Actividad | No se pudo encolar el Job. Inténtelo más tarde o revise la cola. |
+| Artifact no está en storage | `schedule_artifact_not_found` · Actividad | No se encontró el archivo del artifact en storage. Verifique el hash. |
+| Destino sin runner en el tick | `schedule_runner_unsupported` · Actividad | Este tipo de destino aún no se ejecuta desde el Scheduler. |
+| Destino/padre otra company | `schedule_target_cross_tenant` / `schedule_dependency_cross_tenant` | 404 opaco (sin este texto). |
+| Plan creado | `success` | Plan creado correctamente. |
+| Plan actualizado | `success` | Plan actualizado. |
+| Plan pausado | `success` | Plan pausado. |
+| Plan reanudado | `success` | Plan reanudado. |
+| Plan archivado | `success` | Plan archivado. |
+| Programación guardada | `success` | Programación guardada. |
+| Destino guardado | `success` | Destino guardado. |
+| Política de solape guardada | `success` | Política de solape guardada. |
+| Disparador guardado | `success` | Disparador guardado. |
+| Plan marcado activo | `success` | Plan marcado como Activo. |
+| Validación formulario (resto) | `validation_form` · error + inline | Revise los datos marcados; no se pudo guardar. |
+| Pausar no aplica | `error` | Solo se puede pausar un plan Activo. |
+| Solo PA miembros | `error` | Solo el administrador del plan (PA) puede gestionar miembros. |
+| Compañía inactiva | `error` | La compañía no está activa. |
+| Módulo pendiente | `info` | Este módulo se implementará en una fase posterior. |
+| Owner protegido | `error` | El owner no se revoca ni cambia de rol. |
+| Miembro autorizado | `success` | Miembro «{username}» autorizado correctamente. |
+| Inesperado | `error` | Ocurrió un error al guardar. Si persiste, contacte al administrador. |
+| Watch vacío | inline `watch_id` | Indique el código de la bandeja (File Watch). Consulte la Ayuda… |
+| Artifact vacío | inline `artifact_ref` | Indique el hash SHA-256 del artifact. Consulte la Ayuda… |
+| Pipeline + none sin confirmar | inline `pipeline_inputs_resolved` | Para «Sin archivo» confirme que el pipeline no exige upload en el tick. Consulte la Ayuda… |
+| Sin permiso programación | `schedule_forbidden` | No tiene permiso para editar la programación de este plan. |
+| Sin permiso destino | `schedule_forbidden` | No tiene permiso para editar el destino de este plan. |
+| Sin permiso ejecutar destino | `schedule_forbidden` | No tiene permiso para ejecutar el destino elegido. Consulte la Ayuda… |
+| Sin permiso solape | `schedule_forbidden` | No tiene permiso para editar la política de solape de este plan. |
+| Política inválida | inline `overlap_policy` | Seleccione una política de solape. |
+| Sin permiso dependencia | `schedule_forbidden` | No tiene permiso para editar la dependencia de este plan. |
+| Avisos guardados | `success` | Avisos guardados. |
+| Avisos on sin destino | `validation_required` · inline | Marque al menos un miembro del plan o indique un webhook HTTPS. |
+| Webhook no HTTPS | `schedule_notify_webhook_invalid` · inline | El webhook debe empezar por https://. |
+| Miembro sin correo | `schedule_notify_email_invalid` · inline | Un miembro marcado no tiene correo en su cuenta. |
+| Sin permiso avisos | `schedule_forbidden` | No tiene permiso para editar los avisos de este plan. |
+
+> Motor M1–M10: ciclo, cron, destino, tick, solape, dependencia, auditoría, catálogo de errores, avisos (`…/avisos/`) y mapa de integración (`…/integracion/`). El worker cron no evalúa planes `trigger_mode=dependency`.
+
+### 3.19 Mensajes específicos — `apps.file_watch` (FILE WATCH · M1–M10)
+
+Fuente de códigos `watch_*`: [`../definition_app_FILE_WATCH/wach_errors.md`](../definition_app_FILE_WATCH/wach_errors.md) · mapa Python `apps.file_watch.services.watch_errors`. El `error_code` no se muestra al usuario. Capa 1 (otra compañía / bandeja inexistente) = **404 opaco**. Capa 4 = enlace a Job/pipeline, sin `watch_gate_*`.
+
+| Situación | `error_code` / canal | Texto al usuario |
+|-----------|----------------------|------------------|
+| Campos obligatorios vacíos | `validation_required` · inline | Complete los campos obligatorios. |
+| Código duplicado | `watch_slug_taken` · inline `slug` | Ese código de bandeja ya existe en la compañía. |
+| Sin permiso de cambio | `watch_forbidden` · modal | No tiene permiso para cambiar esta bandeja. |
+| Crear no autorizado | `watch_forbidden` · modal | Solo usuarios US con rol PA o ED de esta compañía pueden crear bandejas. |
+| Activar/reanudar incompleto | `watch_incomplete` · modal | Complete el origen (y el enrutado si dispara al llegar) para activar. |
+| Origen inválido | `watch_source_invalid` · inline + alerta | La configuración del origen no es válida. Consulte la Ayuda. |
+| Destino sin publicada | `watch_no_published_target` · inline / Lotes | El destino no tiene una versión publicada operativa. |
+| Al llegar + Diferir | `watch_fire_route_conflict` · inline + alerta | «Al llegar» no es compatible con enrutado Diferir. Elija Job/Pipeline o cambie el disparo. |
+| Destino otra company | `watch_route_cross_tenant` | 404 opaco (sin este texto). |
+| Bandeja creada | `success` | Bandeja creada correctamente. |
+| Bandeja actualizada | `success` | Bandeja actualizada. |
+| Bandeja pausada | `success` | Bandeja pausada. |
+| Bandeja reanudada | `success` | Bandeja reanudada. |
+| Bandeja archivada | `success` | Bandeja archivada. |
+| Bandeja marcada activa | `success` | Bandeja marcada como Activa. |
+| Validación formulario (resto) | `validation_form` · error + inline | Revise los datos marcados; no se pudo guardar. |
+| Pausar no aplica | `error` | Solo se puede pausar una bandeja Activa. |
+| Solo PA miembros | `error` | Solo el administrador de la bandeja (PA) puede gestionar miembros. |
+| Módulo pendiente | `info` | Este módulo se implementará en una fase posterior. |
+| Owner protegido | `error` | El owner no se revoca ni cambia de rol. |
+| Miembro autorizado | `success` | Miembro «{username}» autorizado correctamente. |
+| Inesperado | `error` | Ocurrió un error al guardar. Si persiste, contacte al administrador. |
+
+> Motor M1: ciclo de vida (listado, alta, hub, editar, pausar/reanudar, archivar, miembros). M2–M10 pendientes; stubs de hub enlazan a pantallas placeholder.
 
 ---
 

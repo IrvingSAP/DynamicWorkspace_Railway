@@ -1,0 +1,40 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ module_label }} — {{ watch.slug }}{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ module_label }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow"><span class="cell-badge">{{ watch.slug }}</span> · {{ hub.status_label }}</p>
+        <h2>{{ module_label }}</h2>
+        <p>Módulo en implementación. La bandeja ya existe; esta pantalla se completará en una fase posterior.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+<div class="wach-stub-panel" role="status">
+    <p><strong>{{ module_label }}</strong> aún no está disponible.</p>
+    <p>Vuelva al hub para pausar, reanudar o continuar con otros módulos cuando existan.</p>
+</div>
+{% endblock %}

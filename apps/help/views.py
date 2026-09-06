@@ -31,6 +31,8 @@ US_GENERAL_GUIDES = {
     "api-audit": ("Auditoría API", "us_help_api_audit", "help/us_api_audit_guide.html"),
     "manual-jobs": ("Jobs sueltos", "us_help_manual_jobs", "help/us_manual_jobs_meta.html"),
     "manual-pipelines": ("Pipelines", "us_help_manual_pipelines", "help/us_guide_stub.html"),
+    "file-scheduler": ("File Scheduler", "us_help_file_scheduler", "help/us_guide_stub.html"),
+    "file-watch": ("File Watch", "us_help_file_watch", "help/us_guide_stub.html"),
 }
 
 

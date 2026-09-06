@@ -1,0 +1,114 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Catálogo de errores — File Scheduler{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_scheduler.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Catálogo de errores</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Scheduler · M8</p>
+        <h2>Catálogo de errores del plan</h2>
+        <p>Códigos internos y texto de negocio. Los fallos de Gate o de un paso de pipeline no están aquí: se abren en el Job o en el run.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_scheduler:schedule_errors_help' as sch_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=sch_help_url %}
+        <a href="{% url 'file_scheduler:schedule_list' %}" class="btn btn-secondary">← Planes</a>
+    </div>
+</div>
+<div class="panel panel--table">
+    <div class="table-toolbar" aria-label="Controles de tabla">
+        <div class="table-toolbar-group">
+            <label for="filter-layer">
+                Capa
+                <select id="filter-layer">
+                    <option value="">Todas</option>
+                    <option value="2">2 · CRUD</option>
+                    <option value="3">3 · Tick</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="table-dt-host">
+        <table id="sch-errors-table" class="dw-datatable" data-dt-custom="true" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Capa</th>
+                    <th>Canal</th>
+                    <th>Mensaje al usuario</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr data-layer="{{ row.layer }}">
+                    <td class="mono">{{ row.code }}</td>
+                    <td>{{ row.layer_label }}</td>
+                    <td>{{ row.channel }}</td>
+                    <td>{{ row.user_message }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p class="sch-audit-note">Capa 1 = 404 opaco (sin fila). Capa 4 = códigos de la app o del pipeline, no de esta tabla. El usuario no ve el código como título en Actividad.</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (typeof DataTable === "undefined") return;
+  var tableEl = document.getElementById("sch-errors-table");
+  if (!tableEl || tableEl.dataset.dtInit === "true") return;
+  var layerValue = "";
+  DataTable.ext.search.push(function (settings, _d, dataIndex) {
+    if (!settings.nTable || settings.nTable.id !== "sch-errors-table") return true;
+    var row = new DataTable.Api(settings).row(dataIndex).node();
+    if (!row || !layerValue) return true;
+    return row.dataset.layer === layerValue;
+  });
+  var table = new DataTable("#sch-errors-table", {
+    language: DW_DATATABLES_ES,
+    layout: DW_DATATABLES_LAYOUT,
+    pageLength: 25,
+    lengthMenu: [10, 25, 50, 100],
+    order: [[0, "asc"]],
+  });
+  tableEl.dataset.dtInit = "true";
+  var filter = document.getElementById("filter-layer");
+  if (filter) {
+    filter.addEventListener("change", function () {
+      layerValue = filter.value;
+      table.draw();
+    });
+  }
+});
+</script>
+{% endblock %}

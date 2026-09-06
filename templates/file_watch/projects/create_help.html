@@ -1,0 +1,143 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Nueva bandeja{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_create' %}">Nuevo</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">US</span> PA / ED</p>
+        <h2>Ayuda — Nueva bandeja</h2>
+        <p>Qué significa cada campo del alta y qué ocurre al guardar. Origen y enrutado no se piden aquí.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_watch:watch_create' %}" class="btn btn-secondary">← Volver al formulario</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Crea la <strong>identidad</strong> de una bandeja vigilada en esta compañía.
+            Al guardar queda como <strong>administrador de la bandeja (PA)</strong> y pasa al hub para configurar origen, intake y disparo.
+        </p>
+        <ul class="help-list">
+            <li>Solo usuarios tipo <strong>US</strong> de esta compañía con rol <strong>PA</strong> o <strong>ED</strong>. Un UF no da de alta bandejas.</li>
+            <li>Este formulario cubre código, nombre, descripción y visibilidad. El origen (M2) y el enrutado (M4) van en el hub.</li>
+            <li>El estado inicial es <strong>En proceso</strong>. El monitor no ingiere hasta que PA o ED la marque Activa.</li>
+            <li>El código será el <span class="mono">watch_id</span> que File Scheduler usa cuando el origen es <span class="mono">watch</span>.</li>
+        </ul>
+
+        <h3 class="form-section-title">Quién puede usarla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Qué puede hacer</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>US · PA / ED</td>
+                    <td>Crear bandejas de la compañía. El creador queda PA (ese rol no se revoca).</td>
+                </tr>
+                <tr>
+                    <td>US · GE / CO · UF</td>
+                    <td>No acceden a este alta. El listado no muestra «Nueva bandeja».</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Campos del formulario</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Obligatorio</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Nombre corto (código)</td>
+                    <td>Sí</td>
+                    <td>Identificador estable en la compañía. Inmutable tras el alta. Es el <span class="mono">watch_id</span> del Scheduler.</td>
+                    <td class="mono">Minúsculas, números y guiones. Único por compañía. Ej. extracto-sftp</td>
+                </tr>
+                <tr>
+                    <td>Nombre visible</td>
+                    <td>Sí</td>
+                    <td>Título en listados y hub.</td>
+                    <td>Texto hasta 200 caracteres. Ej. Extracto bancario SFTP</td>
+                </tr>
+                <tr>
+                    <td>Descripción</td>
+                    <td>No</td>
+                    <td>Propósito; se muestra en el hub.</td>
+                    <td>Texto libre. Ej. Bandeja de extractos diarios.</td>
+                </tr>
+                <tr>
+                    <td>Visibilidad</td>
+                    <td>Sí</td>
+                    <td>Quién ve la bandeja en el listado File Watch.</td>
+                    <td><strong>Privado</strong> (solo miembros) · <strong>Público</strong> (UF de la compañía, consulta). Por defecto: Privado</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones de la pantalla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ayuda</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>Crear bandeja</td>
+                    <td>Guarda y abre el hub. Mensaje: <em>Bandeja creada correctamente.</em> Queda PA y estado En proceso.</td>
+                </tr>
+                <tr>
+                    <td>Cancelar / ← Listado</td>
+                    <td>Vuelve al listado sin crear.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Si no se puede guardar</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Situación</th><th>Dónde lo ve</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Código o nombre vacío</td>
+                    <td>Error bajo el campo: complete los obligatorios.</td>
+                </tr>
+                <tr>
+                    <td>Código ya usado en la compañía</td>
+                    <td>Error bajo el código: ese código de bandeja ya existe.</td>
+                </tr>
+                <tr>
+                    <td>Sin permiso US PA / ED</td>
+                    <td>Modal: solo US con rol PA o ED de esta compañía pueden crear bandejas.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,174 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Programación — {{ schedule.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_scheduler.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Programación</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Scheduler · M2 · <span class="perm-badge{% if hub.is_pa %} perm-badge--admin{% endif %}">{{ hub.role_label }}</span></p>
+        <h2>Programación del plan</h2>
+        <p>Define <strong>cuándo</strong> puede disparar. No elige la app (M3) ni busca archivos en IFS. Guardar no cambia el estado del plan.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_scheduler:schedule_cron_help' schedule_slug=schedule.slug as sch_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=sch_help_url %}
+        <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+
+<form id="cron-form" method="post" novalidate data-preview-url="{{ preview_url }}" data-can-edit="{% if can_edit %}1{% else %}0{% endif %}">
+    {% csrf_token %}
+    <fieldset {% if not can_edit %}disabled{% endif %} style="border:0;padding:0;margin:0;min-inline-size:0">
+        <div class="panel">
+            <div class="panel-body">
+                <h3 class="form-section-title">Frecuencia</h3>
+                <div class="radio-cards radio-cards--freq{% if errors.schedule_kind %} has-error{% endif %}">
+                    <label class="radio-card">
+                        <input type="radio" name="schedule_kind" value="daily"{% if posted.schedule_kind == 'daily' or not posted.schedule_kind %} checked{% endif %}>
+                        <strong>Diario</strong>
+                        <span>Todos los días a una hora.</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="schedule_kind" value="weekdays"{% if posted.schedule_kind == 'weekdays' %} checked{% endif %}>
+                        <strong>Lunes a viernes</strong>
+                        <span>Sin sábado ni domingo.</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="schedule_kind" value="weekly"{% if posted.schedule_kind == 'weekly' %} checked{% endif %}>
+                        <strong>Semanal</strong>
+                        <span>Un día de la semana a una hora.</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="schedule_kind" value="monthly"{% if posted.schedule_kind == 'monthly' %} checked{% endif %}>
+                        <strong>Mensual</strong>
+                        <span>Último día o un número 1–31.</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="schedule_kind" value="cron"{% if posted.schedule_kind == 'cron' %} checked{% endif %}>
+                        <strong>Cron</strong>
+                        <span>Expresión de 5 campos.</span>
+                    </label>
+                </div>
+                {% for msg in errors.schedule_kind %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-body">
+                <h3 class="form-section-title">Hora y zona</h3>
+                <div class="form-row two-cols">
+                    <div class="field{% if errors.time_local %} has-error{% endif %}" id="field-time">
+                        <label for="time_local">Hora local <span class="req">*</span></label>
+                        <input type="time" id="time_local" name="time_local" value="{{ posted.time_local }}">
+                        <p class="hint">En la zona del plan, no en UTC del servidor.</p>
+                        {% for msg in errors.time_local %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                    <div class="field{% if errors.timezone %} has-error{% endif %}">
+                        <label for="timezone">Zona (IANA) <span class="req">*</span></label>
+                        <select id="timezone" name="timezone">
+                            {% for tz in timezones %}
+                            <option value="{{ tz }}"{% if posted.timezone == tz %} selected{% endif %}>{{ tz }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="hint">El worker usa esta zona para <code>scheduled_for</code>.</p>
+                        {% for msg in errors.timezone %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                </div>
+                <div class="field{% if errors.day_of_week %} has-error{% endif %}{% if posted.schedule_kind != 'weekly' %} is-hidden{% endif %}" id="field-dow">
+                    <label for="day_of_week">Día de la semana <span class="req">*</span></label>
+                    <select id="day_of_week" name="day_of_week">
+                        <option value="1"{% if posted.day_of_week == '1' %} selected{% endif %}>Lunes</option>
+                        <option value="2"{% if posted.day_of_week == '2' %} selected{% endif %}>Martes</option>
+                        <option value="3"{% if posted.day_of_week == '3' %} selected{% endif %}>Miércoles</option>
+                        <option value="4"{% if posted.day_of_week == '4' %} selected{% endif %}>Jueves</option>
+                        <option value="5"{% if posted.day_of_week == '5' %} selected{% endif %}>Viernes</option>
+                        <option value="6"{% if posted.day_of_week == '6' %} selected{% endif %}>Sábado</option>
+                        <option value="0"{% if posted.day_of_week == '0' %} selected{% endif %}>Domingo</option>
+                    </select>
+                    <p class="hint">Obligatorio si elige Semanal. Un solo día por plan (MVP).</p>
+                    {% for msg in errors.day_of_week %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+                <div class="{% if posted.schedule_kind != 'monthly' %}is-hidden{% endif %}" id="field-monthly">
+                    <p class="form-section-title" style="margin-top:12px">Día del mes</p>
+                    <div class="radio-cards{% if errors.monthly_mode %} has-error{% endif %}">
+                        <label class="radio-card">
+                            <input type="radio" name="monthly_mode" value="last_day"{% if posted.monthly_mode != 'specific' %} checked{% endif %}>
+                            <strong>Último día</strong>
+                            <span>Se ajusta al último día de cada mes (28, 29, 30 o 31).</span>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="monthly_mode" value="specific"{% if posted.monthly_mode == 'specific' %} checked{% endif %}>
+                            <strong>Día específico</strong>
+                            <span>Elija un número (1–31).</span>
+                        </label>
+                    </div>
+                    {% for msg in errors.monthly_mode %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    <div class="field{% if errors.day_of_month %} has-error{% endif %}{% if posted.monthly_mode != 'specific' %} is-hidden{% endif %}" id="field-dom" style="margin-top:12px">
+                        <label for="day_of_month">Número de día <span class="req">*</span></label>
+                        <input type="number" id="day_of_month" name="day_of_month" min="1" max="31" value="{{ posted.day_of_month }}">
+                        <p class="hint">Si ese día no existe en el mes (p. ej. 31 en abril), el tick usa el <strong>último día de ese mes</strong>.</p>
+                        {% for msg in errors.day_of_month %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                </div>
+                <div class="field{% if errors.cron_expr %} has-error{% endif %}{% if posted.schedule_kind != 'cron' %} is-hidden{% endif %}" id="field-cron">
+                    <label for="cron_expr">Expresión cron <span class="req">*</span></label>
+                    <input type="text" id="cron_expr" name="cron_expr" class="mono" placeholder="0 2 * * *" maxlength="80" autocomplete="off" spellcheck="false" value="{{ posted.cron_expr }}" aria-describedby="cron-hint cron-error">
+                    <p class="hint" id="cron-hint">minuto hora día-mes mes día-semana. Ejemplo: <code>0 2 * * *</code> = 02:00 diario. Si no aplica, vea la <a href="{% url 'file_scheduler:schedule_cron_help' schedule_slug=schedule.slug %}">Ayuda</a>.</p>
+                    {% for msg in errors.cron_expr %}<p class="field-error" id="cron-error" role="alert">{{ msg }}</p>{% empty %}
+                    <p class="field-error is-hidden" id="cron-error" role="alert"></p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-body">
+                <h3 class="form-section-title">Próximos ticks (preview)</h3>
+                <p class="hint">Solo lectura. No encola Jobs. Tres ventanas siguientes en la zona elegida.</p>
+                <ul class="sch-slot-tape" id="slot-tape" aria-label="Próximas ventanas">
+                    {% for slot in preview_slots %}
+                    <li><strong>{{ forloop.counter }}</strong> {{ slot }}</li>
+                    {% empty %}
+                    <li>Sin preview</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% if can_edit %}
+        <div class="form-actions form-actions--flush">
+            <button type="submit" class="btn btn-primary">Guardar programación</button>
+            <a class="btn btn-secondary" href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">Cancelar</a>
+        </div>
+        <p class="sch-audit-note">Guardar = schedule.updated (cron / zona). El plan no cambia de estado. Para Activar / Reanudar hace falta también Destino (M3).</p>
+        {% else %}
+        <p class="hint">Solo PA y ED pueden guardar. Esta vista es de consulta.</p>
+        {% endif %}
+    </fieldset>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/file_scheduler-cron.js' %}"></script>
+{% endblock %}

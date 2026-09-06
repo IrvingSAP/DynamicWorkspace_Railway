@@ -1,0 +1,105 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ schedule.name }} — File Scheduler{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_scheduler.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ schedule.slug }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">
+            <span class="cell-badge">{{ schedule.slug }}</span>
+            {% if hub.visibility == 'company' %}
+            <span class="visibility-badge visibility-badge--public">{{ hub.visibility_label }}</span>
+            {% else %}
+            <span class="visibility-badge visibility-badge--private">{{ hub.visibility_label }}</span>
+            {% endif %}
+            <span class="cell-badge">{{ hub.status_label }}</span>
+            {% if hub.is_pa %}
+            <span class="perm-badge perm-badge--admin">{{ hub.role_label }}</span>
+            {% else %}
+            <span class="perm-badge">{{ hub.role_label }}</span>
+            {% endif %}
+        </p>
+        <h2>{{ schedule.name }}</h2>
+        <p>{% if schedule.description %}{{ schedule.description }}{% else %}Plan de plataforma. No parsea el archivo.{% endif %}</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_scheduler:schedule_hub_help' schedule_slug=schedule.slug as sch_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=sch_help_url %}
+        {% if hub.can_activate %}
+        <form method="post" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="activate">
+            <button type="submit" class="btn btn-primary">Marcar como Activo</button>
+        </form>
+        {% endif %}
+        {% if hub.can_pause %}
+        <form method="post" style="display:inline" id="sch-pause-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="pause">
+            <button type="submit" class="btn btn-secondary">Pausar</button>
+        </form>
+        {% endif %}
+        {% if hub.can_resume %}
+        <form method="post" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="resume">
+            <button type="submit" class="btn btn-primary">Reanudar</button>
+        </form>
+        {% endif %}
+        <a href="{% url 'file_scheduler:schedule_list' %}" class="btn btn-secondary">← Planes</a>
+    </div>
+</div>
+
+<div class="version-strip">
+    <strong>Próximo tick:</strong> {{ hub.next_tick_label }}
+    · <strong>Último tick:</strong> {{ hub.last_tick_label }}
+    · <strong>Miembros:</strong> {{ hub.member_count }}
+</div>
+
+<div class="lifecycle-stepper" aria-label="Ciclo del plan">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Definición</p>
+        <ol class="lifecycle-steps">
+            <li><a href="{% url 'file_scheduler:schedule_cron' schedule_slug=schedule.slug %}" class="lifecycle-step {{ hub.cron_step_class }}"><span class="lifecycle-step-num">{% if hub.programming_complete %}✓{% else %}1{% endif %}</span> Programación (cron)</a></li>
+            <li><a href="{% url 'file_scheduler:schedule_target' schedule_slug=schedule.slug %}" class="lifecycle-step {{ hub.target_step_class }}"><span class="lifecycle-step-num">{% if hub.target_complete %}✓{% else %}2{% endif %}</span> Destino</a></li>
+            <li><a href="{% url 'file_scheduler:schedule_overlap' schedule_slug=schedule.slug %}" class="lifecycle-step {{ hub.overlap_step_class }}"><span class="lifecycle-step-num">{% if hub.overlap_configured %}✓{% else %}3{% endif %}</span> Solape</a></li>
+            <li><a href="{% url 'file_scheduler:schedule_dependency' schedule_slug=schedule.slug %}" class="lifecycle-step {{ hub.dependency_step_class }}"><span class="lifecycle-step-num">{% if hub.dependency_complete %}✓{% else %}4{% endif %}</span> Dependencia</a></li>
+            <li><a href="{% url 'file_scheduler:schedule_notify' schedule_slug=schedule.slug %}" class="lifecycle-step {{ hub.notify_step_class }}"><span class="lifecycle-step-num">{% if hub.notify_complete %}✓{% else %}5{% endif %}</span> Avisos</a></li>
+        </ol>
+    </div>
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Operación</p>
+        <ol class="lifecycle-steps">
+            <li><a href="{% url 'file_scheduler:schedule_activity' schedule_slug=schedule.slug %}" class="lifecycle-step {{ hub.activity_step_class }}"><span class="lifecycle-step-num">{% if hub.activity_complete %}✓{% else %}6{% endif %}</span> Actividad / ticks</a></li>
+            <li><a href="{% url 'file_scheduler:schedule_audit' schedule_slug=schedule.slug %}" class="lifecycle-step {{ hub.audit_step_class }}"><span class="lifecycle-step-num">{% if hub.audit_complete %}✓{% else %}7{% endif %}</span> Auditoría</a></li>
+            <li>
+                {% if hub.can_manage_members %}
+                <a href="{% url 'file_scheduler:schedule_members' schedule_slug=schedule.slug %}" class="lifecycle-step {{ hub.members_step_class }}"><span class="lifecycle-step-num">{% if hub.members_complete %}✓{% else %}8{% endif %}</span> Miembros</a>
+                {% else %}
+                <span class="lifecycle-step {{ hub.members_step_class }}"><span class="lifecycle-step-num">{% if hub.members_complete %}✓{% else %}8{% endif %}</span> Miembros</span>
+                {% endif %}
+            </li>
+        </ol>
+    </div>
+</div>
+<p class="hint">{{ hub.modules_pending_note }}</p>
+<p class="sch-audit-note">Los cambios de ciclo se registran como schedule.created / updated / paused / resumed / archived.</p>
+{% endblock %}

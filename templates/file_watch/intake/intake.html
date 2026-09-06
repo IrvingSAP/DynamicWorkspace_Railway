@@ -1,0 +1,121 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Intake — {{ watch.name }}{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Intake</span>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Watch · M3 · <span class="perm-badge{% if hub.is_pa %} perm-badge--admin{% endif %}">{{ hub.role_label }}</span></p>
+        <h2>Intake y lotes</h2>
+        <p>Política de materialización y historial de llegadas. El Scheduler hace claim del lote pendiente.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_watch:watch_intake_help' watch_slug=watch.slug as wach_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=wach_help_url %}
+        <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <fieldset {% if not can_edit %}disabled{% endif %} style="border:0;padding:0;margin:0;min-inline-size:0">
+        <div class="panel">
+            <div class="panel-body">
+                <h3 class="form-section-title">Política</h3>
+                <div class="form-row two-cols">
+                    <div class="field{% if errors.settle_seconds %} has-error{% endif %}">
+                        <label for="settle_seconds">Estabilización (s)</label>
+                        <input type="number" id="settle_seconds" name="settle_seconds" value="{{ posted.settle_seconds }}" min="0">
+                        {% for msg in errors.settle_seconds %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                    <div class="field{% if errors.max_bytes %} has-error{% endif %}">
+                        <label for="max_bytes">Máx. bytes</label>
+                        <input type="number" id="max_bytes" name="max_bytes" value="{{ posted.max_bytes }}" min="1">
+                        {% for msg in errors.max_bytes %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                </div>
+                <div class="form-row two-cols">
+                    <div class="field{% if errors.pending_pick_policy %} has-error{% endif %}">
+                        <label for="pending_pick_policy">Claim Scheduler</label>
+                        <select id="pending_pick_policy" name="pending_pick_policy">
+                            <option value="fifo"{% if posted.pending_pick_policy == 'fifo' %} selected{% endif %}>FIFO (más antiguo)</option>
+                            <option value="lifo"{% if posted.pending_pick_policy == 'lifo' %} selected{% endif %}>LIFO (más reciente)</option>
+                        </select>
+                        {% for msg in errors.pending_pick_policy %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                    <div class="field{% if errors.retain_consumed_days %} has-error{% endif %}">
+                        <label for="retain_consumed_days">Retención consumidos (días)</label>
+                        <input type="number" id="retain_consumed_days" name="retain_consumed_days" value="{{ posted.retain_consumed_days }}" min="1">
+                        {% for msg in errors.retain_consumed_days %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if can_edit %}
+        <div class="form-actions form-actions--flush">
+            <button type="submit" class="btn btn-primary">Guardar política</button>
+        </div>
+        {% endif %}
+    </fieldset>
+</form>
+
+<div class="panel panel--table" id="lotes">
+    <div class="panel-body">
+        <h3 class="form-section-title">Llegadas / lotes</h3>
+    </div>
+    <div class="table-dt-host">
+        <table id="wach-batches-table" class="dw-datatable" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Intake</th>
+                    <th>Archivo</th>
+                    <th>Hash</th>
+                    <th>Tamaño</th>
+                    <th>Estado</th>
+                    <th>Consumido por</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in batches %}
+                <tr>
+                    <td>{{ row.ingested_label }}</td>
+                    <td class="mono">{{ row.batch.original_filename }}</td>
+                    <td class="mono">{{ row.hash_short }}</td>
+                    <td>{{ row.size_label }}</td>
+                    <td>{{ row.status_label }}</td>
+                    <td class="mono">{{ row.consumed_by }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6"><span class="wach-empty">Sin lotes aún</span></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+{% endblock %}

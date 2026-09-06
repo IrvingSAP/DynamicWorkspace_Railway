@@ -66,6 +66,7 @@
         <div><dt>Cliente API</dt><dd>{{ run.api_client_label|default:"—" }}</dd></div>
         <div><dt>Idempotency</dt><dd>{{ run.idempotency_key|default:"—" }}</dd></div>
         <div><dt>Correlation</dt><dd>{{ run.correlation_id|default:"—" }}</dd></div>
+        <div><dt>schedule_id</dt><dd>{% if run.schedule_id %}<code>{{ run.schedule_id }}</code>{% else %}—{% endif %}</dd></div>
         <div><dt>IP</dt><dd>{{ run.client_ip|default:"—" }}</dd></div>
         <div><dt>Triggered</dt><dd>{{ run.created_at|date:"d/m/Y H:i:s" }}</dd></div>
         <div><dt>Started</dt><dd>{% if run.started_at %}{{ run.started_at|date:"d/m/Y H:i:s" }}{% else %}—{% endif %}</dd></div>

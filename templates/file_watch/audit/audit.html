@@ -1,0 +1,67 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Auditoría — {{ watch.name }}{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Auditoría</span>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Watch · M7 · <span class="perm-badge{% if hub.is_pa %} perm-badge--admin{% endif %}">{{ hub.role_label }}</span></p>
+        <h2>Auditoría</h2>
+        <p>Plano definición (CRUD) y plano llegada (lotes / fire). Append-only.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_watch:watch_audit_help' watch_slug=watch.slug as wach_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=wach_help_url %}
+        <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+<div class="panel panel--table">
+    <div class="table-dt-host">
+        <table id="wach-audit-table" class="dw-datatable" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Cuándo</th>
+                    <th>Evento</th>
+                    <th>Plano</th>
+                    <th>Actor</th>
+                    <th>Resumen</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row.occurred_at|date:"d/m/Y H:i" }}</td>
+                    <td class="mono">{{ row.event_code }}</td>
+                    <td>{{ row.plane }}</td>
+                    <td>{{ row.actor_label }}</td>
+                    <td>{{ row.summary }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5"><span class="wach-empty">Sin eventos</span></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+{% endblock %}

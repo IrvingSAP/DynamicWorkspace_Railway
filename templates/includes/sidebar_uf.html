@@ -74,6 +74,14 @@
                 <a href="{% url 'file_pipeline:pipeline_dashboard' %}" class="sidebar-sublink{% if app_nav_active == 'file_pipeline_dashboard' %} is-active{% endif %}">Dashboard</a>
                 <a href="{% url 'file_pipeline:pipeline_dashboard_help' %}" class="sb-app-help{% if app_nav_active == 'file_pipeline_dashboard' %} is-active{% endif %}" title="Ayuda general · Dashboard" aria-label="Ayuda general del Dashboard de File Pipeline"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg></a>
             </div>
+            <div class="sb-app-row">
+                <a href="{% url 'file_scheduler:schedule_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_scheduler' %} is-active{% endif %}">File Scheduler</a>
+                <a href="{% url 'file_scheduler:schedule_guide' %}" class="sb-app-help{% if app_nav_active == 'file_scheduler_guide' %} is-active{% endif %}" title="Ayuda general · File Scheduler" aria-label="Ayuda general de File Scheduler"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg></a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'file_watch:watch_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_watch' %} is-active{% endif %}">File Watch</a>
+                <a href="{% url 'file_watch:watch_guide' %}" class="sb-app-help{% if app_nav_active == 'file_watch_guide' %} is-active{% endif %}" title="Ayuda general · File Watch" aria-label="Ayuda general de File Watch"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg></a>
+            </div>
         </div>
     </div>
 </div>

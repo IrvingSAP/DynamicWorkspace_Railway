@@ -70,6 +70,29 @@
     </div>
 </div>
 
+<div class="sb-family" data-family="scheduler">
+    <button type="button" class="sb-family-toggle" title="Scheduler" aria-expanded="false">
+        <svg class="sb-family-mark" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3.5l2 1.5"/></svg>
+        <span>
+            <span class="sb-family-name">Scheduler</span>
+            <span class="sb-family-hint">Planes y calendario</span>
+        </span>
+        <svg class="sb-family-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="sb-family-body">
+        <div class="sidebar-nav-submenu sb-family-list">
+            <div class="sb-app-row">
+                <a href="{% url 'file_scheduler:schedule_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_scheduler' %} is-active{% endif %}">Planes</a>
+                <a href="{% url 'help:us_general_guide' 'file-scheduler' %}" class="sb-app-help{% if app_nav_active == 'us_help_file_scheduler' %} is-active{% endif %}" title="Ayuda general · File Scheduler" aria-label="Ayuda general de File Scheduler">{% include "includes/sb_help_icon.svg.html" %}</a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'file_watch:watch_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_watch' %} is-active{% endif %}">Bandejas</a>
+                <a href="{% url 'help:us_general_guide' 'file-watch' %}" class="sb-app-help{% if app_nav_active == 'us_help_file_watch' %} is-active{% endif %}" title="Ayuda general · File Watch" aria-label="Ayuda general de File Watch">{% include "includes/sb_help_icon.svg.html" %}</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="sb-family" data-family="manuals">
     <button type="button" class="sb-family-toggle" title="Manuales" aria-expanded="false">
         <svg class="sb-family-mark" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3.5 2.5h7.5L13 4.5v9H3.5z"/><path d="M11 2.5v2h2"/></svg>

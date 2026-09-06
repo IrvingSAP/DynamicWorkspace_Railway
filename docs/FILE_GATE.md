@@ -290,11 +290,12 @@ Cada corrida registra: proyecto, versión del perfil, nombre/hash/tamaño del ar
 - [x] Gate obligatorio previo a job DMS
 - [ ] Comparar dos versiones de perfil (diff de contrato)
 - [ ] Plantillas de contrato por industria
+- [ ] **Intake por referencia:** el runner de validación acepta `artifact_ref` / hash / objeto en storage además del upload de Ejecutar (handoff Pipeline, Watch, Scheduler, API). **No** configurar rutas IFS/SFTP/cloud en FILE GATE — eso es [`FILE_WATCH.md`](FILE_WATCH.md). Ver [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md).
 
 ### 7.4 Funcionalidades Fase 3
 
-- [ ] API: `POST /validate` + webhook al terminar
-- [ ] Scheduling de validación sobre bandeja/carpeta
+- [ ] API: `POST /validate` + webhook al terminar — cubierto en gran parte por [`PLATFORM_API.md`](PLATFORM_API.md)
+- [ ] Scheduling / bandeja: **no** en Gate; [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) + [`FILE_WATCH.md`](FILE_WATCH.md) + `artifact_ref` en el runner
 - [ ] Multi-archivo (lote) con informe consolidado
 - [ ] Sello / certificado firmado para terceros
 
@@ -494,7 +495,7 @@ Gate previo a DMS, políticas avanzadas, plantillas, diff de versiones.
 
 ### Fase 3
 
-API, webhooks, lotes, certificado firmado, bandeja vigilada.
+API (PLATFORM API), webhooks, lotes, certificado firmado. Bandeja vigilada = File Watch + `artifact_ref` en el runner (no rutas en Gate).
 
 ---
 

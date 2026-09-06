@@ -1,0 +1,47 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Miembros {{ schedule.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_members' schedule_slug=schedule.slug %}">Miembros</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · PA</p>
+        <h2>Ayuda — Miembros del plan</h2>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_scheduler:schedule_members' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Miembros</a>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <p class="help-intro">Solo el administrador (PA) invita, cambia rol y revoca. Misma compañía; usuarios UF. El owner no pierde PA ni se revoca.</p>
+        <table class="help-table">
+            <thead><tr><th>Rol</th><th>Qué puede</th></tr></thead>
+            <tbody>
+                <tr><td>PA</td><td>Editar, pausar, archivar, miembros.</td></tr>
+                <tr><td>ED</td><td>Editar y pausar / reanudar. No archiva ni gestiona miembros.</td></tr>
+                <tr><td>GE / CO</td><td>Consulta del plan y de la auditoría CRUD.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

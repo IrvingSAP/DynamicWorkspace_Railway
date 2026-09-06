@@ -43,8 +43,18 @@
 
 <div class="fp-dash-window">
     <span class="fp-hist-stat-label">Ventana</span>
-    <a class="btn btn-secondary{% if dash.days == 7 %} is-pressed{% endif %}" href="?days=7">7 días</a>
-    <a class="btn btn-secondary{% if dash.days == 30 %} is-pressed{% endif %}" href="?days=30">30 días</a>
+    <a class="btn btn-secondary{% if dash.days == 7 %} is-pressed{% endif %}" href="?days=7{% if dash.trigger and dash.trigger != 'all' %}&amp;trigger={{ dash.trigger }}{% endif %}">7 días</a>
+    <a class="btn btn-secondary{% if dash.days == 30 %} is-pressed{% endif %}" href="?days=30{% if dash.trigger and dash.trigger != 'all' %}&amp;trigger={{ dash.trigger }}{% endif %}">30 días</a>
+    <form method="get" class="fp-dash-trigger-form" style="display:inline-flex;align-items:center;gap:8px;margin-left:12px">
+        <input type="hidden" name="days" value="{{ dash.days }}">
+        <label for="fp-dash-trigger">Disparo
+            <select id="fp-dash-trigger" name="trigger" onchange="this.form.submit()">
+                {% for opt in dash.trigger_options %}
+                <option value="{{ opt.value }}"{% if dash.trigger == opt.value %} selected{% endif %}>{{ opt.label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </form>
 </div>
 
 {% if not dash.has_pipelines %}
@@ -104,7 +114,7 @@
                 {% for ch in dash.channels %}
                 <li>
                     <div class="fp-channel-head">
-                        <span class="fp-trigger-pill">{{ ch.label }}</span>
+                        <a class="fp-trigger-pill" href="?days={{ dash.days }}&amp;trigger={{ ch.code }}">{{ ch.label }}</a>
                         <span class="fp-channel-n">{{ ch.n }} · {{ ch.pct }}%</span>
                     </div>
                     <div class="fp-channel-track" aria-hidden="true">
@@ -131,7 +141,7 @@
                         <strong>{{ row.run.pipeline.slug }}</strong>
                         <span class="fp-tone-fail">{{ row.run.get_status_display }}</span>
                         {% if row.run.dry_run %}<span class="cell-badge">dry-run</span>{% endif %}
-                        <span class="fp-hist-hash">{{ row.run.error_message|default:row.run.input_filename }}</span>
+                        <span class="fp-hist-hash">{% if row.schedule_short %}sch {{ row.schedule_short }} · {% endif %}{{ row.run.error_message|default:row.run.input_filename }}</span>
                     </a>
                 </li>
                 {% endfor %}
@@ -201,7 +211,7 @@
                     {% elif row.run.status == 'failed' %}<span class="fp-tone-fail">{{ row.run.get_status_display }}</span>
                     {% else %}{{ row.run.get_status_display }}{% endif %}
                     {% if row.run.dry_run %}<span class="cell-badge">dry-run</span>{% endif %}
-                    <span class="fp-hist-hash">{{ row.actor }} · {{ row.duration }}</span>
+                    <span class="fp-hist-hash">{{ row.actor }} · {{ row.duration }}{% if row.schedule_short %} · sch {{ row.schedule_short }}{% endif %}</span>
                 </a>
             </li>
             {% endfor %}

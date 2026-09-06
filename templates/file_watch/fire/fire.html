@@ -1,0 +1,80 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Disparo — {{ watch.name }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Disparo</span>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Watch · M5 · <span class="perm-badge{% if hub.is_pa %} perm-badge--admin{% endif %}">{{ hub.role_label }}</span></p>
+        <h2>Disparo</h2>
+        <p>¿Encolar Job al llegar o solo dejar el lote pendiente para Scheduler?</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_watch:watch_fire_help' watch_slug=watch.slug as wach_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=wach_help_url %}
+        <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+{% if route_is_defer %}
+<p class="hint" id="demo-defer-banner">Enrutado actual: Diferir. «Al llegar» no es compatible.</p>
+{% endif %}
+<div class="panel is-hidden" id="fire-conflict" role="alert">
+    <div class="panel-body">
+        <p class="field-error">«Al llegar» no es compatible con enrutado Diferir. Elija Job/Pipeline o cambie el disparo.</p>
+    </div>
+</div>
+<form id="fire-form" method="post" novalidate data-route-defer="{% if route_is_defer %}1{% else %}0{% endif %}">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="save">
+    <fieldset {% if not can_edit %}disabled{% endif %} style="border:0;padding:0;margin:0;min-inline-size:0">
+        <div class="panel">
+            <div class="panel-body">
+                <div class="radio-cards{% if errors.fire_mode %} has-error{% endif %}">
+                    <label class="radio-card">
+                        <input type="radio" name="fire_mode" value="on_arrival"{% if posted.fire_mode == 'on_arrival' %} checked{% endif %}>
+                        <strong>Al llegar</strong>
+                        <span>Claim + runner del enrutado M4.</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="fire_mode" value="pending_only"{% if posted.fire_mode == 'pending_only' or not posted.fire_mode %} checked{% endif %}>
+                        <strong>Solo pendiente</strong>
+                        <span>El plan Scheduler hace claim.</span>
+                    </label>
+                </div>
+                {% for msg in errors.fire_mode %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+        </div>
+        {% if can_edit %}
+        <div class="form-actions form-actions--flush">
+            <button type="submit" class="btn btn-primary" id="btn-save-fire">Guardar disparo</button>
+            {% if hub.can_activate %}
+            <button type="submit" class="btn btn-secondary" name="action" value="activate">Marcar como Activa</button>
+            {% endif %}
+            <a class="btn btn-secondary" href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">Cancelar</a>
+        </div>
+        {% endif %}
+    </fieldset>
+</form>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/file_watch-fire.js' %}"></script>
+{% endblock %}

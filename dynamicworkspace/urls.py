@@ -31,6 +31,8 @@ urlpatterns = [
     path("app/file-split-merge/", include("apps.file_split_merge.urls")),
     path("app/file-pipeline/", include("apps.file_pipeline.urls")),
     path("app/platform-api/", include("apps.platform_api.urls")),
+    path("app/file-scheduler/", include("apps.file_scheduler.urls")),
+    path("app/file-watch/", include("apps.file_watch.urls")),
     path("api/", include((api_urlpatterns, "platform_api_http"))),
     path("app/ayuda/", include(("apps.help.urls", "help"))),
 ]

@@ -1,0 +1,82 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Programación {{ schedule.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_cron' schedule_slug=schedule.slug %}">Programación</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · M2</p>
+        <h2>Ayuda — Programación del plan</h2>
+        <p>Qué significa cada campo del reloj y qué ocurre al guardar.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_scheduler:schedule_cron' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Formulario</a>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">Define <strong>cuándo</strong> puede disparar el plan. No elige la app (Destino, M3) ni busca archivos en IFS (Watch). Guardar <strong>no cambia el estado</strong> del plan.</p>
+        <p class="help-intro">Solo <strong>PA</strong> y <strong>ED</strong> pueden guardar. GE y CO ven la expresión y el preview.</p>
+
+        <h3 class="form-section-title">Campos</h3>
+        <table class="help-table">
+            <thead><tr><th>Campo</th><th>Obligatorio</th><th>Valores</th></tr></thead>
+            <tbody>
+                <tr><td>Frecuencia</td><td>Sí</td><td>Diario · Lunes a viernes · Semanal · Mensual · Cron</td></tr>
+                <tr><td>Hora local</td><td>Sí si no es Cron</td><td><span class="mono">HH:MM</span> en la zona del plan</td></tr>
+                <tr><td>Zona (IANA)</td><td>Sí</td><td>Ej. <span class="mono">America/Caracas</span></td></tr>
+                <tr><td>Día de la semana</td><td>Sí si Semanal</td><td>Lunes–domingo (cron 0 = domingo)</td></tr>
+                <tr><td>Día del mes</td><td>Sí si Mensual</td><td>Último día (default) o 1–31 con clamp</td></tr>
+                <tr><td>Expresión cron</td><td>Sí si Cron</td><td>5 campos, sin segundos</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Presets</h3>
+        <table class="help-table">
+            <thead><tr><th>Opción</th><th>Ejemplo interno</th></tr></thead>
+            <tbody>
+                <tr><td>Diario</td><td class="mono">0 2 * * *</td></tr>
+                <tr><td>Lunes a viernes</td><td class="mono">0 2 * * 1-5</td></tr>
+                <tr><td>Semanal</td><td class="mono">0 2 * * 1</td></tr>
+                <tr><td>Mensual último día</td><td>Regla de calendario (no 5 campos)</td></tr>
+                <tr><td>Cron</td><td>Lo que acepte el parser</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Cron (5 campos)</h3>
+        <p class="help-intro">Orden: <strong>minuto hora día-mes mes día-semana</strong>. Sin segundos. Zona IANA del plan.</p>
+        <table class="help-table">
+            <thead><tr><th>Expresión</th><th>Significado</th></tr></thead>
+            <tbody>
+                <tr><td class="mono">0 2 * * *</td><td>Todos los días a las 02:00.</td></tr>
+                <tr><td class="mono">0 6 * * 1-5</td><td>Lunes a viernes a las 06:00.</td></tr>
+                <tr><td class="mono">*/15 * * * *</td><td>Cada 15 minutos.</td></tr>
+                <tr><td class="mono">0 2 1,15 * *</td><td>Día 1 y 15 de cada mes a las 02:00.</td></tr>
+                <tr><td class="mono">0 2 1 1,7 *</td><td>1 de enero y 1 de julio a las 02:00.</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Expresión rechazada → error de campo y sin preview. «Último día del mes» use el preset Mensual.</p>
+        <p class="help-intro">Guardar valida y registra <span class="mono">schedule.updated</span>. No activa el plan. Si el plan ya está Activo, el próximo tick usa la nueva regla; no cancela un Job ya encolado.</p>
+    </div>
+</div>
+{% endblock %}
