@@ -1,0 +1,128 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Publicar {{ pipeline.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_list' %}">File Pipeline</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">{{ pipeline.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_publish' pipeline_slug=pipeline.slug %}">Publicar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ pipeline.slug }}</span></p>
+        <h2>Ayuda — Publicar versión</h2>
+        <p>Cómo congelar el rail del diseñador en un snapshot inmutable (vN).</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_pipeline:pipeline_publish' pipeline_slug=pipeline.slug %}" class="btn btn-secondary">← Volver a publicar</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Publicar copia el borrador del diseñador a una <strong>versión inmutable</strong>.
+            Los runs usan <strong>solo</strong> esa versión, no el rail vivo.
+            Tras publicar se abre el número siguiente como borrador: puede seguir diseñando vN+1
+            sin alterar lo que ya se ejecuta.
+        </p>
+        <p class="help-intro">
+            <strong>Quién:</strong> PA y ED publican. GE y CO (y consulta de compañía) ven checklist y snapshot, sin botón de publicar.
+        </p>
+        <p class="help-intro">
+            <strong>Publicar ≠ Activo.</strong> Congelar vN no pone el pipeline en operación.
+            El PA marca <em>Activo</em> en el hub; sin eso, Ejecutar permanece bloqueado.
+        </p>
+
+        <h3 class="form-section-title">Cabecera y franja</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Elemento</th><th>Qué es</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Título Publicar vN</td>
+                    <td>Número que se asignará si el checklist pasa. Irreversible para ese número.</td>
+                </tr>
+                <tr>
+                    <td>Publicará / Activa hoy</td>
+                    <td>Próxima versión vs. snapshot que usan los runs ahora (o «ninguna»).</td>
+                </tr>
+                <tr>
+                    <td>Ayuda (icono)</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>← Hub</td>
+                    <td>Vuelve al centro de control.</td>
+                </tr>
+                <tr>
+                    <td>Publicar vN</td>
+                    <td>Solo PA/ED. Si el checklist falla, el botón no publica: muestra alerta con el motivo (p. ej. <em>No puede publicar. Pasos no completados: Diseñar pasos.</em>).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Checklist P1–P5</h3>
+        <p class="help-intro">
+            Verde = cumple. Rojo = bloquea. Si Diseñar pasos no está completo, P2–P5 aparecen como pendientes de diseñar.
+        </p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Código</th><th>Qué comprueba</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="mono">P1</td>
+                    <td>Hay al menos un paso guardado en el diseñador.</td>
+                </tr>
+                <tr>
+                    <td class="mono">P2</td>
+                    <td>Cada kind está en el catálogo, habilitado y alineado con el tipo del proyecto.</td>
+                </tr>
+                <tr>
+                    <td class="mono">P3</td>
+                    <td>Cada proyecto existe, es de la compañía y tiene versión publicada vigente.</td>
+                </tr>
+                <tr>
+                    <td class="mono">P4</td>
+                    <td>Handoff: primer paso <span class="mono">pipeline_input</span>, resto <span class="mono">previous</span>; el anterior debe producir archivo; Split (N salidas) no alimenta un paso de 1 archivo; <span class="mono">foreach</span> no se publica. File Match no exige dos archivos aquí: usa el archivo previo como entrada A.</td>
+                </tr>
+                <tr>
+                    <td class="mono">P5</td>
+                    <td>Quien publica puede usar cada proyecto del rail (público o membresía).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Snapshot a congelar</h3>
+        <p class="help-intro">
+            Vista previa del rail que quedará en vN (kind → slug de proyecto). Si está vacío, complete y guarde Diseñar pasos.
+            No es editable aquí: para cambiar el orden vuelva al diseñador y publique de nuevo.
+        </p>
+
+        <h3 class="form-section-title">Versiones publicadas</h3>
+        <p class="help-intro">
+            Historial de snapshots (número, fecha, quién publicó). Las versiones anteriores no se reescriben;
+            el run usa la marcada como activa en la franja («Activa hoy»).
+        </p>
+    </div>
+</div>
+{% endblock %}

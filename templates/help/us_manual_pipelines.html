@@ -1,0 +1,49 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Manual — Pipelines API{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_us.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>Manuales</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Pipelines</span>
+</nav>
+
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Manual de usuario · <span class="role-badge">US</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>Pipelines por HTTP</h2>
+        <p>
+            Este manual cubrirá <span class="mono">kind=file_pipeline</span> y el atajo
+            <span class="mono">POST /api/v1/pipelines/{pipeline_id}/runs</span>.
+            El mismo esquema que Jobs sueltos: consola, curl, Postman y errores.
+            El contenido se escribirá cuando se recorra el circuito publicado.
+        </p>
+        <p>
+            Mientras tanto: publique un pipeline en UF, scope <span class="mono">pipeline:run</span>,
+            y no use el <span class="mono">job_id</span> de un Split suelto como si fuera la cadena.
+        </p>
+    </div>
+    <aside class="guide-hero-aside" aria-label="Mientras tanto">
+        <h3>Mientras tanto</h3>
+        <ol class="guide-quick-path">
+            <li>Complete Jobs sueltos (identidad y Bearer).</li>
+            <li>Revise Integración: kind file_pipeline cableado.</li>
+            <li>Dispare con pipeline_id de una versión publicada.</li>
+        </ol>
+    </aside>
+</div>
+<p class="hint"><a href="{% url 'help:us_manual_jobs' %}">Ir al manual de Jobs sueltos →</a></p>
+{% endblock %}

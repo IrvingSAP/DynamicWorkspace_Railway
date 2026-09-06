@@ -1,0 +1,106 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ watch.name }} — File Watch{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ watch.slug }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">
+            <span class="cell-badge">{{ watch.slug }}</span>
+            {% if hub.visibility == 'company' %}
+            <span class="visibility-badge visibility-badge--public">{{ hub.visibility_label }}</span>
+            {% else %}
+            <span class="visibility-badge visibility-badge--private">{{ hub.visibility_label }}</span>
+            {% endif %}
+            <span class="cell-badge">{{ hub.status_label }}</span>
+            {% if hub.is_pa %}
+            <span class="perm-badge perm-badge--admin">{{ hub.role_label }}</span>
+            {% else %}
+            <span class="perm-badge">{{ hub.role_label }}</span>
+            {% endif %}
+        </p>
+        <h2>{{ watch.name }}</h2>
+        <p>{% if watch.description %}{{ watch.description }}{% else %}Bandeja de plataforma. No parsea el archivo.{% endif %}</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_watch:watch_hub_help' watch_slug=watch.slug as wach_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=wach_help_url %}
+        {% if hub.can_activate %}
+        <form method="post" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="activate">
+            <button type="submit" class="btn btn-primary">Marcar como Activa</button>
+        </form>
+        {% endif %}
+        {% if hub.can_pause %}
+        <form method="post" style="display:inline" id="wach-pause-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="pause">
+            <button type="submit" class="btn btn-secondary">Pausar</button>
+        </form>
+        {% endif %}
+        {% if hub.can_resume %}
+        <form method="post" style="display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="resume">
+            <button type="submit" class="btn btn-primary">Reanudar</button>
+        </form>
+        {% endif %}
+        <a href="{% url 'file_watch:watch_list' %}" class="btn btn-secondary">← Bandejas</a>
+    </div>
+</div>
+
+<div class="version-strip">
+    <strong>Origen:</strong> {{ hub.source_label }}
+    · <strong>Última llegada:</strong> {{ hub.last_arrival_label }}
+    · <strong>Miembros:</strong> {{ hub.member_count }}
+</div>
+
+<div class="lifecycle-stepper" aria-label="Ciclo de la bandeja">
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Definición</p>
+        <ol class="lifecycle-steps">
+            <li><a href="{% url 'file_watch:watch_source' watch_slug=watch.slug %}" class="lifecycle-step {{ hub.source_step_class }}"><span class="lifecycle-step-num">{% if hub.source_complete %}✓{% else %}1{% endif %}</span> Origen</a></li>
+            <li><a href="{% url 'file_watch:watch_intake' watch_slug=watch.slug %}" class="lifecycle-step {{ hub.intake_step_class }}"><span class="lifecycle-step-num">{% if hub.intake_complete %}✓{% else %}2{% endif %}</span> Intake</a></li>
+            <li><a href="{% url 'file_watch:watch_route' watch_slug=watch.slug %}" class="lifecycle-step {{ hub.route_step_class }}"><span class="lifecycle-step-num">{% if hub.route_complete %}✓{% else %}3{% endif %}</span> Enrutado</a></li>
+            <li><a href="{% url 'file_watch:watch_fire' watch_slug=watch.slug %}" class="lifecycle-step {{ hub.fire_step_class }}"><span class="lifecycle-step-num">{% if hub.fire_complete %}✓{% else %}4{% endif %}</span> Disparo</a></li>
+            <li><a href="{% url 'file_watch:watch_idempotency' watch_slug=watch.slug %}" class="lifecycle-step {{ hub.idempotency_step_class }}"><span class="lifecycle-step-num">{% if hub.idempotency_complete %}✓{% else %}5{% endif %}</span> Idempotencia</a></li>
+            <li><a href="{% url 'file_watch:watch_notify' watch_slug=watch.slug %}" class="lifecycle-step {{ hub.notify_step_class }}"><span class="lifecycle-step-num">{% if hub.notify_complete %}✓{% else %}6{% endif %}</span> Avisos</a></li>
+        </ol>
+    </div>
+    <div class="lifecycle-phase">
+        <p class="lifecycle-phase-label">Operación</p>
+        <ol class="lifecycle-steps">
+            <li><a href="{% url 'file_watch:watch_batches' watch_slug=watch.slug %}" class="lifecycle-step {{ hub.batches_step_class }}"><span class="lifecycle-step-num">{% if hub.batches_complete %}✓{% else %}7{% endif %}</span> Llegadas / lotes</a></li>
+            <li><a href="{% url 'file_watch:watch_audit' watch_slug=watch.slug %}" class="lifecycle-step {{ hub.audit_step_class }}"><span class="lifecycle-step-num">{% if hub.audit_complete %}✓{% else %}8{% endif %}</span> Auditoría</a></li>
+            <li>
+                {% if hub.can_manage_members %}
+                <a href="{% url 'file_watch:watch_members' watch_slug=watch.slug %}" class="lifecycle-step {{ hub.members_step_class }}"><span class="lifecycle-step-num">{% if hub.members_complete %}✓{% else %}9{% endif %}</span> Miembros</a>
+                {% else %}
+                <span class="lifecycle-step {{ hub.members_step_class }}"><span class="lifecycle-step-num">{% if hub.members_complete %}✓{% else %}9{% endif %}</span> Miembros</span>
+                {% endif %}
+            </li>
+        </ol>
+    </div>
+</div>
+<p class="hint">{{ hub.modules_pending_note }}</p>
+<p class="wach-audit-note">Los cambios de ciclo se registran como watch.created / updated / paused / resumed / archived. Editar / Miembros / Archivar viven en el listado.</p>
+{% endblock %}

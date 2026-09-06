@@ -1,0 +1,216 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}File Scheduler — Planes{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_scheduler.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>File Scheduler</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Planes</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip" aria-label="Alcance de compañía">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Scheduler · <span class="role-badge">{% if can_create %}US{% else %}UF{% endif %}</span>{% if can_create %} PA / ED{% endif %}</p>
+        <h2>Planes programados</h2>
+        <p>Calendarios de su compañía. {% if can_create %}<strong>Nuevo plan</strong> solo usuarios tipo US con rol PA o ED. {% endif %}El plan no parsea archivos: más adelante un tick dispara un Job o un pipeline. Archivados fuera del listado operativo.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_scheduler:schedule_list_help' as sch_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=sch_help_url %}
+        <a href="{% url 'file_scheduler:schedule_errors' %}" class="btn btn-secondary">Catálogo de errores</a>
+        <a href="{% url 'file_scheduler:schedule_integration' %}" class="btn btn-secondary">Mapa de integración</a>
+        {% if can_create %}
+        <a href="{% url 'file_scheduler:schedule_create' %}" class="btn btn-primary">+ Nuevo plan</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Visibles</p>
+        <p class="stat-value">{{ stats.total|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Activos</p>
+        <p class="stat-value">{{ stats.active|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">En proceso</p>
+        <p class="stat-value">{{ stats.in_progress|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Inactivos</p>
+        <p class="stat-value">{{ stats.inactive|default:0 }}</p>
+    </div>
+</div>
+<p class="hint" style="margin-top:8px">En proceso = aún se configura. Activo = listo y el worker puede disparar. Inactivo = un plan activo que se pausó (Pausar en la fila). Archivar no es inactivar: es baja lógica.</p>
+
+<div class="panel panel--table">
+    <div class="table-toolbar" aria-label="Controles de tabla">
+        <div class="table-toolbar-group">
+            <label for="filter-status">
+                Estado
+                <select id="filter-status" name="filter-status">
+                    <option value="">Operativos</option>
+                    <option value="active">Activo</option>
+                    <option value="in_progress">En proceso</option>
+                    <option value="inactive">Inactivo</option>
+                    <option value="archived">Archivados</option>
+                    <option value="all">Todos</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="table-dt-host">
+        <table id="sch-table" class="dw-datatable" data-dt-custom="true" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Estado</th>
+                    <th>Visibilidad</th>
+                    <th>Próximo tick</th>
+                    <th>Último tick</th>
+                    <th>Acceso</th>
+                    <th class="col-actions">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr data-status="{{ row.status }}">
+                    <td><code>{{ row.schedule.slug }}</code></td>
+                    <td>{{ row.schedule.name }}</td>
+                    <td>
+                        {% if row.status == 'active' %}<span class="status status-active">{{ row.status_label }}</span>
+                        {% elif row.status == 'inactive' %}<span class="status status-inactive">{{ row.status_label }}</span>
+                        {% else %}<span class="cell-badge">{{ row.status_label }}</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if row.visibility == 'company' %}
+                        <span class="visibility-badge visibility-badge--public">compañía</span>
+                        {% else %}
+                        <span class="visibility-badge visibility-badge--private">miembro</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="sch-tick-empty">{{ row.next_tick_label }}</span></td>
+                    <td><span class="sch-tick-empty">{{ row.last_tick_label }}</span></td>
+                    <td>{{ row.role|default:"CO" }}</td>
+                    <td class="col-actions">
+                        <div class="actions--table">
+                        {% if row.status == 'archived' %}
+                        <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=row.schedule.slug %}" class="btn btn-ghost btn-sm">Consulta</a>
+                        {% else %}
+                        <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=row.schedule.slug %}" class="btn btn-ghost btn-sm">Abrir</a>
+                        {% if row.can_edit %}
+                        <a href="{% url 'file_scheduler:schedule_edit' schedule_slug=row.schedule.slug %}" class="btn btn-ghost btn-sm">Editar</a>
+                        {% endif %}
+                        {% if row.can_manage_members %}
+                        <a href="{% url 'file_scheduler:schedule_members' schedule_slug=row.schedule.slug %}" class="btn btn-ghost btn-sm">Miembros</a>
+                        {% endif %}
+                        {% if row.can_pause %}
+                        <form method="post" style="display:inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="pause">
+                            <input type="hidden" name="schedule_slug" value="{{ row.schedule.slug }}">
+                            <button type="submit" class="btn btn-ghost btn-sm">Pausar</button>
+                        </form>
+                        {% endif %}
+                        {% if row.can_resume %}
+                        <form method="post" style="display:inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="resume">
+                            <input type="hidden" name="schedule_slug" value="{{ row.schedule.slug }}">
+                            <button type="submit" class="btn btn-ghost btn-sm">Reanudar</button>
+                        </form>
+                        {% endif %}
+                        {% if row.can_archive %}
+                        <form method="post" class="sch-archive-form" style="display:inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="archive">
+                            <input type="hidden" name="schedule_slug" value="{{ row.schedule.slug }}">
+                            <button type="button" class="btn btn-ghost btn-sm js-sch-archive">Archivar</button>
+                        </form>
+                        {% endif %}
+                        {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (typeof DataTable === "undefined") return;
+  var tableEl = document.getElementById("sch-table");
+  if (!tableEl || tableEl.dataset.dtInit === "true") return;
+  var statusValue = "";
+  DataTable.ext.search.push(function (settings, _d, dataIndex) {
+    if (!settings.nTable || settings.nTable.id !== "sch-table") return true;
+    var row = new DataTable.Api(settings).row(dataIndex).node();
+    if (!row) return true;
+    var st = row.dataset.status;
+    if (statusValue === "all") return true;
+    if (statusValue === "archived") return st === "archived";
+    if (!statusValue) return st !== "archived";
+    return st === statusValue;
+  });
+  var table = new DataTable("#sch-table", {
+    language: DW_DATATABLES_ES,
+    layout: DW_DATATABLES_LAYOUT,
+    pageLength: 10,
+    order: [[0, "asc"]],
+    columnDefs: [
+      { orderable: false, searchable: false, targets: -1, className: "col-actions" },
+    ],
+  });
+  tableEl.dataset.dtInit = "true";
+  var filterStatus = document.getElementById("filter-status");
+  if (filterStatus) {
+    filterStatus.addEventListener("change", function () {
+      statusValue = this.value;
+      table.draw();
+    });
+  }
+  tableEl.addEventListener("click", function (ev) {
+    var btn = ev.target.closest(".js-sch-archive");
+    if (!btn) return;
+    var form = btn.closest("form");
+    if (!form) return;
+    var message = "¿Archivar este plan? Dejará el listado operativo. El código no se reutiliza.";
+    if (typeof dwConfirmWarning === "function") {
+      dwConfirmWarning(message, function () { form.submit(); }, { title: "Archivar plan", okLabel: "Archivar" });
+    } else {
+      form.submit();
+    }
+  });
+});
+</script>
+{% endblock %}

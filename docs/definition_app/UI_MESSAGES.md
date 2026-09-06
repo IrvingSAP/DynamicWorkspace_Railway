@@ -42,6 +42,9 @@ flowchart LR
 | PROFILE_SEED (Importar estructura, …) | `UI_MESSAGES.md` §3.13 · [`../PROFILE_SEED.md`](../PROFILE_SEED.md) · [`../definition_app_PROFILE_SEED/`](../definition_app_PROFILE_SEED/) |
 | FILE CLEAN (ciclo proyecto, …) | `UI_MESSAGES.md` §3.14 · [`../FILE_CLEAN.md`](../FILE_CLEAN.md) · [`../definition_app_FILE_CLEAN/`](../definition_app_FILE_CLEAN/) |
 | FILE SPLIT/MERGE (ciclo proyecto, …) | `UI_MESSAGES.md` §3.15 · [`../FILE_SPLIT_MERGE.md`](../FILE_SPLIT_MERGE.md) · [`../definition_app_FILE_SPLIT_MERGE/`](../definition_app_FILE_SPLIT_MERGE/) |
+| FILE PIPELINE (ciclo, diseñar, publicar, run, historial) | Specs [`../definition_app_FILE_PIPELINE/`](../definition_app_FILE_PIPELINE/) · catálogo §3.16 |
+| FILE SCHEDULER (plan, cron, tick) | Specs [`../definition_app_FILE_SCHEDULER/`](../definition_app_FILE_SCHEDULER/) · catálogo §3.18 · [`sch_errors.md`](../definition_app_FILE_SCHEDULER/sch_errors.md) |
+| FILE WATCH (bandeja, intake, fire) | Specs [`../definition_app_FILE_WATCH/`](../definition_app_FILE_WATCH/) · catálogo §3.19 · [`wach_errors.md`](../definition_app_FILE_WATCH/wach_errors.md) |
 
 ---
 
@@ -1008,6 +1011,7 @@ Mensajes de usuario para File Split/Merge. Alineados a [`../FILE_SPLIT_MERGE.md`
 | Situación | Tag / canal | Texto al usuario |
 |-----------|-------------|------------------|
 | Versión publicada | `success` / JSON | Versión v{N} publicada correctamente. Nuevo borrador v{N+1} listo para edición. |
+| Perfil y/o Reglas incompletos | `warning` (modal) | No puede publicar. Pasos no completados: {Perfil y/o Reglas}. |
 | Sin permiso publicar | `error` / JSON 403 | No tiene permiso para publicar la versión de este proyecto. |
 | Kind incorrecto | `error` | Este proyecto no es de tipo File Split/Merge. |
 | Sin borrador | `error` | No hay borrador disponible para publicar. |
@@ -1051,6 +1055,271 @@ Mensajes de usuario para File Split/Merge. Alineados a [`../FILE_SPLIT_MERGE.md`
 | Error al eliminar | `error` | No se pudo eliminar la corrida. Si el problema continúa, contacte al administrador. |
 
 > Motor M6: `sm_history_service` sobre `SplitMergeJob`. URLs: `/app/file-split-merge/proyectos/<slug>/historial/…`. Descargas vía M5 `run_download` (TTL + rol).
+
+### 3.16 Mensajes específicos — `apps.file_pipeline` (FILE PIPELINE)
+
+Alineados a [`../FILE_PIPELINE.md`](../FILE_PIPELINE.md) y [`../definition_app_FILE_PIPELINE/`](../definition_app_FILE_PIPELINE/).
+
+#### Ciclo de pipeline / miembros (Módulo 1)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin acceso | `error` | No tiene acceso a este pipeline. |
+| Solo UF crea | `error` | Solo usuarios UF pueden crear pipelines. |
+| Pipeline creado | `success` | Pipeline creado correctamente. |
+| Solo PA miembros | `error` | Solo el administrador del pipeline (PA) puede gestionar miembros. |
+| Validación formulario | `error` + inline | Revise los datos marcados; no se pudo guardar. |
+| Inesperado | `error` | Ocurrió un error al guardar. Si persiste, contacte al administrador. |
+| Miembro autorizado | `success` | Miembro «{username}» autorizado correctamente. |
+| Owner protegido | `error` | El owner no se revoca ni cambia de rol. |
+| Publicar sin diseñar | `warning` | No puede publicar. Pasos no completados: Diseñar pasos. |
+| Borrador de pasos guardado | `success` | Borrador de pasos guardado. |
+| Borrador sin pasos | `success` | Borrador guardado. Diseñar pasos sigue pendiente: añada al menos un paso válido. |
+| Sin permiso diseñador | `error` | No tiene permiso para editar el diseñador de este pipeline. |
+| Rail inválido | `error` | Revise los pasos del rail; no se pudo guardar. |
+
+#### Step Catalog (Módulo 2b)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Solo UA | `error` | Solo un operador de plataforma puede gestionar el catálogo de pasos. |
+| Kind creado | `success` | Kind registrado en el catálogo. |
+| Kind actualizado | `success` | Kind actualizado. |
+| Kind deshabilitado | `success` | Kind deshabilitado. Ya no se ofrece en nuevos diseños. |
+| Paquete compañía | `success` | Paquete de compañía actualizado. |
+| Kind no encontrado | `error` | No se encontró esa entrada del catálogo. |
+| Enabled + disabled | `error` + inline | No combine pipeline_enabled activo con status disabled. |
+
+#### Publicar versión (Módulo 3)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Publicar sin diseñar | `warning` | No puede publicar. Pasos no completados: Diseñar pasos. |
+| Sin permiso publicar | `error` | No tiene permiso para publicar este pipeline. |
+| Checklist fallido | `error` | No se puede publicar. Revise el checklist. |
+| Versión publicada | `success` | Versión v{n} publicada correctamente. El borrador queda abierto para v{n+1}. |
+
+#### Ejecutar (Módulo 4)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin versión | `error` | No hay versión publicada. Publique el pipeline antes de ejecutar. |
+| No activo | `warning` | El pipeline debe estar Activo para ejecutar. |
+| Sin archivo | `error` | Seleccione un archivo de entrada. |
+| Sin permiso run | `error` | No tiene permiso para ejecutar este pipeline. |
+| Sin permiso paso | `error` | No tiene permiso para ejecutar uno de los proyectos de paso. |
+| Kind sin runner | `error` | Este tipo de paso aún no tiene runner en el orquestador. |
+| Corrida OK | `success` | Corrida completada. |
+| Corrida fallida | `error` | La corrida falló. Revise el rail de pasos. |
+| Estado actualizado | `success` | Estado del pipeline actualizado. |
+| Pipeline activo | `success` | Pipeline marcado como Activo. |
+
+#### Historial (Módulo 5)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin permiso historial | `error` | No tiene permiso para ver el historial de este pipeline. |
+| Corrida no encontrada | `error` | No se encontró la corrida en este pipeline. |
+| Sin corridas | empty UI | Publique una versión y ejecute el pipeline para empezar la auditoría. |
+| Filtro sin resultados | empty UI | Ninguna corrida coincide con los filtros. |
+| Corrida eliminada | `success` | Corrida eliminada del historial. |
+| Varias propias | `success` | Se eliminaron {n} corridas propias del historial. |
+| Sin corridas propias | `error` | No tiene corridas propias para eliminar en este pipeline. |
+| Solo propias | `error` | Solo puede eliminar corridas que usted ejecutó. |
+| Job en ejecución | `error` | No se puede eliminar un job en ejecución. |
+| Error al eliminar | `error` | No se pudo eliminar la corrida. Si el problema continúa, contacte al administrador. |
+
+#### Dashboard (módulo D)
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Sin pipelines | empty UI | Cree un pipeline o pida membresía para ver el pulso de corridas. |
+| Sin corridas en ventana | empty UI | Aún no hay corridas productivas en esta ventana. |
+| Sin fallos | empty UI | Ningún fallo productivo en los últimos {n} días. |
+
+> Motor D: `pipeline_dashboard_service`. URL: `/app/file-pipeline/tablero/`. Alcance: pipelines visibles. Dry-run excluido del pulso. Ventana 7/30 días.
+
+> Motor M5: `pipeline_history_service`. URLs: `/app/file-pipeline/pipelines/<slug>/historial/` · `…/runs/<id>/auditoria/` · `…/runs/<id>/eliminar/`. Filtros: `trigger_source`, estado del run, fechas. Paginación 25. CO: metadatos; PA/ED/GE: enlaces a `app_job_id`. Borrado: propias (PA cualquiera); no runs en curso.
+
+> Motor M4: `pipeline_run_service`. URLs: `/app/file-pipeline/pipelines/<slug>/ejecutar/` · `…/runs/<id>/`.
+
+> Motor M3: `pipeline_publish_service`. URLs: `/app/file-pipeline/pipelines/<slug>/publicar/`.
+
+
+> Motor M2b: `pipeline_catalog_service`. URLs: `/app/file-pipeline/catalogo/…` (UA).
+
+> Motor M1: `pipeline_project_service`. URLs: `/app/file-pipeline/pipelines/…`.
+
+### 3.17 Mensajes específicos — `apps.platform_api` (PLATFORM API · M1)
+
+Alineados a [`../definition_app_PLATFORM_API/pa_auth.md`](../definition_app_PLATFORM_API/pa_auth.md).
+
+| Situación | Tag / canal | Texto al usuario |
+|-----------|-------------|------------------|
+| Cliente creado | `success` | Cliente de máquina creado. Copie la key ahora; no se volverá a mostrar. |
+| Cliente actualizado | `success` | Cliente actualizado. La key no cambió. |
+| Key rotada | `success` | Key rotada. Copie la nueva key ahora; la anterior deja de autenticar. |
+| Cliente revocado | `success` | Cliente revocado. Ya no puede autenticar llamadas. |
+| Solo US | `error` | Solo el administrador de compañía (US) puede gestionar clientes de API. |
+| Compañía inactiva | `error` | La compañía no está activa. |
+| No encontrado | `error` | No se encontró el cliente de API. |
+| Validación | `error` + inline | Revise los datos marcados; no se pudo guardar. |
+| Descripción vacía | inline `description` | Indique para qué se usa esta API (sistema, proceso y responsable). |
+| Descripción larga | inline `description` | Máximo 2000 caracteres. |
+| Código duplicado | inline `code` | Ya existe un cliente con este código en la compañía. |
+| Ya revocado | `error` | Este cliente ya está revocado. |
+| Reveal expirado | `warning` | La key ya no está disponible en pantalla. Si la perdió, rote la credencial. |
+| Inesperado | `error` | Ocurrió un error al guardar. Si persiste, contacte al administrador. |
+| Bearer inválido (API) | JSON `user_message` | Credencial ausente o inválida. |
+| Scope insuficiente (API) | JSON `user_message` | No tiene permiso para esta operación. |
+| Evento de auditoría no encontrado | `error` | No se encontró el evento de auditoría. |
+| Política de proceso guardada | `success` | Política de proceso API actualizada. |
+| Rate limit (API) | JSON `user_message` | Demasiadas solicitudes. Espere un minuto e intente de nuevo. |
+| Archivo demasiado grande (API) | JSON / inline `file` | El archivo supera el tamaño máximo permitido para esta compañía. |
+| Tipo de archivo no permitido (API) | JSON / inline `file` | Tipo de archivo no permitido. Use los mismos tipos que en la carga de la app. |
+| Callback no permitido (API) | JSON / inline `callback_url` | La URL de callback no está permitida. |
+| Versión no publicada (API) | JSON `user_message` | Solo se puede ejecutar una versión publicada. |
+| Recurso opaco (API) | JSON `user_message` | No se encontró el recurso. |
+| Artifact expirado (API) | JSON `user_message` | El enlace del artifact no es válido o ya expiró. |
+| Kind desconocido (API) | JSON / inline `kind` | Kind no reconocido. |
+| wait inválido (API) | JSON / inline `wait` | wait debe ser sync o async. |
+| Falta project_slug (API) | JSON / inline `project_slug` | Indique project_slug para un job suelto. |
+| Falta pipeline_id (API) | JSON / inline `pipeline_id` | Indique pipeline_id para un pipeline. |
+| Destino mezclado (API) | JSON inline | No mezcle project_slug de job suelto con pipeline_id. |
+| Archivo requerido (API) | JSON / inline archivo | Falta el archivo requerido para este kind. |
+| Contrato validado (API) | JSON `user_message` | Metadatos del contrato válidos. Este endpoint no ejecuta el job. |
+| Kind fuera de MVP (API) | JSON / inline `kind` | En esta fase se puede ejecutar file_gate, dms, reverse, file_match, structure_scout, file_clean, file_split, file_merge o file_pipeline. |
+| Conflicto de idempotencia (API) | JSON `user_message` | Idempotency-Key ya usada con otra entrada. Use una key nueva. |
+| Job encolado (API) | JSON `user_message` | Job encolado. Consulte el detalle del job para el estado. |
+| Dry-run finalizado (API) | JSON `user_message` | Dry-run finalizado. No se generó salida de producción. |
+| Job cancelado (API) | JSON `user_message` | Job cancelado. |
+| Cancel no aplicable (API) | JSON `user_message` | Este job ya no se puede cancelar. |
+| retry_of_job_id inválido (API) | JSON / inline `retry_of_job_id` | Indique un job_id válido para el reintento. |
+| Kind vs proyecto (API) | JSON / inline `kind` | El kind no coincide con el tipo de proyecto. |
+| Job Gate ejecutado (API) | JSON `user_message` | Validación Gate finalizada. |
+| Job Pipe ejecutado (API) | JSON `user_message` | Transformación FilePipe finalizada. |
+| Job Reverse ejecutado (API) | JSON `user_message` | Generación Reverse Studio finalizada. |
+| Job Match ejecutado (API) | JSON `user_message` | Conciliación File Match finalizada. |
+| Match wait async (API) | JSON / inline `wait` | file_match solo admite wait=sync en esta fase. |
+| Job Scout ejecutado (API) | JSON `user_message` | Exploración Structure Scout finalizada. |
+| Scout wait async (API) | JSON / inline `wait` | structure_scout solo admite wait=sync en esta fase. |
+| Job Scout ejecutado (API) | JSON `user_message` | Exploración Structure Scout finalizada. |
+| Scout wait async (API) | JSON / inline `wait` | structure_scout solo admite wait=sync en esta fase. |
+| Job Clean ejecutado (API) | JSON `user_message` | Limpieza File Clean finalizada. |
+| Clean wait async (API) | JSON / inline `wait` | file_clean solo admite wait=sync en esta fase. |
+| Job Split ejecutado (API) | JSON `user_message` | Partición File Split finalizada. |
+| Job Merge ejecutado (API) | JSON `user_message` | Consolidación File Merge finalizada. |
+| Split/Merge wait async (API) | JSON / inline `wait` | file_split y file_merge solo admiten wait=sync en esta fase. |
+| Conflicto de idempotencia (API) | JSON `user_message` | Idempotency-Key ya usada con otra entrada. Use una key nueva. |
+| Job encolado (API) | JSON `user_message` | Job encolado. Consulte el detalle del job para el estado. |
+| Dry-run finalizado (API) | JSON `user_message` | Dry-run finalizado. No se generó salida de producción. |
+| Job cancelado (API) | JSON `user_message` | Job cancelado. |
+| Cancel no aplicable (API) | JSON `user_message` | Este job ya no se puede cancelar. |
+| retry_of_job_id inválido (API) | JSON / inline `retry_of_job_id` | Indique un job_id válido para el reintento. |
+| Kind vs proyecto (API) | JSON / inline `kind` | El kind no coincide con el tipo de proyecto. |
+| Job Gate ejecutado (API) | JSON `user_message` | Validación Gate finalizada. |
+| Job Pipe ejecutado (API) | JSON `user_message` | Transformación FilePipe finalizada. |
+| Pipeline ejecutado (API) | JSON `user_message` | Corrida de pipeline finalizada. |
+| Pipeline inactivo (API) | JSON `user_message` | El pipeline no está activo o no tiene versión publicada. |
+| Permiso de paso (API) | JSON `user_message` | No tiene permiso para ejecutar uno de los proyectos de paso. |
+| Job encontrado (API) | JSON `user_message` | Job encontrado. |
+| Listado de jobs (API) | JSON `user_message` | Listado de jobs. |
+| Artifact no disponible (API) | JSON `user_message` | El artifact no está disponible. |
+| Catálogo de paths (API) | JSON `user_message` | Catálogo de paths canónicos. |
+| Catálogo de integración (API) | JSON `user_message` | Catálogo de integración: runners por kind. |
+| Webhook guardado | `success` | Webhook del cliente actualizado. |
+| Webhook desactivado | `success` | Webhook desactivado. |
+| URL de webhook inválida | inline `webhook_url` | La URL de callback no está permitida. |
+| Eventos de webhook vacíos | inline `webhook_events` | Seleccione al menos un evento. |
+
+### 3.18 Mensajes específicos — `apps.file_scheduler` (FILE SCHEDULER · M1–M10)
+
+Fuente de códigos `schedule_*`: [`../definition_app_FILE_SCHEDULER/sch_errors.md`](../definition_app_FILE_SCHEDULER/sch_errors.md) · mapa Python `apps.file_scheduler.services.schedule_errors`. El `error_code` no se muestra al usuario. Capa 1 (otra compañía / plan inexistente) = **404 opaco**. Capa 4 = enlace a Job/pipeline, sin `schedule_gate_*`.
+
+| Situación | `error_code` / canal | Texto al usuario |
+|-----------|----------------------|------------------|
+| Campos obligatorios vacíos | `validation_required` · inline | Complete los campos obligatorios. |
+| Código duplicado | `schedule_slug_taken` · inline `slug` | Ese código ya existe en la compañía. |
+| Sin permiso de cambio | `schedule_forbidden` · modal | No tiene permiso para cambiar este plan. |
+| Crear no autorizado | `schedule_forbidden` · modal | Solo usuarios US con rol PA o ED de esta compañía pueden crear planes. |
+| Programación inválida | `schedule_cron_invalid` · inline `cron_expr` + alerta | La programación no es válida. Consulte la Ayuda. |
+| Zona inválida | `schedule_timezone_invalid` · inline `timezone` | La zona horaria no es válida. |
+| Destino sin publicada | `schedule_no_published_target` · inline / Actividad | El destino no tiene una versión publicada operativa. |
+| Sin entrada de archivo | `schedule_missing_input` · inline / Actividad | Falta el archivo de entrada. No se puede disparar sin Watch o una referencia. |
+| Ciclo padre=destino | `schedule_dependency_cycle` · inline + alerta | El padre no puede ser el mismo destino del plan. |
+| Activar/reanudar incompleto | `schedule_incomplete` · modal | Complete el destino y el disparador (horario o dependencia) para activar. |
+| Plan no activo (tick) | `schedule_paused` · Actividad | El plan no está activo. |
+| Solape omitido | `schedule_overlap_skip` · Actividad | Se omitió este horario porque el run anterior sigue en curso. |
+| Misfire | `schedule_misfire` · Actividad | No se ejecutó a tiempo (el programador no estaba disponible). Se sigue con la próxima ventana. |
+| Encolar falló | `schedule_enqueue_failed` · Actividad | No se pudo encolar el Job. Inténtelo más tarde o revise la cola. |
+| Artifact no está en storage | `schedule_artifact_not_found` · Actividad | No se encontró el archivo del artifact en storage. Verifique el hash. |
+| Destino sin runner en el tick | `schedule_runner_unsupported` · Actividad | Este tipo de destino aún no se ejecuta desde el Scheduler. |
+| Destino/padre otra company | `schedule_target_cross_tenant` / `schedule_dependency_cross_tenant` | 404 opaco (sin este texto). |
+| Plan creado | `success` | Plan creado correctamente. |
+| Plan actualizado | `success` | Plan actualizado. |
+| Plan pausado | `success` | Plan pausado. |
+| Plan reanudado | `success` | Plan reanudado. |
+| Plan archivado | `success` | Plan archivado. |
+| Programación guardada | `success` | Programación guardada. |
+| Destino guardado | `success` | Destino guardado. |
+| Política de solape guardada | `success` | Política de solape guardada. |
+| Disparador guardado | `success` | Disparador guardado. |
+| Plan marcado activo | `success` | Plan marcado como Activo. |
+| Validación formulario (resto) | `validation_form` · error + inline | Revise los datos marcados; no se pudo guardar. |
+| Pausar no aplica | `error` | Solo se puede pausar un plan Activo. |
+| Solo PA miembros | `error` | Solo el administrador del plan (PA) puede gestionar miembros. |
+| Compañía inactiva | `error` | La compañía no está activa. |
+| Módulo pendiente | `info` | Este módulo se implementará en una fase posterior. |
+| Owner protegido | `error` | El owner no se revoca ni cambia de rol. |
+| Miembro autorizado | `success` | Miembro «{username}» autorizado correctamente. |
+| Inesperado | `error` | Ocurrió un error al guardar. Si persiste, contacte al administrador. |
+| Watch vacío | inline `watch_id` | Indique el código de la bandeja (File Watch). Consulte la Ayuda… |
+| Artifact vacío | inline `artifact_ref` | Indique el hash SHA-256 del artifact. Consulte la Ayuda… |
+| Pipeline + none sin confirmar | inline `pipeline_inputs_resolved` | Para «Sin archivo» confirme que el pipeline no exige upload en el tick. Consulte la Ayuda… |
+| Sin permiso programación | `schedule_forbidden` | No tiene permiso para editar la programación de este plan. |
+| Sin permiso destino | `schedule_forbidden` | No tiene permiso para editar el destino de este plan. |
+| Sin permiso ejecutar destino | `schedule_forbidden` | No tiene permiso para ejecutar el destino elegido. Consulte la Ayuda… |
+| Sin permiso solape | `schedule_forbidden` | No tiene permiso para editar la política de solape de este plan. |
+| Política inválida | inline `overlap_policy` | Seleccione una política de solape. |
+| Sin permiso dependencia | `schedule_forbidden` | No tiene permiso para editar la dependencia de este plan. |
+| Avisos guardados | `success` | Avisos guardados. |
+| Avisos on sin destino | `validation_required` · inline | Marque al menos un miembro del plan o indique un webhook HTTPS. |
+| Webhook no HTTPS | `schedule_notify_webhook_invalid` · inline | El webhook debe empezar por https://. |
+| Miembro sin correo | `schedule_notify_email_invalid` · inline | Un miembro marcado no tiene correo en su cuenta. |
+| Sin permiso avisos | `schedule_forbidden` | No tiene permiso para editar los avisos de este plan. |
+
+> Motor M1–M10: ciclo, cron, destino, tick, solape, dependencia, auditoría, catálogo de errores, avisos (`…/avisos/`) y mapa de integración (`…/integracion/`). El worker cron no evalúa planes `trigger_mode=dependency`.
+
+### 3.19 Mensajes específicos — `apps.file_watch` (FILE WATCH · M1–M10)
+
+Fuente de códigos `watch_*`: [`../definition_app_FILE_WATCH/wach_errors.md`](../definition_app_FILE_WATCH/wach_errors.md) · mapa Python `apps.file_watch.services.watch_errors`. El `error_code` no se muestra al usuario. Capa 1 (otra compañía / bandeja inexistente) = **404 opaco**. Capa 4 = enlace a Job/pipeline, sin `watch_gate_*`.
+
+| Situación | `error_code` / canal | Texto al usuario |
+|-----------|----------------------|------------------|
+| Campos obligatorios vacíos | `validation_required` · inline | Complete los campos obligatorios. |
+| Código duplicado | `watch_slug_taken` · inline `slug` | Ese código de bandeja ya existe en la compañía. |
+| Sin permiso de cambio | `watch_forbidden` · modal | No tiene permiso para cambiar esta bandeja. |
+| Crear no autorizado | `watch_forbidden` · modal | Solo usuarios US con rol PA o ED de esta compañía pueden crear bandejas. |
+| Activar/reanudar incompleto | `watch_incomplete` · modal | Complete el origen (y el enrutado si dispara al llegar) para activar. |
+| Origen inválido | `watch_source_invalid` · inline + alerta | La configuración del origen no es válida. Consulte la Ayuda. |
+| Destino sin publicada | `watch_no_published_target` · inline / Lotes | El destino no tiene una versión publicada operativa. |
+| Al llegar + Diferir | `watch_fire_route_conflict` · inline + alerta | «Al llegar» no es compatible con enrutado Diferir. Elija Job/Pipeline o cambie el disparo. |
+| Destino otra company | `watch_route_cross_tenant` | 404 opaco (sin este texto). |
+| Bandeja creada | `success` | Bandeja creada correctamente. |
+| Bandeja actualizada | `success` | Bandeja actualizada. |
+| Bandeja pausada | `success` | Bandeja pausada. |
+| Bandeja reanudada | `success` | Bandeja reanudada. |
+| Bandeja archivada | `success` | Bandeja archivada. |
+| Bandeja marcada activa | `success` | Bandeja marcada como Activa. |
+| Validación formulario (resto) | `validation_form` · error + inline | Revise los datos marcados; no se pudo guardar. |
+| Pausar no aplica | `error` | Solo se puede pausar una bandeja Activa. |
+| Solo PA miembros | `error` | Solo el administrador de la bandeja (PA) puede gestionar miembros. |
+| Módulo pendiente | `info` | Este módulo se implementará en una fase posterior. |
+| Owner protegido | `error` | El owner no se revoca ni cambia de rol. |
+| Miembro autorizado | `success` | Miembro «{username}» autorizado correctamente. |
+| Inesperado | `error` | Ocurrió un error al guardar. Si persiste, contacte al administrador. |
+
+> Motor M1: ciclo de vida (listado, alta, hub, editar, pausar/reanudar, archivar, miembros). M2–M10 pendientes; stubs de hub enlazan a pantallas placeholder.
 
 ---
 

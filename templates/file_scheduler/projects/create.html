@@ -1,0 +1,92 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Nuevo plan — File Scheduler{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_scheduler.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Nuevo</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Scheduler · <span class="role-badge">US</span> PA / ED</p>
+        <h2>Nuevo plan</h2>
+        <p>Solo usuarios tipo <strong>US</strong> de esta compañía con rol <strong>PA</strong> o <strong>ED</strong>. Quedará como <strong>administrador del plan (PA)</strong>. El estado inicial es <strong>En proceso</strong>. No elija cron ni destino aquí (módulos 2 y 3).</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_scheduler:schedule_create_help' as sch_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=sch_help_url %}
+        <a href="{% url 'file_scheduler:schedule_list' %}" class="btn btn-secondary">← Listado</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="form-section">
+                <h3 class="form-section-title">Identidad</h3>
+                <div class="form-grid">
+                    <div class="form-row two-cols">
+                        <div class="field{% if errors.slug %} has-error{% endif %}">
+                            <label for="slug">Nombre corto (código) <span class="req">*</span></label>
+                            <input type="text" id="slug" name="slug" class="mono" maxlength="220" placeholder="nomina-cierre" value="{{ posted.slug }}" required>
+                            <p class="hint">Único en la organización · minúsculas y guiones · inmutable después del alta</p>
+                            {% for msg in errors.slug %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                        </div>
+                        <div class="field{% if errors.name %} has-error{% endif %}">
+                            <label for="name">Nombre visible <span class="req">*</span></label>
+                            <input type="text" id="name" name="name" maxlength="200" placeholder="Cierre de nómina" value="{{ posted.name }}" required>
+                            {% for msg in errors.name %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="field{% if errors.description %} has-error{% endif %}">
+                        <label for="description">Descripción</label>
+                        <textarea id="description" name="description" rows="3" placeholder="Disparo de cierre mensual.">{{ posted.description }}</textarea>
+                        {% for msg in errors.description %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="form-section">
+                <h3 class="form-section-title">Visibilidad</h3>
+                <div class="radio-cards{% if errors.visibility %} has-error{% endif %}">
+                    <label class="radio-card">
+                        <input type="radio" name="visibility" value="members_only"{% if posted.visibility == 'members_only' or not posted.visibility %} checked{% endif %}>
+                        <strong>Privado</strong>
+                        <span>Solo miembros autorizados.</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="visibility" value="company"{% if posted.visibility == 'company' %} checked{% endif %}>
+                        <strong>Público</strong>
+                        <span>Visible para UF de la compañía (consulta).</span>
+                    </label>
+                </div>
+                {% for msg in errors.visibility %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            <div class="form-actions form-actions--flush">
+                <button type="submit" class="btn btn-primary">Crear plan</button>
+                <a class="btn btn-secondary" href="{% url 'file_scheduler:schedule_list' %}">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

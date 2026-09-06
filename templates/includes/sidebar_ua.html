@@ -28,3 +28,8 @@
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="M8 5v3l2 1"/></svg>
     <span class="sidebar-link-label">Pagos</span>
 </a>
+<p class="billing-nav-label">File Pipeline</p>
+<a href="{% url 'file_pipeline:catalog_list' %}" class="sidebar-link{% if app_nav_active == 'file_pipeline_catalog' %} is-active{% endif %}" title="Step Catalog">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 4h10M3 8h10M3 12h6"/></svg>
+    <span class="sidebar-link-label">Step Catalog</span>
+</a>

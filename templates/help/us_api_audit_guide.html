@@ -1,0 +1,249 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Auditoría API{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_us.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:audit_list' %}">Auditoría API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Guía de trabajo · <span class="role-badge">US</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>Cómo funciona la auditoría de clientes</h2>
+        <p>
+            <strong>Auditoría</strong> en este menú es el registro <strong>append-only</strong> del ciclo de vida
+            de las identidades de máquina: alta, cambio de scopes, rotación, revelado de key y revocación.
+            Quién (US), cuándo, qué acción, antes/después de la configuración. <strong>Nunca</strong> el secreto en claro.
+        </p>
+        <p>
+            <strong>No</strong> es el historial de un Split ni el bloque <span class="mono">audit</span> del JSON del job.
+            El <span class="mono">?</span> de la pantalla Auditoría detalla columnas y filtros.
+        </p>
+    </div>
+    <aside class="guide-hero-aside" aria-label="Ruta rápida">
+        <h3>Ruta rápida</h3>
+        <ol class="guide-quick-path">
+            <li>Listado de la compañía; filtre por acción (p. ej. Rotación).</li>
+            <li>Ver el evento o abra la línea de tiempo del cliente.</li>
+            <li>El job_id de una corrida no aparece aquí: vaya al historial UF o al GET del job.</li>
+        </ol>
+    </aside>
+</div>
+
+<div class="guide-role-strip" aria-label="Quién actúa">
+    <span class="label">Quién</span>
+    <span class="guide-role-item"><span class="role-code role-code--pa">US</span><span>Lee listado, detalle y timeline; no borra filas</span></span>
+    <span class="guide-role-item"><span class="role-code">Máquina</span><span>No escribe aquí; cada whoami no crea evento</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--ed">UF</span><span>Sin este menú; ve jobs en su app</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--co">Otra cia.</span><span>404 lógico: el evento no existe</span></span>
+</div>
+
+<div class="guide-layout">
+    <nav class="guide-spine" aria-label="Índice de la guía">
+        <h3>Secciones</h3>
+        <nav>
+            <a href="#que-es">Qué es</a>
+            <a href="#funcion">Función</a>
+            <a href="#no-es">Qué no es</a>
+            <a href="#acciones">Acciones</a>
+            <a href="#flujo">Flujo de trabajo</a>
+            <a href="#pantallas">Pantallas</a>
+            <a href="#casos">Casos típicos</a>
+        </nav>
+    </nav>
+
+    <div class="guide-flows">
+        <article class="flow-card" id="que-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">1</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué es esta auditoría</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    Evidencia de que un cambio de key o de scopes <strong>alteró el ciclo del ERP</strong>.
+                    Las filas no se editan ni se borran en la UI. Un error se corrige con un hecho nuevo (rotar otra vez, alta de otro cliente).
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>En una frase</h4>
+                        <p>
+                            El <strong>libro mayor de las keys</strong>, no el de las corridas de archivo.
+                        </p>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Pulso de uso</h4>
+                        <p>
+                            <span class="mono">last_used_at</span> en la ficha del cliente es la última autenticación correcta.
+                            No hay una fila por cada <span class="mono">GET /whoami</span>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="funcion">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">2</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Cuál es la función</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>Función principal:</strong> responder “¿quién rotó ayer?” o “¿cuándo se revocó el sandbox?”
+                    sin abrir logs técnicos ni el JSON del job.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Problema que resuelve</h4>
+                        <ul>
+                            <li>El ERP deja de autenticar y nadie recuerda si rotaron.</li>
+                            <li>Scopes cambiados sin rastro.</li>
+                            <li>Mezclar esa pregunta con el historial de File Split.</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Qué ganas</h4>
+                        <ul>
+                            <li>Filtro por acción (alta, rotación, revocación…).</li>
+                            <li>Detalle antes/después (sin plaintext).</li>
+                            <li><span class="mono">key_hint</span> para reconocer rotaciones.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="no-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">3</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué no es (y qué sí usar)</h3>
+                </header>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Esta auditoría no…</h4>
+                        <ul>
+                            <li>No lista jobs ni <span class="mono">correlation_id</span> de un run.</li>
+                            <li>No es el tablero de Pipeline.</li>
+                            <li>No sustituye Auditoría E2E de definición de pipeline (§7.1).</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Busque el job si…</h4>
+                        <ul>
+                            <li>Historial UF de la app (p. ej. Split/Merge).</li>
+                            <li><span class="mono">GET /api/v1/jobs/{id}</span> — bloque <span class="mono">audit</span> del envelope.</li>
+                            <li>Tablero — pulso con <span class="mono">trigger_source=api</span>.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="acciones">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">4</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Acciones que generan fila</h3>
+                </header>
+                <table class="help-table">
+                    <thead><tr><th>Acción</th><th>Código</th><th>Cuándo</th></tr></thead>
+                    <tbody>
+                        <tr><td>Alta</td><td class="mono">created</td><td>Nuevo cliente y primera key</td></tr>
+                        <tr><td>Cambio</td><td class="mono">updated</td><td>Nombre, descripción o scopes (si hay diff)</td></tr>
+                        <tr><td>Rotación</td><td class="mono">key_rotated</td><td>Nueva key; la anterior da 401</td></tr>
+                        <tr><td>Key mostrada</td><td class="mono">key_revealed</td><td>US vio la bóveda de un solo uso</td></tr>
+                        <tr><td>Revocación</td><td class="mono">revoked</td><td>El cliente ya no autentica</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="flow-card" id="flujo">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">5</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Flujo de trabajo</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    Tras rotar o revocar en <strong>Clientes</strong>, abra Auditoría y confirme la fila del mismo día.
+                </p>
+                <ol>
+                    <li>US → API → Auditoría (todos los clientes) o Auditoría desde la ficha (un cliente).</li>
+                    <li>Filtre por Rotación o Revocación si busca un incidente.</li>
+                    <li>Ver: actor, resumen, diff de configuración.</li>
+                    <li>Si el ERP falló y no hay <span class="mono">key_rotated</span>, el problema no fue una rotación US.</li>
+                </ol>
+                <p class="hint" style="margin-top:12px">
+                    <a href="{% url 'platform_api:audit_list' %}">Ir al listado de auditoría →</a>
+                </p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="pantallas">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">6</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Pantallas</h3>
+                </header>
+                <table class="help-table">
+                    <thead><tr><th>Pantalla</th><th>Qué muestra</th></tr></thead>
+                    <tbody>
+                        <tr><td>Listado</td><td>Eventos de todos los clientes de la compañía</td></tr>
+                        <tr><td>Detalle de evento</td><td>Una fila: antes/después</td></tr>
+                        <tr><td>Auditoría del cliente</td><td>Línea de tiempo de esa identidad</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="flow-card" id="casos">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">7</span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Casos típicos</h3>
+                </header>
+                <ul>
+                    <li>Paso 10 del manual: tras Rotar, debe verse acción Rotación (<span class="mono">key_rotated</span>); el UUID del Split no cambia ni aparece aquí.</li>
+                    <li>Revocar: fila Revocación; whoami 401; los jobs viejos siguen en UF.</li>
+                    <li>Vacío: aún no hay alta/edición de clientes en esta compañía.</li>
+                </ul>
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}

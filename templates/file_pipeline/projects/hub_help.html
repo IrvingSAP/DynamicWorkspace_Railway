@@ -1,0 +1,157 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Hub {{ pipeline.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_list' %}">File Pipeline</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">{{ pipeline.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ pipeline.slug }}</span></p>
+        <h2>Ayuda — Hub del pipeline</h2>
+        <p>Centro de control: ciclo de vida, versión publicada, estado operativo y accesos a cada módulo.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}" class="btn btn-secondary">← Volver al hub</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            El hub resume el pipeline <strong>{{ pipeline.name }}</strong> y da acceso a cada etapa:
+            diseñar el rail, publicar una versión, ejecutar (si está Activo) y consultar el historial.
+            File Pipeline <strong>no parsea</strong> el archivo: llama a los runners de las apps de cada paso.
+        </p>
+        <p class="help-intro">
+            <strong>Quién:</strong> cualquier miembro (o UF de compañía si es público) ve el hub;
+            PA gestiona miembros y el estado Activo; PA y ED diseñan y publican; PA, ED y GE ejecutan.
+        </p>
+
+        <h3 class="form-section-title">Cabecera y acciones</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Elemento</th><th>Qué es</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Código (badge)</td>
+                    <td>Slug del pipeline, p. ej. <span class="mono">{{ pipeline.slug }}</span>.</td>
+                </tr>
+                <tr>
+                    <td>Visibilidad</td>
+                    <td>Público (compañía) o Privado (solo miembros).</td>
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    <td><span class="mono">En proceso</span> · <span class="mono">Activo</span> · <span class="mono">Inactivo</span>. Independiente de si ya hay versión publicada.</td>
+                </tr>
+                <tr>
+                    <td>Rol</td>
+                    <td>Su permiso en este pipeline (PA, ED, GE, CO o consulta de compañía).</td>
+                </tr>
+                <tr>
+                    <td>Ayuda (icono)</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>Marcar como Activo</td>
+                    <td>Solo PA, si hay versión publicada y el estado no es Activo. Sin esto, Ejecutar permanece bloqueado.</td>
+                </tr>
+                <tr>
+                    <td>Miembros</td>
+                    <td>Solo PA: invita, cambia rol o revoca.</td>
+                </tr>
+                <tr>
+                    <td>← Pipelines</td>
+                    <td>Vuelve al listado File Pipeline.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Franja de contexto</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Dato</th><th>Significado</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Pasos</td>
+                    <td>Cadena corta del rail (máx. dos visibles + «…» si hay más).</td>
+                </tr>
+                <tr>
+                    <td>Versión</td>
+                    <td>Última publicada (inmutable). El run usa esa, no el borrador del diseñador.</td>
+                </tr>
+                <tr>
+                    <td>Último run</td>
+                    <td>Estado y hora de la última corrida, o «—».</td>
+                </tr>
+                <tr>
+                    <td>Miembros</td>
+                    <td>Cantidad de membresías activas.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Ciclo de vida (stepper)</h3>
+        <p class="help-intro">
+            Visual, igual que File Gate: <strong>verde + ✓</strong> = completado;
+            <strong>verde + número</strong> = acción inmediata;
+            <strong>gris</strong> = aún no toca.
+        </p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Fase</th><th>Paso</th><th>Para qué sirve</th><th>Cuándo marca ✓</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Definición</td>
+                    <td>1 Diseñar pasos</td>
+                    <td>Rail de kinds + proyectos publicados de la misma compañía.</td>
+                    <td>Borrador guardado con al menos un paso válido.</td>
+                </tr>
+                <tr>
+                    <td>Definición</td>
+                    <td>2 Publicar</td>
+                    <td>Congela el snapshot (vN). El diseñador queda abierto para vN+1.</td>
+                    <td>Existe versión publicada. Si Diseñar no está listo: aviso <em>No puede publicar. Pasos no completados: Diseñar pasos.</em></td>
+                </tr>
+                <tr>
+                    <td>Ejecución</td>
+                    <td>3 Ejecutar</td>
+                    <td>Dispara la versión publicada (UI). Requiere estado Activo y permiso en cada proyecto de paso.</td>
+                    <td>Hay al menos una corrida (incluida dry-run).</td>
+                </tr>
+                <tr>
+                    <td>Ejecución</td>
+                    <td>4 Historial</td>
+                    <td>Auditoría de disparo y pasos. Borrar un registro también lo quita del dashboard.</td>
+                    <td>Hay al menos una corrida (nunca se pinta como «siguiente»).</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            <strong>Publicar ≠ Activo.</strong> La versión es el snapshot; el estado es el interruptor de operación.
+            Ejemplo: diseñó y publicó v1 → stepper en Ejecutar (verde 3); PA marca Activo → puede subir archivo.
+        </p>
+    </div>
+</div>
+{% endblock %}

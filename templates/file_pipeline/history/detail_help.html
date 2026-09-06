@@ -1,0 +1,106 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Auditoría {{ pipeline.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_list' %}">File Pipeline</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">{{ pipeline.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_history' pipeline_slug=pipeline.slug %}">Historial</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_run_audit' pipeline_slug=pipeline.slug run_id=run.id %}">Auditoría</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ pipeline.slug }}</span></p>
+        <h2>Ayuda — Auditoría de un run</h2>
+        <p>Registro de quién disparó la corrida, contra qué versión y cómo cerró cada paso.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_pipeline:pipeline_run_audit' pipeline_slug=pipeline.slug run_id=run.id %}" class="btn btn-secondary">← Volver a la auditoría</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Ficha de una corrida concreta. El rail replica el <strong>snapshot publicado</strong> que se ejecutó,
+            no el borrador actual del diseñador. CO ve metadatos de orquestación; el detalle de celdas y descargas
+            está en cada app, según su política.
+        </p>
+
+        <h3 class="form-section-title">Cabecera y acciones</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Elemento</th><th>Qué es</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Franja Run</td>
+                    <td>Identificador, canal (<span class="mono">ui</span>, <span class="mono">api</span>, …), etiqueta dry-run si aplica, y estado de la corrida.</td>
+                </tr>
+                <tr>
+                    <td>definición vN</td>
+                    <td>Versión del pipeline que se disparó.</td>
+                </tr>
+                <tr>
+                    <td>← Historial</td>
+                    <td>Vuelve al listado de corridas.</td>
+                </tr>
+                <tr>
+                    <td>Resultado</td>
+                    <td>Vista de cierre orientada a operación (rail OK / error / omitido), misma corrida.</td>
+                </tr>
+                <tr>
+                    <td>Eliminar corrida</td>
+                    <td>Quita el registro del orquestador (no el job de cada app). Quien disparó o el PA; no si está en cola o en curso. Pide confirmación.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Bloque Disparo</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Significado</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Canal</td><td>Origen: UI, API, Watch, Scheduler o dependencia. Hoy el disparo desde Ejecutar es UI.</td></tr>
+                <tr><td>Actor</td><td>Usuario o cliente que activó la corrida.</td></tr>
+                <tr><td>Cliente API / Idempotency / Correlation</td><td>Reservados para PLATFORM_API y reintentos. En UI suelen ir vacíos (—).</td></tr>
+                <tr><td>IP / UA</td><td>Contexto del cliente, si se registró.</td></tr>
+                <tr><td>Triggered / Started / Finished</td><td>Alta, inicio real y cierre.</td></tr>
+                <tr><td>Duración</td><td>Tiempo total cuando ya terminó.</td></tr>
+                <tr><td>Archivo / sha256</td><td>Entrada entregada al primer paso y huella del contenido.</td></tr>
+                <tr><td>Paso fallido</td><td>Orden del primer fallo si <span class="mono">on_error=stop</span>.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Rail de pasos</h3>
+        <p class="help-intro">
+            Nodo verde ✓ = completado, ! = fallido, – = omitido (el resto tras un stop).
+            Cada tarjeta muestra kind, proyecto, duración, código de error o motivo de omisión, y
+            <span class="mono">app_job</span> con enlace al historial nativo (PA, ED, GE).
+        </p>
+        <p class="help-intro">
+            Watch, Scheduler y API rellenarán actor e <span class="mono">idempotency_key</span> cuando esos canales se conecten.
+            Esta ficha es de auditoría de orquestación, no un informe de filas de cada app.
+        </p>
+    </div>
+</div>
+{% endblock %}

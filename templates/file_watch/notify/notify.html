@@ -1,0 +1,79 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Avisos — {{ watch.name }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Avisos</span>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Watch · M9 · <span class="perm-badge{% if hub.is_pa %} perm-badge--admin{% endif %}">{{ hub.role_label }}</span></p>
+        <h2>Avisos de la bandeja</h2>
+        <p>Correo y/o webhook si falla el intake, el fire o un run. Por defecto apagado.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_watch:watch_notify_help' watch_slug=watch.slug as wach_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=wach_help_url %}
+        <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+<form method="post" id="notify-form" novalidate>
+    {% csrf_token %}
+    <fieldset {% if not can_edit %}disabled{% endif %} style="border:0;padding:0;margin:0;min-inline-size:0">
+        <div class="panel"><div class="panel-body">
+            <label class="notify-check">
+                <input type="checkbox" id="notify_enabled" name="notify_enabled" value="1"{% if posted.notify_enabled %} checked{% endif %}>
+                <span><strong>Activar avisos</strong></span>
+            </label>
+            <div id="notify-fields"{% if not posted.notify_enabled %} class="is-hidden"{% endif %}>
+                <h3 class="form-section-title">Cuándo</h3>
+                <div class="notify-checks">
+                    <label class="notify-check"><input type="checkbox" name="notify_on_intake_failed" value="1"{% if posted.notify_on_intake_failed %} checked{% endif %}><span>Falló el intake</span></label>
+                    <label class="notify-check"><input type="checkbox" name="notify_on_fire_failed" value="1"{% if posted.notify_on_fire_failed %} checked{% endif %}><span>Falló el disparo al llegar</span></label>
+                    <label class="notify-check"><input type="checkbox" name="notify_on_run_failed" value="1"{% if posted.notify_on_run_failed %} checked{% endif %}><span>Falló el Job/pipeline</span></label>
+                    <label class="notify-check"><input type="checkbox" name="notify_on_skip" value="1"{% if posted.notify_on_skip %} checked{% endif %}><span>Omitidos (duplicado/cuota)</span></label>
+                </div>
+                <h3 class="form-section-title">Quién recibe el correo</h3>
+                <p class="hint">Resend envía al <strong>correo de la cuenta</strong> de cada miembro marcado. Las personas se dan de alta en <a href="{% url 'file_watch:watch_members' watch_slug=watch.slug %}">Miembros</a>. No se escribe un buzón libre en este MVP.</p>
+                <div class="notify-checks{% if errors.notify_user_ids %} has-error{% endif %}">
+                    {% for member in members %}
+                    <label class="notify-check">
+                        <input type="checkbox" name="notify_user" value="{{ member.id }}" class="notify-member"{% if member.id in posted.notify_user_ids %} checked{% endif %}>
+                        <span><strong>{{ member.label }}</strong> <span class="mono">{{ member.username }}</span> · {{ member.role }} · {% if member.email %}{{ member.email }}{% else %}sin correo{% endif %}</span>
+                    </label>
+                    {% empty %}
+                    <p class="hint">No hay miembros activos. Autorice alguien en Miembros antes de marcar destinatarios.</p>
+                    {% endfor %}
+                    {% for msg in errors.notify_user_ids %}<p class="field-error" id="err-email">{{ msg }}</p>{% endfor %}
+                </div>
+                <div class="field{% if errors.notify_webhook_url %} has-error{% endif %}">
+                    <label for="notify_webhook_url">Webhook HTTPS</label>
+                    <input type="url" id="notify_webhook_url" name="notify_webhook_url" class="mono" value="{{ posted.notify_webhook_url }}" placeholder="https://…">
+                    {% for msg in errors.notify_webhook_url %}<p class="field-error" id="err-hook">{{ msg }}</p>{% endfor %}
+                </div>
+            </div>
+        </div></div>
+        {% if can_edit %}
+        <div class="form-actions form-actions--flush">
+            <button type="submit" class="btn btn-primary">Guardar avisos</button>
+            <a class="btn btn-secondary" href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">Cancelar</a>
+        </div>
+        {% endif %}
+    </fieldset>
+</form>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/file_watch-notify.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,191 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Integración File Watch{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_integration' %}">Integración</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · M10</p>
+        <h2>Ayuda — Mapa de integración</h2>
+        <p>Cómo encaja File Watch con Scheduler, Pipeline, la API y los procesos de Railway. No se configura nada aquí.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_watch:watch_integration' %}" class="btn btn-secondary">← Volver al mapa</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Es una <strong>referencia</strong> de la compañía: Watch detecta y materializa; Scheduler reclama por
+            <span class="mono">watch_id</span> (el código de la bandeja). El runner es el mismo que UI y PLATFORM API.
+        </p>
+        <ul class="help-list">
+            <li>CRUD de bandejas <strong>no</strong> está en la API de máquina en el MVP. El push de archivo es el endpoint de la bandeja (Origen API).</li>
+            <li>File Gate no configura rutas IFS: viven en Origen de Watch.</li>
+            <li><strong>Artifact</strong> (hash fijo en el plan) ≠ <strong>Watch</strong> (código de bandeja; cada llegada otro hash).</li>
+        </ul>
+
+        <h3 class="form-section-title">Quién puede usarla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Qué puede hacer</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>US / UF con acceso a File Watch</td>
+                    <td>Consultar el mapa. No hay formulario.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Sección Capas</h3>
+        <p class="help-intro">De izquierda a derecha: de dónde llega el archivo hasta el reloj del plan.</p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Capa (en el mapa)</th><th>Pregunta</th><th>Dueño</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>De dónde</td>
+                    <td>¿SFTP / carpeta / API push?</td>
+                    <td>File Watch · Origen</td>
+                </tr>
+                <tr>
+                    <td>Qué archivo</td>
+                    <td>¿Lote + hash en storage?</td>
+                    <td>File Watch · Intake</td>
+                </tr>
+                <tr>
+                    <td>Hacia qué runner</td>
+                    <td>Job / pipeline / diferir</td>
+                    <td>File Watch · Enrutado</td>
+                </tr>
+                <tr>
+                    <td>¿Cuándo encolar?</td>
+                    <td>Al llegar vs solo pending</td>
+                    <td>File Watch · Disparo</td>
+                </tr>
+                <tr>
+                    <td>Cuándo (reloj)</td>
+                    <td>Cron del plan con watch_id</td>
+                    <td>File Scheduler</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Sección Canales</h3>
+        <p class="help-intro">Cuatro formas de llegar al mismo runner. La columna Código es el identificador del canal, no un error.</p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Canal</th><th>Qué hace</th><th>Código</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>UI Ejecutar</td>
+                    <td>Una persona lanza un Job o un pipeline_run.</td>
+                    <td class="mono">ui</td>
+                </tr>
+                <tr>
+                    <td>PLATFORM API</td>
+                    <td>POST de máquina (Bearer). No da de alta bandejas en el MVP.</td>
+                    <td class="mono">api</td>
+                </tr>
+                <tr>
+                    <td>File Watch</td>
+                    <td>Llegó el archivo: fire al llegar o lote Pendiente.</td>
+                    <td class="mono">watch</td>
+                </tr>
+                <tr>
+                    <td>File Scheduler</td>
+                    <td>Claim del lote por código de bandeja.</td>
+                    <td class="mono">scheduler</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Bridge Scheduler</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Regla</th><th>Detalle</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Destino del plan</td>
+                    <td><span class="mono">input_origin=watch</span> + código de bandeja = slug de la bandeja (se elige en el plan Destino).</td>
+                </tr>
+                <tr>
+                    <td>Tick</td>
+                    <td>Claim atómico → entrega hash y storage al runner. Pista: <span class="mono">claim_pending_batch(company, watch_slug, …)</span></td>
+                </tr>
+                <tr>
+                    <td>Sin Pendiente</td>
+                    <td>El tick responde <span class="mono">schedule_missing_input</span> (código Scheduler, no watch_*). No inventa archivo.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Railway</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Pieza</th><th>Rol</th><th>Proceso</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Web Django</td>
+                    <td>CRUD de bandeja, lotes, auditoría, avisos, este mapa.</td>
+                    <td class="mono">web</td>
+                </tr>
+                <tr>
+                    <td>Worker Watch</td>
+                    <td>Poll de origen, intake y fire o pending.</td>
+                    <td class="mono">watch</td>
+                </tr>
+                <tr>
+                    <td>Worker Scheduler</td>
+                    <td>Claim pending por watch_id → mismo runner.</td>
+                    <td class="mono">scheduler</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Comando del worker Watch: <span class="mono">python manage.py process_watch_intake --loop --interval 60</span></p>
+
+        <h3 class="form-section-title">Acciones de la pantalla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ayuda</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>← Bandejas</td>
+                    <td>Vuelve al listado.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

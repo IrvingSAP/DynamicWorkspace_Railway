@@ -1,0 +1,254 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Integración API{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_us.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:integration_guide' %}">Integración API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Guía de trabajo · <span class="role-badge">US</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>Cómo funciona la integración (UI ↔ API)</h2>
+        <p>
+            <strong>Integración</strong> es el mapa de <strong>qué runner</strong> atiende cada
+            <span class="mono">kind</span>. PLATFORM API no es un vertical de archivos: no tiene
+            <span class="mono">project_kind</span> ni menú UF. Invoca el <strong>mismo motor</strong>
+            que Gate, Pipe, Match, Clean, Split o Pipeline cuando UF pulsa Ejecutar.
+        </p>
+        <p>
+            Esta página describe el recorte para el integrador. El <span class="mono">?</span> de la
+            pantalla Integración es la ayuda contextual de esas tablas.
+        </p>
+    </div>
+    <aside class="guide-hero-aside" aria-label="Ruta rápida">
+        <h3>Ruta rápida</h3>
+        <ol class="guide-quick-path">
+            <li>Confirme que el kind está <em>cableado</em> (no solo en catálogo).</li>
+            <li>UF publica el proyecto o pipeline; el slug / pipeline_id van en el run.</li>
+            <li>Un POST <span class="mono">/jobs/run</span>; el historial de la app usa el mismo job_id.</li>
+        </ol>
+    </aside>
+</div>
+
+<div class="guide-role-strip" aria-label="Quién actúa">
+    <span class="label">Quién</span>
+    <span class="guide-role-item"><span class="role-code role-code--pa">US</span><span>Muestra al ERP qué kind está vivo</span></span>
+    <span class="guide-role-item"><span class="role-code">Máquina</span><span>GET /integration; kind en el body, no un path por app</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--ed">UF</span><span>Diseña y publica; el job_id es el de su historial</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--co">Watch</span><span>Mismo runner; otro trigger_source (previsto)</span></span>
+</div>
+
+<div class="guide-layout">
+    <nav class="guide-spine" aria-label="Índice de la guía">
+        <h3>Secciones</h3>
+        <nav>
+            <a href="#que-es">Qué es</a>
+            <a href="#funcion">Función</a>
+            <a href="#no-es">Qué no es</a>
+            <a href="#cableado">Cableado</a>
+            <a href="#flujo">Flujo de trabajo</a>
+            <a href="#mapeo">UI ↔ API</a>
+            <a href="#casos">Casos típicos</a>
+        </nav>
+    </nav>
+
+    <div class="guide-flows">
+        <article class="flow-card" id="que-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">1</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué es Integración</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    El inventario <strong>kind → app Django → función runner → fase → cableado</strong>.
+                    Identidad de producto: <span class="mono">PLATFORM_API</span> / <span class="mono">apps.platform_api</span>.
+                    La máquina lo lee en <span class="mono">GET /api/v1/integration</span>.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>En una frase</h4>
+                        <p>
+                            La <strong>tabla de despacho</strong>: quién ejecuta de verdad cuando llega el HTTP.
+                            Contrato y Paths no dicen el nombre del servicio interno.
+                        </p>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Qué ve US en pantalla</h4>
+                        <ul>
+                            <li>Identidad (app, prefijo, keys US, run único, atajo pipeline).</li>
+                            <li>Tabla kinds con runner y Sí/No cableado.</li>
+                            <li>Mapeo “Ejecutar en UI” → path HTTP equivalente.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="funcion">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">2</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Cuál es la función</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>Función principal:</strong> reusar parsers, reglas y jobs de cada app; no duplicar un motor HTTP.
+                    Pipeline <strong>delega</strong> en el orquestador; no hay una segunda cadena.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Problema que resuelve</h4>
+                        <ul>
+                            <li>Creer que la API es otra FilePipe o otro historial.</li>
+                            <li>Disparar un kind que está en catálogo pero no en el run (Repair, Profiler).</li>
+                            <li>Worksheets / records como si fueran jobs de archivo.</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Qué ganas</h4>
+                        <ul>
+                            <li>Misma evidencia en historial UF y en GET job.</li>
+                            <li>Tablero Pipeline ve <span class="mono">trigger_source=api</span>.</li>
+                            <li>Watch/Scheduler previstos: mismo runner, otro canal.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="no-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">3</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué no es (y qué sí usar)</h3>
+                </header>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Integración no…</h4>
+                        <ul>
+                            <li>No define el envelope JSON (<strong>Contrato</strong>).</li>
+                            <li>No lista cada URL (<strong>Paths</strong>).</li>
+                            <li>No crea keys (<strong>Clientes</strong>).</li>
+                            <li>No publica esquemas: eso sigue en UF.</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Usa otra pantalla si…</h4>
+                        <ul>
+                            <li><strong>Contrato</strong> — kinds, wait, validate.</li>
+                            <li><strong>Paths</strong> — método y path exactos.</li>
+                            <li><strong>Seguridad</strong> — cuotas y TTL.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="cableado">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">4</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Cómo leer “Cableado”</h3>
+                </header>
+                <table class="help-table">
+                    <thead><tr><th>Valor</th><th>Significado</th></tr></thead>
+                    <tbody>
+                        <tr><td>Sí</td><td><span class="mono">POST /jobs/run</span> ya llama al runner (Gate, Pipe, Reverse, Match, Scout, Clean, Split, Merge, Pipeline).</td></tr>
+                        <tr><td>No</td><td>El kind existe en contrato; el despacho HTTP aún no lo enruta.</td></tr>
+                        <tr><td>sin app</td><td>Repair / Profiler: no hay app instalada.</td></tr>
+                    </tbody>
+                </table>
+                <p class="hint" style="margin-top:12px">Match usa dos archivos; Merge varios; Scout a menudo no deja output único.</p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="flujo">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">5</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Flujo de trabajo</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>Publicar en UF → comprobar cableado → run con ese kind</strong>.
+                </p>
+                <ol>
+                    <li>US abre Integración y confirma “Sí” en el kind del ERP.</li>
+                    <li>UF deja versión publicada (proyecto o pipeline active).</li>
+                    <li>Máquina: Bearer, kind, slug o pipeline_id, archivo(s), Idempotency-Key.</li>
+                    <li>Revise el historial de <strong>esa</strong> app (Split ≠ Gate) con el mismo UUID.</li>
+                </ol>
+                <p class="hint" style="margin-top:12px">
+                    <a href="{% url 'platform_api:integration_guide' %}">Ir a la pantalla Integración →</a>
+                </p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="mapeo">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">6</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>UI ↔ API</h3>
+                </header>
+                <table class="help-table">
+                    <thead><tr><th>En la UI</th><th>En la API</th></tr></thead>
+                    <tbody>
+                        <tr><td>Ejecutar proyecto publicado</td><td class="mono">POST /jobs/run + kind + project_slug</td></tr>
+                        <tr><td>Ejecutar pipeline publicado</td><td class="mono">kind=file_pipeline o POST /pipelines/{id}/runs</td></tr>
+                        <tr><td>Historial de la app</td><td>Mismo job_id; GET /jobs/{id} sin path por kind</td></tr>
+                        <tr><td>Tablero Pipeline</td><td>Pulso incluye disparos api</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="flow-card" id="casos">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">7</span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Casos típicos</h3>
+                </header>
+                <ul>
+                    <li>QA de Split: kind <span class="mono">file_split</span>, runner SM; el ZIP de partes está en UF, no siempre en /output.</li>
+                    <li>Pipeline: no reimplementar pasos en el ERP; solo pipeline_id publicado.</li>
+                    <li>Repair en la tabla “No”: no espere 200 de run hasta que exista la app.</li>
+                </ul>
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}

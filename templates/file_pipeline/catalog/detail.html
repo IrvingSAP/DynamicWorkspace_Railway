@@ -1,0 +1,87 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}{{ row.kind }} — Step Catalog{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_pipeline.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_pipeline/includes/catalog_sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:catalog_list' %}">Step Catalog</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ row.kind }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Pipeline · Catálogo · entrada</p>
+        <h2><code>{{ row.kind }}</code> · {{ row.label }}</h2>
+        <p>Campos del registro. CRUD para operador de plataforma.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_pipeline:catalog_detail_help' kind=row.kind as fp_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=fp_help_url %}
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:catalog_list' %}">← Catálogo</a>
+        {% if can_manage_catalog %}
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:catalog_edit' kind=row.kind %}">Editar</a>
+        {% if row.status != 'disabled' %}
+        <a class="btn btn-primary" href="{% url 'file_pipeline:catalog_disable' kind=row.kind %}">Deshabilitar…</a>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="company-scope-strip">
+    {% if row.pipeline_enabled and row.status != 'disabled' %}
+    <span class="fp-opt-in-on">pipeline_enabled</span>
+    {% else %}
+    <span class="fp-opt-in-off">opt-in off</span>
+    {% endif %}
+    <span class="fp-phase-pill">fase {% if row.mvp_phase %}{{ row.mvp_phase }}{% else %}—{% endif %}</span>
+    <span class="cell-badge">status {{ row.status }}</span>
+    {% if row.updated_by %}
+    <span class="hint">updated · {{ row.updated_by.username }} · {{ row.updated_at|date:"d/m H:i" }}</span>
+    {% endif %}
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Registro</h3>
+        <dl class="fp-registry-meta">
+            <div><dt>kind</dt><dd>{{ row.kind }}</dd></div>
+            <div><dt>label</dt><dd>{{ row.label }}</dd></div>
+            <div><dt>project_kind</dt><dd>{{ row.project_kind }}</dd></div>
+            <div><dt>runner</dt><dd>{{ row.runner }}</dd></div>
+            <div><dt>input_arity</dt><dd>{{ row.input_arity }}</dd></div>
+            <div><dt>output_arity</dt><dd>{{ row.output_arity }}</dd></div>
+            <div><dt>produces_file</dt><dd>{{ row.produces_file|yesno:"true,false" }}</dd></div>
+            <div><dt>mvp_phase</dt><dd>{% if row.mvp_phase %}{{ row.mvp_phase }}{% else %}—{% endif %}</dd></div>
+        </dl>
+        {% if row.description %}<p class="hint" style="margin-top:12px">{{ row.description }}</p>{% endif %}
+        {% if row.disable_reason %}<p class="hint">Motivo de baja: {{ row.disable_reason }}</p>{% endif %}
+        <p class="hint">Borradores de pipeline que referencian este kind: {{ draft_refs }}</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Checklist al incorporar</h3>
+        <ul class="fp-checklist">
+            <li>kind alineado a PLATFORM_API</li>
+            <li>Runner sin acoplar solo a vistas HTML</li>
+            <li>Handoff documentado</li>
+            <li>Registrado aquí con pipeline_enabled según madurez</li>
+            <li>Paquete / flag compañía si aplica</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

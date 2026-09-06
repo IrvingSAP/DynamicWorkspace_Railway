@@ -70,7 +70,11 @@ INSTALLED_APPS = [
     "apps.structure_scout",
     "apps.file_clean",
     "apps.file_split_merge",
+    "apps.file_pipeline",
     "apps.profile_seed",
+    "apps.platform_api",
+    "apps.file_scheduler",
+    "apps.file_watch",
 ]
 
 MIDDLEWARE = [

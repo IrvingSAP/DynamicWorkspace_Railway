@@ -1,0 +1,305 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Origen {{ watch.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_source' watch_slug=watch.slug %}">Origen</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ watch.slug }}</span> · M2</p>
+        <h2>Ayuda — Origen de la bandeja</h2>
+        <p>Un solo adaptador por bandeja. Al elegir el tipo, se despliega un panel distinto (SFTP, carpeta o API). El resto de campos se oculta.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_watch:watch_source' watch_slug=watch.slug %}" class="btn btn-secondary">← Volver al origen</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Define <strong>de dónde</strong> llega el archivo a <span class="mono">{{ watch.slug }}</span>.
+            No copia a storage (Intake) ni dispara Job (Disparo).
+            Guardar <strong>no</strong> cambia el estado de la bandeja (En proceso / Activo / Inactivo).
+        </p>
+        <ul class="help-list">
+            <li>Hay <strong>un</strong> tipo de origen activo. Cambiar de tipo reconfigura el adaptador; los lotes ya ingeridos no se borran.</li>
+            <li>Al pulsar SFTP, Carpeta gestionada o API / webhook, el formulario muestra <strong>solo</strong> los campos de ese tipo.</li>
+            <li>SFTP y carpeta usan <strong>poll</strong> del worker. API push espera que un cliente <strong>empuje</strong> el archivo al endpoint de la bandeja.</li>
+            <li>Activar o reanudar exige origen completo y válido (junto con Disparo y, si dispara al llegar, Enrutado).</li>
+        </ul>
+
+        <h3 class="form-section-title">Quién puede usarla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Qué puede hacer</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PA / ED</td>
+                    <td>Ver, guardar, probar SFTP y rotar el token de push. No ven el secreto ni el token completo tras guardarlos.</td>
+                </tr>
+                <tr>
+                    <td>GE / CO</td>
+                    <td>Solo lectura: tipo, host, ruta y patrón. Sin botones de guardar ni secretos.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Siempre visibles (comunes)</h3>
+        <p class="help-intro">Estos campos no dependen del tipo. El panel de abajo cambia al seleccionar una tarjeta.</p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Obligatorio</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Tipo de origen</td>
+                    <td>Sí</td>
+                    <td>Elige el adaptador y <strong>despliega</strong> el panel correspondiente. Los otros paneles se ocultan y sus campos no se envían.</td>
+                    <td><strong>SFTP</strong> · <strong>Carpeta gestionada</strong> · <strong>API / webhook</strong></td>
+                </tr>
+                <tr>
+                    <td>Patrón de nombre</td>
+                    <td>Sí</td>
+                    <td>Glob de archivos que el monitor (o el push) acepta. En carpeta gestionada, <strong>aquí</strong> va el nombre esperado, no en la ruta.</td>
+                    <td class="mono">concilia01b.txt · extracto_*.csv · *.zip · * (todos). Máx. 200</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Si elige SFTP</h3>
+        <p class="help-intro">
+            El worker lista un directorio remoto a intervalos. Aparece el panel <strong>SFTP</strong> (host, puerto, usuario, secreto, ruta, poll y qué hacer tras el intake).
+        </p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Obligatorio</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Host</td>
+                    <td>Sí</td>
+                    <td>Servidor SFTP a consultar.</td>
+                    <td class="mono">Hostname o IP. Ej. sftp.banco.local</td>
+                </tr>
+                <tr>
+                    <td>Puerto</td>
+                    <td>Sí</td>
+                    <td>Puerto TCP del servicio.</td>
+                    <td class="mono">1–65535. Por defecto 22</td>
+                </tr>
+                <tr>
+                    <td>Usuario</td>
+                    <td>Sí</td>
+                    <td>Cuenta remota del listado.</td>
+                    <td class="mono">Texto. Ej. dw-watch</td>
+                </tr>
+                <tr>
+                    <td>Contraseña / clave</td>
+                    <td>Sí (la primera vez)</td>
+                    <td>Se guarda como <strong>referencia</strong> en el almacén de secretos. No se vuelve a mostrar. Si ya hay secreto, puede dejarlo vacío para no rotarlo.</td>
+                    <td>Password o clave. Placeholder •••• si ya existe</td>
+                </tr>
+                <tr>
+                    <td>Ruta remota</td>
+                    <td>Sí</td>
+                    <td>Directorio que el monitor lista.</td>
+                    <td class="mono">Absoluta o relativa al home. Ej. /inbox/extractos</td>
+                </tr>
+                <tr>
+                    <td>Poll (segundos)</td>
+                    <td>Sí</td>
+                    <td>Cada cuánto el worker vuelve a listar.</td>
+                    <td class="mono">Entero ≥ 30. Por defecto 60</td>
+                </tr>
+                <tr>
+                    <td>Tras intake</td>
+                    <td>Sí</td>
+                    <td>Qué hacer en el origen <strong>después</strong> de que Intake confirme el lote.</td>
+                    <td><strong>Dejar</strong> · <strong>Marcar</strong> · <strong>Borrar remoto</strong></td>
+                </tr>
+                <tr>
+                    <td>Última prueba</td>
+                    <td>—</td>
+                    <td>Resultado de «Probar SFTP» (PA/ED).</td>
+                    <td>OK · falló · vacío si aún no se probó</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Si elige Carpeta gestionada</h3>
+        <p class="help-intro">
+            El worker vigila un <strong>directorio de llegada</strong> de <strong>{{ company.name_short }}</strong> (no una ruta del PC ni un fichero concreto).
+            Recorre esa carpeta y toma los archivos que coincidan con <strong>Patrón de nombre</strong>.
+            En el explorador del proyecto la carpeta de esta bandeja es
+            <span class="mono">media/watches/{{ company.id }}/drop/{{ watch.slug }}/</span>
+            (el UUID es el id interno de {{ company.name_short }}; no aparece el código de compañía ni {{ watch.slug }} en el primer nivel de <span class="mono">watches/</span>).
+        </p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Obligatorio</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ruta relativa</td>
+                    <td>Sí</td>
+                    <td>
+                        Solo el <strong>directorio</strong>, sin nombre de archivo.
+                        Patrón: <span class="mono">watches/&lt;id-compañía&gt;/drop/&lt;código-bandeja&gt;</span>.
+                        <strong>drop</strong> es fijo. El último segmento es el código de <em>esta</em> bandeja (columna Código del listado); no es un ejemplo fijo.
+                    </td>
+                    <td>
+                        <span class="mono">watches/{{ company.id }}/drop/{{ watch.slug }}</span>
+                        <br>Compañía {{ company.name_short }} · código <span class="mono">{{ watch.slug }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Poll (segundos)</td>
+                    <td>Sí</td>
+                    <td>Cada cuánto se recorre el drop path.</td>
+                    <td class="mono">Entero ≥ 30. Por defecto 30</td>
+                </tr>
+                <tr>
+                    <td>Tras intake</td>
+                    <td>Sí</td>
+                    <td>Qué hacer con el archivo en el drop <strong>después</strong> del intake OK.</td>
+                    <td><strong>Dejar</strong> · <strong>Mover a procesados</strong> · <strong>Borrar</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        <table class="help-table">
+            <thead>
+                <tr><th>¿Qué escribir / dónde copiar?</th><th>Ejemplo para {{ company.name_short }} / {{ watch.slug }}</th><th>¿Válido?</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Carpeta de llegada en disco (correcto)</td>
+                    <td class="mono">media/watches/{{ company.id }}/drop/{{ watch.slug }}/</td>
+                    <td>Sí. Copie aquí el archivo. El UUID cambia por compañía; <span class="mono">{{ watch.slug }}</span> es el código de esta bandeja (en otra bandeja será otro slug).</td>
+                </tr>
+                <tr>
+                    <td>Raíz de watches (incorrecto)</td>
+                    <td class="mono">media/watches/concilia01b.txt</td>
+                    <td>No. El worker no lista la raíz; el archivo queda al lado de los UUID.</td>
+                </tr>
+                <tr>
+                    <td>Directorio + archivo en la ruta</td>
+                    <td class="mono">…/drop/{{ watch.slug }}/concilia01b.txt</td>
+                    <td>No en el campo. El nombre del archivo va en Patrón de nombre.</td>
+                </tr>
+                <tr>
+                    <td>Ruta absoluta del PC</td>
+                    <td class="mono">C:/IACursor/…/sheduler/</td>
+                    <td>No. No es el disco local de desarrollo.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">Las opciones de «Tras intake» <strong>no</strong> son las mismas que en SFTP: aquí no hay «Marcar» ni «Borrar remoto»; hay «Mover a procesados» y «Borrar».</p>
+
+        <h3 class="form-section-title">Si elige API / webhook</h3>
+        <p class="help-intro">
+            Un cliente <strong>empuja</strong> el archivo (no hay poll). Aparece el panel <strong>API / push</strong>: endpoint, hint del token y cómo se acepta el cuerpo.
+            No hay host, puerto ni poll.
+        </p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Obligatorio</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Endpoint</td>
+                    <td>—</td>
+                    <td>
+                        URL donde el cliente hace POST. Patrón:
+                        <span class="mono">/app/file-watch/bandejas/&lt;código-bandeja&gt;/push/</span>.
+                        El segmento es el código de <em>esta</em> bandeja (no un ejemplo fijo).
+                        La compañía no va en la URL: el tenant es el de la bandeja ({{ company.name_short }}).
+                    </td>
+                    <td>
+                        <span class="mono">{% url 'file_watch:watch_api_push' watch_slug=watch.slug %}</span>
+                        <br>Compañía {{ company.name_short }} · código <span class="mono">{{ watch.slug }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Hint del token</td>
+                    <td>—</td>
+                    <td>Últimos caracteres del token, para reconocerlo en el cofre. El valor completo se muestra <strong>una sola vez</strong> al guardar (si se emite) o al rotar.</td>
+                    <td class="mono">…abcd</td>
+                </tr>
+                <tr>
+                    <td>Aceptar upload multipart</td>
+                    <td>Al menos uno de los dos</td>
+                    <td>El cliente envía el archivo en un POST multipart.</td>
+                    <td>Marcado por defecto. Si desmarca ambos, el sistema deja multipart activo.</td>
+                </tr>
+                <tr>
+                    <td>Aceptar referencia de storage</td>
+                    <td>Al menos uno de los dos</td>
+                    <td>Modo avanzado: el cliente indica un hash ya en storage (no es el origen Artifact del Scheduler).</td>
+                    <td>Desmarcado por defecto</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Auth del push: header <span class="mono">X-Watch-Token</span> o sesión autenticada.
+            Al guardar por primera vez con este tipo se emite un token si aún no había.
+        </p>
+
+        <h3 class="form-section-title">Acciones de la pantalla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Aplica a</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ayuda</td>
+                    <td>Todos</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>Guardar origen</td>
+                    <td>El tipo seleccionado</td>
+                    <td>Valida y persiste <strong>solo</strong> los campos de ese adaptador. Mensaje: <em>Origen guardado correctamente.</em> Si es API y no había token, lo muestra una vez.</td>
+                </tr>
+                <tr>
+                    <td>Probar SFTP</td>
+                    <td>SFTP</td>
+                    <td>Comprueba host, puerto y que haya credencial. En este MVP no abre sesión SFTP real. No sustituye a Guardar.</td>
+                </tr>
+                <tr>
+                    <td>Rotar token push</td>
+                    <td>API / webhook</td>
+                    <td>Emite un token nuevo y lo muestra una sola vez. El anterior deja de valer. Mensaje: <em>Token de push rotado. Cópielo ahora…</em></td>
+                </tr>
+                <tr>
+                    <td>Cancelar / ← Hub</td>
+                    <td>Todos</td>
+                    <td>Vuelve al hub sin guardar.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

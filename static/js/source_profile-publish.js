@@ -135,7 +135,7 @@
             e.preventDefault();
             const blockedReason = (button.dataset.blockedReason || "").trim();
             if (blockedReason || button.getAttribute("aria-disabled") === "true") {
-                const text = blockedReason || "Complete los 6 pasos del contrato antes de publicar.";
+                const text = blockedReason || "Complete Perfil y Reglas antes de publicar.";
                 if (statusEl) {
                     statusEl.textContent = text;
                     statusEl.classList.add("step-save-status--error");
@@ -145,7 +145,7 @@
             }
             const next = button.dataset.next || "";
             const draftLabel = button.dataset.draftLabel || "el borrador actual";
-            const message = (
+            const message = (button.dataset.confirmMessage || "").trim() || (
                 "¿Publicar " + draftLabel + "? "
                 + "El contrato quedará congelado para Validar y se creará un nuevo borrador."
             );

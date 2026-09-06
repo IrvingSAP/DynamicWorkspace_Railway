@@ -1,0 +1,99 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Diseñar — {{ pipeline.slug }}{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_pipeline.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_list' %}">File Pipeline</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">{{ pipeline.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Diseñar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Pipeline · Diseñador · <span class="cell-badge">{{ pipeline.slug }}</span></p>
+        <h2>Diseñador de pasos</h2>
+        <p>Solo kinds del catálogo (opt-in). El run usará la versión publicada activa de cada proyecto; aquí no se fija un número de versión.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_pipeline:pipeline_designer_help' pipeline_slug=pipeline.slug as fp_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=fp_help_url %}
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=pipeline.slug %}">← Hub</a>
+        {% if can_edit %}
+        <button type="submit" form="fp-designer-form" class="btn btn-primary">Guardar borrador</button>
+        {% endif %}
+    </div>
+</div>
+
+{% if not can_edit %}
+<p class="hint">Solo PA o ED pueden editar el rail. Puede consultar el borrador actual.</p>
+{% endif %}
+
+<div class="panel"><div class="panel-body">
+    <h3 class="form-section-title">Agregar paso</h3>
+    <div class="fp-add-step">
+        <div class="field" style="margin:0">
+            <label for="fp-kind">Tipo (catálogo)</label>
+            <select id="fp-kind" {% if not can_edit %}disabled{% endif %}>
+                {% for item in kinds %}
+                <option value="{{ item.kind }}">{{ item.kind }} — {{ item.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field" style="margin:0">
+            <label for="fp-proj">Proyecto activo</label>
+            <select id="fp-proj" {% if not can_edit %}disabled{% endif %}>
+                {% for row in initial_projects %}
+                <option value="{{ row.slug }}">{{ row.label }}</option>
+                {% empty %}
+                <option value="" disabled selected>Sin proyectos activos autorizados</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if can_edit %}
+        <button type="button" class="btn btn-secondary" id="fp-add-step">+ Añadir al rail</button>
+        {% endif %}
+    </div>
+    <p class="hint" style="margin:10px 0 0">
+        Solo proyectos activos del kind elegido, públicos o a los que está autorizado, con versión publicada vigente.
+    </p>
+</div></div>
+
+<div class="panel"><div class="panel-body">
+    <h3 class="form-section-title">Rail del borrador</h3>
+    <p class="hint" id="fp-rail-empty"{% if draft_steps %} hidden{% endif %}>Aún no hay pasos. Añada al menos uno y guarde para completar «Diseñar pasos» en el hub.</p>
+    <ol class="fp-step-rail" id="fp-rail"></ol>
+</div></div>
+
+<form id="fp-designer-form" method="post" action="{% url 'file_pipeline:pipeline_designer' pipeline_slug=pipeline.slug %}">
+    {% csrf_token %}
+    <input type="hidden" name="steps_json" id="fp-steps-json" value="">
+</form>
+
+{{ draft_steps|json_script:"fp-draft-steps" }}
+{{ kinds|json_script:"fp-kinds" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+window.FP_DESIGNER = {
+  canEdit: {{ can_edit|yesno:"true,false" }},
+  projectsUrl: "{% url 'file_pipeline:pipeline_designer_projects' pipeline_slug=pipeline.slug %}"
+};
+</script>
+<script src="{% static 'js/file_pipeline-designer.js' %}"></script>
+{% endblock %}

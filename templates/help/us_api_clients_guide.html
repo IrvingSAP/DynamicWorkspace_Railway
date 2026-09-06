@@ -1,0 +1,262 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Clientes API{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_us.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:client_list' %}">Clientes API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Guía de trabajo · <span class="role-badge">US</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>Cómo funcionan los clientes de máquina</h2>
+        <p>
+            Un <strong>cliente API</strong> es la identidad de un sistema externo (ERP, RPA, middleware)
+            que llama a DynamicWorkspace por HTTP. No es un usuario UF: no entra con 2FA.
+            Usa un Bearer (<span class="mono">dw_test_…</span> o <span class="mono">dw_live_…</span>) ligado a
+            <strong>esta compañía</strong> y a unos <strong>scopes</strong> explícitos.
+        </p>
+        <p>
+            Esta página describe el <strong>flujo completo</strong> del recorte Clientes. En el listado y la ficha
+            también hay ayuda contextual (botón <span class="mono">?</span> / Ayuda) con el detalle de esa vista.
+        </p>
+    </div>
+    <aside class="guide-hero-aside" aria-label="Ruta rápida">
+        <h3>Ruta rápida</h3>
+        <ol class="guide-quick-path">
+            <li>Alta del cliente, copie la key una vez al cofre.</li>
+            <li>Marque scopes y (si aplica) política de proceso.</li>
+            <li>Pruebe <span class="mono">whoami</span> / run; rote o revoque cuando cierre el sandbox.</li>
+        </ol>
+    </aside>
+</div>
+
+<div class="guide-role-strip" aria-label="Quién actúa">
+    <span class="label">Quién</span>
+    <span class="guide-role-item"><span class="role-code role-code--pa">US</span><span>Administra clientes, keys, scopes, rotar y revocar</span></span>
+    <span class="guide-role-item"><span class="role-code">Máquina</span><span>Autentica con Bearer; dispara jobs publicados</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--ed">UF</span><span>Diseña y publica en las apps; no gestiona keys</span></span>
+    <span class="guide-role-item"><span class="role-code role-code--co">UA</span><span>No opera este menú</span></span>
+</div>
+
+<div class="guide-layout">
+    <nav class="guide-spine" aria-label="Índice de la guía">
+        <h3>Secciones</h3>
+        <nav>
+            <a href="#que-es">Qué es</a>
+            <a href="#funcion">Función</a>
+            <a href="#no-es">Qué no es</a>
+            <a href="#flujo">Flujo de trabajo</a>
+            <a href="#modulos">Pantallas</a>
+            <a href="#scopes">Scopes</a>
+            <a href="#casos">Casos típicos</a>
+        </nav>
+    </nav>
+
+    <div class="guide-flows">
+        <article class="flow-card" id="que-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">1</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué es un cliente de máquina</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    Es el registro que PLATFORM API usa para saber <strong>quién</strong> llama:
+                    código (p. ej. <span class="mono">api-qa-p01</span>), entorno sandbox o producción,
+                    scopes y estado activo o revocado. La key se emite al <strong>alta</strong> o al <strong>rotar</strong>;
+                    cada <span class="mono">POST /jobs/run</span> reutiliza el mismo Bearer.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>En una frase</h4>
+                        <p>
+                            Una <strong>identidad de integración</strong> por compañía: no es un proyecto File Gate
+                            ni un pipeline; es la credencial para ejecutar lo que UF ya publicó.
+                        </p>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Resultado que entrega</h4>
+                        <ul>
+                            <li>Key visible <strong>una sola vez</strong> (pantalla Key emitida).</li>
+                            <li>Listado y ficha para editar nombre/scopes sin cambiar el secreto.</li>
+                            <li>Auditoría append-only (alta, rotación, revocación).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="funcion">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">2</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Cuál es la función de Clientes</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    <strong>Función principal:</strong> dar de alta y gobernar las keys que autenticarán
+                    <span class="mono">/api/v1/…</span>. El trabajo de negocio (partir un archivo, validar, un pipeline)
+                    lo hacen las apps; el cliente solo <strong>identifica</strong> y <strong>autoriza</strong> a la máquina.
+                </p>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Problema que resuelve</h4>
+                        <ul>
+                            <li>Un ERP no puede usar la cookie de sesión US/UF.</li>
+                            <li>Hace falta un Bearer por entorno (sandbox ≠ producción).</li>
+                            <li>Hay que rotar o dar de baja sin borrar el historial de jobs.</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Qué ganas</h4>
+                        <ul>
+                            <li>Scopes mínimos (no un token dios).</li>
+                            <li>Aislamiento por compañía: no ve jobs de otra.</li>
+                            <li>Rotar la key no cambia el <span class="mono">job_id</span> de corridas ya hechas.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="no-es">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">3</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Qué no es (y qué sí usar en su lugar)</h3>
+                </header>
+                <div class="flow-card-grid">
+                    <div class="flow-card-block">
+                        <h4>Clientes no…</h4>
+                        <ul>
+                            <li>No diseñan esquemas, mapeos ni pasos de pipeline.</li>
+                            <li>No sustituyen Contrato, Paths, Integración ni Seguridad (otras entradas del menú).</li>
+                            <li>No “des-revocan”: hay que crear <strong>otro</strong> cliente.</li>
+                        </ul>
+                    </div>
+                    <div class="flow-card-block">
+                        <h4>Usa otra pantalla si…</h4>
+                        <ul>
+                            <li><strong>Contrato / Paths</strong> — catálogo HTTP y kinds.</li>
+                            <li><strong>Seguridad</strong> — tamaño, tasa, TTL, allowlist de webhooks.</li>
+                            <li><strong>Auditoría</strong> — ciclo de vida del cliente, no el detalle de un job.</li>
+                            <li>Apps UF — publicar el proyecto que la máquina va a disparar.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="flow-card" id="flujo">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">4</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Flujo de trabajo</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    Camino fijo: <strong>crear → copiar key → probar HTTP → rotar o revocar</strong>.
+                </p>
+                <ol>
+                    <li>US → API → Clientes → Nuevo cliente (código, entorno, scopes).</li>
+                    <li>Copie el Bearer en el cofre. No recargue Key emitida sin haber copiado.</li>
+                    <li><span class="mono">GET /api/v1/whoami</span> y, con proyecto publicado, <span class="mono">POST /jobs/run</span>.</li>
+                    <li>Si se filtra o caduca la política: <strong>Rotar key</strong> (la anterior da 401).</li>
+                    <li>Al cerrar el integrador: <strong>Revocar</strong>. Los jobs ya corridos siguen en el historial de la app.</li>
+                </ol>
+                <p class="hint" style="margin-top:12px">
+                    <a href="{% url 'platform_api:client_list' %}">Ir al listado de clientes →</a>
+                </p>
+            </div>
+        </article>
+
+        <article class="flow-card" id="modulos">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">5</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Pantallas de este recorte</h3>
+                </header>
+                <table class="help-table">
+                    <thead><tr><th>#</th><th>Pantalla</th><th>Qué hace</th></tr></thead>
+                    <tbody>
+                        <tr><td>1</td><td>Listado</td><td>Activos / revocados / sandbox; abrir ficha</td></tr>
+                        <tr><td>2</td><td>Alta</td><td>Crea el cliente y emite la primera key</td></tr>
+                        <tr><td>3</td><td>Key emitida</td><td>Muestra el secreto una vez (crear o rotar)</td></tr>
+                        <tr><td>4</td><td>Ficha</td><td>Nombre, descripción, scopes, webhook, rotar, revocar</td></tr>
+                        <tr><td>5</td><td>Auditoría del cliente</td><td>Eventos de esa identidad (no el job_id de Split)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="flow-card" id="scopes">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">6</span>
+                <span class="flow-card-line"></span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Scopes</h3>
+                </header>
+                <p class="flow-card-purpose">
+                    La máquina no hereda el rol PA/GE. Cada permiso se marca en la ficha y se guarda.
+                </p>
+                <table class="help-table">
+                    <thead><tr><th>Scope</th><th>Permite</th></tr></thead>
+                    <tbody>
+                        <tr><td class="mono">jobs:run</td><td>Disparar un job suelto (<span class="mono">POST /jobs/run</span>)</td></tr>
+                        <tr><td class="mono">jobs:read</td><td>Detalle, listado, estado</td></tr>
+                        <tr><td class="mono">jobs:cancel</td><td>Cancelar si el runner lo admite (Split completed → 409)</td></tr>
+                        <tr><td class="mono">pipeline:run</td><td>Cadena publicada</td></tr>
+                        <tr><td class="mono">artifacts:download</td><td>Informe y archivo de salida</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="flow-card" id="casos">
+            <div class="flow-card-marker" aria-hidden="true">
+                <span class="flow-card-step">7</span>
+            </div>
+            <div class="flow-card-body">
+                <header class="flow-card-header">
+                    <h3>Casos típicos</h3>
+                </header>
+                <ul>
+                    <li>Sandbox de QA: un cliente <span class="mono">dw_test_…</span> para Postman o curl.</li>
+                    <li>Producción: otro cliente (otro código o mismo código en entorno prod) con <span class="mono">dw_live_…</span>.</li>
+                    <li>Key filtrada en un chat: rotar; no crear un segundo cliente “por si acaso” si sigue siendo el mismo integrador.</li>
+                </ul>
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}

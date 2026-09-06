@@ -41,7 +41,7 @@
     <div class="page-actions">
         {% url 'file_split_merge:profile_hub_help' project_slug=project.slug as source_help_url %}
         {% include "projects/includes/project_help_link.html" with help_url=source_help_url %}
-        <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Proyecto</a>
+        <a href="{% url 'file_split_merge:project_hub' project_slug=project.slug %}" class="btn btn-secondary">← Hub Proyecto</a>
         <a href="{% url wizard.continue_step_url_name project_slug=project.slug %}" class="btn btn-primary">Continuar edición</a>
     </div>
 </div>
@@ -71,8 +71,8 @@
     <div class="panel-body">
         <h3 class="form-section-title">Importar estructura</h3>
         <p class="hint">
-            ¿Ya modeló este layout en <strong>FILE GATE</strong> o <strong>FILE CLEAN</strong>?
-            Importe un perfil <strong>publicado</strong> a este borrador. No publica Split/Merge.
+            ¿Ya modeló este layout en <strong>FILE GATE</strong> (esquema, no políticas), <strong>FILE CLEAN</strong> (perfil, no reglas), <strong>FilePipe</strong> (origen, no destino ni mapeo), <strong>FILE MATCH</strong> (Perfil A o B, no reglas de cruce), <strong>Reverse Studio</strong> (entrada, no salida), <strong>otro FILE SPLIT/MERGE</strong> (perfil, no reglas) o <strong>STRUCTURE SCOUT</strong> (borrador actual)?
+            Importe la forma a este <strong>borrador</strong>. No publica Split/Merge.
         </p>
         <div class="page-actions" style="margin-top:12px">
             <a href="{% url 'file_split_merge:profile_seed_hub' project_slug=project.slug %}" class="btn btn-primary">Importar estructura</a>

@@ -1,0 +1,99 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Evento de auditoría{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_us.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:audit_list' %}">Auditoría</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'platform_api:audit_event' event.pk %}">Evento</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">US</span></p>
+        <h2>Ayuda — Detalle de un evento</h2>
+        <p>Cómo leer el hecho «{{ event.get_action_display }}» de <code>{{ event.client.code }}</code>. No se corrige: el siguiente cambio genera otra fila.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'platform_api:client_audit' event.client_id %}" class="btn btn-secondary">Línea del cliente</a>
+        <a href="{% url 'platform_api:audit_event' event.pk %}" class="btn btn-secondary">← Volver al evento</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Cabecera</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Dato</th><th>Qué prueba</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Acción y resumen</td>
+                    <td>Tipo de hecho y la frase fija del sistema (no es un comentario libre).</td>
+                </tr>
+                <tr>
+                    <td>Fecha</td>
+                    <td>Instante del POST en la UI (alta, guardar, rotar, revelar, revocar).</td>
+                </tr>
+                <tr>
+                    <td>Cliente</td>
+                    <td>Identidad de máquina afectada. El código actual puede haber cambiado después de este evento.</td>
+                </tr>
+                <tr>
+                    <td>Actor</td>
+                    <td>Usuario US autenticado. «sistema» o — si no hubo sesión humana.</td>
+                </tr>
+                <tr>
+                    <td>IP / agente</td>
+                    <td>Contexto del navegador en esa petición (si estaba disponible). No es la IP del ERP.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Antes / Después</h3>
+        <p class="help-intro">
+            Snapshots de configuración. En el <strong>alta</strong> o al <strong>mostrar la key</strong> el bloque Antes suele ir vacío.
+            Compare filas con la misma clave: un cambio de scopes o de pista de key explica un corte de integración.
+        </p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Clave</th><th>Significado</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="mono">code / name / description</td><td>Identificación del cliente en la compañía.</td></tr>
+                <tr><td class="mono">environment</td><td>Sandbox o producción (son clientes distintos, cada uno con su key).</td></tr>
+                <tr><td class="mono">status</td><td>Activo o revocado.</td></tr>
+                <tr><td class="mono">scopes</td><td>Permisos de la máquina en el momento del hecho.</td></tr>
+                <tr><td class="mono">key_hint</td><td>Pista corta de la key. Cambia al rotar. Nunca es el secreto ni el hash.</td></tr>
+                <tr><td class="mono">webhook_url / webhook_enabled / webhook_events</td><td>Callback (el secreto HMAC no se muestra en claro).</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Qué no verá</h3>
+        <ul>
+            <li>La key en claro ni <code>secret_hash</code>.</li>
+            <li>Cuerpos de jobs, archivos o respuestas HTTP del ERP.</li>
+            <li>Un botón de «editar evento»: el registro es inmutable.</li>
+        </ul>
+        <p class="help-intro">
+            Siguiente paso operativo: <a href="{% url 'platform_api:client_detail' event.client_id %}">ficha del cliente</a>
+            (rotar o revocar) o <a href="{% url 'platform_api:audit_list' %}">auditoría de la compañía</a>.
+        </p>
+    </div>
+</div>
+{% endblock %}

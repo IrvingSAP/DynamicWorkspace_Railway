@@ -1,0 +1,72 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Idempotencia — {{ watch.name }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Idempotencia</span>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Watch · M6 · <span class="perm-badge{% if hub.is_pa %} perm-badge--admin{% endif %}">{{ hub.role_label }}</span></p>
+        <h2>Idempotencia y cuotas</h2>
+        <p>Duplicados por hash, reintentos y límites de pendientes / llegadas.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_watch:watch_idempotency_help' watch_slug=watch.slug as wach_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=wach_help_url %}
+        <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+<form method="post" novalidate>
+    {% csrf_token %}
+    <fieldset {% if not can_edit %}disabled{% endif %} style="border:0;padding:0;margin:0;min-inline-size:0">
+        <div class="panel"><div class="panel-body">
+            <div class="field{% if errors.dup_policy %} has-error{% endif %}">
+                <label for="dup_policy">Duplicados (mismo hash)</label>
+                <select id="dup_policy" name="dup_policy">
+                    <option value="skip"{% if posted.dup_policy == 'skip' %} selected{% endif %}>Omitir</option>
+                    <option value="allow"{% if posted.dup_policy == 'allow' %} selected{% endif %}>Permitir</option>
+                    <option value="replace_pending"{% if posted.dup_policy == 'replace_pending' %} selected{% endif %}>Sustituir pendiente</option>
+                </select>
+                {% for msg in errors.dup_policy %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            <div class="form-row two-cols">
+                <div class="field"><label for="dup_window_days">Ventana (días)</label>
+                    <input type="number" id="dup_window_days" name="dup_window_days" value="{{ posted.dup_window_days }}" min="1"></div>
+                <div class="field"><label for="retry_max">Reintentos máx.</label>
+                    <input type="number" id="retry_max" name="retry_max" value="{{ posted.retry_max }}" min="0"></div>
+            </div>
+            <div class="form-row two-cols">
+                <div class="field"><label for="retry_backoff_sec">Backoff (s)</label>
+                    <input type="number" id="retry_backoff_sec" name="retry_backoff_sec" value="{{ posted.retry_backoff_sec }}" min="1"></div>
+                <div class="field"><label for="quota_max_pending">Máx. pendientes</label>
+                    <input type="number" id="quota_max_pending" name="quota_max_pending" value="{{ posted.quota_max_pending }}" min="1"></div>
+            </div>
+            <div class="form-row two-cols">
+                <div class="field"><label for="quota_max_arrivals_per_day">Máx. llegadas / día</label>
+                    <input type="number" id="quota_max_arrivals_per_day" name="quota_max_arrivals_per_day" value="{{ posted.quota_max_arrivals_per_day }}" min="1"></div>
+                <div class="field"><label for="quota_max_bytes_per_day">Máx. bytes / día (0 = sin límite)</label>
+                    <input type="number" id="quota_max_bytes_per_day" name="quota_max_bytes_per_day" value="{{ posted.quota_max_bytes_per_day }}" min="0"></div>
+            </div>
+        </div></div>
+        {% if can_edit %}
+        <div class="form-actions form-actions--flush">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a class="btn btn-secondary" href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">Cancelar</a>
+        </div>
+        {% endif %}
+    </fieldset>
+</form>
+{% endblock %}

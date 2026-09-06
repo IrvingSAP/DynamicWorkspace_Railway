@@ -1,0 +1,49 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Deshabilitar {{ row.kind }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_pipeline.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_pipeline/includes/catalog_sidebar.html" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Pipeline · Catálogo</p>
+        <h2>Deshabilitar <code>{{ row.kind }}</code></h2>
+        <p>Quita el kind de <strong>nuevos</strong> diseños. No elimina la app del menú ni borra borradores existentes de golpe.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:catalog_detail' kind=row.kind %}">← Detalle</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Impacto</h3>
+        <ul style="margin:0;padding-left:1.1rem;line-height:1.75">
+            <li>Se pondrá <code>pipeline_enabled=false</code> y <code>status=disabled</code>.</li>
+            <li>El diseñador dejará de ofrecer este kind.</li>
+            <li>Pipelines ya publicados que lo usen seguirán hasta reeditar/republicar.</li>
+            <li>Borradores actuales que lo referencian: <strong>{{ draft_refs }}</strong>.</li>
+        </ul>
+        <p class="hint" style="margin-top:12px">Borrado físico: no está disponible. Use deshabilitar.</p>
+        <form method="post" style="margin-top:18px">
+            {% csrf_token %}
+            <div class="field">
+                <label for="reason">Motivo (auditoría)</label>
+                <input type="text" id="reason" name="reason" maxlength="255" placeholder="Retirado del MVP hasta nueva revisión">
+            </div>
+            <div class="form-actions form-actions--flush">
+                <button type="submit" class="btn btn-primary">Confirmar deshabilitar</button>
+                <a class="btn btn-secondary" href="{% url 'file_pipeline:catalog_detail' kind=row.kind %}">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — File Scheduler{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia</p>
+        <h2>Ayuda general — File Scheduler</h2>
+        <p>Planes de plataforma: cuándo disparar un Job o un pipeline. No vigila carpetas (Watch) ni orquesta pasos (Pipeline).</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_scheduler:schedule_integration' %}" class="btn btn-secondary">Mapa</a>
+        <a href="{% url 'file_scheduler:schedule_list' %}" class="btn btn-secondary">← Planes</a>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <p class="help-intro">Alta de plan: usuario tipo <strong>US</strong> de la compañía con rol <strong>PA</strong> o <strong>ED</strong>. El creador queda PA. UF invitados consultan o editan según membresía; no crean planes nuevos.</p>
+        <p class="help-intro">El Scheduler responde <strong>cuándo</strong> disparar. Watch responde si llegó el archivo. Pipeline y las apps responden <strong>cómo</strong> se transforma. Un solo runner: UI, API, Watch y Scheduler no bifurcan semántica.</p>
+        <p class="help-intro"><a href="{% url 'file_scheduler:schedule_integration' %}">Mapa de integración</a> · <a href="{% url 'file_scheduler:schedule_errors' %}">Catálogo de errores</a>.</p>
+    </div>
+</div>
+{% endblock %}

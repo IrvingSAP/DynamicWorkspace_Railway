@@ -1,0 +1,49 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Hub {{ schedule.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · {{ schedule.slug }}</p>
+        <h2>Ayuda — Hub del plan</h2>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Acciones</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Quién</th><th>Cuándo</th></tr></thead>
+            <tbody>
+                <tr><td>Editar / Miembros / Archivar</td><td>PA (archivar y miembros); PA/ED (editar)</td><td>En el listado de planes, en la fila. No en este hub.</td></tr>
+                <tr><td>Pausar</td><td>PA, ED</td><td>Solo si está Activo. El estado pasa a <strong>Inactivo</strong>.</td></tr>
+                <tr><td>Marcar como Activo</td><td>PA, ED</td><td>Desde En proceso, si Programación y Destino están guardados.</td></tr>
+                <tr><td>Reanudar</td><td>PA, ED</td><td>Desde Inactivo; exige Programación (M2) y Destino (M3).</td></tr>
+                <tr><td>Ejecutar ahora</td><td>—</td><td>No existe en este módulo.</td></tr>
+            </tbody>
+        </table>
+        <h3 class="form-section-title">Rail</h3>
+        <p class="help-intro">Definición: Programación, Destino, Solape y Dependencia (disponibles), Avisos. Operación: Actividad (ticks), Auditoría, Miembros. Activar exige destino y reloj o padre.</p>
+    </div>
+</div>
+{% endblock %}

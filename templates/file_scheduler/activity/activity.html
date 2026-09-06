@@ -1,0 +1,174 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Actividad — {{ schedule.name }}{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_scheduler.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Actividad</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Scheduler · M4 · <span class="perm-badge{% if hub.is_pa %} perm-badge--admin{% endif %}">{{ hub.role_label }}</span></p>
+        <h2>Actividad / ticks</h2>
+        <p>Historial append-only de este plan. El log de Gate/Pipe/Clean está en esa app, no aquí. No hay Ejecutar ahora.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_scheduler:schedule_activity_help' schedule_slug=schedule.slug as sch_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=sch_help_url %}
+        <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen de ticks">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Ticks</p>
+        <p class="stat-value">{{ stats.total|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Encolados</p>
+        <p class="stat-value">{{ stats.enqueued|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">En curso</p>
+        <p class="stat-value">{{ stats.running|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Omitidos</p>
+        <p class="stat-value">{{ stats.skipped|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Falló</p>
+        <p class="stat-value">{{ stats.failed|default:0 }}</p>
+    </div>
+</div>
+
+<div class="version-strip">
+    <strong>Próximo tick:</strong> {{ hub.next_tick_label }}
+    · <strong>Último tick:</strong> {{ hub.last_tick_label }}
+</div>
+
+<div class="panel panel--table">
+    <div class="table-toolbar" aria-label="Controles de tabla">
+        <div class="table-toolbar-group">
+            <label for="filter-tick-status">
+                Estado
+                <select id="filter-tick-status">
+                    <option value="">Todos</option>
+                    <option value="enqueued">Encolado</option>
+                    <option value="running">En curso</option>
+                    <option value="skipped">Omitido</option>
+                    <option value="failed">Falló</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="table-dt-host">
+        <table id="sch-tick-table" class="dw-datatable" data-dt-custom="true" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Ventana</th>
+                    <th>Resultado</th>
+                    <th>Mensaje</th>
+                    <th>Run</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr data-status="{{ row.status }}">
+                    <td data-order="{{ row.scheduled_for|date:'c' }}">{{ row.scheduled_for|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        {% if row.status == 'enqueued' %}<span class="status status-active">{{ row.status_label }}</span>
+                        {% elif row.status == 'running' %}<span class="cell-badge">{{ row.status_label }}</span>
+                        {% elif row.status == 'failed' %}<span class="status status-inactive">{{ row.status_label }}</span>
+                        {% else %}<span class="visibility-badge visibility-badge--private">{{ row.status_label }}</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if row.user_message %}{{ row.user_message }}{% else %}—{% endif %}
+                        {% if row.delegated_status_label %}
+                        <p class="hint" style="margin:4px 0 0">Job destino: {{ row.delegated_status_label }}{% if row.app_label %} · {{ row.app_label }}{% endif %}</p>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if row.run_href %}
+                        <a href="{{ row.run_href }}">{% if row.run_label %}{{ row.run_label }}{% else %}Abrir historial{% endif %}</a>
+                        {% elif row.pipeline_run_id %}
+                        <code title="{{ row.pipeline_run_id }}">pipeline {{ row.pipeline_run_id|truncatechars:8 }}</code>
+                        {% elif row.job_id %}
+                        <code title="{{ row.job_id }}">job {{ row.job_id|truncatechars:8 }}</code>
+                        {% else %}—{% endif %}
+                        {% if row.run_blocked_reason %}
+                        <p class="hint" style="margin:4px 0 0">{{ row.run_blocked_reason }}</p>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">Aún no hay ticks. El worker solo evalúa planes Activos; no hay Ejecutar ahora.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<p class="sch-audit-note">Actor del fire: system:scheduler. Un fire por plan y ventana (scheduled_for). «En curso» = el Job destino sigue en cola o ejecutándose. El log de negocio (OK/ERROR, filas) está en el historial de la app, no en esta tabla.</p>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (typeof DataTable === "undefined") return;
+  var tableEl = document.getElementById("sch-tick-table");
+  if (!tableEl || tableEl.dataset.dtInit === "true") return;
+  if (!tableEl.querySelector("td[colspan]")) {
+    var statusValue = "";
+    DataTable.ext.search.push(function (settings, _d, dataIndex) {
+      if (!settings.nTable || settings.nTable.id !== "sch-tick-table") return true;
+      var row = new DataTable.Api(settings).row(dataIndex).node();
+      if (!row) return true;
+      if (!statusValue) return true;
+      return row.dataset.status === statusValue;
+    });
+    var table = new DataTable("#sch-tick-table", {
+      language: DW_DATATABLES_ES,
+      layout: DW_DATATABLES_LAYOUT,
+      pageLength: 10,
+      order: [[0, "desc"]],
+    });
+    tableEl.dataset.dtInit = "true";
+    var filter = document.getElementById("filter-tick-status");
+    if (filter) {
+      filter.addEventListener("change", function () {
+        statusValue = filter.value;
+        table.draw();
+      });
+    }
+  }
+});
+</script>
+{% endblock %}

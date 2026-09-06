@@ -1,0 +1,245 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Listado File Watch{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">{% if can_create %}US{% else %}UF{% endif %}</span>{% if can_create %} PA / ED{% endif %}</p>
+        <h2>Ayuda — Listado de bandejas</h2>
+        <p>Qué hace esta pantalla y qué significa cada elemento. File Watch no parsea archivos: detecta llegadas y las deja en storage o dispara un Job.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_watch:watch_list' %}" class="btn btn-secondary">← Volver al listado</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Aquí se listan las <strong>bandejas vigiladas</strong> de <strong>esta</strong> compañía.
+            Una bandeja es la unidad que el monitor observa: cuando llega un archivo, lo ingiere y, según el disparo, encola un Job o deja el lote para File Scheduler.
+            El código de la bandeja es el <span class="mono">watch_id</span> que usa Scheduler cuando el origen es <span class="mono">watch</span>.
+        </p>
+        <ul class="help-list">
+            <li>Solo ve bandejas de su compañía (miembro o públicas para la organización).</li>
+            <li>Las <strong>archivadas</strong> no entran en el listado operativo; use el filtro Archivados para consultarlas.</li>
+            <li>El alta nace en <strong>En proceso</strong>. El monitor solo ingiere bandejas <strong>Activo</strong>.</li>
+        </ul>
+
+        <h3 class="form-section-title">Quién puede usarla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Qué puede hacer</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>US · PA / ED</td>
+                    <td>Alta de bandejas en la compañía. En cada bandeja, según su membresía: editar, pausar / reanudar; solo PA archiva y gestiona miembros.</td>
+                </tr>
+                <tr>
+                    <td>US · GE / CO</td>
+                    <td>No crean bandejas. Consultan las que ven por membresía o visibilidad pública.</td>
+                </tr>
+                <tr>
+                    <td>UF</td>
+                    <td>No crea bandejas (aunque sea PA/ED de un proyecto vertical). Consulta según membresía o visibilidad de compañía.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Alcance de compañía</h3>
+        <p class="help-intro">Franja superior que indica en qué organización está trabajando. No hay lectura cruzada entre compañías.</p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Elemento</th><th>Qué es</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Código (badge)</td>
+                    <td>Sigla corta de la compañía.</td>
+                    <td class="mono">Ej. ACME</td>
+                </tr>
+                <tr>
+                    <td>Nombre largo</td>
+                    <td>Razón social o nombre completo.</td>
+                    <td>Texto definido por el administrador.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Resumen (tarjetas)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Indicador</th><th>Qué cuenta</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Visibles</td>
+                    <td>Bandejas del conjunto operativo (sin archivadas).</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+                <tr>
+                    <td>Activos</td>
+                    <td>Bandejas en operación: el monitor puede ingerir si origen y disparo están listos.</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+                <tr>
+                    <td>En proceso</td>
+                    <td>Alta o configuración incompleta. El monitor no ingiere.</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+                <tr>
+                    <td>Inactivos</td>
+                    <td>Pausadas a propósito. Definición e historial se conservan; el monitor no ingiere.</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Filtros de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Filtro</th><th>Función</th><th>Opciones</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Estado</td>
+                    <td>Limita filas por ciclo de vida de la bandeja (no por el último lote).</td>
+                    <td><span class="mono">Operativos</span> · <span class="mono">Activo</span> · <span class="mono">En proceso</span> · <span class="mono">Inactivo</span> · <span class="mono">Archivados</span> · <span class="mono">Todos</span></td>
+                </tr>
+                <tr>
+                    <td>Búsqueda (DataTables)</td>
+                    <td>Busca en columnas visibles (código, nombre, origen, acceso…).</td>
+                    <td>Texto libre</td>
+                </tr>
+                <tr>
+                    <td>Mostrar registros</td>
+                    <td>Paginado estándar de la tabla.</td>
+                    <td><span class="mono">10</span> · <span class="mono">25</span> · <span class="mono">50</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columnas de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Qué muestra</th><th>Valores / formato</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Código</td>
+                    <td>Identificador estable (= <span class="mono">watch_id</span> hacia File Scheduler). No cambia después del alta.</td>
+                    <td class="mono">Minúsculas y guiones. Ej. extracto-sftp</td>
+                </tr>
+                <tr>
+                    <td>Nombre</td>
+                    <td>Nombre visible en listado y hub.</td>
+                    <td>Texto libre definido al crear o editar.</td>
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    <td>Ciclo de vida de la definición. Independiente del último archivo llegado.</td>
+                    <td><strong>En proceso</strong> · <strong>Activo</strong> · <strong>Inactivo</strong> · <strong>Archivado</strong></td>
+                </tr>
+                <tr>
+                    <td>Visibilidad</td>
+                    <td>Quién ve la bandeja en este listado.</td>
+                    <td><strong>compañía</strong> (público) · <strong>miembro</strong> (privado)</td>
+                </tr>
+                <tr>
+                    <td>Origen</td>
+                    <td>Adaptador configurado en Origen (M2).</td>
+                    <td><strong>SFTP</strong> · <strong>Carpeta</strong> · <strong>API push</strong> · <span class="mono">Sin origen (M2)</span></td>
+                </tr>
+                <tr>
+                    <td>Última llegada</td>
+                    <td>Último lote ingerido con marca de tiempo.</td>
+                    <td class="mono">dd/mm hh:mm · — si aún no hay</td>
+                </tr>
+                <tr>
+                    <td>Acceso</td>
+                    <td>Su rol en esa bandeja.</td>
+                    <td class="mono">PA · ED · GE · CO</td>
+                </tr>
+                <tr>
+                    <td>Acciones</td>
+                    <td>Atajos según estado y permiso. En archivadas solo consulta.</td>
+                    <td>Ver tabla de acciones abajo</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones de la pantalla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ayuda</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>Catálogo de errores</td>
+                    <td>Códigos <span class="mono">watch_*</span> y textos de operación.</td>
+                </tr>
+                <tr>
+                    <td>Mapa de integración</td>
+                    <td>Cómo encaja File Watch con Scheduler, Pipeline y la API.</td>
+                </tr>
+                <tr>
+                    <td>+ Nueva bandeja</td>
+                    <td>Alta (solo US PA / ED). El creador queda PA. Estado inicial: En proceso.</td>
+                </tr>
+                <tr>
+                    <td>Abrir</td>
+                    <td>Entra al hub (origen, intake, enrutado, disparo, avisos, lotes, auditoría).</td>
+                </tr>
+                <tr>
+                    <td>Consulta</td>
+                    <td>En archivadas: abre el hub en solo lectura.</td>
+                </tr>
+                <tr>
+                    <td>Editar</td>
+                    <td>PA / ED: nombre, descripción y visibilidad. El código no cambia.</td>
+                </tr>
+                <tr>
+                    <td>Miembros</td>
+                    <td>Solo PA: invita, cambia rol o revoca.</td>
+                </tr>
+                <tr>
+                    <td>Pausar</td>
+                    <td>PA / ED, solo si está Activa. Pasa a <strong>Inactivo</strong>. No cancela un Job ya encolado.</td>
+                </tr>
+                <tr>
+                    <td>Reanudar</td>
+                    <td>PA / ED, desde Inactivo. Exige origen y disparo listos (y enrutado si dispara al llegar).</td>
+                </tr>
+                <tr>
+                    <td>Archivar</td>
+                    <td>Solo PA. Baja lógica: sale del listado operativo. El código no se reutiliza. Pide confirmación.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -44,13 +44,27 @@ def _encoding(source: dict) -> str:
     return code
 
 
+_UTF8_BOM_BYTES = b"\xef\xbb\xbf"
+
+
+def _strip_bom(text: str) -> str:
+    if text.startswith("\ufeff"):
+        return text[1:]
+    return text
+
+
 def _read_text(path: Path, source: dict) -> str:
     raw = path.read_bytes()
+    # Firma UTF-8 al inicio del archivo: no es dato. En txt_fixed desplaza 1 posición
+    # en la primera línea (edad/dirección/sexo mal cortados; el resto de filas bien).
+    if raw.startswith(_UTF8_BOM_BYTES):
+        raw = raw[3:]
     enc = _encoding(source)
     try:
-        return raw.decode(enc)
+        text = raw.decode(enc)
     except UnicodeDecodeError:
-        return raw.decode("utf-8", errors="replace")
+        text = raw.decode("utf-8", errors="replace")
+    return _strip_bom(text)
 
 
 def _parsing_source(source: dict) -> dict:
@@ -91,6 +105,8 @@ def _prepare_text_lines(
     errors: list[dict] = []
 
     for line_no, line in captured:
+        if line_no == 1:
+            line = _strip_bom(line)
         if rules.get("skip_empty_lines") and not line.strip():
             continue
         if comment_prefix and line.lstrip().startswith(comment_prefix):

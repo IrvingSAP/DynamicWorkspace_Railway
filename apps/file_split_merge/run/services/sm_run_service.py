@@ -68,6 +68,7 @@ MSG_PREVIEW_OK = "Vista previa generada. No se guardó archivo de salida definit
 MSG_FAILED = "La ejecución no pudo completarse."
 MSG_SPLIT_FILES = "Split requiere exactamente un archivo de entrada."
 MSG_MERGE_FILES = "Merge requiere al menos dos archivos de entrada."
+MSG_OP_KIND = "La operación publicada no coincide con el kind (file_split o file_merge)."
 
 STATUS_LABELS = {
     SplitMergeJob.STATUS_QUEUED: "En cola",
@@ -399,11 +400,13 @@ def run_sm_job(
     dry_run: bool = False,
     idempotency_key: str | None = None,
     version: DmsMappingVersion | None = None,
+    require_membership: bool = True,
+    expected_operation: str | None = None,
 ) -> OperationResult:
     """Runner API-ready (sin request). Solo versión publicada activa."""
     if project.project_kind != Project.KIND_FILE_SPLIT_MERGE:
         return OperationResult.failure("forbidden", MSG_KIND)
-    if not user_can_execute(user, project):
+    if require_membership and not user_can_execute(user, project):
         return OperationResult.failure("forbidden", MSG_FORBIDDEN)
 
     existing = _idempotent_existing(project, idempotency_key)
@@ -454,6 +457,12 @@ def run_sm_job(
             "validation_form",
             "La versión publicada no tiene operación Split/Merge.",
             errors={"operation": ["Publique de nuevo tras elegir operación."]},
+        )
+    if expected_operation and operation != expected_operation:
+        return OperationResult.failure(
+            "validation_form",
+            MSG_OP_KIND,
+            errors={"kind": [MSG_OP_KIND]},
         )
 
     file_list = _normalize_files(files)

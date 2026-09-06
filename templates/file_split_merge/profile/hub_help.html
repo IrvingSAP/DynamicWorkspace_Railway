@@ -3,6 +3,8 @@
 
 {% block title %}Ayuda · Perfil de lectura — {{ project.name }}{% endblock %}
 
+{% block main_class %}app-main--wide{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/projects.css' %}">
 <link rel="stylesheet" href="{% static 'css/mapping.css' %}">
@@ -26,9 +28,12 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <p class="page-eyebrow">File Split/Merge · Módulo 2 · <span class="role-badge">SmProfile</span></p>
+        <p class="page-eyebrow">File Split/Merge · Módulo 2 · <span class="cell-badge">{{ project.slug }}</span> · <span class="role-badge">SmProfile</span></p>
         <h2>Ayuda — Perfil de lectura</h2>
-        <p>Define cómo se parsea el archivo de entrada. Reutiliza SourceProfile (mismo parser que Pipe/Gate/Clean). No elige aquí Split vs Merge.</p>
+        <p>
+            Hub del perfil: indicadores, importar estructura y los 4 pasos del asistente.
+            Aquí no se elige Split vs Merge.
+        </p>
     </div>
     <div class="page-actions">
         <a class="btn btn-secondary" href="{% url 'file_split_merge:profile_hub' project_slug=project.slug %}">← Volver al perfil</a>
@@ -37,46 +42,148 @@
 
 <div class="panel help-panel">
     <div class="panel-body">
-        <h3 class="form-section-title">Qué es</h3>
+        <h3 class="form-section-title">Propósito</h3>
         <p class="help-intro">
-            El perfil de lectura describe <strong>tipo, encoding, captura y campos</strong> del archivo de entrada.
-            Se edita en <strong>borrador</strong>; al publicar (módulo 4) se congela junto con las reglas.
+            El perfil describe <strong>cómo se lee</strong> el archivo en
+            <strong>{{ project.name }}</strong>: tipo, encoding, captura y campos.
+            El mismo layout sirve para <strong>Split</strong> (1→N) y <strong>Merge</strong> (N→1).
+            No valida contrato (File Gate), no limpia celdas (File Clean) y no mapea a destino (FilePipe).
         </p>
-        <ul>
-            <li>Los nombres internos alimentan M3 (<code>split_by_column</code>, claves de dedupe).</li>
-            <li>No incluye políticas Gate ni limpieza Clean: solo layout de lectura compartido por Split y Merge.</li>
-            <li>Al ejecutar, File Split/Merge <strong>no rechaza filas por content_type</strong> (soft-parse); el layout sí debe coincidir.</li>
-        </ul>
+        <p class="help-intro">
+            Se edita siempre el <strong>borrador</strong>. Ejecutar usa solo la versión
+            <strong>publicada</strong> (módulo 4), congelada junto con las reglas.
+            File Split/Merge <strong>no rechaza filas por content_type</strong> (soft-parse); el layout sí debe coincidir.
+        </p>
 
-        <h3 class="form-section-title">Wizard (4 pasos)</h3>
+        <h3 class="form-section-title">Flujo recomendado</h3>
+        <ol class="hint" style="margin:0;padding-left:1.2rem">
+            <li>Opcional: <strong>Importar estructura</strong> (solo PA/ED) para no rearmar el asistente.</li>
+            <li>Complete o revise los 4 pasos del perfil y guarde en cada uno.</li>
+            <li>Defina <strong>Reglas</strong> (módulo 3) usando los nombres internos de campo (<code>split_by_column</code>, claves de dedupe, etc.).</li>
+            <li><strong>Publique</strong> (módulo 4) antes de Ejecutar.</li>
+        </ol>
+        <p class="hint" style="margin-top:10px">Si renombra o borra un campo, revise las reglas que lo referencian antes de publicar.</p>
+
+        <h3 class="form-section-title">Indicadores</h3>
         <table class="help-table">
-            <thead>
-                <tr><th>#</th><th>Paso</th><th>Qué define</th></tr>
-            </thead>
+            <thead><tr><th>Indicador</th><th>Qué muestra</th></tr></thead>
             <tbody>
-                <tr><td class="mono">1</td><td>Tipo</td><td>Formato, encoding y fin de línea.</td></tr>
-                <tr><td class="mono">2</td><td>Inicio</td><td>Desde qué línea / patrón empiezan los datos útiles.</td></tr>
-                <tr><td class="mono">3</td><td>Fin</td><td>Dónde deja de leer (EOF, línea, patrón…).</td></tr>
-                <tr><td class="mono">4</td><td>Campos</td><td>Estructura: posiciones, columnas, hoja, rutas JSON/XML.</td></tr>
+                <tr><td>Pasos completos</td><td>Cuántos de los 4 pasos tienen lo mínimo para avanzar.</td></tr>
+                <tr><td>Tipo archivo</td><td>Formato del paso 1 (posicional, CSV/delimitado, Excel, JSON, XML, …).</td></tr>
+                <tr><td>Campos definidos</td><td>Cantidad de campos del paso 4. Las reglas y la publicación necesitan al menos uno.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:10px">La etiqueta de borrador y la versión publicada aparecen en la franja del proyecto (hub) y al publicar, no en estas tres tarjetas.</p>
+
+        <h3 class="form-section-title">Acciones del hub</h3>
+        <table class="help-table">
+            <thead><tr><th>Acción</th><th>Efecto</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Importar estructura</td>
+                    <td>PA/ED: abre el sembrador (PROFILE SEED). Clona tipo, captura y campos al <strong>borrador</strong> de este perfil. No publica Split/Merge. No copia reglas <code>sm_rules</code>.</td>
+                </tr>
+                <tr>
+                    <td>¿Qué es esto?</td>
+                    <td>Ayuda del primer paso del sembrador (destino, orígenes y fronteras).</td>
+                </tr>
+                <tr>
+                    <td>Historial de importaciones</td>
+                    <td>Auditoría de siembras a este perfil (éxito o fallo). Visible también en consulta. Independiente del historial de jobs.</td>
+                </tr>
+                <tr>
+                    <td>Continuar edición</td>
+                    <td>Abre el siguiente paso incompleto del asistente.</td>
+                </tr>
+                <tr>
+                    <td>← Hub Proyecto</td>
+                    <td>Vuelve al ciclo Split/Merge (perfil, reglas, publicar, ejecutar, historial).</td>
+                </tr>
             </tbody>
         </table>
 
-        <h3 class="form-section-title">Orden recomendado</h3>
-        <ol>
-            <li>Complete los 4 pasos del perfil.</li>
-            <li>Defina reglas (módulo 3) usando los nombres de campo.</li>
-            <li>Publique (módulo 4) antes de Ejecutar.</li>
-        </ol>
-        <p class="help-intro">Si renombra o borra un campo, revise las reglas que lo referencian antes de publicar.</p>
+        <h3 class="form-section-title">Orígenes al importar</h3>
+        <p class="help-intro">
+            Misma compañía y proyectos que usted puede ver. El destino queda en <strong>borrador</strong>.
+            Este mismo proyecto Split/Merge no aparece como origen. Salvo Scout, el origen debe estar <strong>publicado</strong>.
+        </p>
+        <table class="help-table">
+            <thead><tr><th>Origen en el combo</th><th>Qué clona</th><th>Qué no clona</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>FILE GATE — Esquema</td>
+                    <td>Contrato publicado.</td>
+                    <td>Políticas de gate.</td>
+                </tr>
+                <tr>
+                    <td>FILE CLEAN — Perfil de lectura</td>
+                    <td>Perfil de lectura publicado.</td>
+                    <td>Reglas de limpieza.</td>
+                </tr>
+                <tr>
+                    <td>FilePipe — Origen</td>
+                    <td>Definición de origen publicada.</td>
+                    <td>Destino, mapeo y reglas de transformación.</td>
+                </tr>
+                <tr>
+                    <td>FILE MATCH — Perfil A</td>
+                    <td>Perfil A publicado.</td>
+                    <td>Perfil B y reglas de cruce.</td>
+                </tr>
+                <tr>
+                    <td>FILE MATCH — Perfil B</td>
+                    <td>Perfil B publicado.</td>
+                    <td>Reglas de cruce.</td>
+                </tr>
+                <tr>
+                    <td>Reverse Studio — Entrada</td>
+                    <td>Contrato de entrada publicado.</td>
+                    <td>Layout de salida y reglas de generación.</td>
+                </tr>
+                <tr>
+                    <td>FILE SPLIT/MERGE — Otro perfil</td>
+                    <td>Perfil de lectura publicado de <strong>otro</strong> proyecto SM.</td>
+                    <td>Este proyecto. Reglas de partición y fusión.</td>
+                </tr>
+                <tr>
+                    <td>STRUCTURE SCOUT — Borrador</td>
+                    <td>Borrador actual del Explorador (tipo y campos).</td>
+                    <td>No es un contrato publicado. Distinto de «Aplicar a destino» en Scout.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:10px">Si el tipo de archivo no es compatible con Split/Merge, la confirmación rechaza la siembra y no escribe el borrador.</p>
+
+        <h3 class="form-section-title">Asistente (4 pasos)</h3>
+        <table class="help-table">
+            <thead><tr><th>Paso</th><th>Qué configura</th></tr></thead>
+            <tbody>
+                <tr><td>1 · Tipo</td><td>Formato, encoding y fin de línea del archivo a partir o unir.</td></tr>
+                <tr><td>2 · Inicio</td><td>Desde dónde empiezan los datos útiles (salta cabeceras o títulos).</td></tr>
+                <tr><td>3 · Fin</td><td>Dónde deja de leer (EOF, línea o patrón).</td></tr>
+                <tr><td>4 · Campos</td><td>Estructura: posiciones, columnas, hoja, rutas JSON/XML. Los nombres internos alimentan las reglas. También hay CTA de importar.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:10px">Cambiar el tipo de archivo con campos ya definidos puede exigir limpiar o redefinir el paso 4.</p>
 
         <h3 class="form-section-title">Roles</h3>
-        <p><code>PA</code> y <code>ED</code> editan el borrador. <code>GE</code> / <code>CO</code> pueden consultar según membresía, sin guardar.</p>
+        <table class="help-table">
+            <thead><tr><th>Rol</th><th>En este hub</th></tr></thead>
+            <tbody>
+                <tr><td><span class="role-code">PA</span> / <span class="role-code">ED</span></td><td>Editan el borrador e importan estructura. Publicar es el módulo 4.</td></tr>
+                <tr><td><span class="role-code">GE</span> / <span class="role-code">CO</span></td><td>Consultan el hub y el historial de importaciones. No guardan el perfil ni inician el sembrador.</td></tr>
+            </tbody>
+        </table>
+        <p class="hint" style="margin-top:10px">Esta ayuda puede leerse con acceso al proyecto; el botón <strong>Importar estructura</strong> sigue restringido a PA/ED.</p>
 
         <h3 class="form-section-title">Qué no hace este hub</h3>
         <ul>
+            <li>No elige operación Split vs Merge ni define reglas (eso es <strong>Reglas</strong>).</li>
             <li>No publica la versión (eso es <strong>Publicar</strong>).</li>
             <li>No sube archivos de producción (eso es <strong>Ejecutar</strong>).</li>
-            <li>No define reglas Split/Merge (módulo <strong>Reglas</strong>).</li>
+            <li>No es File Gate (contrato/políticas), File Clean (limpieza) ni FilePipe (mapeo).</li>
+            <li>No infiere desde una muestra aquí: Scout entra como origen del sembrador o desde Explorador con «Aplicar a destino».</li>
+            <li>Importar no publica Split/Merge ni sustituye las reglas.</li>
         </ul>
     </div>
 </div>

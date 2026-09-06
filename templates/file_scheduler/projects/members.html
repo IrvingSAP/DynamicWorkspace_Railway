@@ -1,0 +1,157 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Miembros — {{ schedule.name }}{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_pipeline.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Miembros</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Scheduler · Acceso · <span class="perm-badge perm-badge--admin">Admin</span></p>
+        <h2>Miembros del plan</h2>
+        <p>
+            <span class="cell-badge">{{ schedule.slug }}</span>
+            {% if hub.visibility == 'company' %}Público{% else %}Privado{% endif %}.
+            Solo UF de {{ company.name_short }}. El creador (PA) no se revoca.
+        </p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_scheduler:schedule_members_help' schedule_slug=schedule.slug as sch_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=sch_help_url %}
+        <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+
+<div class="panel panel--gap" data-fp-member-search="{% url 'file_scheduler:schedule_member_search' schedule_slug=schedule.slug %}">
+    <div class="panel-body">
+        <h3 class="form-section-title">Agregar usuario</h3>
+        <form method="post" class="form-grid">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="invite">
+            <div class="form-row two-cols">
+                <div class="field{% if invite_errors.user %} has-error{% endif %}">
+                    <label for="invite-q">Buscar usuario UF <span class="req">*</span></label>
+                    <div class="fp-user-picker">
+                        <input id="invite-q" type="search" placeholder="Usuario o correo (mín. 2 caracteres)" autocomplete="off">
+                        <input type="hidden" id="invite-user" name="user" value="{{ invite_posted.user_id }}">
+                        <ul id="invite-hits" class="fp-user-picker-list" hidden></ul>
+                    </div>
+                    {% for msg in invite_errors.user %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+                <div class="field{% if invite_errors.role %} has-error{% endif %}">
+                    <label for="role">Rol en el plan <span class="req">*</span></label>
+                    <select id="role" name="role" required>
+                        {% for item in role_choices %}
+                        <option value="{{ item.code }}"{% if invite_posted.role == item.code or invite_posted.role == item.maps_to_role %} selected{% endif %}>{{ item.label }}</option>
+                        {% endfor %}
+                    </select>
+                    {% for msg in invite_errors.role %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+            </div>
+            <div class="form-actions form-actions--flush">
+                <button type="submit" class="btn btn-primary">Autorizar miembro</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="panel panel--table">
+    <div class="panel-body" style="padding:0">
+        <table class="data" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Nombre</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in members %}
+                <tr>
+                    <td class="mono">{{ member.user.username }}</td>
+                    <td>{{ member.user.get_full_name|default:"—" }}</td>
+                    <td><span class="role-code{% if member.role == 'PA' %} role-code--pa{% endif %}">{{ member.role }}</span></td>
+                    <td>
+                        {% if member.is_active %}
+                        <span class="status status-active">Activo</span>
+                        {% else %}
+                        <span class="status status-inactive">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if member.user_id == schedule.owner_id %}
+                        <span class="hint">Owner — no se revoca</span>
+                        {% elif member.is_active %}
+                        <div class="actions actions--table">
+                            <form method="post" class="members-role-form actions-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="change_role">
+                                <input type="hidden" name="membership_id" value="{{ member.pk }}">
+                                <select name="role" aria-label="Rol">
+                                    {% for item in role_choices %}
+                                    <option value="{{ item.code }}"{% if member.role == item.maps_to_role or member.role == item.code %} selected{% endif %}>{{ item.label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-ghost btn-sm">Cambiar</button>
+                            </form>
+                            <form method="post" class="actions-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="revoke">
+                                <input type="hidden" name="membership_id" value="{{ member.pk }}">
+                                <button type="button" class="btn btn-ghost btn-sm btn-ghost--danger" data-dw-delete data-dw-delete-message="¿Revocar a «{{ member.user.username }}» de este plan?">Revocar</button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="reactivate">
+                            <input type="hidden" name="membership_id" value="{{ member.pk }}">
+                            <button type="submit" class="btn btn-ghost btn-sm">Reactivar</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/file_pipeline-members.js' %}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("[data-dw-delete]").forEach(function (trigger) {
+    trigger.addEventListener("click", function (e) {
+      e.preventDefault();
+      var form = trigger.closest("form");
+      var message = trigger.dataset.dwDeleteMessage || "¿Confirma?";
+      window.dwConfirmWarning(message, function () {
+        if (form) form.submit();
+      }, { title: "Confirmar revocación", okLabel: "Revocar" });
+    });
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — File Watch{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia</p>
+        <h2>Ayuda general — File Watch</h2>
+        <p>Bandejas de plataforma: de dónde llega el archivo y cómo se deja en storage o se dispara un Job. No programa calendarios (Scheduler) ni orquesta pasos (Pipeline).</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_watch:watch_list' %}" class="btn btn-secondary">← Bandejas</a>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <p class="help-intro">Alta de bandeja: usuario tipo <strong>US</strong> de la compañía con rol <strong>PA</strong> o <strong>ED</strong>. El creador queda PA. UF invitados consultan o editan según membresía; no crean bandejas nuevas.</p>
+        <p class="help-intro">El código (<code>slug</code>) es el <code>watch_id</code> que usa File Scheduler cuando <code>input_origin=watch</code>. Artifact (hash fijo en el plan) ≠ Watch (cada llegada puede ser otro hash).</p>
+        <p class="help-intro">M1 cubre listado, alta, hub, editar, pausar/reanudar, archivar y miembros. Origen, intake, enrutado y disparo llegan en módulos posteriores.</p>
+    </div>
+</div>
+{% endblock %}

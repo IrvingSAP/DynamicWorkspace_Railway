@@ -29,9 +29,19 @@
 | [`docs/ESTRUCTURA_PROYECTO.md`](ESTRUCTURA_PROYECTO.md) | Árbol de carpetas y checklist para nuevos proyectos |
 | [`docs/APP_FACTORY.md`](APP_FACTORY.md) | **APP FACTORY** — propuestas de nuevos desarrollos / verticales sobre el chasis |
 | [`docs/APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) | Familia §2 reutilización alta (Gate · Reverse · Match · Scout · Seed · Catalog) |
-| [`docs/APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Oleada ops de archivo (Clean · Diff · Profiler · Watch · …) |
-| [`docs/FILE_CLEAN.md`](FILE_CLEAN.md) | **File Clean** — limpieza/normalización (en definición) |
-| [`docs/PLATFORM_API.md`](PLATFORM_API.md) | **PLATFORM API** — ejecución remota de jobs (**después** de apps FILE_OPS) |
+| [`docs/APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Oleada ops de archivo (Clean · Split/Merge · Profiler · Repair · Watch · …) |
+| [`docs/FILE_CLEAN.md`](FILE_CLEAN.md) | **File Clean** — limpieza/normalización (**hecho**) |
+| [`docs/FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) | **File Split/Merge** — partición / consolidación (**hecho**) |
+| [`docs/DATA_PROFILER.md`](DATA_PROFILER.md) | **Data Profiler** — calidad de contenido (**pendiente revisión**) |
+| [`docs/FILE_REPAIR.md`](FILE_REPAIR.md) | **File Repair** — corrección post-Gate (**pendiente revisión**) |
+| [`docs/FILE_WATCH.md`](FILE_WATCH.md) | **File Watch** — ingestión por llegada (**previsto**) |
+| [`docs/FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | **File Scheduler** — cron / dependencias (**previsto**) |
+| [`docs/definition_app_FILE_SCHEDULER/`](definition_app_FILE_SCHEDULER/) | Specs por módulo File Scheduler (fase de diseño) |
+| [`docs/FILE_ARCHIVE.md`](FILE_ARCHIVE.md) | **File Archive** — custodia E2E (**previsto**) |
+| [`docs/SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) | **Schema Registry** — contratos compartidos (**previsto**) |
+| [`docs/FILE_PIPELINE.md`](FILE_PIPELINE.md) | **File Pipeline** — orquestación multi-app (**propuesta**); API puede consumirlo |
+| [`docs/definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) | Specs por módulo File Pipeline |
+| [`docs/PLATFORM_API.md`](PLATFORM_API.md) | **PLATFORM API** — ejecución remota de jobs/pipelines (**después** de apps FILE_OPS) |
 | [`docs/FILE_GATE.md`](FILE_GATE.md) | **FILE GATE** — Validador de archivos (prioridad #1 APP_FACTORY) |
 | [`docs/REVERSE_STUDIO.md`](REVERSE_STUDIO.md) | **Reverse Studio** — Emisor de layouts (CSV/Excel → posicional/JSON/XML) |
 | [`docs/FILE_MATCH.md`](FILE_MATCH.md) | **FILE MATCH** — Conciliador de archivos (A vs B por clave) |

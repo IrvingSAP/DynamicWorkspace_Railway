@@ -1,0 +1,43 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Integración File Scheduler{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_integration' %}">Integración</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · M10</p>
+        <h2>Ayuda — Mapa de integración</h2>
+        <p>Fronteras con Watch, Pipeline, API, tablero y el worker. No sustituye esas apps.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_scheduler:schedule_integration' %}" class="btn btn-secondary">← Mapa</a>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <p class="help-intro">El Scheduler pregunta <strong>cuándo</strong>. Watch pregunta si <strong>llegó</strong> el archivo. Pipeline y cada app responden <strong>cómo</strong>. El tablero de Pipeline cuenta corridas con <span class="mono">trigger_source=scheduler</span> o <span class="mono">dependency</span>; Actividad y Auditoría del plan siguen aquí.</p>
+        <ul class="help-list">
+            <li>No hay CRUD de planes por HTTP en MVP.</li>
+            <li>No se duplican listeners de Watch.</li>
+            <li>No hay informe por paso de pipeline en esta app: se abre el run.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

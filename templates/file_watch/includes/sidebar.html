@@ -1,0 +1,5 @@
+{% if request.user.profile.user_type == "US" %}
+{% include "includes/sidebar_us.html" %}
+{% else %}
+{% include "includes/sidebar_uf.html" %}
+{% endif %}

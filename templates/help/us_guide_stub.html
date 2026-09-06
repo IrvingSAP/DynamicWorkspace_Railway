@@ -1,0 +1,35 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — {{ guide_title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/help.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_us.html" %}
+{% endblock %}
+
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>Administración</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>{{ guide_title }}</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+
+<div class="guide-hero">
+    <div class="guide-hero-main">
+        <p class="page-eyebrow">Guía general · <span class="role-badge">US</span>{% if company %} · <span class="cell-badge">{{ company.name_short }}</span>{% endif %}</p>
+        <h2>{{ guide_title }}</h2>
+        <p>
+            Esta página es la <strong>ayuda general</strong> de este recorte (icono <span class="mono">?</span> del menú).
+            El contenido se completará más adelante. No sustituye la ayuda contextual de cada pantalla, cuando exista.
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Auditoría — {{ schedule.name }}{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_scheduler.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Auditoría</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Scheduler · M7 · <span class="perm-badge{% if hub.is_pa %} perm-badge--admin{% endif %}">{{ hub.role_label }}</span></p>
+        <h2>Auditoría del plan</h2>
+        <p>Definición (quién cambió el plan) y disparos (qué encoló el sistema). El detalle de Gate/Pipe se abre en el run enlazado. No se editan filas.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_scheduler:schedule_audit_help' schedule_slug=schedule.slug as sch_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=sch_help_url %}
+        <a href="{% url 'file_scheduler:schedule_activity' schedule_slug=schedule.slug %}" class="btn btn-secondary">Actividad</a>
+        <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen de auditoría">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Eventos</p>
+        <p class="stat-value">{{ stats.total|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Definición</p>
+        <p class="stat-value">{{ stats.definition|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Tick</p>
+        <p class="stat-value">{{ stats.tick|default:0 }}</p>
+    </div>
+</div>
+
+<div class="version-strip">
+    <strong>schedule_id:</strong> <span class="mono">{{ schedule.id }}</span>
+    · <strong>Append-only</strong>
+    · Sin contenido de archivo
+</div>
+
+<div class="panel panel--table">
+    <div class="table-toolbar" aria-label="Controles de tabla">
+        <div class="table-toolbar-group">
+            <label for="filter-plane">
+                Plano
+                <select id="filter-plane">
+                    <option value="">Todos</option>
+                    <option value="definition">Definición</option>
+                    <option value="tick">Tick</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="table-dt-host">
+        <table id="sch-audit-table" class="dw-datatable" data-dt-custom="true" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Cuándo</th>
+                    <th>Evento</th>
+                    <th>Actor</th>
+                    <th>Resumen</th>
+                    <th>Enlace</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr data-plane="{{ row.plane }}">
+                    <td data-order="{{ row.occurred_at|date:'c' }}">{{ row.occurred_at|date:"Y-m-d H:i" }}</td>
+                    <td><code>{{ row.event_code }}</code></td>
+                    <td class="mono">{{ row.actor_label }}</td>
+                    <td class="sch-audit-note">{{ row.summary }}{% if row.correlation_id %} · corr={{ row.correlation_id }}{% endif %}</td>
+                    <td>
+                        {% if row.run_href %}
+                        <a href="{{ row.run_href }}" class="mono" title="{{ row.pipeline_run_id }}">{{ row.run_label }}</a>
+                        {% elif row.run_label %}
+                        <code title="{% firstof row.pipeline_run_id row.job_id %}">{{ row.run_label }}</code>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">Aún no hay eventos de auditoría en este plan.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p class="sch-audit-note">No hay borrado de filas en MVP. Reintento = nuevo tick_enqueued, no se reescribe el fallido.</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (typeof DataTable === "undefined") return;
+  var tableEl = document.getElementById("sch-audit-table");
+  if (!tableEl || tableEl.dataset.dtInit === "true") return;
+  if (tableEl.querySelector("td[colspan]")) return;
+  var planeValue = "";
+  DataTable.ext.search.push(function (settings, _d, dataIndex) {
+    if (!settings.nTable || settings.nTable.id !== "sch-audit-table") return true;
+    var row = new DataTable.Api(settings).row(dataIndex).node();
+    if (!row) return true;
+    if (!planeValue) return true;
+    return row.dataset.plane === planeValue;
+  });
+  var table = new DataTable("#sch-audit-table", {
+    language: DW_DATATABLES_ES,
+    layout: DW_DATATABLES_LAYOUT,
+    pageLength: 10,
+    lengthMenu: [10, 25, 50, 100],
+    order: [[0, "desc"]],
+  });
+  tableEl.dataset.dtInit = "true";
+  var filter = document.getElementById("filter-plane");
+  if (filter) {
+    filter.addEventListener("change", function () {
+      planeValue = filter.value;
+      table.draw();
+    });
+  }
+});
+</script>
+{% endblock %}

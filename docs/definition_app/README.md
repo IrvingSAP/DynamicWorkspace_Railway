@@ -43,6 +43,7 @@ Ver [`DynamicWorkspace_Model.md`](DynamicWorkspace_Model.md) — documento maest
 |---------|-----------|
 | [`../DynamicWorkspace.md`](../DynamicWorkspace.md) | Visión de producto y arquitectura general |
 | [`../definition_app_DMS/`](../definition_app_DMS/README.md) | Data Mapping Studio (ETL) — integrado a la plataforma |
+| [`../definition_app_PLATFORM_API/`](../definition_app_PLATFORM_API/README.md) | PLATFORM API — ejecución remota de jobs (diseño; sin código) |
 | [`../security/`](../security/) | Flujos de autenticación, 2FA e implementación |
 
 ## Plantilla para nuevas apps

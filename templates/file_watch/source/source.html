@@ -1,0 +1,192 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Origen — {{ watch.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Origen</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Watch · M2 · <span class="perm-badge{% if hub.is_pa %} perm-badge--admin{% endif %}">{{ hub.role_label }}</span></p>
+        <h2>Origen de la bandeja</h2>
+        <p>Define <strong>de dónde</strong> llega el archivo. No copia a storage (M3) ni dispara Job (M5). Guardar no cambia el estado de la bandeja.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_watch:watch_source_help' watch_slug=watch.slug as wach_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=wach_help_url %}
+        <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+
+{% if push_token_once %}
+<div class="panel" role="status">
+    <div class="panel-body">
+        <p><strong>Token de push (cópielo ahora):</strong> <code class="mono">{{ push_token_once }}</code></p>
+    </div>
+</div>
+{% endif %}
+
+<form id="source-form" method="post" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="action" value="save">
+    <fieldset {% if not can_edit %}disabled{% endif %} style="border:0;padding:0;margin:0;min-inline-size:0">
+        <div class="panel">
+            <div class="panel-body">
+                <h3 class="form-section-title">Tipo de origen</h3>
+                <div class="radio-cards radio-cards--3{% if errors.source_kind %} has-error{% endif %}">
+                    <label class="radio-card">
+                        <input type="radio" name="source_kind" value="sftp"{% if posted.source_kind == 'sftp' or not posted.source_kind %} checked{% endif %}>
+                        <strong>SFTP</strong>
+                        <span>Monitor lista un directorio remoto.</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="source_kind" value="managed_folder"{% if posted.source_kind == 'managed_folder' %} checked{% endif %}>
+                        <strong>Carpeta gestionada</strong>
+                        <span>Drop path del tenant en la plataforma.</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="source_kind" value="api_push"{% if posted.source_kind == 'api_push' %} checked{% endif %}>
+                        <strong>API / webhook</strong>
+                        <span>Un cliente empuja el archivo a la bandeja.</span>
+                    </label>
+                </div>
+                {% for msg in errors.source_kind %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                <div class="field" style="margin-top:12px">
+                    <label for="filename_pattern">Patrón de nombre <span class="req">*</span></label>
+                    <input type="text" id="filename_pattern" name="filename_pattern" class="mono" value="{{ posted.filename_pattern }}">
+                </div>
+            </div>
+        </div>
+
+        <div class="panel source-panel" data-kind="sftp" id="panel-sftp">
+            <div class="panel-body">
+                <h3 class="form-section-title">SFTP</h3>
+                <div class="form-row two-cols">
+                    <div class="field{% if errors.sftp_host %} has-error{% endif %}">
+                        <label for="sftp_host">Host <span class="req">*</span></label>
+                        <input type="text" id="sftp_host" name="sftp_host" class="mono" value="{{ posted.sftp_host }}" autocomplete="off">
+                        {% for msg in errors.sftp_host %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                    <div class="field{% if errors.sftp_port %} has-error{% endif %}">
+                        <label for="sftp_port">Puerto <span class="req">*</span></label>
+                        <input type="number" id="sftp_port" name="sftp_port" value="{{ posted.sftp_port }}" min="1" max="65535">
+                        {% for msg in errors.sftp_port %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                </div>
+                <div class="form-row two-cols">
+                    <div class="field{% if errors.sftp_username %} has-error{% endif %}">
+                        <label for="sftp_username">Usuario <span class="req">*</span></label>
+                        <input type="text" id="sftp_username" name="sftp_username" class="mono" value="{{ posted.sftp_username }}" autocomplete="off">
+                        {% for msg in errors.sftp_username %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                    <div class="field{% if errors.sftp_secret %} has-error{% endif %}">
+                        <label for="sftp_secret">Contraseña / clave {% if not posted.sftp_secret_ref %}<span class="req">*</span>{% endif %}</label>
+                        <input type="password" id="sftp_secret" name="sftp_secret" placeholder="{% if posted.sftp_secret_ref %}•••••••• (ya hay secreto){% else %}Se guarda como referencia{% endif %}" autocomplete="new-password">
+                        {% for msg in errors.sftp_secret %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                </div>
+                <div class="field{% if errors.sftp_remote_path %} has-error{% endif %}">
+                    <label for="sftp_remote_path">Ruta remota <span class="req">*</span></label>
+                    <input type="text" id="sftp_remote_path" name="sftp_remote_path" class="mono" value="{{ posted.sftp_remote_path }}">
+                    {% for msg in errors.sftp_remote_path %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+                <div class="form-row two-cols">
+                    <div class="field{% if errors.poll_interval_sec %} has-error{% endif %}">
+                        <label for="poll_interval_sec_sftp">Poll (segundos) <span class="req">*</span></label>
+                        <input type="number" id="poll_interval_sec_sftp" name="poll_interval_sec" value="{{ posted.poll_interval_sec }}" min="30">
+                        {% for msg in errors.poll_interval_sec %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                    <div class="field{% if errors.after_detect %} has-error{% endif %}">
+                        <label for="after_detect_sftp">Tras intake <span class="req">*</span></label>
+                        <select id="after_detect_sftp" name="after_detect">
+                            <option value="leave"{% if posted.after_detect == 'leave' %} selected{% endif %}>Dejar</option>
+                            <option value="mark"{% if posted.after_detect == 'mark' %} selected{% endif %}>Marcar</option>
+                            <option value="delete_remote"{% if posted.after_detect == 'delete_remote' %} selected{% endif %}>Borrar remoto</option>
+                        </select>
+                        {% for msg in errors.after_detect %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                </div>
+                {% if can_edit %}
+                <p class="hint" id="test-sftp-msg">{% if posted.source_last_test_ok == True %}Última prueba: OK{% elif posted.source_last_test_ok == False %}Última prueba: falló{% endif %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="panel source-panel is-hidden" data-kind="managed_folder" id="panel-folder">
+            <div class="panel-body">
+                <h3 class="form-section-title">Carpeta gestionada</h3>
+                <div class="field{% if errors.folder_rel_path %} has-error{% endif %}">
+                    <label for="folder_rel_path">Ruta relativa <span class="req">*</span></label>
+                    <input type="text" id="folder_rel_path" name="folder_rel_path" class="mono" value="{{ posted.folder_rel_path }}" placeholder="watches/{{ watch.slug }}/drop" aria-describedby="folder-rel-hint">
+                    <p class="hint" id="folder-rel-hint">Solo el <strong>directorio</strong> de llegada, sin nombre de archivo. Relativo al área de la compañía (no <span class="mono">C:\…</span>). El archivo esperado se filtra con <strong>Patrón de nombre</strong> (p. ej. <span class="mono">concilia01b.txt</span> o <span class="mono">*.txt</span>).</p>
+                    {% for msg in errors.folder_rel_path %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+                <div class="form-row two-cols">
+                    <div class="field">
+                        <label for="poll_interval_sec_folder">Poll (segundos)</label>
+                        <input type="number" id="poll_interval_sec_folder" name="poll_interval_sec" value="{{ posted.poll_interval_sec }}" min="30" form="source-form">
+                    </div>
+                    <div class="field">
+                        <label for="after_detect_folder">Tras intake</label>
+                        <select id="after_detect_folder" name="after_detect">
+                            <option value="leave"{% if posted.after_detect == 'leave' %} selected{% endif %}>Dejar</option>
+                            <option value="move_processed"{% if posted.after_detect == 'move_processed' %} selected{% endif %}>Mover a procesados</option>
+                            <option value="delete"{% if posted.after_detect == 'delete' %} selected{% endif %}>Borrar</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel source-panel is-hidden" data-kind="api_push" id="panel-push">
+            <div class="panel-body">
+                <h3 class="form-section-title">API / push</h3>
+                <p class="hint">Endpoint: <code class="mono">…/bandejas/{{ watch.slug }}/push/</code>{% if posted.push_token_hint %} · hint …{{ posted.push_token_hint }}{% endif %}</p>
+                <label class="notify-check">
+                    <input type="checkbox" name="accept_multipart" value="1"{% if posted.accept_multipart %} checked{% endif %}>
+                    <span>Aceptar upload multipart</span>
+                </label>
+                <label class="notify-check">
+                    <input type="checkbox" name="accept_storage_ref" value="1"{% if posted.accept_storage_ref %} checked{% endif %}>
+                    <span>Aceptar referencia de storage (avanzado)</span>
+                </label>
+            </div>
+        </div>
+
+        {% if can_edit %}
+        <div class="form-actions form-actions--flush">
+            <button type="submit" class="btn btn-primary">Guardar origen</button>
+            <button type="submit" class="btn btn-secondary" name="action" value="test_sftp" id="btn-test-sftp" formnovalidate>Probar SFTP</button>
+            <button type="submit" class="btn btn-secondary" name="action" value="rotate_token" id="btn-rotate-token">Rotar token push</button>
+            <a class="btn btn-secondary" href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">Cancelar</a>
+        </div>
+        {% endif %}
+    </fieldset>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/file_watch-source.js' %}"></script>
+{% endblock %}

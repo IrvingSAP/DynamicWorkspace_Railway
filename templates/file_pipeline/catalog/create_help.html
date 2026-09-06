@@ -1,0 +1,21 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Ayuda · Nuevo kind{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "file_pipeline/includes/catalog_sidebar.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Ayuda — Nuevo kind</h2>
+        <p>Registre el paso con runner y contrato de handoff. Recomendado: <code>pipeline_enabled=off</code> hasta checklist OK.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-secondary" href="{% url 'file_pipeline:catalog_create' %}">← Formulario</a>
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+    <p><code>kind</code> único e inmutable, alineado a PLATFORM_API. No combine enabled on con status disabled.</p>
+</div></div>
+{% endblock %}

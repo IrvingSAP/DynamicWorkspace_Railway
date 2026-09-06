@@ -1,0 +1,92 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Nuevo pipeline — File Pipeline{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_list' %}">File Pipeline</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Nuevo</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Pipeline · Acceso</p>
+        <h2>Nuevo pipeline</h2>
+        <p>Quedará como <strong>administrador del pipeline (PA)</strong>. El estado inicial es <strong>En proceso</strong>. Los pasos se definen en el diseñador (módulo 2).</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_pipeline:pipeline_create_help' as fp_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=fp_help_url %}
+        <a href="{% url 'file_pipeline:pipeline_list' %}" class="btn btn-secondary">← Listado</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="form-section">
+                <h3 class="form-section-title">Identidad</h3>
+                <div class="form-grid">
+                    <div class="form-row two-cols">
+                        <div class="field{% if errors.slug %} has-error{% endif %}">
+                            <label for="slug">Nombre corto (código) <span class="req">*</span></label>
+                            <input type="text" id="slug" name="slug" class="mono" maxlength="220" placeholder="nomina-diaria" value="{{ posted.slug }}" required>
+                            <p class="hint">Único en la organización · minúsculas y guiones · no debe coincidir con un proyecto de otra app</p>
+                            {% for msg in errors.slug %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                        </div>
+                        <div class="field{% if errors.name %} has-error{% endif %}">
+                            <label for="name">Nombre visible <span class="req">*</span></label>
+                            <input type="text" id="name" name="name" maxlength="200" placeholder="Nómina diaria" value="{{ posted.name }}" required>
+                            {% for msg in errors.name %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="field{% if errors.description %} has-error{% endif %}">
+                        <label for="description">Descripción</label>
+                        <textarea id="description" name="description" rows="3" placeholder="Orquestar Clean → Gate → Pipe.">{{ posted.description }}</textarea>
+                        {% for msg in errors.description %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="form-section">
+                <h3 class="form-section-title">Visibilidad</h3>
+                <div class="radio-cards{% if errors.visibility %} has-error{% endif %}">
+                    <label class="radio-card">
+                        <input type="radio" name="visibility" value="members_only"{% if posted.visibility == 'members_only' or not posted.visibility %} checked{% endif %}>
+                        <strong>Privado</strong>
+                        <span>Solo miembros autorizados.</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="visibility" value="company"{% if posted.visibility == 'company' %} checked{% endif %}>
+                        <strong>Público</strong>
+                        <span>Visible para UF de la compañía (consulta).</span>
+                    </label>
+                </div>
+                {% for msg in errors.visibility %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                <p class="hint">No elija aquí los pasos del flujo: eso es el diseñador (módulo 2).</p>
+            </div>
+            <div class="form-actions form-actions--flush">
+                <button type="submit" class="btn btn-primary">Crear pipeline</button>
+                <a class="btn btn-secondary" href="{% url 'file_pipeline:pipeline_list' %}">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

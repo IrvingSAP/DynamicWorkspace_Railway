@@ -1,0 +1,137 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Disparo {{ watch.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_fire' watch_slug=watch.slug %}">Disparo</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ watch.slug }}</span> · M5</p>
+        <h2>Ayuda — Disparo</h2>
+        <p>¿Encolar el Job al llegar el archivo o solo dejar el lote pendiente para File Scheduler? Guardar no cambia el estado de la bandeja.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_watch:watch_fire' watch_slug=watch.slug %}" class="btn btn-secondary">← Volver a Disparo</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Tras Intake, el lote está en storage. Disparo decide <strong>cuándo</strong> se encola un runner.
+            El <strong>qué</strong> (Job o pipeline) se elige en Enrutado.
+        </p>
+        <ul class="help-list">
+            <li>Activar o reanudar exige origen completo <strong>y</strong> disparo guardado. Si el modo es «Al llegar», también Enrutado Job o Pipeline (no Diferir).</li>
+            <li>Si el enrutado actual es Diferir, aparece un aviso: «Al llegar» no es compatible y el botón Guardar se deshabilita.</li>
+            <li>No hay «Procesar ahora» en esta pantalla.</li>
+        </ul>
+
+        <h3 class="form-section-title">Quién puede usarla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Qué puede hacer</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PA / ED</td>
+                    <td>Guardar el modo. Si origen y disparo (y enrutado si aplica) están listos, puede marcar la bandeja Activa desde aquí.</td>
+                </tr>
+                <tr>
+                    <td>GE / CO</td>
+                    <td>Solo lectura.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Modos</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Modo</th><th>Qué hace</th><th>Exige enrutado</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Al llegar</td>
+                    <td>Tras un intake OK, claim del lote y encola el runner de Enrutado (Job o Pipeline).</td>
+                    <td>Job o Pipeline publicado. <strong>Incompatible con Diferir.</strong></td>
+                </tr>
+                <tr>
+                    <td>Solo pendiente</td>
+                    <td>Deja el lote Pendiente. File Scheduler (u otro) hace claim en el tick según FIFO/LIFO.</td>
+                    <td>Puede ser Diferir (el destino lo pone el plan). Por defecto en el formulario.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Combinaciones</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Disparo</th><th>Enrutado</th><th>Resultado</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Al llegar</td>
+                    <td>Job / Pipeline</td>
+                    <td>Se puede guardar y, con origen listo, activar.</td>
+                </tr>
+                <tr>
+                    <td>Al llegar</td>
+                    <td>Diferir</td>
+                    <td>No. Mensaje: <em>«Al llegar» no es compatible con enrutado Diferir.</em></td>
+                </tr>
+                <tr>
+                    <td>Solo pendiente</td>
+                    <td>Diferir o Job/Pipeline</td>
+                    <td>Sí. Job/Pipeline no se usa hasta cambiar a «Al llegar».</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones de la pantalla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ayuda</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>Guardar disparo</td>
+                    <td>Persiste el modo. Mensaje: <em>Disparo guardado correctamente.</em> Deshabilitado si Al llegar + Diferir.</td>
+                </tr>
+                <tr>
+                    <td>Marcar como Activa</td>
+                    <td>Solo si el hub lo permite (origen + disparo + enrutado si Al llegar). Mensaje: <em>Bandeja marcada como Activa.</em></td>
+                </tr>
+                <tr>
+                    <td>Cancelar / ← Hub</td>
+                    <td>Vuelve al hub sin guardar.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

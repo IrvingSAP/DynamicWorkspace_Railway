@@ -1,0 +1,143 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Dependencia {{ schedule.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_dependency' schedule_slug=schedule.slug %}">Dependencia</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · M6</p>
+        <h2>Ayuda — Dependencia</h2>
+        <p>Encadenar dos planes existentes: el hijo se encola cuando el padre termina. No sustituye el diseñador de File Pipeline.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_scheduler:schedule_dependency' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Formulario</a>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">Define si este plan se dispara por <strong>reloj</strong> (Programación, M2) o por la <strong>finalización de otro plan</strong> (padre). Ambos modos son mutuamente excluyentes: un plan solo tiene un disparador. Guardar <strong>no cambia el estado</strong> del plan. Solo <strong>PA</strong> y <strong>ED</strong> pueden guardar.</p>
+
+        <h3 class="form-section-title">Reloj vs. dependencia</h3>
+        <p class="help-intro">Al elegir <strong>Dependencia</strong>, el worker de cron deja de evaluar este plan. El tick se crea únicamente cuando el run del padre alcanza el estado configurado en la condición.</p>
+        <table class="help-table">
+            <thead><tr><th>Disparador</th><th>Cuándo se encola</th><th>Requisito para Activar</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Reloj</strong> (cron)</td>
+                    <td>En cada slot que coincida con la expresión cron de Programación (M2).</td>
+                    <td>Destino (M3) configurado + Programación (M2) guardada.</td>
+                </tr>
+                <tr>
+                    <td><strong>Dependencia</strong> (padre)</td>
+                    <td>Cuando el run del plan padre alcanza la condición elegida.</td>
+                    <td>Destino (M3) configurado + padre válido + condición seleccionada.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Padre válido</h3>
+        <table class="help-table">
+            <thead><tr><th>Regla</th><th>Detalle</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Mismo plan</td>
+                    <td><strong>Prohibido.</strong> Un plan no puede ser padre de sí mismo.</td>
+                </tr>
+                <tr>
+                    <td>Mismo destino</td>
+                    <td><strong>Prohibido.</strong> El padre no puede apuntar al mismo proyecto/pipeline que este plan.</td>
+                </tr>
+                <tr>
+                    <td>Plan archivado</td>
+                    <td><strong>No seleccionable.</strong> Solo aparecen planes activos o pausados de la misma compañía.</td>
+                </tr>
+                <tr>
+                    <td>Cadena circular</td>
+                    <td><strong>Prohibido.</strong> Si A depende de B, B no puede depender de A (ni indirectamente).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Condición de disparo</h3>
+        <p class="help-intro">Define qué estado terminal del run padre activa el tick de este plan.</p>
+        <table class="help-table">
+            <thead><tr><th>Condición</th><th>Dispara si el padre…</th><th>Cuándo usarla</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Éxito</strong></td>
+                    <td>Terminó OK (<span class="mono">completed</span>).</td>
+                    <td>Caso típico: el hijo solo procesa si el padre fue exitoso.</td>
+                </tr>
+                <tr>
+                    <td><strong>Aceptado</strong></td>
+                    <td>Solo File Gate con veredicto <span class="mono">accepted</span>.</td>
+                    <td>El hijo procesa solo archivos que pasaron validación Gate.</td>
+                </tr>
+                <tr>
+                    <td><strong>Cualquier terminal</strong></td>
+                    <td>Incluye fallo y rechazo.</td>
+                    <td>No recomendado. Útil solo para alertas o auditoría que deben correr siempre.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Comportamiento del tick delegado</h3>
+        <table class="help-table">
+            <thead><tr><th>Concepto</th><th>Detalle</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Origen del tick</td>
+                    <td>El run delegado lleva <span class="mono">trigger_source=dependency</span> y referencia al <span class="mono">parent_job_id</span>.</td>
+                </tr>
+                <tr>
+                    <td>Entrada del hijo</td>
+                    <td>Sigue siendo la configurada en Destino (M3) de este plan (Artifact, Watch o sin archivo). No hereda automáticamente la salida del padre.</td>
+                </tr>
+                <tr>
+                    <td>Idempotencia</td>
+                    <td>El mismo run padre <strong>no dispara dos veces</strong> al mismo hijo. Si el padre se reintenta y vuelve a completar, genera un nuevo tick.</td>
+                </tr>
+                <tr>
+                    <td>Solape</td>
+                    <td>Si el hijo ya tiene un run vivo, la política de Solape (M5) de este plan aplica normalmente.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Errores frecuentes</h3>
+        <table class="help-table">
+            <thead><tr><th>Mensaje</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>Seleccione un plan padre</td><td>Eligió Dependencia pero no seleccionó un padre. Elija un plan de la lista o cambie a Reloj.</td></tr>
+                <tr><td>El padre no puede ser el mismo plan</td><td>Seleccionó este plan como padre. Elija otro plan.</td></tr>
+                <tr><td>Dependencia circular detectada</td><td>El padre (o un ancestro) ya depende de este plan. Reorganice la cadena.</td></tr>
+                <tr><td>Tick no generado (padre sin run)</td><td>El padre no ha completado ningún run desde que se activó la dependencia. Verifique que el padre esté activo y ejecutándose.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Permisos y al guardar</h3>
+        <p class="help-intro">Solo <strong>PA</strong> (propietario) y <strong>ED</strong> (editor) del plan pueden guardar. US de la compañía puede ver la configuración pero no modificarla.</p>
+        <p class="help-intro">Guardar registra <span class="mono">schedule.updated</span>. Si el plan ya está Activo, el siguiente evento del padre usa la nueva configuración; no afecta un tick ya encolado. Cambiar de Dependencia a Reloj (o viceversa) <strong>no cambia el estado</strong> del plan.</p>
+    </div>
+</div>
+{% endblock %}

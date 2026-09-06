@@ -1,0 +1,86 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Nuevo cliente API — DynamicWorkspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "includes/sidebar_us.html" %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:client_list' %}">API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Nuevo</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">PLATFORM API · M1</p>
+        <h2>Nuevo cliente de máquina</h2>
+        <p>La key se muestra una sola vez al guardar. Scopes mínimos; no es un token de administrador global.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'platform_api:client_create_help' as pa_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=pa_help_url %}
+        <a href="{% url 'platform_api:client_list' %}" class="btn btn-secondary">← Listado</a>
+    </div>
+</div>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <div class="panel">
+        <div class="panel-body">
+            <h3 class="form-section-title">Identidad</h3>
+            <div class="field{% if errors.code %} has-error{% endif %}">
+                <label for="code">Código <span class="req">*</span></label>
+                <input id="code" name="code" class="mono" maxlength="64" required value="{{ posted.code }}">
+                <p class="hint">Minúsculas y guiones. Ejemplo: client-erp-01</p>
+                {% for msg in errors.code %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            <div class="field">
+                <label for="name">Uso / nombre</label>
+                <input id="name" name="name" maxlength="150" value="{{ posted.name }}" placeholder="ERP nómina banco">
+                <p class="hint">Etiqueta corta para reconocer el cliente en el listado.</p>
+            </div>
+            <div class="field{% if errors.description %} has-error{% endif %}">
+                <label for="description">Descripción <span class="req">*</span></label>
+                <textarea id="description" name="description" rows="4" maxlength="2000" required placeholder="Qué sistema llama, qué proceso cubre (p. ej. envío diario de nómina al banco) y quién es el responsable.">{{ posted.description }}</textarea>
+                <p class="hint">Detalle operativo: propósito, origen de los archivos, horario y dueño. No sustituye los scopes.</p>
+                {% for msg in errors.description %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            <div class="field{% if errors.environment %} has-error{% endif %}">
+                <label for="environment">Entorno</label>
+                <select id="environment" name="environment">
+                    <option value="sandbox" {% if posted.environment == "sandbox" %}selected{% endif %}>Sandbox</option>
+                    <option value="prod" {% if posted.environment == "prod" %}selected{% endif %}>Producción</option>
+                </select>
+                {% for msg in errors.environment %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-body">
+            <h3 class="form-section-title">Scopes</h3>
+            <div class="scope-grid">
+                {% for scope, label in scope_choices %}
+                <label class="scope-item">
+                    <input type="checkbox" name="scopes" value="{{ scope }}" {% if scope in posted.scopes %}checked{% endif %}>
+                    <span><code>{{ scope }}</code><br><span class="hint">{{ label }}</span></span>
+                </label>
+                {% endfor %}
+            </div>
+            {% for msg in errors.scopes %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            <p class="hint">Sin pipeline:run no puede disparar cadenas. Sin artifacts:download solo metadatos.</p>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Crear y mostrar key</button>
+</form>
+{% endblock %}

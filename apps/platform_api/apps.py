@@ -1,0 +1,8 @@
+from django.apps import AppConfig
+
+
+class PlatformApiConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.platform_api"
+    label = "platform_api"
+    verbose_name = "PLATFORM API"

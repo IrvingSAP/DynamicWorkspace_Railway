@@ -1,102 +1,103 @@
-{# Navegación lateral UF — Worksheets + FilePipe + File Gate + Reverse Studio + File Match + Structure Scout #}
+{# UF P2 — cada app: nombre → listado; icono ? → guía general de esa app #}
 <a href="{% url 'dashboard:home' %}" class="sidebar-link{% if app_nav_active == 'home' %} is-active{% endif %}" title="Inicio">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 6.5L8 2l6 4.5V13a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"/></svg>
     <span class="sidebar-link-label">Inicio</span>
 </a>
 
-<div class="sidebar-nav-group{% if app_nav_active == 'projects' or app_nav_active == 'help' %} is-open is-active{% endif %}" data-nav-group="worksheets">
-    <button type="button" class="sidebar-nav-group-toggle" title="Worksheets" aria-expanded="{% if app_nav_active == 'projects' or app_nav_active == 'help' %}true{% else %}false{% endif %}" aria-controls="worksheets-submenu">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 3h12M2 8h12M2 13h8"/></svg>
-        <span class="sidebar-link-label">Worksheets</span>
-        <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+<div class="sb-family" data-family="files">
+    <button type="button" class="sb-family-toggle" title="Archivos de trabajo" aria-expanded="false">
+        <svg class="sb-family-mark" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 3h12M2 8h12M2 13h8"/></svg>
+        <span>
+            <span class="sb-family-name">Archivos de trabajo</span>
+            <span class="sb-family-hint">Set de apps de archivo</span>
+        </span>
+        <svg class="sb-family-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
     </button>
-    <div class="sidebar-nav-submenu" id="worksheets-submenu">
-        <a href="{% url 'projects:list' %}" class="sidebar-sublink{% if app_nav_active == 'projects' %} is-active{% endif %}">Worksheets</a>
-        <a href="{% url 'help:uf_guide' %}" class="sidebar-sublink{% if app_nav_active == 'help' %} is-active{% endif %}">Ayuda</a>
+    <div class="sb-family-body">
+        <div class="sidebar-nav-submenu sb-family-list">
+            <div class="sb-app-row">
+                <a href="{% url 'projects:list' %}" class="sidebar-sublink{% if app_nav_active == 'projects' %} is-active{% endif %}">Worksheets</a>
+                <a href="{% url 'help:uf_guide' %}" class="sb-app-help{% if app_nav_active == 'help' %} is-active{% endif %}" title="Ayuda general · Worksheets" aria-label="Ayuda general de Worksheets"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg></a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'dms:mapping_list' %}" class="sidebar-sublink{% if app_nav_active == 'filepipe_mapping' or app_nav_active == 'filepipe_catalogs' %} is-active{% endif %}">FilePipe</a>
+                <a href="{% url 'dms:datamapping_guide' %}" class="sb-app-help{% if app_nav_active == 'filepipe_guide' %} is-active{% endif %}" title="Ayuda general · FilePipe" aria-label="Ayuda general de FilePipe"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg></a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'file_gate:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_gate' %} is-active{% endif %}">File Gate</a>
+                <a href="{% url 'file_gate:file_gate_guide' %}" class="sb-app-help{% if app_nav_active == 'file_gate_guide' %} is-active{% endif %}" title="Ayuda general · File Gate" aria-label="Ayuda general de File Gate"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg></a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'reverse_studio:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'reverse_studio' %} is-active{% endif %}">Reverse Studio</a>
+                <a href="{% url 'reverse_studio:reverse_studio_guide' %}" class="sb-app-help{% if app_nav_active == 'reverse_studio_guide' %} is-active{% endif %}" title="Ayuda general · Reverse Studio" aria-label="Ayuda general de Reverse Studio"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg></a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'file_match:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_match' %} is-active{% endif %}">File Match</a>
+                <a href="{% url 'file_match:file_match_guide' %}" class="sb-app-help{% if app_nav_active == 'file_match_guide' %} is-active{% endif %}" title="Ayuda general · File Match" aria-label="Ayuda general de File Match"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg></a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'structure_scout:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'structure_scout' %} is-active{% endif %}">Structure Scout</a>
+                <a href="{% url 'structure_scout:structure_scout_guide' %}" class="sb-app-help{% if app_nav_active == 'structure_scout_guide' %} is-active{% endif %}" title="Ayuda general · Structure Scout" aria-label="Ayuda general de Structure Scout"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg></a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'file_clean:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_clean' %} is-active{% endif %}">File Clean</a>
+                <a href="{% url 'file_clean:file_clean_guide' %}" class="sb-app-help{% if app_nav_active == 'file_clean_guide' %} is-active{% endif %}" title="Ayuda general · File Clean" aria-label="Ayuda general de File Clean"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg></a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'file_split_merge:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_split_merge' %} is-active{% endif %}">File Split/Merge</a>
+                <a href="{% url 'file_split_merge:file_split_merge_guide' %}" class="sb-app-help{% if app_nav_active == 'file_split_merge_guide' %} is-active{% endif %}" title="Ayuda general · File Split/Merge" aria-label="Ayuda general de File Split/Merge"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg></a>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="sidebar-nav-group{% if filepipe_nav_open or app_nav_active == 'filepipe_mapping' or app_nav_active == 'filepipe_catalogs' or app_nav_active == 'filepipe_guide' %} is-open{% endif %}{% if app_nav_active == 'filepipe_mapping' or app_nav_active == 'filepipe_catalogs' or app_nav_active == 'filepipe_guide' %} is-active{% endif %}" data-nav-group="filepipe">
-    <button type="button" class="sidebar-nav-group-toggle" title="FilePipe" aria-expanded="{% if filepipe_nav_open or app_nav_active == 'filepipe_mapping' or app_nav_active == 'filepipe_catalogs' or app_nav_active == 'filepipe_guide' %}true{% else %}false{% endif %}" aria-controls="filepipe-submenu">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 8h3l2-4 2 8 2-4h3"/></svg>
-        <span class="sidebar-link-label">FilePipe</span>
-        <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+<div class="sb-family" data-family="pipeline">
+    <button type="button" class="sb-family-toggle" title="Pipeline" aria-expanded="false">
+        <svg class="sb-family-mark" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 8h3l2-4 2 8 2-4h3"/></svg>
+        <span>
+            <span class="sb-family-name">Pipeline</span>
+            <span class="sb-family-hint">Orquestación del set</span>
+        </span>
+        <svg class="sb-family-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
     </button>
-    <div class="sidebar-nav-submenu" id="filepipe-submenu">
-        <a href="{% url 'dms:mapping_list' %}" class="sidebar-sublink{% if app_nav_active == 'filepipe_mapping' %} is-active{% endif %}">Data Mapping</a>
-        <a href="{% url 'dms:catalog_hub' %}" class="sidebar-sublink{% if app_nav_active == 'filepipe_catalogs' %} is-active{% endif %}">Catálogos</a>
-        <a href="{% url 'dms:datamapping_guide' %}" class="sidebar-sublink{% if app_nav_active == 'filepipe_guide' %} is-active{% endif %}">Ayuda</a>
+    <div class="sb-family-body">
+        <div class="sidebar-nav-submenu sb-family-list">
+            <div class="sb-app-row">
+                <a href="{% url 'file_pipeline:pipeline_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_pipeline' %} is-active{% endif %}">File Pipeline</a>
+                <a href="{% url 'file_pipeline:file_pipeline_guide' %}" class="sb-app-help{% if app_nav_active == 'file_pipeline_guide' %} is-active{% endif %}" title="Ayuda general · File Pipeline" aria-label="Ayuda general de File Pipeline"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg></a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'file_pipeline:catalog_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_pipeline_catalog' %} is-active{% endif %}">Step Catalog</a>
+                <a href="{% url 'file_pipeline:catalog_list_help' %}" class="sb-app-help{% if app_nav_active == 'file_pipeline_catalog' %} is-active{% endif %}" title="Ayuda general · Step Catalog" aria-label="Ayuda general de Step Catalog"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg></a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'file_pipeline:pipeline_dashboard' %}" class="sidebar-sublink{% if app_nav_active == 'file_pipeline_dashboard' %} is-active{% endif %}">Dashboard</a>
+                <a href="{% url 'file_pipeline:pipeline_dashboard_help' %}" class="sb-app-help{% if app_nav_active == 'file_pipeline_dashboard' %} is-active{% endif %}" title="Ayuda general · Dashboard" aria-label="Ayuda general del Dashboard de File Pipeline"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg></a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'file_scheduler:schedule_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_scheduler' %} is-active{% endif %}">File Scheduler</a>
+                <a href="{% url 'file_scheduler:schedule_guide' %}" class="sb-app-help{% if app_nav_active == 'file_scheduler_guide' %} is-active{% endif %}" title="Ayuda general · File Scheduler" aria-label="Ayuda general de File Scheduler"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg></a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'file_watch:watch_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_watch' %} is-active{% endif %}">File Watch</a>
+                <a href="{% url 'file_watch:watch_guide' %}" class="sb-app-help{% if app_nav_active == 'file_watch_guide' %} is-active{% endif %}" title="Ayuda general · File Watch" aria-label="Ayuda general de File Watch"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.2 6.1a1.8 1.8 0 013.1 1.3c0 1.1-1.8 1.2-1.8 2.4"/><circle cx="8" cy="11.6" r=".55" fill="currentColor" stroke="none"/></svg></a>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="sidebar-nav-group{% if file_gate_nav_open or app_nav_active == 'file_gate' or app_nav_active == 'file_gate_guide' %} is-open{% endif %}{% if app_nav_active == 'file_gate' or app_nav_active == 'file_gate_guide' %} is-active{% endif %}" data-nav-group="file-gate">
-    <button type="button" class="sidebar-nav-group-toggle" title="File Gate" aria-expanded="{% if file_gate_nav_open or app_nav_active == 'file_gate' or app_nav_active == 'file_gate_guide' %}true{% else %}false{% endif %}" aria-controls="file-gate-submenu">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v3h3M5 8h6M5 11h4"/></svg>
-        <span class="sidebar-link-label">File Gate</span>
-        <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+<div class="sb-family" data-family="api">
+    <button type="button" class="sb-family-toggle" title="API" aria-expanded="false">
+        <svg class="sb-family-mark" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2.5" y="4.5" width="11" height="7" rx="1.2"/><path d="M6 8h4"/></svg>
+        <span>
+            <span class="sb-family-name">API</span>
+            <span class="sb-family-hint">Acceso máquina · keys US</span>
+        </span>
+        <svg class="sb-family-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
     </button>
-    <div class="sidebar-nav-submenu" id="file-gate-submenu">
-        <a href="{% url 'file_gate:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_gate' %} is-active{% endif %}">Validador</a>
-        <a href="{% url 'file_gate:file_gate_guide' %}" class="sidebar-sublink{% if app_nav_active == 'file_gate_guide' %} is-active{% endif %}">Ayuda</a>
-    </div>
-</div>
-
-<div class="sidebar-nav-group{% if reverse_studio_nav_open or app_nav_active == 'reverse_studio' or app_nav_active == 'reverse_studio_guide' %} is-open{% endif %}{% if app_nav_active == 'reverse_studio' or app_nav_active == 'reverse_studio_guide' %} is-active{% endif %}" data-nav-group="reverse-studio">
-    <button type="button" class="sidebar-nav-group-toggle" title="Reverse Studio" aria-expanded="{% if reverse_studio_nav_open or app_nav_active == 'reverse_studio' or app_nav_active == 'reverse_studio_guide' %}true{% else %}false{% endif %}" aria-controls="reverse-studio-submenu">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 12l4-8h4l4 8M5 9h6"/><path d="M8 4v8"/></svg>
-        <span class="sidebar-link-label">Reverse Studio</span>
-        <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
-    </button>
-    <div class="sidebar-nav-submenu" id="reverse-studio-submenu">
-        <a href="{% url 'reverse_studio:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'reverse_studio' %} is-active{% endif %}">Emisor</a>
-        <a href="{% url 'reverse_studio:reverse_studio_guide' %}" class="sidebar-sublink{% if app_nav_active == 'reverse_studio_guide' %} is-active{% endif %}">Ayuda</a>
-    </div>
-</div>
-
-<div class="sidebar-nav-group{% if file_match_nav_open or app_nav_active == 'file_match' or app_nav_active == 'file_match_guide' %} is-open{% endif %}{% if app_nav_active == 'file_match' or app_nav_active == 'file_match_guide' %} is-active{% endif %}" data-nav-group="file-match">
-    <button type="button" class="sidebar-nav-group-toggle" title="File Match" aria-expanded="{% if file_match_nav_open or app_nav_active == 'file_match' or app_nav_active == 'file_match_guide' %}true{% else %}false{% endif %}" aria-controls="file-match-submenu">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 4h4v8H3V4zM9 4h4v8H9V4z"/><path d="M5 8h6"/></svg>
-        <span class="sidebar-link-label">File Match</span>
-        <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
-    </button>
-    <div class="sidebar-nav-submenu" id="file-match-submenu">
-        <a href="{% url 'file_match:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_match' %} is-active{% endif %}">Conciliador</a>
-        <a href="{% url 'file_match:file_match_guide' %}" class="sidebar-sublink{% if app_nav_active == 'file_match_guide' %} is-active{% endif %}">Ayuda</a>
-    </div>
-</div>
-
-<div class="sidebar-nav-group{% if structure_scout_nav_open or app_nav_active == 'structure_scout' or app_nav_active == 'structure_scout_guide' %} is-open{% endif %}{% if app_nav_active == 'structure_scout' or app_nav_active == 'structure_scout_guide' %} is-active{% endif %}" data-nav-group="structure-scout">
-    <button type="button" class="sidebar-nav-group-toggle" title="Structure Scout" aria-expanded="{% if structure_scout_nav_open or app_nav_active == 'structure_scout' or app_nav_active == 'structure_scout_guide' %}true{% else %}false{% endif %}" aria-controls="structure-scout-submenu">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/><path d="M5.5 6.5h3M7 5v3"/></svg>
-        <span class="sidebar-link-label">Structure Scout</span>
-        <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
-    </button>
-    <div class="sidebar-nav-submenu" id="structure-scout-submenu">
-        <a href="{% url 'structure_scout:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'structure_scout' %} is-active{% endif %}">Explorador</a>
-        <a href="{% url 'structure_scout:structure_scout_guide' %}" class="sidebar-sublink{% if app_nav_active == 'structure_scout_guide' %} is-active{% endif %}">Ayuda</a>
-    </div>
-</div>
-
-<div class="sidebar-nav-group{% if file_clean_nav_open or app_nav_active == 'file_clean' or app_nav_active == 'file_clean_guide' %} is-open{% endif %}{% if app_nav_active == 'file_clean' or app_nav_active == 'file_clean_guide' %} is-active{% endif %}" data-nav-group="file-clean">
-    <button type="button" class="sidebar-nav-group-toggle" title="File Clean" aria-expanded="{% if file_clean_nav_open or app_nav_active == 'file_clean' or app_nav_active == 'file_clean_guide' %}true{% else %}false{% endif %}" aria-controls="file-clean-submenu">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 2.5l.9 2.7h2.8l-2.3 1.7.9 2.7L8 8.9l-2.3 1.7.9-2.7-2.3-1.7h2.8L8 2.5z"/><path d="M3 13h10"/></svg>
-        <span class="sidebar-link-label">File Clean</span>
-        <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
-    </button>
-    <div class="sidebar-nav-submenu" id="file-clean-submenu">
-        <a href="{% url 'file_clean:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_clean' %} is-active{% endif %}">Limpieza</a>
-        <a href="{% url 'file_clean:file_clean_guide' %}" class="sidebar-sublink{% if app_nav_active == 'file_clean_guide' %} is-active{% endif %}">Ayuda</a>
-    </div>
-</div>
-
-<div class="sidebar-nav-group{% if file_split_merge_nav_open or app_nav_active == 'file_split_merge' or app_nav_active == 'file_split_merge_guide' %} is-open{% endif %}{% if app_nav_active == 'file_split_merge' or app_nav_active == 'file_split_merge_guide' %} is-active{% endif %}" data-nav-group="file-split-merge">
-    <button type="button" class="sidebar-nav-group-toggle" title="File Split/Merge" aria-expanded="{% if file_split_merge_nav_open or app_nav_active == 'file_split_merge' or app_nav_active == 'file_split_merge_guide' %}true{% else %}false{% endif %}" aria-controls="file-split-merge-submenu">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 4h4v3H3V4zm6 0h4v3H9V4zM3 9h10v3H3V9z"/></svg>
-        <span class="sidebar-link-label">File Split/Merge</span>
-        <svg class="sidebar-nav-group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
-    </button>
-    <div class="sidebar-nav-submenu" id="file-split-merge-submenu">
-        <a href="{% url 'file_split_merge:project_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_split_merge' %} is-active{% endif %}">Partición</a>
-        <a href="{% url 'file_split_merge:file_split_merge_guide' %}" class="sidebar-sublink{% if app_nav_active == 'file_split_merge_guide' %} is-active{% endif %}">Ayuda</a>
+    <div class="sb-family-body">
+        <div class="sidebar-nav-submenu sb-family-list">
+            <span class="sidebar-sublink is-disabled">PLATFORM API <span class="sb-soon">Keys: usuario US</span></span>
+        </div>
     </div>
 </div>

@@ -1,0 +1,160 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}File Pipeline — Pipelines{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_pipeline.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>File Pipeline</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Pipelines</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip" aria-label="Alcance de compañía">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Pipeline · <span class="role-badge">UF</span></p>
+        <h2>Flujos multi-app</h2>
+        <p>Listado acotado a pipelines de su compañía o donde es miembro. File Pipeline orquesta apps; no parsea el archivo.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_pipeline:pipeline_list_help' as fp_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=fp_help_url %}
+        <a href="{% url 'file_pipeline:pipeline_dashboard' %}" class="btn btn-secondary">Dashboard</a>
+        <a href="{% url 'file_pipeline:catalog_list' %}" class="btn btn-secondary">Step Catalog</a>
+        <a href="{% url 'file_pipeline:pipeline_create' %}" class="btn btn-primary">+ Nuevo pipeline</a>
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Visibles</p>
+        <p class="stat-value">{{ stats.total|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Activos</p>
+        <p class="stat-value">{{ stats.active|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">En proceso</p>
+        <p class="stat-value">{{ stats.in_progress|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Inactivos</p>
+        <p class="stat-value">{{ stats.inactive|default:0 }}</p>
+    </div>
+</div>
+
+<div class="panel panel--table">
+    <div class="table-toolbar" aria-label="Controles de tabla">
+        <div class="table-toolbar-group">
+            <label for="filter-status">
+                Estado
+                <select id="filter-status" name="filter-status">
+                    <option value="">Todos</option>
+                    <option value="active">Activo</option>
+                    <option value="in_progress">En proceso</option>
+                    <option value="inactive">Inactivo</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="table-dt-host">
+        <table id="fp-pipeline-table" class="dw-datatable" data-dt-custom="true" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Estado</th>
+                    <th>Pasos</th>
+                    <th>Versión</th>
+                    <th>Acceso</th>
+                    <th>Último run</th>
+                    <th class="col-actions"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr data-status="{{ row.status }}">
+                    <td><code>{{ row.pipeline.slug }}</code></td>
+                    <td>{{ row.pipeline.name }}</td>
+                    <td>
+                        {% if row.status == 'active' %}<span class="status status-active">{{ row.status_label }}</span>
+                        {% elif row.status == 'inactive' %}<span class="status status-inactive">{{ row.status_label }}</span>
+                        {% else %}<span class="cell-badge">{{ row.status_label }}</span>{% endif %}
+                    </td>
+                    <td title="{{ row.step_chain.full }}">
+                        {{ row.step_chain.short }}{% if row.step_chain.truncated %} <span class="fp-step-more">...</span>{% endif %}
+                    </td>
+                    <td>{{ row.version_label }}</td>
+                    <td>
+                        {% if row.visibility == 'company' %}
+                        <span class="visibility-badge visibility-badge--public">compañía</span>
+                        {% else %}
+                        <span class="visibility-badge visibility-badge--private">miembro</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ row.last_run_label }}</td>
+                    <td class="col-actions"><a href="{% url 'file_pipeline:pipeline_hub' pipeline_slug=row.pipeline.slug %}" class="btn btn-ghost btn-sm">Abrir</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (typeof DataTable === "undefined") return;
+  var tableEl = document.getElementById("fp-pipeline-table");
+  if (!tableEl || tableEl.dataset.dtInit === "true") return;
+  var filterStatus = document.getElementById("filter-status");
+  var statusValue = "";
+  DataTable.ext.search.push(function (settings, _searchData, dataIndex) {
+    if (!settings.nTable || settings.nTable.id !== "fp-pipeline-table") return true;
+    var row = new DataTable.Api(settings).row(dataIndex).node();
+    if (!row) return true;
+    if (statusValue && row.dataset.status !== statusValue) return false;
+    return true;
+  });
+  var table = new DataTable("#fp-pipeline-table", {
+    language: DW_DATATABLES_ES,
+    layout: DW_DATATABLES_LAYOUT,
+    pageLength: 10,
+    order: [[0, "asc"]],
+    columnDefs: [
+      { orderable: false, searchable: false, targets: -1, className: "col-actions" },
+    ],
+  });
+  tableEl.dataset.dtInit = "true";
+  if (filterStatus) {
+    filterStatus.addEventListener("change", function () {
+      statusValue = this.value;
+      table.draw();
+    });
+  }
+});
+</script>
+{% endblock %}

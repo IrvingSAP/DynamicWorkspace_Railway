@@ -1,0 +1,169 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Clientes API{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_us.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:client_list' %}">API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">US</span></p>
+        <h2>Ayuda — Listado de clientes de máquina</h2>
+        <p>Qué hace esta pantalla y qué significa cada elemento. No sustituye el login 2FA de personas.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'platform_api:client_list' %}" class="btn btn-secondary">← Volver al listado</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Aquí el administrador de compañía (<strong>US</strong>) gestiona las <strong>identidades de máquina</strong>
+            (ERP, RPA, middleware) que pueden llamar a <span class="mono">/api/v1/…</span> en <strong>esta</strong> compañía.
+            Cada cliente tiene scopes y una key. La key <strong>no</strong> se crea en cada petición: se emite al alta (o al rotar)
+            y el integrador la reutiliza.
+        </p>
+
+        <h3 class="form-section-title">Quién puede usarla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Qué puede hacer</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>US</td>
+                    <td>Alta, ver listado, editar scopes, rotar y revocar clientes de su compañía.</td>
+                </tr>
+                <tr>
+                    <td>UA / UF</td>
+                    <td>No gestionan keys aquí. UF dispara jobs en las apps; la máquina usa Bearer.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Resumen (tarjetas)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Indicador</th><th>Qué cuenta</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Activos</td>
+                    <td>Clientes que aún pueden autenticar (status activo).</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+                <tr>
+                    <td>Revocados</td>
+                    <td>Baja del integrador: el Bearer ya no sirve.</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+                <tr>
+                    <td>Sandbox activos</td>
+                    <td>Activos con entorno sandbox (key <span class="mono">dw_test_…</span>).</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Filtros de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Filtro</th><th>Función</th><th>Opciones</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Estado</td>
+                    <td>Limita filas por ciclo de vida del cliente.</td>
+                    <td><span class="mono">Todos</span> · <span class="mono">Activo</span> · <span class="mono">Revocado</span></td>
+                </tr>
+                <tr>
+                    <td>Búsqueda (DataTables)</td>
+                    <td>Busca en columnas visibles (código, entorno, scopes…).</td>
+                    <td>Texto libre</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columnas de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Qué muestra</th><th>Valores / formato</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Código</td>
+                    <td>Identificador del cliente en la compañía; debajo, el nombre corto y un recorte de la descripción.</td>
+                    <td class="mono">Minúsculas y guiones. Ej. client-erp-01</td>
+                </tr>
+                <tr>
+                    <td>Entorno</td>
+                    <td>Sandbox o producción. Cada uno es un cliente distinto, con su key.</td>
+                    <td><strong>Sandbox</strong> · <strong>Producción</strong></td>
+                </tr>
+                <tr>
+                    <td>Scopes</td>
+                    <td>Permisos de la máquina (no es un token dios).</td>
+                    <td class="mono">jobs:run · jobs:read · jobs:cancel · pipeline:run · artifacts:download</td>
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    <td>Si el Bearer sigue siendo válido.</td>
+                    <td><strong>Activo</strong> · <strong>Revocado</strong></td>
+                </tr>
+                <tr>
+                    <td>Último uso</td>
+                    <td>Última autenticación correcta contra la API.</td>
+                    <td class="mono">dd/mm/aaaa hh:mm</td>
+                </tr>
+                <tr>
+                    <td>Auditoría</td>
+                    <td>Abre el historial de cambios de ese cliente (quién, cuándo, qué).</td>
+                    <td><strong>Auditoría</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones de la pantalla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ayuda</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>+ Nuevo cliente</td>
+                    <td>Alta. Tras guardar verá la key <strong>una sola vez</strong>.</td>
+                </tr>
+                <tr>
+                    <td>Auditoría (cabecera)</td>
+                    <td>Historial de todos los clientes de la compañía.</td>
+                </tr>
+                <tr>
+                    <td>Abrir</td>
+                    <td>Detalle: editar nombre/scopes (sin cambiar la key), rotar o revocar.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

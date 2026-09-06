@@ -1,0 +1,132 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Auditoría API{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/platform_api.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_us.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'platform_api:audit_list' %}">Auditoría API</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">US</span></p>
+        <h2>Ayuda — Auditoría de clientes de máquina</h2>
+        <p>Historial append-only de la compañía: quién cambió una identidad de máquina, cuándo y qué.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'platform_api:client_list' %}" class="btn btn-secondary">Clientes</a>
+        <a href="{% url 'platform_api:audit_list' %}" class="btn btn-secondary">← Volver al listado</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Para qué sirve esta pantalla</h3>
+        <p class="help-intro">
+            Un cambio de scopes, una rotación o una revocación puede dejar al ERP sin autenticar al día siguiente.
+            Aquí ve <strong>todos los clientes de la compañía</strong>. No se edita ni se borra una fila:
+            si hubo un error, el siguiente hecho (rotar, revocar, alta nueva) queda también registrado.
+        </p>
+        <p class="help-intro">
+            Esto <strong>no</strong> es el historial de jobs (<code>trigger_source=api</code> vive en Pipeline / cada app).
+            Tampoco se crea una fila por cada <code>GET /whoami</code>: el pulso de uso está en
+            <code>last_used_at</code> de la ficha del cliente.
+        </p>
+
+        <h3 class="form-section-title">Quién</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Acceso</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>US de esta compañía</td>
+                    <td>Listado, filtro, detalle de evento y línea de tiempo por cliente.</td>
+                </tr>
+                <tr>
+                    <td>UA / UF</td>
+                    <td>Sin este menú. UF ejecuta en las apps de archivo, no gestiona keys.</td>
+                </tr>
+                <tr>
+                    <td>Otra compañía</td>
+                    <td>El evento no existe para ese tenant (404 lógico).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones que generan fila</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Cuándo</th></tr>
+            </thead>
+            <tbody>
+                {% for value, label in action_choices %}
+                <tr>
+                    <td>{{ label }} <span class="mono">({{ value }})</span></td>
+                    <td>
+                        {% if value == "created" %}Alta del cliente y emisión de la primera key.{% endif %}
+                        {% if value == "updated" %}Código, nombre, descripción, scopes o webhook (la key no se regenera).{% endif %}
+                        {% if value == "key_rotated" %}Nueva key; la anterior deja de autenticar. Los jobs ya corridos no se rehacen.{% endif %}
+                        {% if value == "key_revealed" %}Un US vio el secreto en la pantalla de un solo uso.{% endif %}
+                        {% if value == "revoked" %}El cliente queda inhabilitado; el Bearer ya no sirve.{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columnas y filtro</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Elemento</th><th>Qué muestra</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Fecha</td>
+                    <td><span class="mono">dd/mm/aaaa hh:mm:ss</span> del hecho.</td>
+                </tr>
+                <tr>
+                    <td>Cliente</td>
+                    <td>Código; abre la línea de tiempo de <em>ese</em> cliente.</td>
+                </tr>
+                <tr>
+                    <td>Acción / Actor / Resumen</td>
+                    <td>Tipo de hecho, US que lo hizo (o — si no hay usuario) y frase fija del sistema.</td>
+                </tr>
+                <tr>
+                    <td>Ver</td>
+                    <td>Antes / después, IP y agente.</td>
+                </tr>
+                <tr>
+                    <td>Filtro Acción</td>
+                    <td>Limita el listado. La búsqueda de DataTables filtra el texto visible.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            No se guarda la key en claro ni el hash. En el detalle sí hay una <strong>pista de 4 caracteres</strong>
+            para reconocer rotaciones.
+        </p>
+
+        <h3 class="form-section-title">Qué no es esta pantalla</h3>
+        <ul>
+            <li>No crea ni rota keys — <a href="{% url 'platform_api:client_list' %}">Clientes</a>.</li>
+            <li>No es el tablero de corridas API (módulo 7 / Pipeline).</li>
+            <li>Vacío: aún no hay alta ni cambio; cree un cliente para ver la primera fila.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

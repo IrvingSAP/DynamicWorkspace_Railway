@@ -1,0 +1,201 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Hub {{ watch.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ watch.slug }}</span></p>
+        <h2>Ayuda — Hub de la bandeja</h2>
+        <p>Centro de control: ciclo de vida, origen, disparo y accesos a cada módulo. Editar, miembros y archivar viven en el listado.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}" class="btn btn-secondary">← Volver al hub</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            El hub resume la bandeja <strong>{{ watch.name }}</strong> (<span class="mono">{{ watch.slug }}</span>)
+            y da acceso a cada etapa: origen, intake, enrutado, disparo, idempotencia, avisos, lotes y auditoría.
+            File Watch <strong>no parsea</strong> el archivo: lo deja en storage y, si corresponde, dispara un Job o un pipeline.
+        </p>
+        <p class="help-intro">
+            <strong>Quién:</strong> cualquier miembro (o UF de compañía si es pública) ve el hub.
+            PA y ED activan, pausan y reanudan. PA gestiona miembros y archiva <strong>desde el listado</strong>, no aquí.
+        </p>
+
+        <h3 class="form-section-title">Cabecera y acciones</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Elemento</th><th>Qué es</th><th>Quién / cuándo</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Código (badge)</td>
+                    <td>Slug de la bandeja, p. ej. <span class="mono">{{ watch.slug }}</span>.</td>
+                    <td>Informativo</td>
+                </tr>
+                <tr>
+                    <td>Visibilidad</td>
+                    <td>Público (compañía) o Privado (solo miembros).</td>
+                    <td>Se cambia en Editar (listado)</td>
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    <td><strong>En proceso</strong> · <strong>Activo</strong> · <strong>Inactivo</strong> · <strong>Archivado</strong>. Independiente del último lote.</td>
+                    <td>Informativo</td>
+                </tr>
+                <tr>
+                    <td>Rol</td>
+                    <td>Su permiso en esta bandeja (PA, ED, GE, CO o consulta de compañía).</td>
+                    <td>Informativo</td>
+                </tr>
+                <tr>
+                    <td>Ayuda</td>
+                    <td>Abre esta página.</td>
+                    <td>Todos</td>
+                </tr>
+                <tr>
+                    <td>Marcar como Activa</td>
+                    <td>Pasa de En proceso a Activo. El monitor puede ingerir.</td>
+                    <td>PA / ED, si origen y disparo están listos (y enrutado si dispara al llegar)</td>
+                </tr>
+                <tr>
+                    <td>Pausar</td>
+                    <td>Pasa a <strong>Inactivo</strong>. No cancela un Job ya encolado.</td>
+                    <td>PA / ED, solo si está Activa</td>
+                </tr>
+                <tr>
+                    <td>Reanudar</td>
+                    <td>Vuelve a Activo. Mismas comprobaciones que activar.</td>
+                    <td>PA / ED, desde Inactivo</td>
+                </tr>
+                <tr>
+                    <td>← Bandejas</td>
+                    <td>Vuelve al listado. Allí están Editar, Miembros y Archivar.</td>
+                    <td>Todos</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Franja de contexto</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Dato</th><th>Significado</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Origen</td>
+                    <td>Adaptador configurado en el módulo Origen.</td>
+                    <td><strong>SFTP</strong> · <strong>Carpeta</strong> · <strong>API push</strong> · <span class="mono">Sin origen (M2)</span></td>
+                </tr>
+                <tr>
+                    <td>Última llegada</td>
+                    <td>Último lote ingerido con marca de tiempo.</td>
+                    <td class="mono">dd/mm hh:mm · — si aún no hay</td>
+                </tr>
+                <tr>
+                    <td>Miembros</td>
+                    <td>Cantidad de membresías activas (incluye al owner).</td>
+                    <td>Entero ≥ 1</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Ciclo de vida (rail de módulos)</h3>
+        <p class="help-intro">
+            Visual: <strong>verde + ✓</strong> = completado;
+            <strong>verde + número</strong> = siguiente acción;
+            <strong>gris</strong> = aún no toca.
+            No hay «Procesar ahora» en el hub: el disparo se configura en el módulo Disparo.
+        </p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Fase</th><th>Paso</th><th>Para qué sirve</th><th>Cuándo marca ✓</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Definición</td>
+                    <td>1 Origen</td>
+                    <td>Adaptador SFTP, carpeta o API push. No dispara.</td>
+                    <td>Origen guardado y válido.</td>
+                </tr>
+                <tr>
+                    <td>Definición</td>
+                    <td>2 Intake</td>
+                    <td>Cómo se recibe el archivo: storage, lote y hash.</td>
+                    <td>Política de intake guardada.</td>
+                </tr>
+                <tr>
+                    <td>Definición</td>
+                    <td>3 Enrutado</td>
+                    <td>Destino: proyecto/versión, pipeline o diferir para Scheduler.</td>
+                    <td>Ruta guardada. Obligatorio si el disparo es «al llegar».</td>
+                </tr>
+                <tr>
+                    <td>Definición</td>
+                    <td>4 Disparo</td>
+                    <td>Al llegar vs lote pendiente para File Scheduler.</td>
+                    <td>Modo de disparo guardado. Necesario para activar.</td>
+                </tr>
+                <tr>
+                    <td>Definición</td>
+                    <td>5 Idempotencia</td>
+                    <td>Duplicados, reintentos y cuotas.</td>
+                    <td>Política de idempotencia guardada.</td>
+                </tr>
+                <tr>
+                    <td>Definición</td>
+                    <td>6 Avisos</td>
+                    <td>Correo o webhook al fallar la ingestión. Por defecto desactivado.</td>
+                    <td>Configuración de avisos guardada.</td>
+                </tr>
+                <tr>
+                    <td>Operación</td>
+                    <td>7 Llegadas / lotes</td>
+                    <td>Historial de archivos ingeridos y su estado.</td>
+                    <td>Hay al menos un lote.</td>
+                </tr>
+                <tr>
+                    <td>Operación</td>
+                    <td>8 Auditoría</td>
+                    <td>Timeline append-only (CRUD y llegadas).</td>
+                    <td>Hay eventos posteriores al alta, o hay lotes.</td>
+                </tr>
+                <tr>
+                    <td>Operación</td>
+                    <td>9 Miembros</td>
+                    <td>Quién tiene acceso a esta bandeja. El enlace solo aparece para PA.</td>
+                    <td>Hay más de un miembro (además del owner).</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            <strong>Activar ≠ origen solo.</strong> Hace falta origen y disparo.
+            Si el disparo es «al llegar», también un enrutado a Job o Pipeline (no Diferir).
+        </p>
+    </div>
+</div>
+{% endblock %}

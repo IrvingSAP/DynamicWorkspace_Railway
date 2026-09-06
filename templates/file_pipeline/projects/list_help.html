@@ -1,0 +1,191 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — File Pipeline{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "includes/sidebar_uf.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_pipeline:pipeline_list' %}">File Pipeline</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="role-badge">UF</span></p>
+        <h2>Ayuda — Listado de pipelines</h2>
+        <p>Qué hace esta pantalla y qué significa cada elemento del listado de orquestación.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_pipeline:pipeline_list' %}" class="btn btn-secondary">← Volver al listado</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            File Pipeline es el listado de <strong>contenedores de orquestación</strong> de su compañía.
+            Cada pipeline encadena proyectos publicados de otras apps (Clean, Gate, FilePipe, Split/Merge…).
+            <strong>No parsea</strong> el archivo: invoca el runner de cada paso.
+            Ve pipelines donde es miembro y los marcados como públicos para la organización.
+        </p>
+
+        <h3 class="form-section-title">Alcance de compañía</h3>
+        <p class="help-intro">Franja superior que indica en qué organización está trabajando.</p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Elemento</th><th>Qué es</th><th>Valores posibles</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Código (badge)</td>
+                    <td>Sigla corta de la compañía.</td>
+                    <td class="mono">Ej. ACME, CORPO</td>
+                </tr>
+                <tr>
+                    <td>Nombre largo</td>
+                    <td>Razón social o nombre completo de la organización.</td>
+                    <td>Texto libre definido por el administrador.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Resumen (tarjetas)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Indicador</th><th>Qué cuenta</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Visibles</td>
+                    <td>Pipelines de su alcance (miembro o públicos de compañía).</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+                <tr>
+                    <td>Activos</td>
+                    <td>Definiciones en estado operativo <span class="mono">Activo</span> (pueden dispararse si hay versión publicada).</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+                <tr>
+                    <td>En proceso</td>
+                    <td>Aún en diseño o no puestos en marcha. El alta nace aquí.</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+                <tr>
+                    <td>Inactivos</td>
+                    <td>Pausados a propósito. No se disparan; el historial se conserva.</td>
+                    <td>Entero ≥ 0</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Filtros de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Filtro</th><th>Función</th><th>Opciones</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Estado</td>
+                    <td>Limita filas según el estado de la <strong>definición</strong> (no el del último run).</td>
+                    <td><span class="mono">Todos</span> · <span class="mono">Activo</span> · <span class="mono">En proceso</span> · <span class="mono">Inactivo</span></td>
+                </tr>
+                <tr>
+                    <td>Búsqueda (DataTables)</td>
+                    <td>Campo global de la tabla; busca en las columnas visibles (código, nombre, pasos, versión…).</td>
+                    <td>Texto libre</td>
+                </tr>
+                <tr>
+                    <td>Mostrar registros</td>
+                    <td>Paginado estándar de la tabla.</td>
+                    <td><span class="mono">10</span> · <span class="mono">25</span> · <span class="mono">50</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columnas de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Qué muestra</th><th>Valores / formato</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Código</td>
+                    <td>Identificador (slug) del pipeline.</td>
+                    <td class="mono">Minúsculas, números y guiones. Ej. pepeline-prueba-01</td>
+                </tr>
+                <tr>
+                    <td>Nombre</td>
+                    <td>Nombre visible del pipeline.</td>
+                    <td>Texto libre definido al crear.</td>
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    <td>Ciclo de vida de la definición.</td>
+                    <td><strong>Activo</strong> · <strong>En proceso</strong> · <strong>Inactivo</strong></td>
+                </tr>
+                <tr>
+                    <td>Pasos</td>
+                    <td>Cadena del rail (borrador). Si hay más de dos, muestra los dos primeros y <strong>…</strong> verde.</td>
+                    <td>Ej. Clean → Gate …</td>
+                </tr>
+                <tr>
+                    <td>Versión</td>
+                    <td>Versión publicada activa. Columna, no filtro.</td>
+                    <td class="mono">Sin publicar · v1 publicada · v2 publicada</td>
+                </tr>
+                <tr>
+                    <td>Acceso</td>
+                    <td>Quién ve el pipeline en el listado.</td>
+                    <td><strong>compañía</strong> (público) · <strong>miembro</strong> (privado)</td>
+                </tr>
+                <tr>
+                    <td>Último run</td>
+                    <td>Estado y hora de la última corrida del orquestador. «—» si aún no hay.</td>
+                    <td class="mono">Fallido · 22/08 11:23</td>
+                </tr>
+                <tr>
+                    <td>Acciones</td>
+                    <td>Acceso rápido al hub del pipeline.</td>
+                    <td><strong>Abrir</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones de la pantalla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Dashboard</td>
+                    <td>Abre el pulso de corridas (alcance autorizado). Las vistas previas dry-run no entran en corridas/tasa/canales.</td>
+                </tr>
+                <tr>
+                    <td>Step Catalog</td>
+                    <td>Catálogo de kinds de paso. UF consulta; alta y edición son de operador de plataforma (UA).</td>
+                </tr>
+                <tr>
+                    <td>+ Nuevo pipeline</td>
+                    <td>Crea un pipeline en su compañía. Queda PA y estado En proceso.</td>
+                </tr>
+                <tr>
+                    <td>Abrir</td>
+                    <td>Entra al hub (diseñar, publicar, ejecutar, historial, miembros).</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

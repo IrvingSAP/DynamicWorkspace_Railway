@@ -1,17 +1,117 @@
-{# Navegación lateral US #}
+{# US — familias + ítem · ? guía general (stubs en help:us_general_guide) #}
 <a href="{% url 'dashboard:home' %}" class="sidebar-link{% if app_nav_active == 'home' %} is-active{% endif %}" title="Inicio">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 6.5L8 2l6 4.5V13a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"/></svg>
     <span class="sidebar-link-label">Inicio</span>
 </a>
-<a href="{% url 'company:detail' pk=request.user.profile.company_id %}" class="sidebar-link{% if app_nav_active == 'company' %} is-active{% endif %}" title="Compañía">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 14V4l5-2.5L13 4v10"/><path d="M6 14v-4h4v4"/></svg>
-    <span class="sidebar-link-label">Compañía</span>
-</a>
-<a href="{% url 'dashboard:account' %}" class="sidebar-link{% if app_nav_active == 'accounts' %} is-active{% endif %}" title="Cuentas">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="6" cy="5" r="2.5"/><path d="M1.5 14c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5"/><circle cx="11.5" cy="5.5" r="2"/><path d="M14 14c0-1.8-1.2-3.2-2.8-3.7"/></svg>
-    <span class="sidebar-link-label">Cuentas</span>
-</a>
-<a href="{% url 'accounts:list' %}" class="sidebar-link{% if app_nav_active == 'users' %} is-active{% endif %}" title="Usuarios">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="5" r="2.5"/><path d="M3 14c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg>
-    <span class="sidebar-link-label">Usuarios</span>
-</a>
+
+<div class="sb-family" data-family="company">
+    <button type="button" class="sb-family-toggle" title="Compañía" aria-expanded="false">
+        <svg class="sb-family-mark" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 14V4l5-2.5L13 4v10"/><path d="M6 14v-4h4v4"/></svg>
+        <span>
+            <span class="sb-family-name">Compañía</span>
+            <span class="sb-family-hint">Organización y cuentas</span>
+        </span>
+        <svg class="sb-family-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="sb-family-body">
+        <div class="sidebar-nav-submenu sb-family-list">
+            <div class="sb-app-row">
+                <a href="{% url 'company:detail' pk=request.user.profile.company_id %}" class="sidebar-sublink{% if app_nav_active == 'company' %} is-active{% endif %}">Compañía</a>
+                <a href="{% url 'help:us_general_guide' 'company' %}" class="sb-app-help{% if app_nav_active == 'us_help_company' %} is-active{% endif %}" title="Ayuda general · Compañía" aria-label="Ayuda general de Compañía">{% include "includes/sb_help_icon.svg.html" %}</a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'dashboard:account' %}" class="sidebar-sublink{% if app_nav_active == 'accounts' %} is-active{% endif %}">Cuentas</a>
+                <a href="{% url 'help:us_general_guide' 'accounts' %}" class="sb-app-help{% if app_nav_active == 'us_help_accounts' %} is-active{% endif %}" title="Ayuda general · Cuentas" aria-label="Ayuda general de Cuentas">{% include "includes/sb_help_icon.svg.html" %}</a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'accounts:list' %}" class="sidebar-sublink{% if app_nav_active == 'users' %} is-active{% endif %}">Usuarios</a>
+                <a href="{% url 'help:us_general_guide' 'users' %}" class="sb-app-help{% if app_nav_active == 'us_help_users' %} is-active{% endif %}" title="Ayuda general · Usuarios" aria-label="Ayuda general de Usuarios">{% include "includes/sb_help_icon.svg.html" %}</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="sb-family" data-family="api">
+    <button type="button" class="sb-family-toggle" title="API" aria-expanded="false">
+        <svg class="sb-family-mark" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2.5" y="4.5" width="11" height="7" rx="1.2"/><path d="M6 8h4"/></svg>
+        <span>
+            <span class="sb-family-name">API</span>
+            <span class="sb-family-hint">Acceso máquina · keys</span>
+        </span>
+        <svg class="sb-family-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="sb-family-body">
+        <div class="sidebar-nav-submenu sb-family-list">
+            <div class="sb-app-row">
+                <a href="{% url 'platform_api:client_list' %}" class="sidebar-sublink{% if app_nav_active == 'platform_api' %} is-active{% endif %}">Clientes</a>
+                <a href="{% url 'help:us_general_guide' 'api-clients' %}" class="sb-app-help{% if app_nav_active == 'us_help_api_clients' %} is-active{% endif %}" title="Ayuda general · Clientes API" aria-label="Ayuda general de Clientes API">{% include "includes/sb_help_icon.svg.html" %}</a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'platform_api:contract_guide' %}" class="sidebar-sublink{% if app_nav_active == 'platform_api_contract' %} is-active{% endif %}">Contrato</a>
+                <a href="{% url 'help:us_general_guide' 'api-contract' %}" class="sb-app-help{% if app_nav_active == 'us_help_api_contract' %} is-active{% endif %}" title="Ayuda general · Contrato API" aria-label="Ayuda general de Contrato API">{% include "includes/sb_help_icon.svg.html" %}</a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'platform_api:openapi_guide' %}" class="sidebar-sublink{% if app_nav_active == 'platform_api_openapi' %} is-active{% endif %}">Paths</a>
+                <a href="{% url 'help:us_general_guide' 'api-paths' %}" class="sb-app-help{% if app_nav_active == 'us_help_api_paths' %} is-active{% endif %}" title="Ayuda general · Paths API" aria-label="Ayuda general de Paths API">{% include "includes/sb_help_icon.svg.html" %}</a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'platform_api:integration_guide' %}" class="sidebar-sublink{% if app_nav_active == 'platform_api_integration' %} is-active{% endif %}">Integración</a>
+                <a href="{% url 'help:us_general_guide' 'api-integration' %}" class="sb-app-help{% if app_nav_active == 'us_help_api_integration' %} is-active{% endif %}" title="Ayuda general · Integración API" aria-label="Ayuda general de Integración API">{% include "includes/sb_help_icon.svg.html" %}</a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'platform_api:security_policy' %}" class="sidebar-sublink{% if app_nav_active == 'platform_api_security' %} is-active{% endif %}">Seguridad</a>
+                <a href="{% url 'help:us_general_guide' 'api-security' %}" class="sb-app-help{% if app_nav_active == 'us_help_api_security' %} is-active{% endif %}" title="Ayuda general · Seguridad API" aria-label="Ayuda general de Seguridad API">{% include "includes/sb_help_icon.svg.html" %}</a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'platform_api:audit_list' %}" class="sidebar-sublink{% if app_nav_active == 'platform_api_audit' %} is-active{% endif %}">Auditoría</a>
+                <a href="{% url 'help:us_general_guide' 'api-audit' %}" class="sb-app-help{% if app_nav_active == 'us_help_api_audit' %} is-active{% endif %}" title="Ayuda general · Auditoría API" aria-label="Ayuda general de Auditoría API">{% include "includes/sb_help_icon.svg.html" %}</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="sb-family" data-family="scheduler">
+    <button type="button" class="sb-family-toggle" title="Scheduler" aria-expanded="false">
+        <svg class="sb-family-mark" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3.5l2 1.5"/></svg>
+        <span>
+            <span class="sb-family-name">Scheduler</span>
+            <span class="sb-family-hint">Planes y calendario</span>
+        </span>
+        <svg class="sb-family-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="sb-family-body">
+        <div class="sidebar-nav-submenu sb-family-list">
+            <div class="sb-app-row">
+                <a href="{% url 'file_scheduler:schedule_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_scheduler' %} is-active{% endif %}">Planes</a>
+                <a href="{% url 'help:us_general_guide' 'file-scheduler' %}" class="sb-app-help{% if app_nav_active == 'us_help_file_scheduler' %} is-active{% endif %}" title="Ayuda general · File Scheduler" aria-label="Ayuda general de File Scheduler">{% include "includes/sb_help_icon.svg.html" %}</a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'file_watch:watch_list' %}" class="sidebar-sublink{% if app_nav_active == 'file_watch' %} is-active{% endif %}">Bandejas</a>
+                <a href="{% url 'help:us_general_guide' 'file-watch' %}" class="sb-app-help{% if app_nav_active == 'us_help_file_watch' %} is-active{% endif %}" title="Ayuda general · File Watch" aria-label="Ayuda general de File Watch">{% include "includes/sb_help_icon.svg.html" %}</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="sb-family" data-family="manuals">
+    <button type="button" class="sb-family-toggle" title="Manuales" aria-expanded="false">
+        <svg class="sb-family-mark" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3.5 2.5h7.5L13 4.5v9H3.5z"/><path d="M11 2.5v2h2"/></svg>
+        <span>
+            <span class="sb-family-name">Manuales</span>
+            <span class="sb-family-hint">Guías de integración API</span>
+        </span>
+        <svg class="sb-family-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="sb-family-body">
+        <div class="sidebar-nav-submenu sb-family-list">
+            <div class="sb-app-row">
+                <a href="{% url 'help:us_manual_jobs' %}" class="sidebar-sublink{% if app_nav_active == 'us_manual_jobs' %} is-active{% endif %}">Jobs sueltos</a>
+                <a href="{% url 'help:us_general_guide' 'manual-jobs' %}" class="sb-app-help{% if app_nav_active == 'us_help_manual_jobs' %} is-active{% endif %}" title="Ayuda general · Jobs sueltos" aria-label="Ayuda general de Jobs sueltos">{% include "includes/sb_help_icon.svg.html" %}</a>
+            </div>
+            <div class="sb-app-row">
+                <a href="{% url 'help:us_manual_pipelines' %}" class="sidebar-sublink{% if app_nav_active == 'us_manual_pipelines' %} is-active{% endif %}">Pipelines</a>
+                <a href="{% url 'help:us_general_guide' 'manual-pipelines' %}" class="sb-app-help{% if app_nav_active == 'us_help_manual_pipelines' %} is-active{% endif %}" title="Ayuda general · Pipelines" aria-label="Ayuda general de Pipelines">{% include "includes/sb_help_icon.svg.html" %}</a>
+            </div>
+        </div>
+    </div>
+</div>
