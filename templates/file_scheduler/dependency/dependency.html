@@ -1,0 +1,149 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Dependencia — {{ schedule.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_scheduler.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Dependencia</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Scheduler · M6 · <span class="perm-badge{% if hub.is_pa %} perm-badge--admin{% endif %}">{{ hub.role_label }}</span></p>
+        <h2>Dependencia</h2>
+        <p>Disparar <strong>cuando termina</strong> otro Job o pipeline. No es el diseñador de pasos de File Pipeline. Un plan es reloj <em>o</em> dependencia, no ambos.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_scheduler:schedule_dependency_help' schedule_slug=schedule.slug as sch_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=sch_help_url %}
+        <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+
+<form id="dep-form" method="post" novalidate>
+    {% csrf_token %}
+    <fieldset {% if not can_edit %}disabled{% endif %} style="border:0;padding:0;margin:0;min-inline-size:0">
+        <div class="panel">
+            <div class="panel-body">
+                <h3 class="form-section-title">Disparador</h3>
+                <div class="radio-cards radio-cards--freq{% if errors.trigger_mode %} has-error{% endif %}">
+                    <label class="radio-card">
+                        <input type="radio" name="trigger_mode" value="time"{% if posted.trigger_mode != 'dependency' %} checked{% endif %}>
+                        <strong>Reloj</strong>
+                        <span>Ventanas de programación (M2). El cron queda activo.</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="trigger_mode" value="dependency"{% if posted.trigger_mode == 'dependency' %} checked{% endif %}>
+                        <strong>Dependencia</strong>
+                        <span>Cuando termina el padre. El cron guardado queda inerte.</span>
+                    </label>
+                </div>
+                {% for msg in errors.trigger_mode %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+        </div>
+        <div class="panel" id="panel-parent">
+            <div class="panel-body">
+                <h3 class="form-section-title">Padre</h3>
+                <div class="radio-cards{% if errors.parent_kind %} has-error{% endif %}">
+                    <label class="radio-card">
+                        <input type="radio" name="parent_kind" value="job"{% if posted.parent_kind != 'pipeline' %} checked{% endif %}>
+                        <strong>Job de app</strong>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="parent_kind" value="pipeline"{% if posted.parent_kind == 'pipeline' %} checked{% endif %}>
+                        <strong>Pipeline</strong>
+                    </label>
+                </div>
+                {% for msg in errors.parent_kind %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                <div class="field{% if errors.parent_project_id %} has-error{% endif %}" id="field-parent-job" style="margin-top:12px">
+                    <label for="parent_project_id">Proyecto padre <span class="req">*</span></label>
+                    <select id="parent_project_id" name="parent_project_id">
+                        <option value="">— Elija un proyecto —</option>
+                        {% for row in parent_projects %}
+                        <option value="{{ row.id }}"{% if posted.parent_project_id == row.id %} selected{% endif %}>{{ row.label }}</option>
+                        {% endfor %}
+                    </select>
+                    {% for msg in errors.parent_project_id %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+                <div class="field{% if errors.parent_pipeline_id %} has-error{% endif %} is-hidden" id="field-parent-pipeline" style="margin-top:12px">
+                    <label for="parent_pipeline_id">Pipeline padre <span class="req">*</span></label>
+                    <select id="parent_pipeline_id" name="parent_pipeline_id">
+                        <option value="">— Elija un pipeline —</option>
+                        {% for row in parent_pipelines %}
+                        <option value="{{ row.id }}"{% if posted.parent_pipeline_id == row.id %} selected{% endif %}>{{ row.label }}</option>
+                        {% endfor %}
+                    </select>
+                    {% for msg in errors.parent_pipeline_id %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+                <div class="field{% if errors.on_parent %} has-error{% endif %}" style="margin-top:12px">
+                    <label for="on_parent">Condición <span class="req">*</span></label>
+                    <select id="on_parent" name="on_parent">
+                        <option value="succeeded"{% if posted.on_parent != 'accepted' and posted.on_parent != 'completed' %} selected{% endif %}>Éxito (recomendado)</option>
+                        <option value="accepted"{% if posted.on_parent == 'accepted' %} selected{% endif %}>Aceptado (solo File Gate)</option>
+                        <option value="completed"{% if posted.on_parent == 'completed' %} selected{% endif %}>Cualquier terminal (incluye fallo)</option>
+                    </select>
+                    <p class="hint">Si el padre falla y la regla es Éxito, este plan no dispara.</p>
+                    {% for msg in errors.on_parent %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+            </div>
+        </div>
+        {% if can_edit %}
+        <div class="form-actions form-actions--flush">
+            <button type="submit" class="btn btn-primary">Guardar disparador</button>
+            <a class="btn btn-secondary" href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">Cancelar</a>
+        </div>
+        <p class="sch-audit-note">Guardar = schedule.updated. No cambia el estado. Activar exige destino (M3) y, si elige Reloj, programación (M2).</p>
+        {% else %}
+        <p class="hint">Solo PA y ED pueden guardar. Esta vista es de consulta.</p>
+        {% endif %}
+    </fieldset>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var form = document.getElementById("dep-form");
+  if (!form) return;
+  var panel = document.getElementById("panel-parent");
+  var jobField = document.getElementById("field-parent-job");
+  var pipeField = document.getElementById("field-parent-pipeline");
+  function mode() {
+    var el = form.querySelector('input[name="trigger_mode"]:checked');
+    return el ? el.value : "time";
+  }
+  function kind() {
+    var el = form.querySelector('input[name="parent_kind"]:checked');
+    return el ? el.value : "job";
+  }
+  function sync() {
+    var dep = mode() === "dependency";
+    if (panel) panel.classList.toggle("is-hidden", !dep);
+    if (jobField) jobField.classList.toggle("is-hidden", !dep || kind() !== "job");
+    if (pipeField) pipeField.classList.toggle("is-hidden", !dep || kind() !== "pipeline");
+  }
+  form.addEventListener("change", sync);
+  sync();
+})();
+</script>
+{% endblock %}

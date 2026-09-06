@@ -1,0 +1,140 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Catálogo de errores File Watch{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_errors' %}">Catálogo de errores</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · M8</p>
+        <h2>Ayuda — Catálogo de errores</h2>
+        <p>Qué significa cada columna de la tabla y cómo se informan los fallos. El usuario ve el mensaje de negocio, no el código como título.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_watch:watch_errors' %}" class="btn btn-secondary">← Volver al catálogo</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Referencia de códigos internos <span class="mono">watch_*</span> y el texto que se muestra en UI.
+            Sirve a PA/ED (y consulta) para interpretar lotes, avisos y validación. El código va a logs y auditoría.
+        </p>
+        <ul class="help-list">
+            <li><strong>Capa 1:</strong> otra compañía o bandeja inexistente → <strong>404 opaco</strong>, sin código <span class="mono">watch_*</span> (p. ej. destino de otro tenant).</li>
+            <li><strong>Capa 2:</strong> guardar la bandeja (inline y/o modal).</li>
+            <li><strong>Capa 3:</strong> intake, cuota, duplicado o fire (se ve en Lotes / Auditoría).</li>
+            <li><strong>Capa 4:</strong> el Job o pipeline falló en su app → abrir ese historial. No hay <span class="mono">watch_gate_*</span>.</li>
+            <li>Fallos del tick de Scheduler siguen siendo <span class="mono">schedule_*</span> (p. ej. <span class="mono">schedule_missing_input</span> si no hay lote Pendiente).</li>
+        </ul>
+
+        <h3 class="form-section-title">Quién puede usarla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Qué puede hacer</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>US / UF con acceso a File Watch</td>
+                    <td>Consultar el catálogo de su compañía. No se edita.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columnas de la tabla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Qué muestra</th><th>Valores / formato</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Código</td>
+                    <td>Identificador estable para el servicio. No es el título del modal.</td>
+                    <td class="mono">watch_incomplete · watch_quota_daily · validation_required</td>
+                </tr>
+                <tr>
+                    <td>Capa</td>
+                    <td>Dónde ocurre el fallo.</td>
+                    <td><strong>2 · CRUD</strong> · <strong>3 · Intake</strong> · <strong>3 · Fire</strong> · <strong>2 y 3</strong></td>
+                </tr>
+                <tr>
+                    <td>Canal</td>
+                    <td>Cómo lo ve el usuario.</td>
+                    <td>Inline · Modal · Inline + alerta · Lotes · Inline / Lotes</td>
+                </tr>
+                <tr>
+                    <td>Mensaje al usuario</td>
+                    <td>Texto de negocio del catálogo UI_MESSAGES §3.19.</td>
+                    <td>Ej. Complete el origen (y el enrutado si dispara al llegar) para activar.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Familias frecuentes</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Familia</th><th>Ejemplos</th><th>Qué implica</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>CRUD</td>
+                    <td class="mono">watch_forbidden · watch_slug_taken · watch_incomplete</td>
+                    <td>Permiso, unicidad o activar sin origen/enrutado.</td>
+                </tr>
+                <tr>
+                    <td>Origen / disparo</td>
+                    <td class="mono">watch_source_invalid · watch_fire_route_conflict</td>
+                    <td>Adaptador inválido; «Al llegar» + Diferir.</td>
+                </tr>
+                <tr>
+                    <td>Intake</td>
+                    <td class="mono">watch_intake_too_large · watch_intake_unstable</td>
+                    <td>El lote queda en Falló intake.</td>
+                </tr>
+                <tr>
+                    <td>Idempotencia</td>
+                    <td class="mono">watch_duplicate_content · watch_quota_*</td>
+                    <td>Lote Omitido, no un error de formulario.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones de la pantalla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ayuda</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>← Bandejas</td>
+                    <td>Vuelve al listado File Watch.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

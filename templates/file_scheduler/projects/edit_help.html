@@ -1,0 +1,39 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Editar {{ schedule.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_edit' schedule_slug=schedule.slug %}">Editar</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · PA / ED</p>
+        <h2>Ayuda — Editar plan</h2>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_scheduler:schedule_edit' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Formulario</a>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <p class="help-intro">El código es inmutable. Guardar no cambia el estado (Pausar / Reanudar / Archivar son acciones distintas) ni cancela un run en curso.</p>
+    </div>
+</div>
+{% endblock %}

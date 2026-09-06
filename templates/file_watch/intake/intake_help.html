@@ -1,0 +1,199 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Intake {{ watch.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_intake' watch_slug=watch.slug %}">Intake</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ watch.slug }}</span> · M3</p>
+        <h2>Ayuda — Intake y lotes</h2>
+        <p>Política de materialización (bytes → storage + SHA-256) e historial de llegadas. No elige destino ni dispara Job.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_watch:watch_intake' watch_slug=watch.slug %}" class="btn btn-secondary">← Volver a Intake</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Cuando el origen detecta un archivo, Intake espera a que deje de crecer, lo copia al storage de la compañía,
+            calcula el <strong>hash SHA-256</strong> y crea un <strong>lote</strong> ligado a
+            <span class="mono">{{ watch.slug }}</span> (= <span class="mono">watch_id</span>).
+        </p>
+        <ul class="help-list">
+            <li>Hay dos bloques: <strong>Política</strong> (cómo materializar) y <strong>Llegadas / lotes</strong> (historial). El rail «Llegadas / lotes» del hub abre esta misma pantalla.</li>
+            <li>File Scheduler no lee SFTP ni la carpeta drop: hace <strong>claim</strong> de un lote <strong>Pendiente</strong> según FIFO o LIFO.</li>
+            <li>El hash del lote <strong>no</strong> se fija en el plan. Cada llegada puede producir otro hash (eso distingue Watch de Artifact).</li>
+            <li>Guardar la política <strong>no</strong> cambia el estado de la bandeja ni reescribe lotes ya ingeridos.</li>
+        </ul>
+
+        <h3 class="form-section-title">Quién puede usarla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Qué puede hacer</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PA / ED</td>
+                    <td>Ver política y lotes; guardar la política.</td>
+                </tr>
+                <tr>
+                    <td>GE / CO</td>
+                    <td>Ver política y lotes. Sin «Guardar política».</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Política</h3>
+        <p class="help-intro">Aplica a las <strong>próximas</strong> llegadas. No elige proyecto, pipeline ni modo de disparo.</p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Obligatorio</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Estabilización (s)</td>
+                    <td>Sí</td>
+                    <td>Segundos sin cambio de tamaño antes de copiar. Evita ingerir un archivo a medio escribir.</td>
+                    <td class="mono">0–3600. Por defecto 5</td>
+                </tr>
+                <tr>
+                    <td>Máx. bytes</td>
+                    <td>Sí</td>
+                    <td>Tope de tamaño. Si se supera, el lote queda en Falló intake.</td>
+                    <td class="mono">Entero ≥ 1. Por defecto 104857600 (100 MiB)</td>
+                </tr>
+                <tr>
+                    <td>Claim Scheduler</td>
+                    <td>Sí</td>
+                    <td>Qué lote <strong>Pendiente</strong> toma el tick (o el disparo al llegar) cuando hay varios.</td>
+                    <td><strong>FIFO</strong> (más antiguo) · <strong>LIFO</strong> (más reciente). Por defecto FIFO</td>
+                </tr>
+                <tr>
+                    <td>Retención consumidos (días)</td>
+                    <td>Sí</td>
+                    <td>Cuánto conservar metadatos/archivos de lotes ya Consumido (operación).</td>
+                    <td class="mono">1–3650. Por defecto 90</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Estados del lote</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Estado</th><th>Significado</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Pendiente</td>
+                    <td>En storage; disponible para claim (Scheduler, disparo al llegar o API).</td>
+                </tr>
+                <tr>
+                    <td>Reservado</td>
+                    <td>Claim atómico en curso (evita que dos ticks tomen el mismo lote).</td>
+                </tr>
+                <tr>
+                    <td>Consumido</td>
+                    <td>Ya alimentó un Job o un tick. Si el Job falla después, el lote <strong>no</strong> vuelve a Pendiente.</td>
+                </tr>
+                <tr>
+                    <td>Falló intake</td>
+                    <td>No hay hash usable (inestable, demasiado grande, storage o hash). Ver catálogo de errores <span class="mono">watch_intake_*</span>.</td>
+                </tr>
+                <tr>
+                    <td>Omitido</td>
+                    <td>No se materializó: duplicado (Idempotencia) u otra regla de skip.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columnas de Llegadas / lotes</h3>
+        <p class="help-intro">Tabla de esta bandeja. Vacío: «Sin lotes aún». La búsqueda de DataTables filtra las columnas visibles. No hay «Ejecutar Job» aquí (eso es Disparo o el vertical destino).</p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Qué muestra</th><th>Valores / formato</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Intake</td>
+                    <td>Momento en que el lote se materializó OK.</td>
+                    <td class="mono">dd/mm/aaaa hh:mm · — si aún no hay ingested_at</td>
+                </tr>
+                <tr>
+                    <td>Archivo</td>
+                    <td>Nombre visto en el origen.</td>
+                    <td class="mono">Ej. extracto_20260904.csv</td>
+                </tr>
+                <tr>
+                    <td>Hash</td>
+                    <td>Recorte del SHA-256 (contrato <span class="mono">artifact_ref</span> hacia runners).</td>
+                    <td class="mono">12 primeros caracteres hex</td>
+                </tr>
+                <tr>
+                    <td>Tamaño</td>
+                    <td>Bytes del archivo ingerido.</td>
+                    <td class="mono">B · KiB · MiB</td>
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    <td>Ciclo de vida del lote (no el de la bandeja).</td>
+                    <td><strong>Pendiente</strong> · <strong>Reservado</strong> · <strong>Consumido</strong> · <strong>Falló intake</strong> · <strong>Omitido</strong></td>
+                </tr>
+                <tr>
+                    <td>Consumido por</td>
+                    <td>Quién hizo el claim.</td>
+                    <td class="mono">schedule:… · fire:… · pipeline:… · — si aún no</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones de la pantalla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ayuda</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>Guardar política</td>
+                    <td>Persiste estabilización, tope, FIFO/LIFO y retención. Mensaje: <em>Política de intake guardada.</em></td>
+                </tr>
+                <tr>
+                    <td>← Hub</td>
+                    <td>Vuelve al hub de la bandeja.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Sin lote Pendiente, el tick de Scheduler responde que falta entrada (<span class="mono">schedule_missing_input</span>).
+            El Scheduler no inventa un archivo.
+        </p>
+    </div>
+</div>
+{% endblock %}

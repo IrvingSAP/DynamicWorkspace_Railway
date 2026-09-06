@@ -1,0 +1,146 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Auditoría {{ watch.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_audit' watch_slug=watch.slug %}">Auditoría</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ watch.slug }}</span> · M7</p>
+        <h2>Ayuda — Auditoría</h2>
+        <p>Timeline append-only de esta bandeja: definición (CRUD) y llegada (lotes / fire). No se edita ni se borra.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_watch:watch_audit' watch_slug=watch.slug %}" class="btn btn-secondary">← Volver a Auditoría</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Lista los eventos de <span class="mono">{{ watch.slug }}</span> en orden inverso (más reciente primero).
+            El payload no incluye passwords, tokens ni bytes del archivo.
+        </p>
+        <ul class="help-list">
+            <li><strong>Plano definición:</strong> alta, edición, pausa, origen, enrutado, disparo, política, avisos.</li>
+            <li><strong>Plano llegada:</strong> lote ingerido, omitido, claim, fire, avisos enviados. El actor suele ser <span class="mono">system:file_watch</span>.</li>
+            <li>Si un Job o pipeline falló, el resumen enlaza por id. No se duplican códigos de Gate/Pipe (<span class="mono">watch_gate_*</span> no existe).</li>
+        </ul>
+
+        <h3 class="form-section-title">Quién puede usarla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Qué puede hacer</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PA / ED / GE / CO</td>
+                    <td>Consultar el timeline (metadatos). Nadie edita ni borra filas.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columnas de la tabla</h3>
+        <p class="help-intro">Vacío: «Sin eventos». La búsqueda de DataTables filtra las columnas visibles.</p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna</th><th>Qué muestra</th><th>Valores / formato</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cuándo</td>
+                    <td>Marca de tiempo del evento.</td>
+                    <td class="mono">dd/mm/aaaa hh:mm</td>
+                </tr>
+                <tr>
+                    <td>Evento</td>
+                    <td>Código interno (auditoría / integración).</td>
+                    <td class="mono">watch.created · watch.batch_ingested · watch.fired …</td>
+                </tr>
+                <tr>
+                    <td>Plano</td>
+                    <td>Si el evento es de configuración o de una llegada.</td>
+                    <td><span class="mono">definition</span> · <span class="mono">arrival</span></td>
+                </tr>
+                <tr>
+                    <td>Actor</td>
+                    <td>Quién lo registró.</td>
+                    <td>Usuario · <span class="mono">system:file_watch</span> · —</td>
+                </tr>
+                <tr>
+                    <td>Resumen</td>
+                    <td>Texto corto (slug, transiciones, nombre de archivo, error_code). Sin secretos.</td>
+                    <td>Ej. Alta fw-qa-01 · Ingerido extracto.csv</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Eventos habituales</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Código</th><th>Plano</th><th>Cuándo se escribe</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="mono">watch.created / updated / paused / resumed / archived</td>
+                    <td>definition</td>
+                    <td>Ciclo de vida de la bandeja.</td>
+                </tr>
+                <tr>
+                    <td class="mono">watch.source_updated · route_updated · fire_updated</td>
+                    <td>definition</td>
+                    <td>Guardar origen, enrutado o disparo.</td>
+                </tr>
+                <tr>
+                    <td class="mono">watch.batch_ingested · batch_skipped · batch_claim</td>
+                    <td>arrival</td>
+                    <td>Intake o claim (Scheduler / fire).</td>
+                </tr>
+                <tr>
+                    <td class="mono">watch.fired · fire_failed · notify_sent</td>
+                    <td>arrival</td>
+                    <td>Disparo al llegar o aviso enviado.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones de la pantalla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ayuda</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>← Hub</td>
+                    <td>Vuelve al hub de la bandeja.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

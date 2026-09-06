@@ -1,0 +1,121 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Solape {{ schedule.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_overlap' schedule_slug=schedule.slug %}">Solape</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · M5</p>
+        <h2>Ayuda — Solape e idempotencia</h2>
+        <p>Qué ocurre cuando un tick nuevo coincide con un run que aún está vivo, y cómo evitar duplicados en el mismo slot.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_scheduler:schedule_overlap' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Formulario</a>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">Define <strong>qué hace el sistema cuando el tick anterior aún no terminó</strong> y llega el siguiente slot. No define el reloj (Programación, M2) ni el destino (M3). Guardar <strong>no cambia el estado</strong> del plan. Solo <strong>PA</strong> y <strong>ED</strong> pueden guardar.</p>
+
+        <h3 class="form-section-title">Idempotencia de ventana</h3>
+        <p class="help-intro">La clave única es <span class="mono">plan + scheduled_for</span>. El worker <strong>nunca crea dos ticks para el mismo slot</strong>. Esto no es configurable: es una regla fija del sistema.</p>
+        <table class="help-table">
+            <thead><tr><th>Concepto</th><th>Detalle</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Mismo slot</td>
+                    <td>Si el cron dispara las 02:00 y ya existe un tick para esa fecha-hora, el worker lo ignora. No importa cuántas veces corra el comando.</td>
+                </tr>
+                <tr>
+                    <td>Slots distintos</td>
+                    <td>Las 02:00 de ayer y las 02:00 de hoy son <strong>dos</strong> ventanas. El solape pregunta si el Job de ayer <strong>sigue vivo</strong> cuando llega el de hoy.</td>
+                </tr>
+                <tr>
+                    <td>Reintento</td>
+                    <td>Un reintento genera un <strong>run nuevo</strong> con su propio Job. No reescribe ni reemplaza el tick original.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Política de solape</h3>
+        <p class="help-intro">Al guardar se elige <strong>una sola</strong> política. Define el comportamiento cuando llega un tick nuevo y el run del slot anterior aún tiene estado <span class="mono">queued</span> o <span class="mono">running</span>.</p>
+        <table class="help-table">
+            <thead><tr><th>Política</th><th>Si el run anterior vive</th><th>Cuándo usarla</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Omitir</strong> (default)</td>
+                    <td>No encola. Tick queda como <span class="mono">Omitido</span> (<span class="mono">schedule_overlap_skip</span>).</td>
+                    <td>Procesos de cierre donde no tiene sentido duplicar: el de ayer debe terminar antes de correr el de hoy.</td>
+                </tr>
+                <tr>
+                    <td><strong>Encolar detrás</strong></td>
+                    <td>Encola el nuevo tick normalmente. Puede haber varios runs simultáneos del mismo plan.</td>
+                    <td>Carga de archivos independientes donde cada tick opera sobre un archivo distinto y no hay conflicto.</td>
+                </tr>
+                <tr>
+                    <td><strong>Cancelar el anterior</strong></td>
+                    <td>Aborta el Job/pipeline vivo y encola el nuevo. No borra el plan ni los ticks históricos.</td>
+                    <td>Reproceso donde solo importa la versión más reciente del archivo y el anterior ya no sirve.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Comportamiento con otros estados</h3>
+        <table class="help-table">
+            <thead><tr><th>Situación</th><th>Qué pasa</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Tick anterior <strong>Falló</strong></td>
+                    <td>No bloquea. Un tick fallido no es un run «vivo»; el nuevo slot se encola normalmente con cualquier política.</td>
+                </tr>
+                <tr>
+                    <td>Tick anterior <strong>Omitido</strong></td>
+                    <td>No bloquea. Un tick omitido no tiene run asociado.</td>
+                </tr>
+                <tr>
+                    <td>Plan <strong>Pausado</strong></td>
+                    <td>No genera ticks nuevos. Un run que ya estaba en curso <strong>sigue ejecutándose</strong>; pausar no cancela Jobs activos.</td>
+                </tr>
+                <tr>
+                    <td>Plan <strong>Archivado</strong></td>
+                    <td>No genera ticks. No se puede reanudar; es una baja lógica.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Errores frecuentes</h3>
+        <table class="help-table">
+            <thead><tr><th>Mensaje</th><th>Qué hacer</th></tr></thead>
+            <tbody>
+                <tr><td>Tick omitido por solape</td><td>Esperado: la política es «Omitir» y el run anterior aún corre. Revise el historial de Actividad para confirmar.</td></tr>
+                <tr><td>Varios runs simultáneos</td><td>Esperado si la política es «Encolar detrás». Si no lo desea, cambie a «Omitir».</td></tr>
+                <tr><td>Run cancelado inesperadamente</td><td>La política es «Cancelar el anterior». Cambie a «Omitir» o «Encolar detrás» si necesita que los runs anteriores terminen.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Permisos y al guardar</h3>
+        <p class="help-intro">Solo <strong>PA</strong> (propietario) y <strong>ED</strong> (editor) del plan pueden guardar la política. US de la compañía puede ver la configuración pero no modificarla.</p>
+        <p class="help-intro">Guardar registra <span class="mono">schedule.updated</span>. Si el plan ya está Activo, el próximo tick usa la nueva política; no afecta un Job ya encolado o en curso. Cambiar la política <strong>no cambia el estado</strong> del plan (no lo activa ni lo pausa).</p>
+    </div>
+</div>
+{% endblock %}

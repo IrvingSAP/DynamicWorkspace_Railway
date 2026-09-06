@@ -664,6 +664,7 @@ Cubierto en código (M1–M9) y recorrido en el manual de jobs sueltos (curl 1�
 | [`definition_app_PLATFORM_API/`](definition_app_PLATFORM_API/) | Specs M1–M9 **implementados**; manuals de uso |
 | [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Ops; Job encadenable; Watch/Scheduler como hermanos disparadores |
 | [`FILE_PIPELINE.md`](FILE_PIPELINE.md) | Orquestación; API `kind=file_pipeline`; **auditoría E2E §7.1** (heredar); seguridad §6 |
+| [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | Disparo por tiempo; `trigger_source=scheduler`; auditoría/errores propios en FILE_SCHEDULER §7–§8 |
 | [`definition_app_FILE_PIPELINE/pipeline_dashboard.md`](definition_app_FILE_PIPELINE/pipeline_dashboard.md) | Tablero UI; runs API alimentan el pulso (§10.3) |
 | [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) | Verticales §2 que la API invoca |
 | [`FILE_GATE.md`](FILE_GATE.md) | Primer kind MVP de validación |

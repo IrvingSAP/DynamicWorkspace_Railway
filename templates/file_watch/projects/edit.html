@@ -1,0 +1,79 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Editar bandeja — File Watch{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Editar</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Watch · PA / ED</p>
+        <h2>Editar bandeja</h2>
+        <p>El código no cambia. Editar metadatos no cambia el estado ni cancela un Job en curso.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_watch:watch_edit_help' watch_slug=watch.slug as wach_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=wach_help_url %}
+        <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="field">
+                <label for="slug">Nombre corto (código)</label>
+                <input type="text" id="slug" class="mono" value="{{ watch.slug }}" readonly disabled>
+                <p class="hint">Inmutable tras el alta (= <code>watch_id</code>).</p>
+            </div>
+            <div class="field{% if errors.name %} has-error{% endif %}">
+                <label for="name">Nombre visible <span class="req">*</span></label>
+                <input type="text" id="name" name="name" maxlength="200" value="{{ posted.name }}" required>
+                {% for msg in errors.name %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            <div class="field{% if errors.description %} has-error{% endif %}">
+                <label for="description">Descripción</label>
+                <textarea id="description" name="description" rows="3">{{ posted.description }}</textarea>
+                {% for msg in errors.description %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+            <h3 class="form-section-title">Visibilidad</h3>
+            <div class="radio-cards{% if errors.visibility %} has-error{% endif %}">
+                <label class="radio-card">
+                    <input type="radio" name="visibility" value="members_only"{% if posted.visibility == 'members_only' %} checked{% endif %}>
+                    <strong>Privado</strong>
+                    <span>Solo miembros autorizados.</span>
+                </label>
+                <label class="radio-card">
+                    <input type="radio" name="visibility" value="company"{% if posted.visibility == 'company' %} checked{% endif %}>
+                    <strong>Público</strong>
+                    <span>Visible para UF de la compañía (consulta).</span>
+                </label>
+            </div>
+            {% for msg in errors.visibility %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            <div class="form-actions form-actions--flush">
+                <button type="submit" class="btn btn-primary">Guardar</button>
+                <a class="btn btn-secondary" href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">Cancelar</a>
+            </div>
+        </form>
+        <p class="wach-audit-note">Guardar = watch.updated (campos cambiados).</p>
+    </div>
+</div>
+{% endblock %}

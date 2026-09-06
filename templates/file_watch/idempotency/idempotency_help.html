@@ -1,0 +1,155 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Idempotencia {{ watch.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_idempotency' watch_slug=watch.slug %}">Idempotencia</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ watch.slug }}</span> · M6</p>
+        <h2>Ayuda — Idempotencia y cuotas</h2>
+        <p>Qué hacer si llega el mismo contenido otra vez, cuántos reintentos hay y qué límites generan un lote Omitido.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_watch:watch_idempotency' watch_slug=watch.slug %}" class="btn btn-secondary">← Volver a Idempotencia</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Aplica <strong>antes</strong> de crear un lote Pendiente (o al valorar un reintento de fire).
+            Un duplicado o un tope de cuota no es un error de formulario: el lote queda <strong>Omitido</strong> con código
+            <span class="mono">watch_duplicate_content</span> o <span class="mono">watch_quota_*</span>.
+        </p>
+        <ul class="help-list">
+            <li>La comparación de duplicados usa el <strong>SHA-256</strong> del contenido, no solo el nombre de archivo.</li>
+            <li>Guardar no cambia el estado de la bandeja ni reescribe lotes ya ingeridos.</li>
+        </ul>
+
+        <h3 class="form-section-title">Quién puede usarla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Qué puede hacer</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PA / ED</td>
+                    <td>Ver y guardar la política.</td>
+                </tr>
+                <tr>
+                    <td>GE / CO</td>
+                    <td>Solo lectura.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Campos del formulario</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Duplicados (mismo hash)</td>
+                    <td>Qué hacer si el hash ya existe en la ventana.</td>
+                    <td><strong>Omitir</strong> (default) · <strong>Permitir</strong> · <strong>Sustituir pendiente</strong></td>
+                </tr>
+                <tr>
+                    <td>Ventana (días)</td>
+                    <td>Hasta cuántos días atrás se busca el hash previo.</td>
+                    <td class="mono">1–3650. Por defecto 365</td>
+                </tr>
+                <tr>
+                    <td>Reintentos máx.</td>
+                    <td>Cuántas veces se reintenta un fire fallido (backoff).</td>
+                    <td class="mono">0–20. Por defecto 3</td>
+                </tr>
+                <tr>
+                    <td>Backoff (s)</td>
+                    <td>Espera entre reintentos de fire.</td>
+                    <td class="mono">1–86400. Por defecto 60</td>
+                </tr>
+                <tr>
+                    <td>Máx. pendientes</td>
+                    <td>Tope de lotes Pendiente en la bandeja. Al superarlo: omitir.</td>
+                    <td class="mono">1–10000. Por defecto 50. Código watch_quota_pending</td>
+                </tr>
+                <tr>
+                    <td>Máx. llegadas / día</td>
+                    <td>Tope de intakes del día calendario.</td>
+                    <td class="mono">1–100000. Por defecto 200. Código watch_quota_daily</td>
+                </tr>
+                <tr>
+                    <td>Máx. bytes / día</td>
+                    <td>Volumen ingerido en el día. <strong>0 = sin límite.</strong></td>
+                    <td class="mono">≥ 0. Por defecto 0. Código watch_quota_bytes</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Política de duplicados</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Opción</th><th>Efecto</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Omitir</td>
+                    <td>No crea un lote nuevo. El existente se conserva. Lote nuevo = Omitido.</td>
+                </tr>
+                <tr>
+                    <td>Permitir</td>
+                    <td>Crea otro lote Pendiente aunque el hash coincida (dos llegadas iguales).</td>
+                </tr>
+                <tr>
+                    <td>Sustituir pendiente</td>
+                    <td>Si hay un lote Pendiente con el mismo hash, se omite el viejo y entra el nuevo. Si el hash ya está Consumido, no lo «desconsume».</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones de la pantalla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ayuda</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>Guardar</td>
+                    <td>Persiste la política. Mensaje: <em>Idempotencia guardada correctamente.</em></td>
+                </tr>
+                <tr>
+                    <td>Cancelar / ← Hub</td>
+                    <td>Vuelve al hub sin guardar.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

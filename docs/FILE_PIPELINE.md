@@ -148,7 +148,7 @@ Disparadores
 | Apps §2 + FILE_OPS | **Pasos** ejecutables (`kind`) |
 | [`PLATFORM_API.md`](PLATFORM_API.md) | Dispara un **pipeline completo** o un job suelto; idealmente reutiliza el mismo orquestador |
 | [`FILE_WATCH.md`](FILE_WATCH.md) | Origen → `pipeline_id` publicado |
-| [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | Cron / dependencia → `pipeline_id` |
+| [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | Cron / dependencia → `pipeline_id`; auditoría CRUD+tick y `schedule_*` (no duplicar §7.1) |
 | [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md) | Custodia del run E2E (hashes por paso) |
 | [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) | Resolver contratos compartidos en pasos (fase posterior) |
 
@@ -413,7 +413,7 @@ Borrador (editar pasos)
 | Ver runs / auditoría / descargas según TTL | ✓ | ✓ | ✓ | ✓** | \*\*CO: metadatos; sin descarga de contenido si la política de apps lo exige |
 | Cancelar run propio / en curso | ✓ | ✓ | ✓* | — | \*Solo propios o según política PA |
 | Disparar vía API | Credencial de compañía con scope `pipeline:run` (y proyectos destino) | | | | No es rol UI; es cliente de máquina autorizado |
-| Watch / Scheduler enlazado | Configuración solo PA/ED (o admin plataforma); el run queda auditado como `trigger_source=watch\|scheduler` | | | | |
+| Watch / Scheduler enlazado | Watch: PA/ED del contexto. Scheduler: **crear plan** solo **US** PA/ED de la compañía; configurar el plan = PA/ED de membresía. Run auditado `trigger_source=watch\|scheduler` | | | | |
 
 #### Comprobaciones en cada acción
 
@@ -827,6 +827,7 @@ Company
 4. [`PLATFORM_API.md`](PLATFORM_API.md) ya cubre `kind=file_pipeline`, `wait`, auditoría HTTP §10.2 y dashboard §10.3; no duplicar §7.1 allí.  
 5. Actualizar [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §15 como puntero a este doc (visión → producto).  
 6. Spike técnico: pasar `artifact_ref` entre runners; implementar **Pipeline Step Catalog** (config/código) con subset MVP.  
+   **Alcance de la mejora (todas las apps ejecutables):** el runner acepta referencia (`artifact_ref`, hash, objeto en storage), no solo upload de `<input type="file">`. La UI Ejecutar **se conserva**. IFS/SFTP/cloud **no** se configuran en File Gate ni en cada vertical — [`FILE_WATCH.md`](FILE_WATCH.md) y [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md).  
 7. Al nacer cada app nueva: checklist §5.1 antes de marcar `pipeline_enabled=true`.
 
 ---
@@ -859,7 +860,7 @@ Company
 | [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) | Apps §2 como pasos |
 | [`PLATFORM_API.md`](PLATFORM_API.md) | Disparador HTTP; **puede consumir Pipeline** |
 | [`FILE_WATCH.md`](FILE_WATCH.md) | Disparo por llegada → pipeline_id |
-| [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | Disparo por tiempo/dependencia → pipeline_id |
+| [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | Disparo por tiempo/dependencia → pipeline_id; `trigger_source=scheduler`; detalle de schedule en FILE_SCHEDULER §7–§8 |
 | [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md) | Custodia E2E del pipeline_run |
 | [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) | Contratos compartidos (fase C) |
 | [`FILE_CLEAN.md`](FILE_CLEAN.md) · [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) · [`FILE_GATE.md`](FILE_GATE.md) · … | Pasos concretos |

@@ -1,0 +1,216 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}File Watch — Bandejas{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <span>File Watch</span>
+    <span class="breadcrumb-sep">/</span>
+    <span>Bandejas</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip" aria-label="Alcance de compañía">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Watch · <span class="role-badge">{% if can_create %}US{% else %}UF{% endif %}</span>{% if can_create %} PA / ED{% endif %}</p>
+        <h2>Bandejas vigiladas</h2>
+        <p>Bandejas de su compañía. {% if can_create %}<strong>Nueva bandeja</strong> solo usuarios tipo US con rol PA o ED. {% endif %}No parsea archivos: más adelante un monitor detecta llegadas. El código es el <code>watch_id</code> que usa File Scheduler. Archivadas fuera del listado operativo.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_watch:watch_list_help' as wach_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=wach_help_url %}
+        <a href="{% url 'file_watch:watch_errors' %}" class="btn btn-secondary">Catálogo de errores</a>
+        <a href="{% url 'file_watch:watch_integration' %}" class="btn btn-secondary">Mapa de integración</a>
+        {% if can_create %}
+        <a href="{% url 'file_watch:watch_create' %}" class="btn btn-primary">+ Nueva bandeja</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="stats-strip" aria-label="Resumen">
+    <div class="stat-card is-accent">
+        <p class="stat-label">Visibles</p>
+        <p class="stat-value">{{ stats.total|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Activos</p>
+        <p class="stat-value">{{ stats.active|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">En proceso</p>
+        <p class="stat-value">{{ stats.in_progress|default:0 }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Inactivos</p>
+        <p class="stat-value">{{ stats.inactive|default:0 }}</p>
+    </div>
+</div>
+<p class="hint" style="margin-top:8px">En proceso = aún se configura el origen. Activo = el monitor puede ingerir. Inactivo = pausada. Archivar es baja lógica.</p>
+
+<div class="panel panel--table">
+    <div class="table-toolbar" aria-label="Controles de tabla">
+        <div class="table-toolbar-group">
+            <label for="filter-status">
+                Estado
+                <select id="filter-status" name="filter-status">
+                    <option value="">Operativos</option>
+                    <option value="active">Activo</option>
+                    <option value="in_progress">En proceso</option>
+                    <option value="inactive">Inactivo</option>
+                    <option value="archived">Archivados</option>
+                    <option value="all">Todos</option>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="table-dt-host">
+        <table id="wach-table" class="dw-datatable" data-dt-custom="true" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Estado</th>
+                    <th>Visibilidad</th>
+                    <th>Origen</th>
+                    <th>Última llegada</th>
+                    <th>Acceso</th>
+                    <th class="col-actions">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr data-status="{{ row.status }}">
+                    <td><code>{{ row.watch.slug }}</code></td>
+                    <td>{{ row.watch.name }}</td>
+                    <td>
+                        {% if row.status == 'active' %}<span class="status status-active">{{ row.status_label }}</span>
+                        {% elif row.status == 'inactive' %}<span class="status status-inactive">{{ row.status_label }}</span>
+                        {% else %}<span class="cell-badge">{{ row.status_label }}</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if row.visibility == 'company' %}
+                        <span class="visibility-badge visibility-badge--public">compañía</span>
+                        {% else %}
+                        <span class="visibility-badge visibility-badge--private">miembro</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="wach-empty">{{ row.source_label }}</span></td>
+                    <td><span class="wach-empty">{{ row.last_arrival_label }}</span></td>
+                    <td>{{ row.role|default:"CO" }}</td>
+                    <td class="col-actions">
+                        <div class="actions--table">
+                        {% if row.status == 'archived' %}
+                        <a href="{% url 'file_watch:watch_hub' watch_slug=row.watch.slug %}" class="btn btn-ghost btn-sm">Consulta</a>
+                        {% else %}
+                        <a href="{% url 'file_watch:watch_hub' watch_slug=row.watch.slug %}" class="btn btn-ghost btn-sm">Abrir</a>
+                        {% if row.can_edit %}
+                        <a href="{% url 'file_watch:watch_edit' watch_slug=row.watch.slug %}" class="btn btn-ghost btn-sm">Editar</a>
+                        {% endif %}
+                        {% if row.can_manage_members %}
+                        <a href="{% url 'file_watch:watch_members' watch_slug=row.watch.slug %}" class="btn btn-ghost btn-sm">Miembros</a>
+                        {% endif %}
+                        {% if row.can_pause %}
+                        <form method="post" style="display:inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="pause">
+                            <input type="hidden" name="watch_slug" value="{{ row.watch.slug }}">
+                            <button type="submit" class="btn btn-ghost btn-sm">Pausar</button>
+                        </form>
+                        {% endif %}
+                        {% if row.can_resume %}
+                        <form method="post" style="display:inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="resume">
+                            <input type="hidden" name="watch_slug" value="{{ row.watch.slug }}">
+                            <button type="submit" class="btn btn-ghost btn-sm">Reanudar</button>
+                        </form>
+                        {% endif %}
+                        {% if row.can_archive %}
+                        <form method="post" class="wach-archive-form" style="display:inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="archive">
+                            <input type="hidden" name="watch_slug" value="{{ row.watch.slug }}">
+                            <button type="button" class="btn btn-ghost btn-sm js-wach-archive">Archivar</button>
+                        </form>
+                        {% endif %}
+                        {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+<script src="{% static 'js/datatables-init.js' %}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (typeof DataTable === "undefined") return;
+  var tableEl = document.getElementById("wach-table");
+  if (!tableEl || tableEl.dataset.dtInit === "true") return;
+  var statusValue = "";
+  DataTable.ext.search.push(function (settings, _d, dataIndex) {
+    if (!settings.nTable || settings.nTable.id !== "wach-table") return true;
+    var row = new DataTable.Api(settings).row(dataIndex).node();
+    if (!row) return true;
+    var st = row.dataset.status;
+    if (statusValue === "all") return true;
+    if (statusValue === "archived") return st === "archived";
+    if (!statusValue) return st !== "archived";
+    return st === statusValue;
+  });
+  var table = new DataTable("#wach-table", {
+    language: DW_DATATABLES_ES,
+    layout: DW_DATATABLES_LAYOUT,
+    pageLength: 10,
+    order: [[0, "asc"]],
+    columnDefs: [
+      { orderable: false, searchable: false, targets: -1, className: "col-actions" },
+    ],
+  });
+  tableEl.dataset.dtInit = "true";
+  var filterStatus = document.getElementById("filter-status");
+  if (filterStatus) {
+    filterStatus.addEventListener("change", function () {
+      statusValue = this.value;
+      table.draw();
+    });
+  }
+  tableEl.addEventListener("click", function (ev) {
+    var btn = ev.target.closest(".js-wach-archive");
+    if (!btn) return;
+    var form = btn.closest("form");
+    if (!form) return;
+    var message = "¿Archivar esta bandeja? Dejará el listado operativo. El código no se reutiliza.";
+    if (typeof dwConfirmWarning === "function") {
+      dwConfirmWarning(message, function () { form.submit(); }, { title: "Archivar bandeja", okLabel: "Archivar" });
+    } else {
+      form.submit();
+    }
+  });
+});
+</script>
+{% endblock %}

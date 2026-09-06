@@ -1,0 +1,81 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Solape — {{ schedule.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_scheduler.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Solape</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Scheduler · M5 · <span class="perm-badge{% if hub.is_pa %} perm-badge--admin{% endif %}">{{ hub.role_label }}</span></p>
+        <h2>Solape</h2>
+        <p>Qué hacer si llega una ventana nueva y el run anterior de este plan <strong>sigue vivo</strong>. No se duplica el mismo horario: eso no es configurable.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_scheduler:schedule_overlap_help' schedule_slug=schedule.slug as sch_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=sch_help_url %}
+        <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <fieldset {% if not can_edit %}disabled{% endif %} style="border:0;padding:0;margin:0;min-inline-size:0">
+        <div class="panel">
+            <div class="panel-body">
+                <h3 class="form-section-title">Política</h3>
+                <div class="radio-cards{% if errors.overlap_policy %} has-error{% endif %}">
+                    <label class="radio-card">
+                        <input type="radio" name="overlap_policy" value="skip"{% if posted.overlap_policy != 'queue' and posted.overlap_policy != 'cancel_previous' %} checked{% endif %}>
+                        <strong>Omitir</strong>
+                        <span>No encola el slot nuevo. Recomendado (default).</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="overlap_policy" value="queue"{% if posted.overlap_policy == 'queue' %} checked{% endif %}>
+                        <strong>Encolar detrás</strong>
+                        <span>Puede haber más de un run del mismo plan a la vez.</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="overlap_policy" value="cancel_previous"{% if posted.overlap_policy == 'cancel_previous' %} checked{% endif %}>
+                        <strong>Cancelar el anterior</strong>
+                        <span>Aborta el Job/pipeline vivo y encola el nuevo. No borra el plan ni el historial.</span>
+                    </label>
+                </div>
+                {% for msg in errors.overlap_policy %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                <p class="hint">Si no elige nada, el worker usa Omitir. Guardar no cambia el estado del plan ni es requisito para Activar.</p>
+            </div>
+        </div>
+        {% if can_edit %}
+        <div class="form-actions form-actions--flush">
+            <button type="submit" class="btn btn-primary">Guardar política</button>
+            <a class="btn btn-secondary" href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">Cancelar</a>
+        </div>
+        <p class="sch-audit-note">Guardar = schedule.updated (overlap_policy). Aplica al próximo tick. No reescribe ticks ya omitidos.</p>
+        {% else %}
+        <p class="hint">Solo PA y ED pueden guardar. Esta vista es de consulta.</p>
+        {% endif %}
+    </fieldset>
+</form>
+{% endblock %}

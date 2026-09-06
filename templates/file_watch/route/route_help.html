@@ -1,0 +1,185 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Enrutado {{ watch.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_route' watch_slug=watch.slug %}">Enrutado</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ watch.slug }}</span> · M4</p>
+        <h2>Ayuda — Enrutado</h2>
+        <p>Hacia qué runner apunta el lote si Watch dispara al llegar. Al elegir el modo, se despliega un panel distinto. Guardar no cambia el estado de la bandeja.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_watch:watch_route' watch_slug=watch.slug %}" class="btn btn-secondary">← Volver a Enrutado</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            El origen ya sabe <strong>de dónde</strong> viene el archivo y Intake <strong>cómo</strong> lo guarda.
+            Enrutado dice <strong>qué Job o pipeline</strong> se encola cuando el disparo es «Al llegar».
+        </p>
+        <ul class="help-list">
+            <li>Una sola definición por bandeja. Al pulsar Job, Pipeline o Diferir, el formulario muestra <strong>solo</strong> ese panel.</li>
+            <li>El plan de File Scheduler con <span class="mono">input_origin=watch</span> usa el <strong>destino del plan</strong>, no este enrutado. Esta pantalla aplica al camino «disparo al llegar».</li>
+            <li>Editar con la bandeja Activa: el próximo fire usa el nuevo destino; no cancela Jobs ya encolados.</li>
+            <li>Job y Pipeline exigen <strong>versión publicada</strong> (y pipeline <strong>Activo</strong>). Se usa la publicada vigente al encolar.</li>
+        </ul>
+
+        <h3 class="form-section-title">Quién puede usarla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Qué puede hacer</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PA / ED</td>
+                    <td>Ver y guardar el enrutado.</td>
+                </tr>
+                <tr>
+                    <td>GE / CO</td>
+                    <td>Solo lectura. Sin «Guardar enrutado».</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Modo (siempre visible)</h3>
+        <p class="help-intro">Elige el adaptador de destino y despliega el panel correspondiente. Los otros paneles se ocultan.</p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Modo</th><th>Qué hace</th><th>Cuándo usarlo</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Job de app</td>
+                    <td>Al disparar, encola el runner de un proyecto publicado (misma compañía).</td>
+                    <td>Ej. extracto → File Gate al llegar.</td>
+                </tr>
+                <tr>
+                    <td>Pipeline</td>
+                    <td>Al disparar, arranca un pipeline activo con versión publicada.</td>
+                    <td>Cadena (p. ej. Gate → Pipe) al llegar.</td>
+                </tr>
+                <tr>
+                    <td>Diferir</td>
+                    <td>Watch <strong>no</strong> elige runner; solo deja el lote Pendiente. El destino lo pone el plan Scheduler (u otro consumidor).</td>
+                    <td>Ingesta ahora, Job a la hora del cron. Por defecto en el formulario.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Si elige Job de app</h3>
+        <p class="help-intro">Aparece el panel <strong>Job</strong>. Al cambiar la app se recarga el listado de proyectos de esa app.</p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Obligatorio</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>App</td>
+                    <td>Sí</td>
+                    <td>Qué vertical ejecutará el Job. No use File Pipeline aquí: eso es el modo Pipeline.</td>
+                    <td>File Gate · File Pipe · File Clean · File Match · Reverse Studio · Structure Scout · File Split · File Merge</td>
+                </tr>
+                <tr>
+                    <td>Proyecto</td>
+                    <td>Sí</td>
+                    <td>Proyecto de esa app en esta compañía, con versión publicada. Sin publicada aparece deshabilitado.</td>
+                    <td>«— Elija —» y el nombre del proyecto. Debe coincidir con la app.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">El historial del Job vive en <strong>esa app</strong>, no en File Watch.</p>
+
+        <h3 class="form-section-title">Si elige Pipeline</h3>
+        <p class="help-intro">Aparece el panel <strong>Pipeline</strong>. No pide app ni proyecto suelto: la cadena ya está en el pipeline.</p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Obligatorio</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Pipeline</td>
+                    <td>Sí</td>
+                    <td>Pipeline de esta compañía, estado Activo y versión publicada. Si no cumple, la opción está deshabilitada.</td>
+                    <td>«— Elija —» y el nombre del pipeline</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">El historial de la corrida vive en el <strong>tablero File Pipeline</strong>.</p>
+
+        <h3 class="form-section-title">Si elige Diferir</h3>
+        <p class="help-intro">
+            No hay campos extra. El lote queda Pendiente en Intake; File Scheduler (u otro) define el Job al hacer claim.
+            Compatible con disparo «Solo pendiente». <strong>Incompatible</strong> con «Al llegar».
+        </p>
+        <table class="help-table">
+            <thead>
+                <tr><th>Situación</th><th>¿Se puede guardar / activar?</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Diferir + disparo Solo pendiente</td>
+                    <td>Sí. El destino lo pone el plan.</td>
+                </tr>
+                <tr>
+                    <td>Diferir + disparo Al llegar (ya guardado)</td>
+                    <td>No. Mensaje: <em>«Al llegar» no es compatible con enrutado Diferir.</em> Elija Job/Pipeline o cambie el disparo.</td>
+                </tr>
+                <tr>
+                    <td>Al llegar + Job o Pipeline publicado</td>
+                    <td>Sí. Hace falta este enrutado para marcar la bandeja Activa.</td>
+                </tr>
+                <tr>
+                    <td>Proyecto o pipeline sin publicada</td>
+                    <td>No. <em>El destino no tiene una versión publicada operativa.</em></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Acciones de la pantalla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ayuda</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>Guardar enrutado</td>
+                    <td>Valida y persiste <strong>solo</strong> el modo elegido. Mensaje: <em>Enrutado guardado correctamente.</em></td>
+                </tr>
+                <tr>
+                    <td>Cancelar / ← Hub</td>
+                    <td>Vuelve al hub sin guardar.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

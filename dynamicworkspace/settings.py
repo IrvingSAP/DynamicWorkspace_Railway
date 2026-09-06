@@ -73,6 +73,8 @@ INSTALLED_APPS = [
     "apps.file_pipeline",
     "apps.profile_seed",
     "apps.platform_api",
+    "apps.file_scheduler",
+    "apps.file_watch",
 ]
 
 MIDDLEWARE = [

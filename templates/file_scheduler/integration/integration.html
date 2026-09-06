@@ -1,0 +1,117 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Integración — File Scheduler{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_scheduler.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Integración</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Scheduler · M10 · mapa</p>
+        <h2>Integración transversal</h2>
+        <p>Un disparador → el mismo Job. El Scheduler no es otro ETL ni otro Watch. Esta pantalla no crea planes.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_scheduler:schedule_integration_help' as sch_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=sch_help_url %}
+        <a href="{% url 'file_pipeline:pipeline_dashboard' %}?trigger=scheduler" class="btn btn-secondary">Tablero Pipeline (scheduler)</a>
+        <a href="{% url 'file_scheduler:schedule_list' %}" class="btn btn-secondary">← Planes</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Capas</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Capa</th><th>Pregunta</th><th>Dueño</th></tr>
+            </thead>
+            <tbody>
+                {% for row in integ.layers %}
+                <tr>
+                    <td><strong>{{ row.name }}</strong></td>
+                    <td>{{ row.question }}</td>
+                    <td>{{ row.owner }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="hint">File Gate no configura IFS. El plan elige <span class="mono">watch_id</span> o artifact; la ruta vive en Watch.</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Canales → mismo runner</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Canal</th><th>Qué hace</th><th>Código</th></tr>
+            </thead>
+            <tbody>
+                {% for row in integ.channels %}
+                <tr>
+                    <td>{{ row.label }}</td>
+                    <td>{{ row.role }}</td>
+                    <td class="mono">{{ row.code }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="hint">CRUD de schedules no va por PLATFORM API en MVP. El run sí lleva <span class="mono">trigger_source</span> y <span class="mono">schedule_id</span>.</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Railway</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Pieza</th><th>Rol</th><th>Proceso</th></tr>
+            </thead>
+            <tbody>
+                {% for row in integ.railway %}
+                <tr>
+                    <td>{{ row.piece }}</td>
+                    <td>{{ row.role }}</td>
+                    <td class="mono">{{ row.proc }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="hint">Worker: <span class="mono">{{ integ.worker_command }}</span>. Reloj interno UTC; zona IANA del plan. No bypasea tenancy.</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Forma de trabajo (producto §3)</h3>
+        <ul class="help-list">
+            {% for item in integ.work_mode %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+        <p class="hint">Dry-run y preview de cron no entran al pulso del tablero Pipeline.</p>
+    </div>
+</div>
+{% endblock %}

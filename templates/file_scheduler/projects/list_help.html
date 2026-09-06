@@ -1,0 +1,48 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Listado File Scheduler{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · {% if can_create %}US PA / ED{% else %}UF{% endif %}</p>
+        <h2>Ayuda — Listado de planes</h2>
+        <p>File Scheduler lista <strong>planes</strong> de la compañía. Alta de plan: usuario tipo <strong>US</strong> con rol <strong>PA</strong> o <strong>ED</strong>. UF no crea planes.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_scheduler:schedule_list' %}" class="btn btn-secondary">← Listado</a>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Columnas</h3>
+        <table class="help-table">
+            <thead><tr><th>Columna</th><th>Qué es</th></tr></thead>
+            <tbody>
+                <tr><td>Código</td><td>Slug único. No cambia después del alta.</td></tr>
+                <tr><td>Estado</td><td>En proceso, Activo, <strong>Inactivo</strong>. Archivados: filtro aparte. Inactivo = pausado a propósito.</td></tr>
+                <tr><td>Próximo tick / Último tick</td><td>Vacío hasta los módulos 2 y 4.</td></tr>
+                <tr><td>Acceso</td><td>Rol en el plan (PA, ED, GE, CO).</td></tr>
+                <tr><td>Acciones</td><td>Abrir el hub. Editar (PA/ED), Miembros y Archivar (PA). Pausar (inactivar) solo si el plan está Activo; Reanudar si está Inactivo.</td></tr>
+            </tbody>
+        </table>
+        <h3 class="form-section-title">Resumen</h3>
+        <p class="help-intro">Visibles / activos / en proceso / inactivos sobre el conjunto operativo. Archivados no entran en Visibles.</p>
+    </div>
+</div>
+{% endblock %}

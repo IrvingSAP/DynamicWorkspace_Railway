@@ -1,0 +1,119 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Enrutado — {{ watch.name }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Enrutado</span>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Watch · M4 · <span class="perm-badge{% if hub.is_pa %} perm-badge--admin{% endif %}">{{ hub.role_label }}</span></p>
+        <h2>Enrutado</h2>
+        <p>Destino si dispara al llegar, o <strong>Diferir</strong> para que Scheduler use su propio destino.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_watch:watch_route_help' watch_slug=watch.slug as wach_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=wach_help_url %}
+        <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+<form id="route-form" method="post" novalidate data-projects-url="{{ projects_url }}">
+    {% csrf_token %}
+    <fieldset {% if not can_edit %}disabled{% endif %} style="border:0;padding:0;margin:0;min-inline-size:0">
+        <div class="panel">
+            <div class="panel-body">
+                <h3 class="form-section-title">Modo</h3>
+                <div class="radio-cards radio-cards--3{% if errors.route_mode %} has-error{% endif %}">
+                    <label class="radio-card">
+                        <input type="radio" name="route_mode" value="job"{% if posted.route_mode == 'job' %} checked{% endif %}>
+                        <strong>Job de app</strong>
+                        <span>Proyecto con versión publicada.</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="route_mode" value="pipeline"{% if posted.route_mode == 'pipeline' %} checked{% endif %}>
+                        <strong>Pipeline</strong>
+                        <span>Cadena activa publicada.</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="route_mode" value="defer"{% if posted.route_mode == 'defer' or not posted.route_mode %} checked{% endif %}>
+                        <strong>Diferir</strong>
+                        <span>Solo lote; destino lo elige el plan.</span>
+                    </label>
+                </div>
+                {% for msg in errors.route_mode %}<p class="field-error">{{ msg }}</p>{% endfor %}
+            </div>
+        </div>
+        <div class="panel route-panel" data-mode="job" id="panel-job">
+            <div class="panel-body">
+                <h3 class="form-section-title">Job</h3>
+                <div class="form-row two-cols">
+                    <div class="field{% if errors.kind %} has-error{% endif %}">
+                        <label for="kind">App</label>
+                        <select id="kind" name="kind">
+                            {% for row in job_kinds %}
+                            <option value="{{ row.kind }}"{% if posted.kind == row.kind %} selected{% endif %}>{{ row.label }}</option>
+                            {% endfor %}
+                        </select>
+                        {% for msg in errors.kind %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                    <div class="field{% if errors.project_id %} has-error{% endif %}">
+                        <label for="project_id">Proyecto</label>
+                        <select id="project_id" name="project_id">
+                            <option value="">— Elija —</option>
+                            {% for row in projects %}
+                            <option value="{{ row.id }}"{% if posted.project_id == row.id %} selected{% endif %}{% if not row.published %} disabled{% endif %}>{{ row.label }}</option>
+                            {% endfor %}
+                        </select>
+                        {% for msg in errors.project_id %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel route-panel is-hidden" data-mode="pipeline" id="panel-pipeline">
+            <div class="panel-body">
+                <div class="field{% if errors.pipeline_id %} has-error{% endif %}">
+                    <label for="pipeline_id">Pipeline</label>
+                    <select id="pipeline_id" name="pipeline_id">
+                        <option value="">— Elija —</option>
+                        {% for row in pipelines %}
+                        <option value="{{ row.id }}"{% if posted.pipeline_id == row.id %} selected{% endif %}{% if not row.eligible %} disabled{% endif %}>{{ row.label }}</option>
+                        {% endfor %}
+                    </select>
+                    {% for msg in errors.pipeline_id %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="panel route-panel is-hidden" data-mode="defer" id="panel-defer">
+            <div class="panel-body">
+                <p class="hint">Compatible con disparo «Solo pendiente». Incompatible con «Al llegar».</p>
+            </div>
+        </div>
+        {% if can_edit %}
+        <div class="form-actions form-actions--flush">
+            <button type="submit" class="btn btn-primary">Guardar enrutado</button>
+            <a class="btn btn-secondary" href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">Cancelar</a>
+        </div>
+        {% endif %}
+    </fieldset>
+</form>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/file_watch-route.js' %}"></script>
+{% endblock %}

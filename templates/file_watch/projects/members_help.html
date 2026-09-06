@@ -1,0 +1,179 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Miembros {{ watch.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_members' watch_slug=watch.slug %}">Miembros</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ watch.slug }}</span> · <span class="perm-badge perm-badge--admin">PA</span></p>
+        <h2>Ayuda — Miembros de la bandeja</h2>
+        <p>Quién puede ver y trabajar en esta bandeja y qué hace cada rol. El alta de bandejas no se hereda de un vertical.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_watch:watch_members' watch_slug=watch.slug %}" class="btn btn-secondary">← Volver a miembros</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Solo el <strong>administrador (PA)</strong> invita, cambia rol o revoca.
+            Se autorizan usuarios <strong>UF</strong> de la misma compañía.
+            El buscador pide <strong>mínimo 2 caracteres</strong> (no lista todo el padrón).
+        </p>
+        <ul class="help-list">
+            <li>El creador (owner) no pierde PA ni se revoca.</li>
+            <li>La membresía es de <strong>esta bandeja</strong>, no de un proyecto Clean, Gate o Pipeline.</li>
+            <li>Crear bandejas exige tipo <strong>US</strong> PA/ED de la compañía; autorizar aquí no convierte a un UF en creador.</li>
+        </ul>
+
+        <h3 class="form-section-title">Quién puede usarla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Qué puede hacer</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PA de la bandeja</td>
+                    <td>Invitar, cambiar rol, revocar y reactivar. Accede a esta pantalla desde el listado o el rail del hub.</td>
+                </tr>
+                <tr>
+                    <td>ED / GE / CO</td>
+                    <td>No gestionan miembros. El enlace «Miembros» no aparece para ellos en el listado.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Agregar usuario</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Buscar usuario UF</td>
+                    <td>Persona de su compañía aún no miembro activo de esta bandeja.</td>
+                    <td>Búsqueda por usuario o correo (mín. 2 caracteres).</td>
+                </tr>
+                <tr>
+                    <td>Rol en la bandeja</td>
+                    <td>Nivel de permiso en esta bandeja.</td>
+                    <td class="mono">PA · ED · GE · CO</td>
+                </tr>
+                <tr>
+                    <td>Autorizar miembro</td>
+                    <td>Guarda la membresía con el rol elegido.</td>
+                    <td>Mensaje: <em>Miembro «usuario» autorizado correctamente.</em></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Roles</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Código</th><th>Nombre</th><th>Permisos principales</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="mono">PA</td>
+                    <td>Admin de bandeja</td>
+                    <td>Editar, pausar / reanudar, archivar, miembros, configurar módulos y ver auditoría.</td>
+                </tr>
+                <tr>
+                    <td class="mono">ED</td>
+                    <td>Editor</td>
+                    <td>Editar metadatos, pausar / reanudar y configurar módulos. No archiva ni gestiona miembros.</td>
+                </tr>
+                <tr>
+                    <td class="mono">GE</td>
+                    <td>Ejecutor</td>
+                    <td>Consulta de metadatos, lotes y auditoría. No edita ni pausa.</td>
+                </tr>
+                <tr>
+                    <td class="mono">CO</td>
+                    <td>Consulta</td>
+                    <td>Ver hub, lotes y auditoría (metadatos). No ejecuta ni edita.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Tabla de miembros</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Columna / acción</th><th>Qué muestra o hace</th><th>Notas</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Usuario</td>
+                    <td>Cuenta (nombre de usuario).</td>
+                    <td class="mono">Identificador de login</td>
+                </tr>
+                <tr>
+                    <td>Nombre</td>
+                    <td>Nombre completo, o «—» si no hay.</td>
+                    <td>—</td>
+                </tr>
+                <tr>
+                    <td>Rol</td>
+                    <td>Código de permiso actual.</td>
+                    <td class="mono">PA · ED · GE · CO</td>
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    <td>Si la membresía está vigente.</td>
+                    <td><strong>Activo</strong> · <strong>Inactivo</strong></td>
+                </tr>
+                <tr>
+                    <td>Cambiar</td>
+                    <td>Actualiza el rol del miembro activo.</td>
+                    <td>No aplica al owner.</td>
+                </tr>
+                <tr>
+                    <td>Revocar</td>
+                    <td>Desactiva el acceso (pide confirmación).</td>
+                    <td>El owner no se revoca.</td>
+                </tr>
+                <tr>
+                    <td>Reactivar</td>
+                    <td>Vuelve a activar un miembro revocado.</td>
+                    <td>Solo filas Inactivo.</td>
+                </tr>
+                <tr>
+                    <td>Owner — no se revoca</td>
+                    <td>Quien creó la bandeja; no cambia de rol ni se revoca.</td>
+                    <td>Siempre PA</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Visibilidad de la bandeja</h3>
+        <p class="help-intro">
+            Si la bandeja es <strong>pública</strong>, un UF de la compañía sin membresía la ve como consulta (CO de compañía).
+            Si es <strong>privada</strong>, solo aparecen quienes estén en esta lista.
+            Cambiar la visibilidad se hace en <strong>Editar</strong>, no aquí.
+        </p>
+    </div>
+</div>
+{% endblock %}

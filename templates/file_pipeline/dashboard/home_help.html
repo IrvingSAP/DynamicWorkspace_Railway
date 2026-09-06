@@ -18,7 +18,7 @@
 <div class="panel"><div class="panel-body">
     <p>El pulso (corridas, completadas, fallidas, tasa y canales) cuenta solo corridas <strong>productivas</strong>. Si marcó <em>Vista previa (dry-run)</em> al ejecutar, esa corrida <strong>no sube</strong> esos números: aparece en <strong>Vistas previas</strong>, en fallos recientes y en actividad, con la etiqueta dry-run.</p>
     <p>Para que el pulso se mueva: Ejecutar <strong>sin</strong> vista previa.</p>
-    <p>Canales: UI, API, Watch, Scheduler y dependencia. Watch/API aparecerán cuando esos disparadores escriban <code>trigger_source</code>.</p>
+    <p>Canales: UI, API, Watch, Scheduler y dependencia. Filtre el pulso por disparo (p. ej. <code>trigger=scheduler</code>). Watch/API aparecen cuando esos disparadores escriben <code>trigger_source</code>. Un run del Scheduler muestra <code>schedule_id</code> abreviado.</p>
     <p>Desde cada fila puede ir al hub, al historial o a la auditoría del último run.</p>
 </div></div>
 {% endblock %}

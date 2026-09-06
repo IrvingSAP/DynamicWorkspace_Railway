@@ -360,6 +360,9 @@ class PipelineRun(models.Model):
     started_at = models.DateTimeField(null=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
     duration_ms = models.PositiveIntegerField(null=True, blank=True)
+    schedule_id = models.CharField(max_length=36, blank=True, default="")
+    parent_job_id = models.CharField(max_length=36, blank=True, default="")
+    parent_pipeline_run_id = models.CharField(max_length=36, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -1,0 +1,80 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Auditoría {{ schedule.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_audit' schedule_slug=schedule.slug %}">Auditoría</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · M7</p>
+        <h2>Ayuda — Auditoría del plan</h2>
+        <p>Qué se guarda, qué se enlaza y qué no se copia.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_scheduler:schedule_audit' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Auditoría</a>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Timeline <strong>append-only</strong> de este plan: cambios de definición (humano) y disparos (<span class="mono">system:scheduler</span>).
+            No hay ejecución anónima. No se guardan celdas del archivo. El rechazo de Gate se ve en el Job o pipeline enlazado, no se duplica aquí.
+        </p>
+        <ul class="help-list">
+            <li><strong>Actividad (M4)</strong> es el listado operativo de ticks. <strong>Auditoría</strong> incluye además created / updated / pausar / reanudar / archivar.</li>
+            <li>Las filas no se editan ni se borran en el MVP.</li>
+            <li>GE y CO ven metadatos; no el contenido del fichero.</li>
+        </ul>
+
+        <h3 class="form-section-title">Filtro y búsqueda</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Control</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Plano</td>
+                    <td><strong>Definición</strong> = CRUD. <strong>Tick</strong> = encoló / omitió / falló al encolar. Todos = timeline completa.</td>
+                </tr>
+                <tr>
+                    <td>Mostrar / Buscar</td>
+                    <td>Igual que Planes: 10/25/50/100 y texto (evento, actor, job_id, corr=).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columnas</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Función</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Cuándo</td><td>Instante del evento (<span class="mono">created_at</span>).</td></tr>
+                <tr><td>Evento</td><td><span class="mono">schedule.created</span>, <span class="mono">.updated</span>, <span class="mono">.paused</span>, <span class="mono">.resumed</span>, <span class="mono">.archived</span>, <span class="mono">.tick_enqueued</span>, <span class="mono">.tick_skipped</span>, <span class="mono">.tick_failed</span>. <span class="mono">notify_sent</span> queda reservado para M9.</td></tr>
+                <tr><td>Actor</td><td>Usuario o <span class="mono">system:scheduler</span>.</td></tr>
+                <tr><td>Resumen</td><td>Diff o motivo. Sin PII de celdas.</td></tr>
+                <tr><td>Enlace</td><td>Mismo <span class="mono">job_id</span> o <span class="mono">pipeline_run_id</span> que la app y la API.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

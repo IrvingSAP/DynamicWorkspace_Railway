@@ -1,0 +1,138 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Avisos {{ watch.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_hub' watch_slug=watch.slug %}">{{ watch.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_watch:watch_notify' watch_slug=watch.slug %}">Avisos</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · <span class="cell-badge">{{ watch.slug }}</span> · M9</p>
+        <h2>Ayuda — Avisos de la bandeja</h2>
+        <p>Correo (Resend) a miembros y/o webhook HTTPS firmado. Por defecto apagado. No adjunta el archivo.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_watch:watch_notify' watch_slug=watch.slug %}" class="btn btn-secondary">← Volver a Avisos</a>
+    </div>
+</div>
+
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito de la página</h3>
+        <p class="help-intro">
+            Notifica fallos de <strong>esta</strong> bandeja (intake, fire, Job/pipeline u omisiones).
+            Al marcar <strong>Activar avisos</strong> se despliegan el resto de campos; si está apagado, no se envía nada.
+        </p>
+        <ul class="help-list">
+            <li>Hace falta al menos un destino: un miembro con correo <strong>o</strong> un webhook <span class="mono">https://</span>.</li>
+            <li>El correo no lleva el archivo ni PII de celdas. El webhook se firma (misma familia que PLATFORM API).</li>
+            <li>Guardar no cambia el estado operativo de la bandeja.</li>
+        </ul>
+
+        <h3 class="form-section-title">Quién puede usarla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Rol</th><th>Qué puede hacer</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PA / ED</td>
+                    <td>Activar, elegir eventos, miembros y webhook.</td>
+                </tr>
+                <tr>
+                    <td>GE / CO</td>
+                    <td>Solo lectura.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Campos (si avisos activos)</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Campo</th><th>Función</th><th>Valores</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Activar avisos</td>
+                    <td>Interruptor. Desmarcado: el panel Cuándo / Quién / Webhook se oculta.</td>
+                    <td>Por defecto apagado</td>
+                </tr>
+                <tr>
+                    <td>Falló el intake</td>
+                    <td>Archivo inestable, demasiado grande, storage o hash.</td>
+                    <td>Marcado por defecto al activar</td>
+                </tr>
+                <tr>
+                    <td>Falló el disparo al llegar</td>
+                    <td>No se pudo encolar el Job/pipeline (modo Al llegar).</td>
+                    <td>Marcado por defecto al activar</td>
+                </tr>
+                <tr>
+                    <td>Falló el Job/pipeline</td>
+                    <td>El runner destino terminó en error (capa 4: el detalle está en esa app).</td>
+                    <td>Marcado por defecto al activar</td>
+                </tr>
+                <tr>
+                    <td>Omitidos (duplicado/cuota)</td>
+                    <td>Lote skipped por idempotencia o cuota.</td>
+                    <td>Desmarcado por defecto</td>
+                </tr>
+                <tr>
+                    <td>Quién recibe el correo</td>
+                    <td>Miembros <strong>activos</strong> de la bandeja. Resend usa el correo de la cuenta; no hay buzón libre. Alta de personas en <strong>Miembros</strong> (enlace en la pantalla). Si no hay correo, aparece «sin correo».</td>
+                    <td>Lista PA/ED/GE/CO. Vacío: autorice alguien en Miembros antes de marcar destinatarios. Solo PA abre esa pantalla.</td>
+                </tr>
+                <tr>
+                    <td>Webhook HTTPS</td>
+                    <td>POST firmado al sistema externo. Opcional si hay al menos un correo.</td>
+                    <td class="mono">Debe empezar por https://</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="help-intro">
+            Si activa avisos y no marca ningún evento, el sistema deja encendidos intake y disparo.
+            Si no hay miembros ni webhook: <em>Marque al menos un miembro de la bandeja o indique un webhook HTTPS.</em>
+        </p>
+
+        <h3 class="form-section-title">Acciones de la pantalla</h3>
+        <table class="help-table">
+            <thead>
+                <tr><th>Acción</th><th>Qué hace</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ayuda</td>
+                    <td>Abre esta página.</td>
+                </tr>
+                <tr>
+                    <td>Guardar avisos</td>
+                    <td>Persiste la configuración. Mensaje: <em>Avisos guardados correctamente.</em></td>
+                </tr>
+                <tr>
+                    <td>Cancelar / ← Hub</td>
+                    <td>Vuelve al hub sin guardar.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

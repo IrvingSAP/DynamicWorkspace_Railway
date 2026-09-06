@@ -1,0 +1,119 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Avisos — {{ schedule.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_scheduler.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Avisos</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Scheduler · M9 · <span class="perm-badge{% if hub.is_pa %} perm-badge--admin{% endif %}">{{ hub.role_label }}</span></p>
+        <h2>Avisos del plan</h2>
+        <p>Correo y/o webhook si el tick <strong>no encola</strong> o si el Job/pipeline <strong>falla</strong>. No se adjunta el archivo. Por defecto todo está apagado.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_scheduler:schedule_notify_help' schedule_slug=schedule.slug as sch_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=sch_help_url %}
+        <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Hub</a>
+    </div>
+</div>
+
+<form method="post" id="notify-form" novalidate>
+    {% csrf_token %}
+    <fieldset {% if not can_edit %}disabled{% endif %} style="border:0;padding:0;margin:0;min-inline-size:0">
+        <div class="panel">
+            <div class="panel-body">
+                <label class="notify-check">
+                    <input type="checkbox" id="notify_enabled" name="notify_enabled" value="1"{% if posted.notify_enabled %} checked{% endif %}>
+                    <span><strong>Activar avisos</strong> — no es requisito para poner el plan Activo.</span>
+                </label>
+                <div id="notify-fields"{% if not posted.notify_enabled %} class="is-hidden"{% endif %}>
+
+                    <h3 class="form-section-title">Cuándo</h3>
+                    <div class="notify-checks">
+                        <label class="notify-check">
+                            <input type="checkbox" name="notify_on_tick_failed" value="1"{% if posted.notify_on_tick_failed %} checked{% endif %}>
+                            <span>El programador no pudo encolar (falta archivo, destino sin publicar, cola…)</span>
+                        </label>
+                        <label class="notify-check">
+                            <input type="checkbox" name="notify_on_run_failed" value="1"{% if posted.notify_on_run_failed %} checked{% endif %}>
+                            <span>El Job o pipeline encolado terminó con error (detalle en el run, no en este correo)</span>
+                        </label>
+                        <label class="notify-check">
+                            <input type="checkbox" name="notify_on_skip" value="1"{% if posted.notify_on_skip %} checked{% endif %}>
+                            <span>También si se omite por solape (off por defecto)</span>
+                        </label>
+                    </div>
+
+                    <h3 class="form-section-title">Quién recibe el correo</h3>
+                    <p class="hint">Resend envía al <strong>correo de la cuenta</strong> de cada miembro marcado. Las personas se dan de alta en <a href="{% url 'file_scheduler:schedule_members' schedule_slug=schedule.slug %}">Miembros</a>. No se escribe un buzón libre en este MVP.</p>
+                    <div class="notify-checks{% if errors.notify_user_ids %} has-error{% endif %}">
+                        {% for member in members %}
+                        <label class="notify-check">
+                            <input type="checkbox" name="notify_user" value="{{ member.id }}" class="notify-member"{% if member.id in posted.notify_user_ids %} checked{% endif %}>
+                            <span><strong>{{ member.label }}</strong> <span class="mono">{{ member.username }}</span> · {{ member.role }} · {% if member.email %}{{ member.email }}{% else %}sin correo{% endif %}</span>
+                        </label>
+                        {% empty %}
+                        <p class="hint">No hay miembros activos. Autorice alguien en Miembros antes de marcar destinatarios.</p>
+                        {% endfor %}
+                        {% for msg in errors.notify_user_ids %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+
+                    <h3 class="form-section-title">Sistema (opcional)</h3>
+                    <div class="field{% if errors.notify_webhook_url %} has-error{% endif %}">
+                        <label for="notify_webhook_url">Webhook HTTPS (opcional)</label>
+                        <input type="url" id="notify_webhook_url" name="notify_webhook_url" class="mono" placeholder="https://…" maxlength="500" value="{{ posted.notify_webhook_url }}">
+                        <p class="hint">Vacío = solo correo. Firma HMAC como PLATFORM API (<span class="mono">X-Platform-Signature</span>). No se reintenta el Job si falla el aviso.</p>
+                        {% for msg in errors.notify_webhook_url %}<p class="field-error">{{ msg }}</p>{% endfor %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% if can_edit %}
+        <div class="form-actions form-actions--flush">
+            <button type="submit" class="btn btn-primary">Guardar avisos</button>
+            <a class="btn btn-secondary" href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">Cancelar</a>
+        </div>
+        <p class="sch-audit-note">Guardar = schedule.updated. Cada envío = schedule.notify_sent (sin cuerpo de archivo). Fallo de Resend no reintenta el Job.</p>
+        {% else %}
+        <p class="hint">Solo PA y ED pueden guardar. Esta vista es de consulta.</p>
+        {% endif %}
+    </fieldset>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var en = document.getElementById("notify_enabled");
+  var box = document.getElementById("notify-fields");
+  if (!en || !box) return;
+  function sync() { box.classList.toggle("is-hidden", !en.checked); }
+  en.addEventListener("change", sync);
+  sync();
+});
+</script>
+{% endblock %}

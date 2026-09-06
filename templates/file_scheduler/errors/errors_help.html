@@ -1,0 +1,47 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Errores File Scheduler{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_errors' %}">Catálogo de errores</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · M8</p>
+        <h2>Ayuda — Errores del Scheduler</h2>
+        <p>Cómo se informan los fallos y qué no es un código <span class="mono">schedule_*</span>.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_scheduler:schedule_errors' %}" class="btn btn-secondary">← Catálogo</a>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">El <strong>código</strong> es para el servicio y la auditoría. El usuario ve el <strong>mensaje de negocio</strong>.</p>
+        <ul class="help-list">
+            <li><strong>Capa 1:</strong> otra compañía o plan inexistente → 404, sin código schedule.</li>
+            <li><strong>Capa 2:</strong> guardar el plan (inline o modal).</li>
+            <li><strong>Capa 3:</strong> el worker no encoló (Actividad / Auditoría).</li>
+            <li><strong>Capa 4:</strong> Gate rechazó o falló un paso → abrir el Job o el pipeline; no hay <span class="mono">schedule_gate_*</span>.</li>
+        </ul>
+        <h3 class="form-section-title">Omitir vs fallar</h3>
+        <p class="help-intro"><span class="mono">schedule_overlap_skip</span> es una omisión (política de solape), no un error de formulario. <span class="mono">schedule_misfire</span> es una ventana perdida; no se disparan todas las atrasadas de golpe.</p>
+    </div>
+</div>
+{% endblock %}

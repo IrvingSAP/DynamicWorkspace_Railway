@@ -1,0 +1,94 @@
+{% extends "app_base.html" %}
+{% load static %}
+
+{% block title %}Ayuda — Actividad {{ schedule.slug }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+{% endblock %}
+
+{% block sidebar_nav %}{% include "file_scheduler/includes/sidebar.html" %}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_scheduler:schedule_list' %}">File Scheduler</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_hub' schedule_slug=schedule.slug %}">{{ schedule.slug }}</a>
+    <span class="breadcrumb-sep">/</span>
+    <a href="{% url 'file_scheduler:schedule_activity' schedule_slug=schedule.slug %}">Actividad</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Ayuda</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">Referencia · M4</p>
+        <h2>Ayuda — Actividad / ticks</h2>
+        <p>Qué registra el worker, por qué Mensaje puede ir vacío y dónde está el log del Job.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'file_scheduler:schedule_activity' schedule_slug=schedule.slug %}" class="btn btn-secondary">← Actividad</a>
+    </div>
+</div>
+<div class="panel help-panel">
+    <div class="panel-body">
+        <h3 class="form-section-title">Propósito</h3>
+        <p class="help-intro">Lista los <strong>ticks de este plan</strong>. Un tick es un intento de encolar en una ventana <span class="mono">scheduled_for</span>. <strong>No</strong> es el historial de File Gate, File Pipe ni File Clean, ni el tablero de pasos de pipeline. El worker solo evalúa planes <strong>Activos</strong>. Identidad: <span class="mono">system:scheduler</span>. No hay Ejecutar ahora.</p>
+
+        <h3 class="form-section-title">Dónde está el log</h3>
+        <p class="help-intro">Esta pantalla solo dice si el Scheduler <strong>encoló</strong>, <strong>omitió</strong> o <strong>no pudo encolar</strong>. El resultado de negocio (¿terminó? ¿error de filas? ¿informe?) vive en la app destino.</p>
+        <table class="help-table">
+            <thead><tr><th>Destino del plan</th><th>Dónde abrir el detalle</th></tr></thead>
+            <tbody>
+                <tr><td>Job File Gate / Pipe / Clean / Match…</td><td>Columna <strong>Run</strong> → historial o resultado de esa app. Requiere un usuario <strong>UF</strong> miembro del proyecto. Un usuario <strong>US</strong> puede ver el tick aquí, pero no abrir el historial de la app.</td></tr>
+                <tr><td>Pipeline</td><td>Columna <strong>Run</strong> → corrida en File Pipeline (rail de pasos).</td></tr>
+            </tbody>
+        </table>
+        <p class="help-intro">En local, el worker de ticks es <span class="mono">python manage.py process_schedule_ticks --loop</span>. Con origen <strong>Artifact</strong>, el tick busca el hash en storage e invoca el runner de File Clean, File Gate o File Pipe (el mismo que la UI/API). El historial de esa app muestra la corrida. Match, Split/Merge, Reverse y Scout aún no se ejecutan desde el Scheduler.</p>
+
+        <h3 class="form-section-title">Resultados</h3>
+        <table class="help-table">
+            <thead><tr><th>Estado</th><th>Significado</th><th>Mensaje</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Encolado</strong></td>
+                    <td>El runner de la app arrancó (o el pipeline). El negocio se lee en el historial de esa app.</td>
+                    <td>Vacío o texto de seguimiento. No es un error.</td>
+                </tr>
+                <tr>
+                    <td><strong>En curso</strong></td>
+                    <td>El run delegado sigue vivo: <span class="mono">queued</span>, <span class="mono">uploaded</span> o <span class="mono">running</span>.</td>
+                    <td>Indica que sigue en cola o ejecutándose. Abra el historial de la app.</td>
+                </tr>
+                <tr>
+                    <td><strong>Omitido</strong></td>
+                    <td>No encoló: misfire (ventana perdida &gt; 15 min) o solape (run anterior vivo).</td>
+                    <td>Texto del catálogo (<span class="mono">schedule_misfire</span>, <span class="mono">schedule_overlap_skip</span>).</td>
+                </tr>
+                <tr>
+                    <td><strong>Falló</strong></td>
+                    <td>Error del Scheduler <strong>antes</strong> de encolar (sin publicada, sin entrada, cola).</td>
+                    <td>Código <span class="mono">schedule_*</span>. Un Job que ya corrió y falló en Gate/Clean <strong>no</strong> cambia este estado.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Columnas</h3>
+        <table class="help-table">
+            <thead><tr><th>Columna</th><th>Qué muestra</th></tr></thead>
+            <tbody>
+                <tr><td>Ventana</td><td>Instante <span class="mono">scheduled_for</span> del slot (timezone del plan).</td></tr>
+                <tr><td>Resultado</td><td>Estado del tick (arriba). Independiente del estado del plan.</td></tr>
+                <tr><td>Mensaje</td><td>Solo errores/omisiones del Scheduler, o una pista si el Job destino sigue en cola. Sin filas del archivo.</td></tr>
+                <tr><td>Run</td><td>Enlace al historial o resultado de la app destino.</td></tr>
+            </tbody>
+        </table>
+
+        <h3 class="form-section-title">Misfire</h3>
+        <p class="help-intro">Si el worker llega más de 15 minutos tarde, no dispara esa ventana ni las anteriores de golpe. Registra omitido (<span class="mono">schedule_misfire</span>) y sigue con la próxima.</p>
+        <p class="help-intro">Un origen File Watch sin lote resuelto no inventa archivo: el tick falla con falta de entrada.</p>
+    </div>
+</div>
+{% endblock %}

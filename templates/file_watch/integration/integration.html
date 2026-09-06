@@ -1,0 +1,75 @@
+{% extends "app_base.html" %}
+{% load static %}
+{% block title %}Integración — File Watch{% endblock %}
+{% block main_class %}app-main--wide{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapping.css' %}">
+<link rel="stylesheet" href="{% static 'css/projects.css' %}">
+<link rel="stylesheet" href="{% static 'css/file_watch.css' %}">
+{% endblock %}
+{% block sidebar_nav %}{% include "file_watch/includes/sidebar.html" %}{% endblock %}
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Ruta">
+    <a href="{% url 'file_watch:watch_list' %}">File Watch</a>
+    <span class="breadcrumb-sep">/</span>
+    <span>Integración</span>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="company-scope-strip">
+    <span class="label">Compañía</span>
+    <span class="cell-badge">{{ company.name_short }}</span>
+    <span>{{ company.name_long }}</span>
+</div>
+<div class="page-header">
+    <div>
+        <p class="page-eyebrow">File Watch · M10 · mapa</p>
+        <h2>Integración transversal</h2>
+        <p>Watch detecta y materializa; Scheduler reclama por <code>watch_id</code>. Mismo runner que UI/API.</p>
+    </div>
+    <div class="page-actions">
+        {% url 'file_watch:watch_integration_help' as wach_help_url %}
+        {% include "projects/includes/project_help_link.html" with help_url=wach_help_url %}
+        <a href="{% url 'file_watch:watch_list' %}" class="btn btn-secondary">← Bandejas</a>
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+    <h3 class="form-section-title">Capas</h3>
+    <table class="help-table">
+        <thead><tr><th>Capa</th><th>Pregunta</th><th>Dueño</th></tr></thead>
+        <tbody>
+            {% for row in integ.layers %}
+            <tr><td><strong>{{ row.name }}</strong></td><td>{{ row.question }}</td><td>{{ row.owner }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div></div>
+<div class="panel"><div class="panel-body">
+    <h3 class="form-section-title">Canales</h3>
+    <table class="help-table">
+        <thead><tr><th>Canal</th><th>Qué hace</th><th>Código</th></tr></thead>
+        <tbody>
+            {% for row in integ.channels %}
+            <tr><td>{{ row.label }}</td><td>{{ row.role }}</td><td class="mono">{{ row.code }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div></div>
+<div class="panel"><div class="panel-body">
+    <h3 class="form-section-title">Bridge Scheduler</h3>
+    <ul>{% for line in integ.bridge %}<li>{{ line }}</li>{% endfor %}</ul>
+    <p class="hint">Claim: <code class="mono">{{ integ.claim_hint }}</code></p>
+</div></div>
+<div class="panel"><div class="panel-body">
+    <h3 class="form-section-title">Railway</h3>
+    <table class="help-table">
+        <thead><tr><th>Pieza</th><th>Rol</th><th>Proceso</th></tr></thead>
+        <tbody>
+            {% for row in integ.railway %}
+            <tr><td>{{ row.piece }}</td><td>{{ row.role }}</td><td class="mono">{{ row.proc }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p class="hint">Worker: <code class="mono">python manage.py {{ integ.worker_command }}</code></p>
+</div></div>
+{% endblock %}

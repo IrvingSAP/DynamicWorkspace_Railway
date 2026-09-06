@@ -140,6 +140,20 @@ PLATFORM API (HTTP) → mismo runner de Job → notificar
 
 Detalle de contrato y ejemplos: [`PLATFORM_API.md`](PLATFORM_API.md).
 
+### Runners: upload vs `artifact_ref` (mejora futura)
+
+Scheduler dice **cuándo**; Watch (y un futuro drop de entrega) dicen **dónde está el fichero**; las apps dicen **cómo** se transforma.
+
+Hoy el runner de cada app (Gate, Pipe, Clean, Match, …) se alimenta sobre todo del **upload** de la pantalla Ejecutar (y del body de PLATFORM API). **A futuro** cada `run_*_job` debe aceptar también una **referencia** (`artifact_ref`, hash, objeto en storage tenant) — el mismo contrato que el handoff de [`FILE_PIPELINE.md`](FILE_PIPELINE.md) (sin re-subir).
+
+| Sí | No |
+|----|-----|
+| Intake delgado: archivo **o** ref de storage | Explorador IFS / SFTP / cloud **dentro** de File Gate, Pipe, Clean, etc. |
+| UI Ejecutar sigue siendo upload manual | Duplicar Watch en cada `project_kind` |
+| Watch lee la ruta y entrega el intake al mismo Job | Configurar carpetas predefinidas en el validador o el ETL |
+
+File Gate **no** configura rutas IFS. La bandeja vigilada es [`FILE_WATCH.md`](FILE_WATCH.md).
+
 Cada bloque puede ser app o módulo, pero el usuario debería poder **encadenarlos** bajo un concepto común de **Job** (archivo + versión + resultado + auditoría).
 
 ---
@@ -360,7 +374,8 @@ Cola + `DmsExecutionJob` / jobs de verticales; no requiere un `project_kind` por
 
 Capa de **plataforma** · **se desarrollará** junto o justo después de Watch.  
 **Pendiente:** forma de trabajo (pipeline · API · worker cron · otras · todas) — [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) §3.  
-Alinear con “Scheduling DMS Fase 3” en APP_FACTORY.
+Alinear con “Scheduling DMS Fase 3” en APP_FACTORY.  
+Auditoría (CRUD del schedule + tick) y errores `schedule_*`: [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) §7–§8; hereda Pipeline §7.1 y PLATFORM API §9–§10.2.
 
 **Producto:** [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md).
 
@@ -548,7 +563,7 @@ Antes de abrir rama `feature/<slug>`:
 | [`DATA_PROFILER.md`](DATA_PROFILER.md) | **Data Profiler** — pendiente revisión de aporte |
 | [`FILE_REPAIR.md`](FILE_REPAIR.md) | **File Repair** — pendiente revisión (app / modo Gate / Clean) |
 | [`FILE_WATCH.md`](FILE_WATCH.md) | **File Watch** — previsto; forma de trabajo TBD |
-| [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | **File Scheduler** — previsto; forma de trabajo TBD |
+| [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | **File Scheduler** — previsto; forma TBD · specs [`definition_app_FILE_SCHEDULER/`](definition_app_FILE_SCHEDULER/) |
 | [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md) | **File Archive** — previsto; forma de trabajo TBD |
 | [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) | **Schema Registry** — previsto; forma de trabajo TBD |
 | [`FILE_PIPELINE.md`](FILE_PIPELINE.md) | **File Pipeline** — orquestación multi-app (**propuesta**); PLATFORM_API puede consumirlo · specs [`definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) |
