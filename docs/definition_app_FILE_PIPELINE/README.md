@@ -3,8 +3,9 @@
 Carpeta de documentación de análisis y definición para **FILE PIPELINE** (orquestador de flujos multi-app).
 
 > **Producto:** [`../FILE_PIPELINE.md`](../FILE_PIPELINE.md)  
-> **Familia:** [`../APP_FACTORY.md`](../APP_FACTORY.md) · [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) §15  
-> **Rama Git:** `Mejoras_FILE_PIPELINE_v2` (despliegue Railway solo desde `main`)  
+> **Familia:** [`../APP_FACTORY.md`](../APP_FACTORY.md) · [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) §2  
+> **Rama Git:** `main` (MVP mergeado; origen `Mejoras_FILE_PIPELINE_v2`)  
+> **Estado:** **Implementado M1–M5 + tablero** (`apps.file_pipeline`)  
 > **Chasis:** `Company`, `UserProfile`, membresía PA/ED/GE/CO, visibilidad, billing  
 > **No es un Project.kind de archivo:** es un **contenedor de orquestación** que **invoca** runners de apps ya publicadas  
 > **API:** diseño **API-ready** (`kind=file_pipeline` / `mode=pipeline`) — [`../PLATFORM_API.md`](../PLATFORM_API.md)
@@ -38,7 +39,7 @@ flowchart LR
 
 | Archivo | Módulo | Contenido | Estado |
 |---------|--------|-----------|--------|
-| [`../FILE_PIPELINE.md`](../FILE_PIPELINE.md) | Producto | Visión, catálogo de pasos, handoff, disparadores | **Lineamientos** |
+| [`../FILE_PIPELINE.md`](../FILE_PIPELINE.md) | Producto | Visión, catálogo de pasos, handoff, disparadores | **Hecho** (M1–M5 + tablero) |
 | [`project_lifecycle.md`](project_lifecycle.md) | **1** | Listado, alta, hub, miembros, `status` | **Implementado** |
 | [`pipeline_designer.md`](pipeline_designer.md) | **2** | Rail de pasos, picker kind/proyecto | **Implementado** |
 | [`pipeline_catalog.md`](pipeline_catalog.md) | **2b** | Pipeline Step Catalog (opt-in) | **Implementado** |
@@ -46,7 +47,7 @@ flowchart LR
 | [`pipeline_run.md`](pipeline_run.md) | **4** | Ejecutar, rail OK/ERROR, artifacts | **Implementado** |
 | [`pipeline_history.md`](pipeline_history.md) | **5** | Historial y auditoría de disparo | **Implementado** |
 | [`pipeline_dashboard.md`](pipeline_dashboard.md) | **D** | Tablero de corridas (alcance autorizado) | **Implementado** |
-| [`fp_integration.md`](fp_integration.md) | Transversal | Kind, URLs, roles, runners, PLATFORM_API | **Borrador** |
+| [`fp_integration.md`](fp_integration.md) | Transversal | Kind, URLs, roles, runners, PLATFORM_API | **As-built** |
 
 ---
 

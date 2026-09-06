@@ -4,7 +4,7 @@
 > Alias: *Bandeja vigilada* · *Ingestión por llegada*  
 > Archivo: [`docs/FILE_WATCH.md`](FILE_WATCH.md)  
 > Estado: **implementado M1–M10** (MVP en `apps.file_watch`) · bridge tick ↔ lote vía `claim_pending_batch`  
-> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §10 · prioridad ⭐⭐⭐⭐⭐ (plataforma)  
+> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §2 (entregado)  
 > Tipo: **capa de plataforma** (no app de menú con wizard de campos)  
 > Pareja: [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) · disparador hermano: [`PLATFORM_API.md`](PLATFORM_API.md)  
 > **Contexto 2026-09:** App Django M1–M10 operativa. El plan con `input_origin=watch` hace claim del lote pending; sin lote → `schedule_missing_input`. Worker: `process_watch_intake`.
@@ -67,7 +67,7 @@ Documentar en FILE_OPS §18 cuando se implemente.
 
 ## 4. Frontera con Scheduler (estado actual)
 
-| **Watch** (futuro) | **Scheduler** (implementado) |
+| **Watch** (hecho) | **Scheduler** (hecho) |
 |--------------------|------------------------------|
 | Dispara por **llegada** de archivo | Dispara por **tiempo** o dependencia entre jobs |
 | Drop impredecible del banco a las 14:37 | Cron diario 02:00 o “tras Job A” |
@@ -79,9 +79,9 @@ Documentar en FILE_OPS §18 cuando se implemente.
 1. **Watch dispara al llegar** — el Job corre en el momento del drop (sin esperar cron).  
 2. **Watch ingesta + Scheduler a la hora** — Watch deja el lote en storage; el plan con `input_origin=watch` a las 02:00 pregunta “¿hay lote pendiente en este `watch_id`?” y ejecuta el runner.
 
-Hoy el Scheduler ya tiene UI/campo `watch_id`, pero el worker de ticks **no** resuelve el lote: falla con `schedule_missing_input` hasta que exista File Watch + el puente en M4 ([`definition_app_FILE_SCHEDULER/sch_tick.md`](definition_app_FILE_SCHEDULER/sch_tick.md)).
+El plan con `input_origin=watch` hace **claim** del lote pendiente (`claim_pending_batch`); sin lote → `schedule_missing_input`. Worker Watch: `process_watch_intake`.
 
-**Orden de implementación:** Scheduler ya está en curso; Watch sigue **después** (o en paralelo solo tras cerrar §3).
+**Estado:** Watch y Scheduler **hechos** en `main` (M1–M10). Extensiones (correo/cloud, nodo Watch en el diseñador) = fuera de MVP.
 
 ---
 
@@ -101,11 +101,11 @@ Watch **no** hereda la limitante de Artifact: no se casa con un único hash en l
 1. **Extracto bancario** — SFTP `extracto_YYYYMMDD.csv` → Gate (versión publicada) → Pipe → notificar tesorería.  
 2. **Nómina proveedor** — ZIP en carpeta vigilada → Split por sucursal → Gate por parte → correo si hay rechazos.  
 3. **Combinado** — Watch recibe el archivo del día; Scheduler a las 06:00 reintenta fallidos o dispara Match de cierres.  
-4. **Vs hoy (Scheduler solo)** — con Artifact el tick ya invoca runners de Clean / Gate / File Pipe leyendo el hash en storage; eso cubre **reproceso**, no ingestión diaria. Watch es lo que falta para “archivo nuevo cada día”.
+4. **Vs hoy (Scheduler + Artifact)** — Artifact cubre **reproceso** del mismo hash; Watch cubre **ingestión diaria** de archivos nuevos.
 
 Watch **no** se implementa como pantalla de rutas dentro de File Gate / Pipe. Lee el origen, deja el archivo en intake/storage y llama al runner (o deja el lote para el Scheduler).
 
-**Runners:** el Scheduler ya resuelve Artifact → upload interno → `run_clean_job` / `validate_and_run` / `run_full_job` (y pipeline con artifact). Watch deberá alimentar el **mismo** contrato (archivo en storage + mismo runner), no un ETL paralelo.
+**Runners:** el Scheduler resuelve Artifact → upload interno → runners de Clean / Gate / FilePipe (y pipeline). Watch alimenta el **mismo** contrato (archivo en storage + mismo runner), no un ETL paralelo.
 
 ---
 
@@ -115,14 +115,14 @@ Alto en **ops y seguridad**: credenciales, cuotas, duplicados (mismo archivo dos
 
 ---
 
-## 8. Criterio antes de implementar
+## 8. Criterio (MVP cerrado)
 
-1. ¿Forma de trabajo elegida (tabla §3)? — **Sí en diseño** ([`definition_app_FILE_WATCH/wach_source.md`](definition_app_FILE_WATCH/wach_source.md)); falta OK de implementación.  
-2. ¿Modelo de Job / Pipeline encadenable estable? — [`FILE_PIPELINE.md`](FILE_PIPELINE.md)  
-3. ¿Idempotencia y tenancy claros?  
-4. ¿Relación explícita con PLATFORM_API y Pipeline (`pipeline_id`)?  
-5. ¿Contrato del lote pendiente hacia el tick del Scheduler (`watch_id` → artifact resuelto) alineado con [`definition_app_FILE_SCHEDULER/sch_target.md`](definition_app_FILE_SCHEDULER/sch_target.md) · [`sch_tick.md`](definition_app_FILE_SCHEDULER/sch_tick.md)?  
-6. ¿Reglas de “lote vacío” vs `schedule_missing_input` documentadas?
+1. ¿Forma de trabajo elegida (tabla §3)? — **Sí** (M2 + implementación).  
+2. ¿Modelo de Job / Pipeline encadenable? — [`FILE_PIPELINE.md`](FILE_PIPELINE.md)  
+3. ¿Idempotencia y tenancy? — M6.  
+4. ¿Relación con PLATFORM_API y Pipeline (`pipeline_id`)? — M4 / M10.  
+5. ¿Contrato del lote pendiente (`watch_id` → claim)? — **Sí** (`claim_pending_batch`).  
+6. ¿Reglas de “lote vacío” vs `schedule_missing_input`? — Documentadas en Scheduler + Watch.
 
 ---
 
@@ -131,7 +131,7 @@ Alto en **ops y seguridad**: credenciales, cuotas, duplicados (mismo archivo dos
 | Documento | Relación |
 |-----------|----------|
 | [`definition_app_FILE_WATCH/`](definition_app_FILE_WATCH/) | Specs por módulo (análisis y diseño); índice [`README.md`](definition_app_FILE_WATCH/README.md) |
-| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Paraguas §10 |
+| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Índice ops; Watch en §2 |
 | [`FILE_PIPELINE.md`](FILE_PIPELINE.md) | Orquestación; Watch dispara `pipeline_id` |
 | [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | Disparo por tiempo / dependencia; §4 frontera Watch; §10 entrada |
 | [`definition_app_FILE_SCHEDULER/`](definition_app_FILE_SCHEDULER/) | Specs del plan: destino Watch/Artifact, tick, errores |

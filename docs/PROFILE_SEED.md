@@ -3,7 +3,7 @@
 > **Nombre mnemotécnico:** `PROFILE_SEED`  
 > Alias: *Sembrador de perfiles* · *Profile Seed* · *Cross-seed de estructuras*  
 > Archivo: [`docs/PROFILE_SEED.md`](PROFILE_SEED.md)  
-> Estado: **en desarrollo** (rama `feature/profile-seed`) — M1–M4 + `ps_integration` listos; P0 GATE→Match A.  
+> Estado: **MVP hecho** (M1–M4 + `ps_integration`) · mergeado a `main` · `apps/profile_seed/` · P0 GATE→Match A.  
 > Origen: [`APP_FACTORY.md`](APP_FACTORY.md) §2 · [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §7.  
 > Specs al abrir: [`definition_app_PROFILE_SEED/`](definition_app_PROFILE_SEED/).  
 > Estilo: hermano de [`FILE_GATE.md`](FILE_GATE.md), [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md), [`FILE_MATCH.md`](FILE_MATCH.md) y [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md).
@@ -12,15 +12,12 @@
 
 | Ítem | Valor |
 |------|--------|
-| **Rama Git** | `feature/profile-seed` |
-| **Base** | `main` (producción / Railway; incluye Scout M1–M7) |
-| **Alcance de la rama** | Análisis, diseño, prototipos, servicios de clone/seed, CTAs en apps destino y docs asociados |
-| **Base de datos** | Preferir **reutilizar** `DmsSourceProfile` / contrato GATE / persistencia destino (`save_source`). Modelo nuevo mínimo: auditoría `ProfileSeed` (o equivalente). Documentar migraciones antes del merge |
-| **Despliegues a Railway** | **No desplegar** desde `feature/profile-seed` hasta merge a `main` (salvo staging). |
-| **Merge a `main`** | Cuando el MVP esté revisado; PR `feature/profile-seed` → `main` |
-| **Respaldo recomendado** | Tag/rama `pre-profile-seed` en `main` + backup BD si hay migración |
-
-> Quien despliegue producción debe usar **`main`**, no la rama de feature.
+| **Rama Git** | `main` (MVP mergeado; origen histórico `feature/profile-seed`) |
+| **Base** | `main` (producción / Railway) |
+| **Alcance** | Servicios de clone/seed, CTAs en apps destino, auditoría `ProfileSeedEvent` y docs asociados |
+| **Base de datos** | Reutiliza `DmsSourceProfile` / contrato GATE / `save_source`. Auditoría: `ProfileSeedEvent` (`apps/profile_seed/migrations/`) |
+| **Despliegues a Railway** | Desde **`main`** |
+| **Merge a `main`** | **Hecho** (`feature/profile-seed` es ancestro de `main`) |
 
 ---
 
@@ -265,7 +262,7 @@ flowchart LR
 | PS7 | No clonar políticas GATE, reglas Match ni target Reverse — solo forma source/entrada. |
 | PS8 | Overwrite de borrador destino: aviso explícito; confirmar. |
 | PS9 | Auditoría obligatoria de cada seed exitoso (y fallido si aporta diagnóstico). |
-| PS10 | No desplegar a Railway desde `feature/profile-seed` hasta merge a `main`. |
+| PS10 | Desplegar a Railway desde **`main`** (MVP ya mergeado). |
 
 ### 7.2 Funcionalidades MVP (checklist)
 
@@ -457,7 +454,7 @@ Ampliar [`definition_app/UI_MESSAGES.md`](definition_app/UI_MESSAGES.md) § PROF
 4. Módulos 2–3 (picker + apply).  
 5. Historial (M4) + mensajes UI.  
 6. Segundo camino (Match B o Reverse entrada).  
-7. `ps_integration.md` · PR a `main`.
+7. `ps_integration.md` · merge a `main`. **Hecho.**
 
 ### Fase 2
 
@@ -478,18 +475,18 @@ Ampliar [`definition_app/UI_MESSAGES.md`](definition_app/UI_MESSAGES.md) § PROF
 - [x] M3 `apply_draft.md` implementado (`save_source` + `ProfileSeedEvent` + wiring M2)  
 - [x] M4 `seed_history.md` implementado (listado / detalle + enlace hub A)  
 - [x] `ps_integration.md` documentado  
-- [ ] PR a `main`
+- [x] Merge a `main`
 
 ---
 
 ## 15. Próximos pasos de diseño / desarrollo
 
-> Trabajo en rama **`feature/profile-seed`**. Sin deploy a Railway desde esa rama hasta merge a `main`.
+> MVP P0 **cerrado** en `main` (`apps/profile_seed/`). Fase 2 no bloquea el cierre.
 
 1. Revisar este doc + §7 del paraguas HIGH_REUSE. → **Hecho**  
 2. M1–M4 implementados + `ps_integration.md` documentado. → **Hecho**  
-3. PR a `main` con MVP P0 (GATE→Match A).  
-4. Extensiones P1–P3 (Match B, Reverse, Match↔Match).  
+3. Merge a `main` con MVP P0 (GATE→Match A). → **Hecho**  
+4. Extensiones P1–P3 (Match B, Reverse, Match↔Match) cuando se prioricen.  
 5. **No** acoplar al bridge de pre-check.  
 6. Kind/hub propio solo si el historial global lo exige (Fase 2).
 
@@ -515,7 +512,7 @@ Ampliar [`definition_app/UI_MESSAGES.md`](definition_app/UI_MESSAGES.md) § PROF
 
 | Documento | Relación |
 |-----------|----------|
-| [`APP_FACTORY.md`](APP_FACTORY.md) | Visión / prioridad §5–§8 |
+| [`APP_FACTORY.md`](APP_FACTORY.md) | Índice; Seed en §2.2 |
 | [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §7 | Resumen en la familia |
 | [`definition_app_PROFILE_SEED/`](definition_app_PROFILE_SEED/) | Specs por módulo |
 | [`FILE_GATE.md`](FILE_GATE.md) | Origen P0 |

@@ -3,7 +3,7 @@
 Carpeta de documentación de análisis y definición para **FILE WATCH** (recepción automática / bandeja vigilada).
 
 > **Producto:** [`../FILE_WATCH.md`](../FILE_WATCH.md)  
-> **Familia:** [`../APP_FACTORY.md`](../APP_FACTORY.md) · [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) §10  
+> **Familia:** [`../APP_FACTORY.md`](../APP_FACTORY.md) · [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) §2  
 > **Rama Git:** `diseno_desarrollo_FILE_WATCH` (despliegue Railway solo desde `main`)  
 > **Estado:** **Implementado M1–M10** (app Django `apps.file_watch` MVP)  
 > **No es un vertical de menú UF:** no hay `project_kind` por formato. Ingiere archivos y alimenta runners existentes o deja lote para [`../FILE_SCHEDULER.md`](../FILE_SCHEDULER.md)  
@@ -122,7 +122,7 @@ apps/file_watch/           ← solo con «Desarrolla el módulo»
 
 ## Prioridad de diseño
 
-Alineado a [`../FILE_WATCH.md`](../FILE_WATCH.md) §8. Forma de trabajo (§3) **cerrada en diseño** en M2.
+Alineado a [`../FILE_WATCH.md`](../FILE_WATCH.md) §8. Forma de trabajo (§3) **cerrada** (M2 + implementación M1–M10).
 
 | Orden | Módulo | Nota |
 |-------|--------|------|
@@ -163,6 +163,6 @@ Alineado a [`../FILE_WATCH.md`](../FILE_WATCH.md) §8. Forma de trabajo (§3) **
 | [`../definition_app_FILE_PIPELINE/`](../definition_app_FILE_PIPELINE/) | Specs del orquestador |
 | [`../PLATFORM_API.md`](../PLATFORM_API.md) | Disparador hermano; §9 · §10.2 · §11 |
 | [`../definition_app_PLATFORM_API/`](../definition_app_PLATFORM_API/) | Patrón de carpeta (API) |
-| [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) | §10 |
+| [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) | Índice ops §2 |
 | [`../security/SEGURIDAD_Y_ACCESOS.md`](../security/SEGURIDAD_Y_ACCESOS.md) | Auth humana; monitor como sistema |
 | [`../definition_app/UI_MESSAGES.md`](../definition_app/UI_MESSAGES.md) | Códigos y mensajes |

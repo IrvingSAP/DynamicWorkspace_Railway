@@ -3,7 +3,7 @@
 Carpeta de documentación de análisis y definición para **PLATFORM API** (ejecución remota de jobs por HTTP).
 
 > **Producto:** [`../PLATFORM_API.md`](../PLATFORM_API.md)  
-> **Familia:** [`../APP_FACTORY.md`](../APP_FACTORY.md) §4 · [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md) (disparadores)  
+> **Familia:** [`../APP_FACTORY.md`](../APP_FACTORY.md) §2.3 · [`../APP_FACTORY_FILE_OPS.md`](../APP_FACTORY_FILE_OPS.md)  
 > **Estado:** **M1–M9 implementados** (`apps.platform_api`) · consola `/app/platform-api/` · HTTP `/api/v1/…`  
 > **No es un vertical de menú UF:** no hay `project_kind` propio. Invoca runners existentes (`kind`) y el orquestador [`../FILE_PIPELINE.md`](../FILE_PIPELINE.md)  
 > **Chasis:** `Company`, credencial de máquina, scopes, billing/feature flags — no sustituye 2FA de UF ([`../security/SEGURIDAD_Y_ACCESOS.md`](../security/SEGURIDAD_Y_ACCESOS.md))
@@ -160,7 +160,7 @@ Pendiente de **producto** (no de M1–M9): manual [`MANUAL_USUARIO_API_PIPELINE.
 | [`../FILE_PIPELINE.md`](../FILE_PIPELINE.md) | `kind=file_pipeline`; auditoría §7.1 |
 | [`../definition_app_FILE_PIPELINE/`](../definition_app_FILE_PIPELINE/) | Specs del orquestador |
 | [`../FILE_GATE.md`](../FILE_GATE.md) · [`../DataMappingStudio.md`](../DataMappingStudio.md) | Kinds MVP Fase A |
-| [`../APP_FACTORY.md`](../APP_FACTORY.md) | Prioridad plataforma §5 orden 5 |
+| [`../APP_FACTORY.md`](../APP_FACTORY.md) | Índice; API en §2.3 |
 | [`../security/SEGURIDAD_Y_ACCESOS.md`](../security/SEGURIDAD_Y_ACCESOS.md) | Auth humana; extender a máquina |
 | [`../definition_app/UI_MESSAGES.md`](../definition_app/UI_MESSAGES.md) | Códigos y mensajes |
 | [`../definition_app_FILE_PIPELINE/`](../definition_app_FILE_PIPELINE/) | Patrón de carpeta / ritual |

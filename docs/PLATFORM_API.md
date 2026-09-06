@@ -5,7 +5,7 @@
 > Archivo: [`docs/PLATFORM_API.md`](PLATFORM_API.md)  
 > Estado: **implementado** (`apps.platform_api`) — consola US `/app/platform-api/` · HTTP `/api/v1/…`  
 > Specs por módulo: [`definition_app_PLATFORM_API/`](definition_app_PLATFORM_API/) (M1–M9 en código). Manual de jobs sueltos: [`MANUAL_USUARIO_API_APP.md`](definition_app_PLATFORM_API/MANUAL_USUARIO_API_APP.md)  
-> Padres: [`APP_FACTORY.md`](APP_FACTORY.md) §4 · [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) (disparadores)  
+> Padres: [`APP_FACTORY.md`](APP_FACTORY.md) §2.3 · [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) (disparadores)  
 > Alcance: **todas las apps ejecutables** vía Job (Gate, Pipe, Reverse, Match, Scout, Clean, Split/Merge) y **File Pipeline** (`kind=file_pipeline`)  
 > No cableados aún: Repair, Profiler (catálogo; `mvp_phase_a: false`)
 
@@ -105,7 +105,7 @@ Disparadores
 | [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) | Verticales que la API **invoca** |
 | [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Ops + Job encadenable |
 | [`FILE_PIPELINE.md`](FILE_PIPELINE.md) | Orquestación multi-app; **la API puede ejecutar un pipeline completo** |
-| [`APP_FACTORY.md`](APP_FACTORY.md) §4 | “API / Webhooks” de plataforma |
+| [`APP_FACTORY.md`](APP_FACTORY.md) §2.3 | PLATFORM API entregada |
 
 **No es** un vertical de archivos en el menú UF. **Sí es** capacidad de plataforma: consola de **clientes/keys** (US) + HTTP para cualquier `kind` ejecutable y `pipeline_id`.
 
@@ -131,7 +131,7 @@ La API debe estar **alineada y disponible** para toda app que el sistema pueda e
 
 > **`mode=pipeline`:** además del `kind` suelto, la API puede aceptar `pipeline_id` (definición publicada) y delegar en el orquestador FILE_PIPELINE. Ver [`FILE_PIPELINE.md`](FILE_PIPELINE.md) §3 y EJ-06.
 
-> **File Diff:** no hay `kind` `file_diff`. Comparación A vs B → `file_match`. Ver [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §8.
+> **File Diff:** no hay `kind` `file_diff`. Comparación A vs B → `file_match`. Ver [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §3.
 
 > Worksheets puede tener API de registros en otra fase; **este documento** se centra en el **Job de archivo** común a la suite de archivos.
 
@@ -660,7 +660,7 @@ Cubierto en código (M1–M9) y recorrido en el manual de jobs sueltos (curl 1�
 
 | Documento | Relación |
 |-----------|----------|
-| [`APP_FACTORY.md`](APP_FACTORY.md) | Visión; §4 API/Webhooks; prioridad plataforma |
+| [`APP_FACTORY.md`](APP_FACTORY.md) | Índice; PLATFORM API en §2.3 |
 | [`definition_app_PLATFORM_API/`](definition_app_PLATFORM_API/) | Specs M1–M9 **implementados**; manuals de uso |
 | [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Ops; Job encadenable; Watch/Scheduler como hermanos disparadores |
 | [`FILE_PIPELINE.md`](FILE_PIPELINE.md) | Orquestación; API `kind=file_pipeline`; **auditoría E2E §7.1** (heredar); seguridad §6 |

@@ -3,8 +3,8 @@
 > **Nombre mnemotécnico:** `FILE_SCHEDULER`  
 > Alias: *Programador de jobs* · *Cron de archivos*  
 > Archivo: [`docs/FILE_SCHEDULER.md`](FILE_SCHEDULER.md)  
-> Estado: **en desarrollo** — M1–M10 en `apps.file_scheduler`; forma de trabajo (§3) abierta  
-> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §11 · prioridad ⭐⭐⭐ (plataforma; con Watch)  
+> Estado: **MVP hecho** (M1–M10 en `apps.file_scheduler`) · worker `process_schedule_ticks` · forma MVP = UI + worker cron (Job o `pipeline_id`)  
+> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §2 (entregado)  
 > Tipo: **capa de plataforma**  
 > Pareja: [`FILE_WATCH.md`](FILE_WATCH.md) · hermano: [`PLATFORM_API.md`](PLATFORM_API.md) · roadmap DMS Fase 3  
 > **Auditoría / errores:** hereda contrato de [`FILE_PIPELINE.md`](FILE_PIPELINE.md) **§6 · §7 · §7.1** y [`PLATFORM_API.md`](PLATFORM_API.md) **§9 · §10.2 · §11** — este doc añade lo **propio del schedule** (CRUD + tick); no duplica pasos ni filas de app.  
@@ -49,19 +49,18 @@ El Scheduler **no reescribe** parsers, informe por paso ni historial de cada ver
 
 ---
 
-## 3. Forma de trabajo (pendiente de decisión)
+## 3. Forma de trabajo (MVP cerrado; extensiones Fase 2)
 
-Se desarrollará; elegir **una o varias**:
+**MVP:** UI de planes + **worker cron** que evalúa ticks y encola el mismo Job/Pipeline que la UI. Destino: proyecto publicado o `pipeline_id`. Entrada: artifact o `watch_id` (lote Watch).
 
-| Forma | Descripción |
-|-------|-------------|
-| **Dentro de un pipeline** | Nodo schedule / dependencia — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) |
-| **Por pedido de API** | Crear/actualizar schedules vía PLATFORM_API o admin API |
-| **Monitor / worker** | Proceso que evalúa cron y encola Jobs |
-| **Otras** | Calendarios por compañía, ventanas de mantenimiento, “solo días hábiles” |
-| **Todas las anteriores** | Motor de schedules + adaptadores (UI, API, pipeline) |
+| Forma | Estado |
+|-------|--------|
+| **Monitor / worker** | **MVP** — `process_schedule_ticks` |
+| **Dentro de un pipeline** | Pipeline es **destino** (`pipeline_id`); nodo schedule en el diseñador = Fase 2 |
+| **Por pedido de API** | Disparo de Job/Pipeline vía PLATFORM API; CRUD HTTP de schedules = Fase 2 |
+| **Otras** | Ventanas / días hábiles parciales según M2; ampliar calendarios = Fase 2 |
 
-Alinear con Watch para un modelo único **disparador → Job**. Las secciones §7–§10 valen para worker cron **y** para nodo en pipeline.
+Alineado con Watch: modelo único **disparador → Job**. Las secciones §7–§10 valen para worker cron **y** para un futuro nodo en pipeline.
 
 ---
 
@@ -252,7 +251,7 @@ Runs con `trigger_source=scheduler` **alimentan** el tablero de Pipeline (parida
 
 | Documento | Relación |
 |-----------|----------|
-| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Paraguas §11 |
+| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Índice ops; Scheduler en §2 |
 | [`definition_app_FILE_SCHEDULER/`](definition_app_FILE_SCHEDULER/) | Specs por módulo (fase de diseño) |
 | [`FILE_PIPELINE.md`](FILE_PIPELINE.md) | Orquestación; dispara `pipeline_id`; **§6 · §7 · §7.1** (heredar; no duplicar pasos) |
 | [`FILE_WATCH.md`](FILE_WATCH.md) | Disparo por llegada |

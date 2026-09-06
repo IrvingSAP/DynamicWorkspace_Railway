@@ -4,7 +4,7 @@ Proceso y especificación del **Módulo 2** del Sembrador: **selector de origen 
 
 > Estado: **implementado** (M2 — lista GATE publicados + selección + wiring M1).  
 > Producto: [`../PROFILE_SEED.md`](../PROFILE_SEED.md).  
-> Rama: `feature/profile-seed`.  
+> Rama: `main` (MVP mergeado).  
 > Predecesor: [`seed_hub.md`](seed_hub.md) (M1 — implementado).  
 > Siguiente: [`apply_draft.md`](apply_draft.md) (M3 — **implementado**).  
 > Destino P0 (fijo desde M1): FILE MATCH · slot `profile_a`.  

@@ -4,7 +4,7 @@ Proceso y especificación del **Módulo 1** del Sembrador: **punto de entrada** 
 
 > Estado: **implementado** (M1 — CTA + shell + `user_can_import`).  
 > Producto: [`../PROFILE_SEED.md`](../PROFILE_SEED.md).  
-> Rama: `feature/profile-seed`.  
+> Rama: `main` (MVP mergeado).  
 > Siguiente: [`source_picker.md`](source_picker.md) (M2 — **spec + prototipos**).  
 > Destino P0: FILE MATCH Perfil A · `/app/file-match/proyectos/<slug>/perfil-a/`.  
 > Arquitectura MVP: **servicios + CTAs** (sin kind `profile_seed` obligatorio).  

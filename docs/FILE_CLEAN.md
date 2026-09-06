@@ -4,7 +4,7 @@
 > Alias: *Limpiador de archivos* · *Normalizador pre-calidad*  
 > Archivo: [`docs/FILE_CLEAN.md`](FILE_CLEAN.md)  
 > Estado: **definición de producto** (sin implementación)  
-> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §4 · prioridad ⭐⭐⭐⭐⭐  
+> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §2 (entregado)  
 > Specs por módulo: [`definition_app_FILE_CLEAN/`](definition_app_FILE_CLEAN/)  
 > Estilo: hermano de [`FILE_GATE.md`](FILE_GATE.md) / [`DataMappingStudio.md`](DataMappingStudio.md)
 
@@ -291,7 +291,7 @@ file=<bytes>
 
 | Documento | Relación |
 |-----------|----------|
-| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Paraguas ops; Clean §4 |
+| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Índice ops; Clean en §2 |
 | [`definition_app_FILE_CLEAN/`](definition_app_FILE_CLEAN/) | Specs por módulo |
 | [`FILE_GATE.md`](FILE_GATE.md) | Siguiente paso típico del pipeline |
 | [`DataMappingStudio.md`](DataMappingStudio.md) | Motor de reglas / parsers |

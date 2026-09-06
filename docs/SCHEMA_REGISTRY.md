@@ -4,7 +4,7 @@
 > Alias: *Registro de esquemas* · *Catálogo de contratos*  
 > Archivo: [`docs/SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md)  
 > Estado: **previsto (se desarrollará)** — **pendiente definir forma de trabajo**  
-> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §14 · prioridad ⭐⭐ (plataforma)  
+> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §4.4 (backlog)  
 > Tipo: **capa de plataforma** (cambio de modelo mental vs contratos solo por proyecto)  
 > Relacionado: [`PROFILE_SEED.md`](PROFILE_SEED.md) (clonar) · distinto de Master Catalog (códigos de negocio)
 
@@ -93,7 +93,7 @@ Implica eventual migración del modelo “contrato solo en el proyecto”.
 
 | Documento | Relación |
 |-----------|----------|
-| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Paraguas §14 |
+| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Backlog §4.4 |
 | [`PROFILE_SEED.md`](PROFILE_SEED.md) | Siembra desde definición publicada |
 | [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md) | Custodia E2E (otra capa) |
 | [`FILE_GATE.md`](FILE_GATE.md) / Pipe / Match | Consumidores típicos |

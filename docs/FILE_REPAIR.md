@@ -4,7 +4,7 @@
 > Alias: *Reparador de archivos* · *Corrección auditada*  
 > Archivo: [`docs/FILE_REPAIR.md`](FILE_REPAIR.md)  
 > Estado: **pendiente de revisión** — validar aporte al sistema; decidir app hermana, **modo de Gate** o **unificación con File Clean**  
-> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §9 · prioridad ⭐⭐⭐ (propuesta)  
+> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §4.2 (backlog)  
 > Specs por módulo: *aún no*  
 > Acoplado a: [`FILE_GATE.md`](FILE_GATE.md) · solapa motor con [`FILE_CLEAN.md`](FILE_CLEAN.md)
 
@@ -90,7 +90,7 @@ La revisión debe **validar aporte** y elegir una de estas formas (o descartar /
 
 | Documento | Relación |
 |-----------|----------|
-| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Paraguas §9 |
+| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Backlog §4.2 |
 | [`FILE_GATE.md`](FILE_GATE.md) | Origen del informe de rechazo |
 | [`FILE_CLEAN.md`](FILE_CLEAN.md) | Motor / posible unificación |
 | [`PLATFORM_API.md`](PLATFORM_API.md) | Job futuro |

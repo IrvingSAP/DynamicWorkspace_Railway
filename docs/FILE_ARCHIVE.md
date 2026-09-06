@@ -4,7 +4,7 @@
 > Alias: *Custodia de archivos* · *Expediente de proceso*  
 > Archivo: [`docs/FILE_ARCHIVE.md`](FILE_ARCHIVE.md)  
 > Estado: **previsto (se desarrollará)** — **pendiente definir forma de trabajo**  
-> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §12 · prioridad ⭐⭐ (plataforma)  
+> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §4.3 (backlog)  
 > Tipo: **capa transversal** (no sustituye el historial de cada app)  
 > Momento: cuando haya **pipelines multi-app** en producción
 
@@ -96,7 +96,7 @@ Priorizar cuando existan cadenas reales (p. ej. Clean → Gate → Pipe → Matc
 
 | Documento | Relación |
 |-----------|----------|
-| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Paraguas §12 |
+| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Backlog §4.3 |
 | [`FILE_PIPELINE.md`](FILE_PIPELINE.md) | Runs E2E a custodiar |
 | [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) | Contratos (otra capa) |
 

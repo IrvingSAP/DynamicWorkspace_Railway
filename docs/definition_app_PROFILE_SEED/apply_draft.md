@@ -4,7 +4,7 @@ Proceso y especificación del **Módulo 3** del Sembrador: **preview + validaci�
 
 > Estado: **implementado** (M3 — preview + `save_source` + `ProfileSeedEvent` + wiring M2).  
 > Producto: [`../PROFILE_SEED.md`](../PROFILE_SEED.md).  
-> Rama: `feature/profile-seed`.  
+> Rama: `main` (MVP mergeado).  
 > Predecesor: [`source_picker.md`](source_picker.md) (M2 — implementado).  
 > Siguiente: [`seed_history.md`](seed_history.md) (M4 — **implementado**).  
 > Destino P0: FILE MATCH · slot `profile_a`.  

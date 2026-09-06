@@ -3,7 +3,7 @@
 > **Nombre mnemotécnico:** `FILE_GATE`  
 > Alias: *Validador de archivos*  
 > Archivo: [`docs/FILE_GATE.md`](FILE_GATE.md)  
-> Estado: **definición de producto + Módulo 1 implementado** — priorizado en [`APP_FACTORY.md`](APP_FACTORY.md) §5.  
+> Estado: **definición de producto + MVP implementado** — inventario [`APP_FACTORY.md`](APP_FACTORY.md) §2.2.  
 > Estilo de documento: hermano de [`DynamicWorkspace.md`](DynamicWorkspace.md) y [`DataMappingStudio.md`](DataMappingStudio.md).
 
 ### Rama de desarrollo y despliegues

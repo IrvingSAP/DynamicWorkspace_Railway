@@ -4,7 +4,7 @@ Alineación del **Sembrador de perfiles (PROFILE_SEED)** con la plataforma: comp
 
 > Estado: **documentado** (refleja implementación M1–M4 en `apps.profile_seed` + CTAs host en FILE MATCH).  
 > Producto: [`../PROFILE_SEED.md`](../PROFILE_SEED.md).  
-> Rama: `feature/profile-seed`.  
+> Rama: `main` (MVP mergeado).  
 > Fuente de verdad plataforma: [`../DynamicWorkspace.md`](../DynamicWorkspace.md), [`../definition_app/DynamicWorkspace_Model.md`](../definition_app/DynamicWorkspace_Model.md).  
 > Patrón hermano: [`../definition_app_STRUCTURE_SCOUT/ss_integration.md`](../definition_app_STRUCTURE_SCOUT/ss_integration.md), [`../definition_app_FILE_MATCH/fm_integration.md`](../definition_app_FILE_MATCH/fm_integration.md).  
 > Specs por módulo: [`README.md`](README.md).  
@@ -270,7 +270,7 @@ Constantes MSG en `profile_seed_service` / `apply_seed_service` / `seed_history_
 
 - Redefinir módulos M1–M4 (ver specs por módulo).
 - Prototipos HTML nuevos (integración = mapa as-built).
-- Deploy a producción desde `feature/profile-seed` (merge a `main` primero — PS10).
+- Política de deploy: producción desde **`main`** (PS10).
 
 ---
 

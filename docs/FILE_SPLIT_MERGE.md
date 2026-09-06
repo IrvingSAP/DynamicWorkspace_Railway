@@ -4,7 +4,7 @@
 > Alias: *File Split* · *File Merge* · *Utilidad dual de lotes*  
 > Archivo: [`docs/FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md)  
 > Estado: **definición de producto** · M1–M6 (proyecto → historial) **implementados** (`feature/file-split-merge`)  
-> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §5–§6 · prioridad ⭐⭐⭐⭐  
+> Familia: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) §2 (entregado)  
 > Specs por módulo: [`definition_app_FILE_SPLIT_MERGE/`](definition_app_FILE_SPLIT_MERGE/)  
 > Estilo: hermano de [`FILE_CLEAN.md`](FILE_CLEAN.md) / [`FILE_MATCH.md`](FILE_MATCH.md)
 
@@ -318,7 +318,7 @@ files[]=<bytes>…
 
 | Documento | Relación |
 |-----------|----------|
-| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Paraguas ops; Split §5 · Merge §6 |
+| [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) | Índice ops; Split/Merge en §2 |
 | [`definition_app_FILE_SPLIT_MERGE/`](definition_app_FILE_SPLIT_MERGE/) | Specs por módulo |
 | [`FILE_CLEAN.md`](FILE_CLEAN.md) | Hermano FILE_OPS (hecho) |
 | [`FILE_MATCH.md`](FILE_MATCH.md) | No confundir con Merge |
