@@ -4,7 +4,7 @@ Carpeta de documentación de análisis y definición para **PROFILE_SEED** (Semb
 
 > **Producto:** [`../PROFILE_SEED.md`](../PROFILE_SEED.md)  
 > **Familia §2:** [`../APP_FACTORY_HIGH_REUSE.md`](../APP_FACTORY_HIGH_REUSE.md) §7  
-> **Rama Git:** `feature/profile-seed` (no desplegar a producción hasta merge a `main`)  
+> **Rama Git:** `main` (MVP mergeado)  
 > **Chasis:** reutiliza `Company`, `UserProfile`, `Project`, `ProjectMembership`, seguridad y billing.  
 > **Reuso técnico:** snapshots de `DmsSourceProfile` / contrato GATE / perfiles Match / entrada Reverse — **clone**, no vínculo vivo; escritura vía `save_source` (patrón Scout apply).  
 > **Complemento:** Structure Scout (desde muestra); Bridge GATE (pre-check por hash).  
@@ -101,7 +101,7 @@ flowchart LR
 
 | Documento | Estado |
 |-----------|--------|
-| Producto PROFILE_SEED | [`../PROFILE_SEED.md`](../PROFILE_SEED.md) — M1–M4 en `feature/profile-seed` |
+| Producto PROFILE_SEED | [`../PROFILE_SEED.md`](../PROFILE_SEED.md) — M1–M4 **hecho** en `main` |
 | Integración | [`ps_integration.md`](ps_integration.md) |
 | Paraguas familia | [`../APP_FACTORY_HIGH_REUSE.md`](../APP_FACTORY_HIGH_REUSE.md) §7 |
 | Código | `apps/profile_seed/` · host Match Perfil A |

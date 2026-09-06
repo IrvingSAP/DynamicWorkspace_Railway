@@ -36,7 +36,7 @@ Paraguas de producto de la **siguiente oleada** de capacidades de archivo: lo qu
 
 | Documento | Rol |
 |-----------|-----|
-| [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) | Verticales **hechos / en curso** sobre el motor DMS (Gate, Reverse, Match, Scout, Seed, Catalog) |
+| [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) | Verticales **hechos** sobre el motor DMS (Gate, Reverse, Match, Scout, Seed) · Catalog propuesta |
 | **Este doc (`FILE_OPS`)** | Huecos **alrededor** de esos verticales + orquestación |
 
 ```text

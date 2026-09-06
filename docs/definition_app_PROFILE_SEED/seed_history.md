@@ -4,7 +4,7 @@ Proceso y especificación del **Módulo 4** del Sembrador: **historial de semill
 
 > Estado: **implementado** (M4 — listado / detalle `ProfileSeedEvent` + enlace hub A).  
 > Producto: [`../PROFILE_SEED.md`](../PROFILE_SEED.md).  
-> Rama: `feature/profile-seed`.  
+> Rama: `main` (MVP mergeado).  
 > Predecesor: [`apply_draft.md`](apply_draft.md) (M3 — implementado).  
 > Siguiente: [`ps_integration.md`](ps_integration.md) (transversal — **documentado**).  
 > Fuente: modelo existente `ProfileSeedEvent` — **solo lectura** en M4.  

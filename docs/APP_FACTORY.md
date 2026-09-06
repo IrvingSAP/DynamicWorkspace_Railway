@@ -124,8 +124,8 @@ Capa HTTP alineada a las apps **cableadas** y a **pipelines** (`kind=file_pipeli
 | — | **Reverse Studio** | **Hecho** — [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) |
 | — | **Conciliador de archivos** | **Hecho** — [`FILE_MATCH.md`](FILE_MATCH.md) |
 | — | **Explorador de estructura** | **Hecho** — [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) |
-| **1 (en curso)** | **Sembrador de perfiles** | MVP P0 M1–M4 · `feature/profile-seed` — [`PROFILE_SEED.md`](PROFILE_SEED.md) · [`ps_integration.md`](definition_app_PROFILE_SEED/ps_integration.md) |
-| 2 | **Catálogos / maestros** | Propuesta — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §5 |
+| — | **Sembrador de perfiles** | **Hecho** (MVP P0 M1–M4) — [`PROFILE_SEED.md`](PROFILE_SEED.md) · [`ps_integration.md`](definition_app_PROFILE_SEED/ps_integration.md) |
+| **1** | **Catálogos / maestros** | Propuesta — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §5 |
 | 3 | **File Clean** (FILE_OPS) | **Hecho** — [`FILE_CLEAN.md`](FILE_CLEAN.md) · [`definition_app_FILE_CLEAN/`](definition_app_FILE_CLEAN/) |
 | 3b | **File Split/Merge** (FILE_OPS) | **Hecho** — [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) · [`definition_app_FILE_SPLIT_MERGE/`](definition_app_FILE_SPLIT_MERGE/) · `main` / Railway (PR #13) |
 | 3c | **Data Profiler** (FILE_OPS) | **Pendiente revisión de aporte** — [`DATA_PROFILER.md`](DATA_PROFILER.md) |
@@ -173,7 +173,7 @@ Si la respuesta es “sí” a 1–4, conviene un doc hermano al estilo `DataMap
 | Reverse Studio | **Hecho (MVP M1–M7 + bridge)** — [`REVERSE_STUDIO.md`](REVERSE_STUDIO.md) · `apps/reverse_studio/` · `main` |
 | Conciliador de archivos | **Hecho (MVP M1–M8 + bridge)** — [`FILE_MATCH.md`](FILE_MATCH.md) · `apps/file_match/` · `main` |
 | Explorador de estructura | **Hecho (MVP M1–M7)** — [`STRUCTURE_SCOUT.md`](STRUCTURE_SCOUT.md) · `apps/structure_scout/` · `main` |
-| Sembrador de perfiles | **MVP P0 en código** — [`PROFILE_SEED.md`](PROFILE_SEED.md) · [`ps_integration.md`](definition_app_PROFILE_SEED/ps_integration.md) · rama `feature/profile-seed` |
+| Sembrador de perfiles | **Hecho (MVP P0 M1–M4)** — [`PROFILE_SEED.md`](PROFILE_SEED.md) · `apps/profile_seed/` · `main` |
 | Catálogos / maestros | **Propuesta detallada** — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §5 (`MASTER_CATALOG`) |
 | File Clean / Profiler / Split·Merge / Repair | Clean + Split/Merge: **hecho**; Profiler + Repair: **pendiente revisión** — [`DATA_PROFILER.md`](DATA_PROFILER.md), [`FILE_REPAIR.md`](FILE_REPAIR.md); Diff **retirado** |
 | File Watch / Scheduler | **Previsto**; forma de trabajo TBD — [`FILE_WATCH.md`](FILE_WATCH.md), [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) |
