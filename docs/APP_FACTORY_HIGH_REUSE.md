@@ -1063,7 +1063,7 @@ Alineado a [`APP_FACTORY.md`](APP_FACTORY.md) §5 / §8.
 
 > Profile Seed y Structure Scout pueden **compartir** capa de “Aplicar a destino” (`save_source`); diferencian el origen (definición vs muestra).
 
-> **Siguiente oleada (ops / alrededor del archivo):** Clean · Split/Merge · Profiler · Watch · … (Diff **no app** → Match). Ver [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md).  
+> **Siguiente oleada (ops / alrededor del archivo):** Clean · Split/Merge · Watch · Scheduler **hechos**; Profiler / Repair en revisión; Archive / Registry previstos. Ver [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md).  
 > **Ejecución remota (todas las apps):** [`PLATFORM_API.md`](PLATFORM_API.md) — mismo Job que la UI; no es un vertical §2.
 
 ---

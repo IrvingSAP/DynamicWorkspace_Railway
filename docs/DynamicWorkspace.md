@@ -34,9 +34,10 @@
 | [`docs/FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) | **File Split/Merge** — partición / consolidación (**hecho**) |
 | [`docs/DATA_PROFILER.md`](DATA_PROFILER.md) | **Data Profiler** — calidad de contenido (**pendiente revisión**) |
 | [`docs/FILE_REPAIR.md`](FILE_REPAIR.md) | **File Repair** — corrección post-Gate (**pendiente revisión**) |
-| [`docs/FILE_WATCH.md`](FILE_WATCH.md) | **File Watch** — ingestión por llegada (**previsto**) |
-| [`docs/FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | **File Scheduler** — cron / dependencias (**previsto**) |
-| [`docs/definition_app_FILE_SCHEDULER/`](definition_app_FILE_SCHEDULER/) | Specs por módulo File Scheduler (fase de diseño) |
+| [`docs/FILE_WATCH.md`](FILE_WATCH.md) | **File Watch** — ingestión por llegada (**hecho**) |
+| [`docs/FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | **File Scheduler** — cron / dependencias (**hecho**) |
+| [`docs/definition_app_FILE_SCHEDULER/`](definition_app_FILE_SCHEDULER/) | Specs por módulo File Scheduler (M1–M10) |
+| [`docs/definition_app_FILE_WATCH/`](definition_app_FILE_WATCH/) | Specs por módulo File Watch (M1–M10) |
 | [`docs/FILE_ARCHIVE.md`](FILE_ARCHIVE.md) | **File Archive** — custodia E2E (**previsto**) |
 | [`docs/SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) | **Schema Registry** — contratos compartidos (**previsto**) |
 | [`docs/FILE_PIPELINE.md`](FILE_PIPELINE.md) | **File Pipeline** — orquestación multi-app (**propuesta**); API puede consumirlo |
@@ -308,7 +309,9 @@ apps/
 ├── reverse_studio/    # Reverse Studio — Emisor — ver REVERSE_STUDIO.md
 ├── file_match/        # File Match — Conciliador — ver FILE_MATCH.md
 ├── structure_scout/   # Structure Scout — Explorador — ver STRUCTURE_SCOUT.md
-└── profile_seed/      # Profile Seed — Sembrador (hecho) — ver PROFILE_SEED.md
+├── profile_seed/      # Profile Seed — Sembrador (hecho) — ver PROFILE_SEED.md
+├── file_scheduler/    # File Scheduler — cron / dependencias (hecho) — ver FILE_SCHEDULER.md
+└── file_watch/        # File Watch — bandeja vigilada (hecho) — ver FILE_WATCH.md
 ```
 
 **Modelo tenant:** `Company` → usuarios (`UserProfile`) → proyectos → registros **o** mapeos DMS (`project_kind`). Ver [`definition_app/DynamicWorkspace_Model.md`](definition_app/DynamicWorkspace_Model.md).

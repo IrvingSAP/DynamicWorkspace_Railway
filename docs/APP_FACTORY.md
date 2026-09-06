@@ -85,10 +85,10 @@ Cada aplicativo nuevo ≈ un nuevo `project_kind` (o un módulo sobre un kind ex
 
 | Aplicativo | Aprovecha |
 |------------|-----------|
-| **Programador de transformaciones (scheduling)** | Roadmap DMS Fase 3: cron + cola → jobs DMS recurrentes — ver también [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) (File Scheduler) |
+| **Programador de transformaciones (scheduling)** | **Hecho** — File Scheduler (`apps.file_scheduler`) — [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) |
 | **API / Webhooks de integración** | Ejecución remota de jobs (todas las apps ejecutables) — **[`PLATFORM_API.md`](PLATFORM_API.md)** |
 | **Report builder / exportador** | Vistas sobre Records + serializadores DMS (Excel/CSV) |
-| **Bandeja de intercambio (carpeta vigilada)** | Idea ya esbozada en aprovisionamiento; aplicar a intake DMS — ver **File Watch** en [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) |
+| **Bandeja de intercambio (carpeta vigilada)** | **Hecho** — File Watch (`apps.file_watch`) — [`FILE_WATCH.md`](FILE_WATCH.md) |
 
 ### 4.1 Operaciones de archivo (FILE_OPS) — nueva oleada
 
@@ -97,8 +97,8 @@ Detalle y prioridad: [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md).
 | Prioridad | Idea | Nota |
 |-----------|------|------|
 | ⭐⭐⭐⭐⭐ | File Clean | Limpieza pre-Gate; reuso de reglas DMS · **hecho** |
-| ⭐⭐⭐⭐⭐ | File Watch | Ingestión automática (después de Clean/Split·Merge) |
-| ⭐⭐⭐⭐ | Data Profiler / Repair (**pendiente revisión**) · Split/Merge (**hecho**) · Watch (**previsto**) | Ver [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) |
+| ⭐⭐⭐⭐⭐ | File Watch | Ingestión automática · **hecho** (M1–M10) |
+| ⭐⭐⭐⭐ | Data Profiler / Repair (**pendiente revisión**) · Split/Merge (**hecho**) · Watch / Scheduler (**hecho**) | Ver [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) |
 | — | File Convert | **No** como app; modo simple en FilePipe |
 | — | File Diff | **No** como app; cubierto por File Match |
 
@@ -130,7 +130,7 @@ Capa HTTP alineada a las apps **cableadas** y a **pipelines** (`kind=file_pipeli
 | 3b | **File Split/Merge** (FILE_OPS) | **Hecho** — [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) · [`definition_app_FILE_SPLIT_MERGE/`](definition_app_FILE_SPLIT_MERGE/) · `main` / Railway (PR #13) |
 | 3c | **Data Profiler** (FILE_OPS) | **Pendiente revisión de aporte** — [`DATA_PROFILER.md`](DATA_PROFILER.md) |
 | 3d | **File Repair** (FILE_OPS) | **Pendiente revisión** — [`FILE_REPAIR.md`](FILE_REPAIR.md) (app / modo Gate / Clean) |
-| 3e | **Watch + Scheduler** (FILE_OPS) | **Previsto**; forma de trabajo TBD — [`FILE_WATCH.md`](FILE_WATCH.md) · [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) |
+| 3e | **Watch + Scheduler** (FILE_OPS) | **Hecho** (M1–M10) — [`FILE_WATCH.md`](FILE_WATCH.md) · [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) · `apps.file_watch` / `apps.file_scheduler` |
 | 3f | **Archive / Schema Registry** | **Previsto**; forma TBD — [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md) · [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) |
 | 3g | **File Pipeline** (plataforma) | **Propuesta** — orquestación multi-app — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) · [`definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) |
 | 4 | **Formularios de captura** | Abre el producto a usuarios que no manejan archivos |
@@ -176,7 +176,7 @@ Si la respuesta es “sí” a 1–4, conviene un doc hermano al estilo `DataMap
 | Sembrador de perfiles | **Hecho (MVP P0 M1–M4)** — [`PROFILE_SEED.md`](PROFILE_SEED.md) · `apps/profile_seed/` · `main` |
 | Catálogos / maestros | **Propuesta detallada** — [`APP_FACTORY_HIGH_REUSE.md`](APP_FACTORY_HIGH_REUSE.md) §5 (`MASTER_CATALOG`) |
 | File Clean / Profiler / Split·Merge / Repair | Clean + Split/Merge: **hecho**; Profiler + Repair: **pendiente revisión** — [`DATA_PROFILER.md`](DATA_PROFILER.md), [`FILE_REPAIR.md`](FILE_REPAIR.md); Diff **retirado** |
-| File Watch / Scheduler | **Previsto**; forma de trabajo TBD — [`FILE_WATCH.md`](FILE_WATCH.md), [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) |
+| File Watch / Scheduler | **Hecho (MVP M1–M10)** — [`FILE_WATCH.md`](FILE_WATCH.md) · [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) · `apps.file_watch` / `apps.file_scheduler` · `main` |
 | File Archive / Schema Registry | **Previsto**; forma TBD — [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md), [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) |
 | **File Pipeline** (orquestación multi-app) | **Propuesta** — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) |
 | **PLATFORM API** (ejecución remota) | **Hecho** (`apps.platform_api`, M1–M9) — Job suelto o Pipeline — [`PLATFORM_API.md`](PLATFORM_API.md) |
@@ -186,10 +186,10 @@ Si la respuesta es “sí” a 1–4, conviene un doc hermano al estilo `DataMap
 | CRM ligero | Propuesta |
 | Inventario / activos | Propuesta |
 | Tickets internos | Propuesta |
-| Scheduling DMS | Roadmap DMS Fase 3 · ver también FILE_OPS Scheduler |
+| Scheduling DMS | **Cubierto** por File Scheduler (FILE_OPS) — [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) |
 | API / Webhooks | **Hecho** (webhooks M8; YAML OpenAPI aplazado) — [`PLATFORM_API.md`](PLATFORM_API.md) |
 | Report builder | Propuesta |
-| Bandeja / carpeta vigilada | Propuesta — ver File Watch en [`APP_FACTORY_FILE_OPS.md`](APP_FACTORY_FILE_OPS.md) |
+| Bandeja / carpeta vigilada | **Hecho** — File Watch — [`FILE_WATCH.md`](FILE_WATCH.md) |
 
 ---
 

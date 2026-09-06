@@ -129,7 +129,7 @@ apps/file_scheduler/        ← solo con «Desarrolla el módulo»
 
 ## Prioridad de diseño
 
-Alineado a [`../FILE_SCHEDULER.md`](../FILE_SCHEDULER.md) §6. Forma de trabajo (§3 del producto) sigue abierta; el orden de specs no la cierra.
+Alineado a [`../FILE_SCHEDULER.md`](../FILE_SCHEDULER.md) §6. Forma de trabajo del MVP **cerrada** (UI + worker cron); ver producto §3.
 
 | Orden | Módulo | Nota |
 |-------|--------|------|

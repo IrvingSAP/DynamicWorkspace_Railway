@@ -122,7 +122,7 @@ apps/file_watch/           ← solo con «Desarrolla el módulo»
 
 ## Prioridad de diseño
 
-Alineado a [`../FILE_WATCH.md`](../FILE_WATCH.md) §8. Forma de trabajo (§3) **cerrada en diseño** en M2.
+Alineado a [`../FILE_WATCH.md`](../FILE_WATCH.md) §8. Forma de trabajo (§3) **cerrada** (M2 + implementación M1–M10).
 
 | Orden | Módulo | Nota |
 |-------|--------|------|

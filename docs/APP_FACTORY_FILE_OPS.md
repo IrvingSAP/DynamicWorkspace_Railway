@@ -95,8 +95,8 @@ No conviene agregar apps que **repitan** FilePipe o File Gate. Sí conviene cubr
 | **File Convert** | — | **No app** | Conversiones triviales → modo simple en **FilePipe** |
 | **File Diff** | — | **No app** | Antes/después y diferencias → **File Match** (clave + compare) |
 | **File Repair** | `FILE_REPAIR` | App / modo Gate · **pendiente revisión de aporte** | Corrige con trazabilidad a partir de rechazos Gate — [`FILE_REPAIR.md`](FILE_REPAIR.md) |
-| **File Watch** | `FILE_WATCH` | Plataforma · **previsto** (forma de trabajo TBD) | Ingestión automática — [`FILE_WATCH.md`](FILE_WATCH.md) |
-| **File Scheduler** | `FILE_SCHEDULER` | Plataforma · **previsto** (forma de trabajo TBD) | Cron / dependencias — [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) |
+| **File Watch** | `FILE_WATCH` | Plataforma · **hecho** (M1–M10) | Ingestión automática — [`FILE_WATCH.md`](FILE_WATCH.md) · `apps.file_watch` |
+| **File Scheduler** | `FILE_SCHEDULER` | Plataforma · **hecho** (M1–M10) | Cron / dependencias — [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) · `apps.file_scheduler` |
 | **File Archive** | `FILE_ARCHIVE` | Plataforma · **previsto** (forma de trabajo TBD) | Custodia E2E — [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md) |
 | **Data Profiler** | `DATA_PROFILER` | App · **pendiente revisión de aporte** | Calidad del **contenido** (≠ Scout) — [`DATA_PROFILER.md`](DATA_PROFILER.md) |
 | **Schema Registry** | `SCHEMA_REGISTRY` | Plataforma · **previsto** (forma de trabajo TBD) | Contratos compartidos — [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) |
@@ -346,9 +346,9 @@ Alto en **ops/seguridad** (credenciales, cuotas, idempotencia, reintentos). No e
 
 ### 10.3 Criterio
 
-Máximo valor de automatización · **prioridad ⭐⭐⭐⭐⭐** de producto · **se desarrollará**.  
-**Pendiente:** forma de trabajo (pipeline · API · monitor de llegada · otras · todas) — ver [`FILE_WATCH.md`](FILE_WATCH.md) §3.  
-Relacionado con §4 APP_FACTORY (bandeja vigilada) y roadmap DMS.
+Máximo valor de automatización · **prioridad ⭐⭐⭐⭐⭐** de producto · **hecho** (MVP M1–M10).  
+Forma de trabajo **cerrada** en M2: bandeja + adaptador (`monitor` SFTP/carpeta · `api_push`); Pipeline es destino, no origen. Ver [`FILE_WATCH.md`](FILE_WATCH.md) §3.  
+Specs: [`definition_app_FILE_WATCH/`](definition_app_FILE_WATCH/).
 
 **Producto:** [`FILE_WATCH.md`](FILE_WATCH.md).
 
@@ -372,10 +372,10 @@ Cola + `DmsExecutionJob` / jobs de verticales; no requiere un `project_kind` por
 
 ### 11.3 Criterio
 
-Capa de **plataforma** · **se desarrollará** junto o justo después de Watch.  
-**Pendiente:** forma de trabajo (pipeline · API · worker cron · otras · todas) — [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) §3.  
-Alinear con “Scheduling DMS Fase 3” en APP_FACTORY.  
-Auditoría (CRUD del schedule + tick) y errores `schedule_*`: [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) §7–§8; hereda Pipeline §7.1 y PLATFORM API §9–§10.2.
+Capa de **plataforma** · **hecho** (MVP M1–M10) junto con Watch.  
+MVP: worker cron + UI de planes + destino Job/Pipeline + `input_origin=watch` / artifact. Fase 2: más calendarios, nodo schedule en el diseñador de Pipeline, CRUD HTTP de planes.  
+Auditoría (CRUD del schedule + tick) y errores `schedule_*`: [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) §7–§8; hereda Pipeline §7.1 y PLATFORM API §9–§10.2.  
+Specs: [`definition_app_FILE_SCHEDULER/`](definition_app_FILE_SCHEDULER/).
 
 **Producto:** [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md).
 
@@ -485,11 +485,11 @@ Hoy el encadenamiento en apps es **manual** (descarga → re-subida); el Pipelin
 | Prioridad | Ítem | Motivo | Forma sugerida |
 |-----------|------|--------|----------------|
 | ⭐⭐⭐⭐⭐ | **File Clean** | Complementa Gate; reusa reglas DMS | App — [`FILE_CLEAN.md`](FILE_CLEAN.md) · **hecho** |
-| ⭐⭐⭐⭐⭐ | **File Watch** | De manual a automático | Plataforma — [`FILE_WATCH.md`](FILE_WATCH.md) · **previsto** (forma TBD) |
+| ⭐⭐⭐⭐⭐ | **File Watch** | De manual a automático | Plataforma — [`FILE_WATCH.md`](FILE_WATCH.md) · **hecho** (M1–M10) |
 | ⭐⭐⭐⭐ | **File Split / Merge** | Operaciones frecuentes | App dual — [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) · **hecho** |
 | ⭐⭐⭐⭐ | **Data Profiler** | Inteligencia de contenido | [`DATA_PROFILER.md`](DATA_PROFILER.md) · **pendiente revisión de aporte** |
 | ⭐⭐⭐ | **File Repair** | Diferenciador post-Gate | [`FILE_REPAIR.md`](FILE_REPAIR.md) · **pendiente revisión** (app / modo Gate / Clean) |
-| ⭐⭐⭐ | **File Scheduler** | Cron / dependencias | [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) · **previsto** (forma TBD) |
+| ⭐⭐⭐ | **File Scheduler** | Cron / dependencias | [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) · **hecho** (M1–M10) |
 | ⭐⭐ | **File Archive** | Custodia E2E | [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md) · **previsto** (forma TBD) |
 | ⭐⭐ | **Schema Registry** | Contratos compartidos | [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) · **previsto** (forma TBD) |
 | — | **File Convert** | Evitar duplicar Pipe | **No app** |
@@ -499,11 +499,11 @@ Hoy el encadenamiento en apps es **manual** (descarga → re-subida); el Pipelin
 
 1. **File Clean** — **hecho**  
 2. **Split/Merge** — **hecho**  
-3. **Data Profiler** / **File Repair** — **pendiente revisión** (¿aportar valor? ¿forma?) — docs producto ya creados  
-4. **Watch + Scheduler** — **se desarrollarán**; definir forma (pipeline · API · monitor · otras · todas)  
+3. **Watch + Scheduler** — **hecho** (M1–M10; `apps.file_watch` / `apps.file_scheduler`)  
+4. **Data Profiler** / **File Repair** — **pendiente revisión** (¿aportar valor? ¿forma?) — docs producto ya creados  
 5. **Archive / Schema Registry** — **se desarrollarán**; definir forma de trabajo  
-6. **FILE PIPELINE** — orquestación multi-app — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) · **propuesta**  
-7. **PLATFORM API** — al cerrar apps FILE_OPS; **puede consumir Pipeline** — [`PLATFORM_API.md`](PLATFORM_API.md)
+6. **FILE PIPELINE** — orquestación multi-app — [`FILE_PIPELINE.md`](FILE_PIPELINE.md)  
+7. **PLATFORM API** — **hecho** (M1–M9); puede consumir Pipeline — [`PLATFORM_API.md`](PLATFORM_API.md)
 
 ---
 
@@ -525,10 +525,10 @@ Antes de abrir rama `feature/<slug>`:
 1. Mantener este archivo como **paraguas FILE_OPS**.  
 2. **File Clean / Split·Merge:** **hecho** — docs + `main` / Railway.  
 3. **Profiler / Repair:** docs de producto creados; **revisión de aporte** antes de `definition_app_*` / rama — [`DATA_PROFILER.md`](DATA_PROFILER.md), [`FILE_REPAIR.md`](FILE_REPAIR.md).  
-4. **Watch / Scheduler / Archive / Schema Registry:** docs creados; **definir forma de trabajo** luego implementar — [`FILE_WATCH.md`](FILE_WATCH.md), [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md), [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md), [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md).  
-5. Actualizar [`APP_FACTORY.md`](APP_FACTORY.md) §5 / §8 cuando un ítem cambie de estado.  
-6. **FILE PIPELINE:** propuesta — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) (orquestación; API puede consumirlo).  
-7. **PLATFORM API:** al finalizar apps FILE_OPS — [`PLATFORM_API.md`](PLATFORM_API.md).  
+4. **Watch / Scheduler:** **hecho** (M1–M10) — [`FILE_WATCH.md`](FILE_WATCH.md), [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md).  
+5. **Archive / Schema Registry:** docs creados; **definir forma de trabajo** luego implementar — [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md), [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md).  
+6. **FILE PIPELINE:** orquestación — [`FILE_PIPELINE.md`](FILE_PIPELINE.md) (API puede consumirlo).  
+7. **PLATFORM API:** **hecho** (M1–M9) — [`PLATFORM_API.md`](PLATFORM_API.md).  
 8. **File Diff:** retirado (§8).
 
 ---
@@ -562,8 +562,8 @@ Antes de abrir rama `feature/<slug>`:
 | [`FILE_SPLIT_MERGE.md`](FILE_SPLIT_MERGE.md) | **File Split/Merge** — **hecho** · [`definition_app_FILE_SPLIT_MERGE/`](definition_app_FILE_SPLIT_MERGE/) · `main` / Railway |
 | [`DATA_PROFILER.md`](DATA_PROFILER.md) | **Data Profiler** — pendiente revisión de aporte |
 | [`FILE_REPAIR.md`](FILE_REPAIR.md) | **File Repair** — pendiente revisión (app / modo Gate / Clean) |
-| [`FILE_WATCH.md`](FILE_WATCH.md) | **File Watch** — previsto; forma de trabajo TBD |
-| [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | **File Scheduler** — previsto; forma TBD · specs [`definition_app_FILE_SCHEDULER/`](definition_app_FILE_SCHEDULER/) |
+| [`FILE_WATCH.md`](FILE_WATCH.md) | **File Watch** — **hecho** (M1–M10) · [`definition_app_FILE_WATCH/`](definition_app_FILE_WATCH/) |
+| [`FILE_SCHEDULER.md`](FILE_SCHEDULER.md) | **File Scheduler** — **hecho** (M1–M10) · [`definition_app_FILE_SCHEDULER/`](definition_app_FILE_SCHEDULER/) |
 | [`FILE_ARCHIVE.md`](FILE_ARCHIVE.md) | **File Archive** — previsto; forma de trabajo TBD |
 | [`SCHEMA_REGISTRY.md`](SCHEMA_REGISTRY.md) | **Schema Registry** — previsto; forma de trabajo TBD |
 | [`FILE_PIPELINE.md`](FILE_PIPELINE.md) | **File Pipeline** — orquestación multi-app (**propuesta**); PLATFORM_API puede consumirlo · specs [`definition_app_FILE_PIPELINE/`](definition_app_FILE_PIPELINE/) |
